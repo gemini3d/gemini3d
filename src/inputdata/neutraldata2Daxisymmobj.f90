@@ -117,7 +117,7 @@ contains
             gamma1 = -1
           end if
           gamma1=acos(gamma1)
-    
+
           gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
           if (gamma2 > 1) then     !handles weird precision issues in 2D
             gamma2 = 1
@@ -125,10 +125,10 @@ contains
             gamma2= -1
           end if
           gamma2=acos(gamma2)
-    
+
           xp=Re*gamma1
           yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-    
+
           !COMPUTE COORDINATES FROM DISTANCES
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
             yp = -yp            !do we want an abs here to be safe
