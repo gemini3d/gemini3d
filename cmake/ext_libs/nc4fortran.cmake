@@ -1,7 +1,5 @@
 include(ExternalProject)
 
-add_library(nc4fortran::nc4fortran INTERFACE IMPORTED)
-
 if(netcdf)
   find_package(nc4fortran CONFIG QUIET)
   if(nc4fortran_FOUND)
@@ -49,6 +47,7 @@ if(netcdf)
 
   file(MAKE_DIRECTORY ${nc4fortran_INCLUDE_DIRS})
 
+  add_library(nc4fortran::nc4fortran INTERFACE IMPORTED)
   target_link_libraries(nc4fortran::nc4fortran INTERFACE ${nc4fortran_LIBRARIES} NetCDF::NetCDF_Fortran)
   target_include_directories(nc4fortran::nc4fortran INTERFACE ${nc4fortran_INCLUDE_DIRS})
 
@@ -57,5 +56,7 @@ if(netcdf)
 
 else(netcdf)
   add_library(nc4fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90)
+
+  add_library(nc4fortran::nc4fortran INTERFACE IMPORTED)
   target_link_libraries(nc4fortran::nc4fortran INTERFACE nc4fortran)
 endif(netcdf)

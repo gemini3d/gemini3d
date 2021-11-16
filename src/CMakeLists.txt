@@ -58,7 +58,8 @@ pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources temporal timeutils
 exe_frontend
-grid io PDEelliptic potential
+grid io
+PDEelliptic potential mumps_interface
 mpimod
 autogrid
 msis_ifc msis00mod
@@ -118,15 +119,11 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 # This is an example of a C/C++ main program, instead of or in addition to the main Fortran gemini.bin
 # this could be used as a starting point for C/C++ programs that use the GEMINI3D API
 
-if(NOT mpi)
-  message(STATUS "SKIP: GEMINI3D C program requires MPI")
-  return()
-endif()
-
 add_executable(gemini_c.bin gemini_main.c)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LINKER_LANGUAGE C
+EXCLUDE_FROM_ALL $<NOT:$<BOOL:${mpi}>>
 )
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
@@ -147,9 +144,7 @@ target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO
 # or even in a separate project. See https://github.com/gemini3d/libgemini
 
 install(TARGETS
-nc4fortran
-mumps_interface
-# gemini3d
+gemini3d
 gemini.bin gemini_c.bin
 EXPORT ${PROJECT_NAME}-targets
 )
