@@ -124,7 +124,6 @@ add_executable(gemini_c.bin gemini_main.c)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LINKER_LANGUAGE C
-EXCLUDE_FROM_ALL $<NOT:$<BOOL:${mpi}>>
 )
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
@@ -136,6 +135,7 @@ nc4fortran::nc4fortran
 h5fortran::h5fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
+$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
 )
