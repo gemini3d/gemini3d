@@ -658,7 +658,7 @@ contains
     ! do rotations one grid point at a time to cut down on temp storage needed
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
-        do ix1=1,self%lc3i
+        do ix1=1,self%lc1i
           vnz=self%dvn1inow(ix1,ix2,ix3)
           vnx=self%dvn2inow(ix1,ix2,ix3)
           vny=self%dvn3inow(ix1,ix2,ix3)
