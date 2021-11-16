@@ -24,10 +24,9 @@ set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -exe $<TARGET_FILE:gemini.bi
 $<$<BOOL:${mpi}>:-mpiexec> "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>")
 
 
-if(hdf5)
-
 add_test(NAME gemini:hdf5:${name}:dryrun
-  COMMAND ${test_cmd} -dryrun)
+COMMAND ${test_cmd} -dryrun
+)
 # we prefer default WorkingDirectory of PROJECT_BINARY_DIR to make MSIS 2.x msis2*.parm use simpler
 # otherwise, we have to generate source for msis_interface.f90
 
@@ -38,6 +37,7 @@ FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 FIXTURES_SETUP hdf5:${name}:dryrun
 REQUIRED_FILES ${out_dir}/inputs/config.nml
 LABELS core
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
@@ -50,12 +50,9 @@ RESOURCE_LOCK cpu_mpi
 FIXTURES_REQUIRED hdf5:${name}:dryrun
 FIXTURES_SETUP hdf5:${name}:run_fxt
 LABELS core
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
-
-
-
-endif(hdf5)
 
 
 if(netcdf)

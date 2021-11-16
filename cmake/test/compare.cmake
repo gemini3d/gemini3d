@@ -24,8 +24,6 @@ endfunction(matlab_compare)
 
 function(python_compare outdir refdir name)
 
-if(hdf5)
-
 add_test(NAME gemini:compare:hdf5:${name}:python
 COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
 
@@ -34,10 +32,8 @@ TIMEOUT 120
 FIXTURES_REQUIRED hdf5:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python"
-DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+DISABLED $<OR:$<NOT:$<BOOL:${PYGEMINI_DIR}>>,$<NOT:$<BOOL:${hdf5}>>>
 )
-
-endif(hdf5)
 
 if(netcdf)
 
@@ -59,8 +55,6 @@ endfunction(python_compare)
 
 function(fortran_compare outdir refdir name)
 
-if(hdf5)
-
 add_test(NAME gemini:compare:hdf5:${name}
 COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 
@@ -70,7 +64,7 @@ FIXTURES_REQUIRED hdf5:${name}:run_fxt
 RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
-DISABLED $<NOT:$<TARGET_EXISTS:gemini3d.compare>>
+DISABLED $<OR:$<NOT:$<TARGET_EXISTS:gemini3d.compare>>,$<NOT:$<BOOL:${hdf5}>>>
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
@@ -79,8 +73,6 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 # at same time with non-dependent sim runs.
 # it's not a problem to run multiple compare at once, but it is a problem
 # to run gemini3d.compare at same time as gemini.bin, even on different sims
-
-endif(hdf5)
 
 if(netcdf)
 

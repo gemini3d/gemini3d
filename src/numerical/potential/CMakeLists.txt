@@ -19,7 +19,7 @@ MPI::MPI_Fortran
 )
 
 
-if(NOT (hdf5 AND BUILD_TESTING))
+if(NOT BUILD_TESTING)
   return()
 endif()
 
@@ -54,6 +54,7 @@ FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
