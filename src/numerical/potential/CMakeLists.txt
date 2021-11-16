@@ -44,11 +44,11 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 # where mpi gets linked in the middle instead of at the end.
 # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
 
-add_test(NAME unit:potential2
-COMMAND "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>" $<$<BOOL:${mpi}>:${MPIEXEC_NUMPROC_FLAG}> $<$<BOOL:${mpi}>:${Ncpu}>
-$<TARGET_FILE:test_potential2d> ${_potential_testfile}
-)
-
+set(_cmd $<TARGET_FILE:test_potential2d> ${_potential_testfile})
+if(mpi)
+  list(PREPEND _cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu})
+endif()
+add_test(NAME unit:potential2 COMMAND ${_cmd})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
 FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
