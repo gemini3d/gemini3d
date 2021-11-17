@@ -443,7 +443,7 @@ contains
     J2 = 0
     J3 = 0
     !! for first current term zero everything out
-    if (flagnodivJ0) then
+    if (.not. flagnodivJ0) then
       call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
     end if
