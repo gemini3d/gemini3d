@@ -188,7 +188,7 @@ contains
   
     !> Now solve specifically for the *disturbance* potential.  The background electric field will be included in returned electric field and current density values
     if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
-      if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+      if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
         E02src=0._wp; E03src=0._wp
       else                             ! Eulerian grid, use background fields
         E02src=E02; E03src=E03
@@ -218,15 +218,16 @@ contains
       E1=0._wp; E2=0._wp; E3=0._wp; J1=0._wp; J2=0._wp; J3=0._wp;
     end if
   
-    !> update currents with conduction currents due to background electric field
-    call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)
-  
     !> update *total* electric field variable to include background values
-    if (.not. cfg%flaglagrangian) then     !only add these in if we are not using a lagrangian grid
-      E2=E2+E02
-      E3=E3+E03
-    end if
-  
+    !if (.not. cfg%flaglagrangian) then     !only add these in if we are not using a lagrangian grid
+    !  E2=E2+E02
+    !  E3=E3+E03
+    !end if
+
+    !> E0?src has been already adjust to account for lagrangian; no need to check again just add
+    E2=E2+E02src
+    E3=E3+E03src  
+
     !> velocities should be computed irrespective of whether a solve was done
     call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     if (mpi_cfg%myid==0) then
@@ -442,20 +443,20 @@ contains
     !! so this div is only perp components
     J2 = 0
     J3 = 0
-    !! for first current term zero everything out
+    !! zero everything out to initialize since *accumulating* sources
     if (.not. flagnodivJ0) then
       call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
-      if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
+      if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
     call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
-    if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
+    if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
     if (flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
-      if (debug .and. mpi_cfg%myid==0) print *, 'Computed pressure currents...'
+      if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed pressure currents...'
     end if
     if (flaggravdrift) then
       call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
-      if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
+      if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
   
     J1halo(1:lx1,1:lx2,1:lx3)=J1

@@ -231,6 +231,8 @@ module procedure potential_workers_mpi
   
   !--------
   J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
+  if (.not. cfg%flagnodivJ0) call acc_perpconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
+  !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
   call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
   if (cfg%flagdiamagnetic) then
