@@ -360,6 +360,11 @@ contains
       vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ &
                         (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
     end do
+
+
+    print*, 'E:  ',mpi_cfg%myid,maxval(abs(vs2(1:lx1,1:lx2,1:lx3,:))), maxval(abs(vs3(1:lx1,1:lx2,1:lx3,:))), &
+                       maxloc(abs(vs2(1:lx1,1:lx2,1:lx3,:))), maxloc(abs(vs3(1:lx1,1:lx2,1:lx3,:)))
+
   
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
@@ -380,6 +385,10 @@ contains
                   -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
       end do
     end if
+
+    print*, 'P:  ',mpi_cfg%myid,maxval(abs(vs2(1:lx1,1:lx2,1:lx3,:))), maxval(abs(vs3(1:lx1,1:lx2,1:lx3,:))), &
+                        maxloc(abs(vs2(1:lx1,1:lx2,1:lx3,:))), maxloc(abs(vs3(1:lx1,1:lx2,1:lx3,:)))
+
   
     !> Gravitational drift terms (if required)
     if (flaggravdrift) then
