@@ -185,15 +185,16 @@ contains
                                        flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                        E01,E02,E03,Vminx1slab,Vmaxx1slab)
     end if
-  
+
+    !> must set these variables regardless of whether the solve is done because they are added to the field later  
+    if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
+      E02src=0._wp; E03src=0._wp
+    else                             ! Eulerian grid, use background fields
+      E02src=E02; E03src=E03
+    end if
+
     !> Now solve specifically for the *disturbance* potential.  The background electric field will be included in returned electric field and current density values
     if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
-      if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
-        E02src=0._wp; E03src=0._wp
-      else                             ! Eulerian grid, use background fields
-        E02src=E02; E03src=E03
-      end if
-  
       call cpu_time(tstart)
       if (mpi_cfg%myid/=0) then
         !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
