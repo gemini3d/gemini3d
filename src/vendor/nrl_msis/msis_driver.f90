@@ -64,7 +64,7 @@ do i=1,lx1
       end select
 
       !> sanity check N2 density
-      if(Dn(i,j,k,3) < 1e-3) then
+      if(Dn(i,j,k,3) < 0) then
         write(stderr,*) "MSIS",msis_version, "inputs: doy, UTsec, alt, glat, glon, f107a, f107, Ap", &
           doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap(1)
         write(stderr,*) "N2 density < 1e-3 at lat,lon,alt:", glat(i,j,k), glon(i,j,k), alt(i,j,k)
