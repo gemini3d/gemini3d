@@ -69,6 +69,13 @@ LABELS unit
 TIMEOUT 10
 )
 
+if(msis2)
+add_custom_command(TARGET gemini3d.run POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${msis2_SOURCE_DIR}/msis20.parm $<TARGET_FILE_DIR:gemini3d.run>/msis20.parm
+COMMAND_EXPAND_LISTS
+)
+endif(msis2)
+
 # --- gemini3.run with array bounds checks
 # We use EXCLUDE_FROM_ALL as a workaround to prevent it from being built by default when not in Debug mode
 add_executable(gemini3d.run.debug gemini3d_run.f90 $<TARGET_OBJECTS:exe_frontend>)

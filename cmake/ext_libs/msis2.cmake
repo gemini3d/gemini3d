@@ -8,7 +8,9 @@ INACTIVITY_TIMEOUT 15
 
 FetchContent_MakeAvailable(MSIS2)
 
-set(_s ${msis2_SOURCE_DIR})  # convenience
+set(msis2_SOURCE_DIR ${msis2_SOURCE_DIR} PARENT_SCOPE)
+set(_s ${msis2_SOURCE_DIR})
+# convenience
 
 # patching API MSIS
 add_custom_command(
@@ -29,7 +31,7 @@ ${msis2_BINARY_DIR}/msis_calc.F90
 )
 
 # MSIS 2.0 needs this parm file.
-file(COPY ${msis2_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
+# NOTE: there is also add_custom_command() to copy this to each config's binary dir in src/cmakelists.txt
 install(FILES ${msis2_SOURCE_DIR}/msis20.parm TYPE BIN)
 
 if(${PROJECT}_BUILD_TESTING)
