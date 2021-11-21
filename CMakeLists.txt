@@ -65,8 +65,6 @@ endif(glow)
 include(cmake/compilers/flags.cmake)
 # flags.cmake comes last to avoid intermittent failures
 
-# utility
-include(cmake/SetTargProps.cmake)
 # unit test DLL paths
 include(cmake/test/lib_path.cmake)
 
