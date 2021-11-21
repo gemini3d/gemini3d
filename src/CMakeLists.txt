@@ -72,6 +72,7 @@ hwloc_ifc hwloc_c
 if(msis2)
   list(APPEND gemini_internal_mods msis2mod)
 endif()
+
 foreach(l ${gemini_internal_mods})
 
   install(TARGETS ${l}
@@ -86,12 +87,13 @@ foreach(l ${gemini_internal_mods})
   )
 endforeach()
 
-
 # --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin gemini_main.f90
 )
 set_target_properties(gemini.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+RELWITHDEBINFO_POSTFIX .debug
+DEBUG_POSTFIX .debug
 )
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
@@ -109,7 +111,7 @@ $<$<BOOL:${glow}>:glow::glow>
 
 # same link logic applied to src/unit_tests/test_mumps
 
-add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
+add_test(NAME unit:gemini_exe_ok COMMAND gemini.bin)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
@@ -127,6 +129,8 @@ add_executable(gemini_c.bin gemini_main.c)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LINKER_LANGUAGE C
+RELWITHDEBINFO_POSTFIX .debug
+DEBUG_POSTFIX .debug
 )
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE

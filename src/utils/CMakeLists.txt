@@ -21,7 +21,6 @@ pathlib sanity_check errors config timeutils const hwloc_ifc hwloc_c nc4fortran:
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
-set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
 set_tests_properties(unit:magcalc_exe_ok PROPERTIES
@@ -60,7 +59,6 @@ h5fortran::h5fortran nc4fortran::nc4fortran hwloc_ifc hwloc_c
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
-set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
@@ -69,33 +67,6 @@ LABELS unit
 TIMEOUT 10
 )
 
-if(msis2)
-add_custom_command(TARGET gemini3d.run POST_BUILD
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${msis2_SOURCE_DIR}/msis20.parm $<TARGET_FILE_DIR:gemini3d.run>/msis20.parm
-COMMAND_EXPAND_LISTS
-)
-endif(msis2)
-
-# --- gemini3.run with array bounds checks
-# We use EXCLUDE_FROM_ALL as a workaround to prevent it from being built by default when not in Debug mode
-add_executable(gemini3d.run.debug gemini3d_run.f90 $<TARGET_OBJECTS:exe_frontend>)
-target_link_libraries(gemini3d.run.debug PRIVATE const config timeutils autogrid reader pathlib
-h5fortran::h5fortran nc4fortran::nc4fortran hwloc_ifc hwloc_c
-$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-)
-set_target_properties(gemini3d.run.debug PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
-)
-
-add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run.debug>)
-set_tests_properties(unit:gemini3d_run_debug_ok PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-DISABLED $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
-LABELS unit
-TIMEOUT 10
-)
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90)
 target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config timeutils pathlib const hwloc_ifc hwloc_c
@@ -103,7 +74,6 @@ h5fortran::h5fortran nc4fortran::nc4fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
-set_target_properties(magcalc.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
 set_tests_properties(unit:magcalc_run_ok PROPERTIES
@@ -113,7 +83,7 @@ TIMEOUT 10
 )
 
 # --- Windows needs DLLs on path
-set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok unit:gemini3d_run_debug_ok PROPERTIES
+set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok PROPERTIES
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
@@ -133,19 +103,18 @@ nc4fortran::nc4fortran h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
-set_target_properties(gemini3d.compare PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+PROPERTY DEBUG_POSTFIX .debug
+)
+set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+PROPERTY RELWITHDEBINFO_POSTFIX .debug
 )
 
 # --- Install
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
-EXPORT ${PROJECT_NAME}-targets
-)
-
-# --- Debug install
-
-install(TARGETS gemini3d.run.debug
-CONFIGURATIONS Debug RelWithDebInfo
 EXPORT ${PROJECT_NAME}-targets
 )

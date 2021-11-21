@@ -57,6 +57,9 @@ option(matlab "Matlab checks")
 
 set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
+# append .debug to debug libraries, because the computation speed penalty is so great
+set(CMAKE_DEBUG_POSTFIX .debug)
+
 # to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
