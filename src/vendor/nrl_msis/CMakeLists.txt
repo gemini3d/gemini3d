@@ -23,10 +23,12 @@ target_compile_options(msis00mod PRIVATE
 add_library(msis_ifc OBJECT msis_interface.f90)
 target_link_libraries(msis_ifc PRIVATE msis00mod)
 
+add_executable(msis_setup msis_driver.f90)
+
 # --- optional MSIS 2.0
 
 if(msis2)
-  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/msis2.cmake)
   target_link_libraries(msis_ifc PRIVATE msis2mod)
   target_compile_options(msis2mod PRIVATE
   "$<$<Fortran_COMPILER_ID:GNU>:${msis2_gnu_flags}>"
@@ -36,19 +38,17 @@ else(msis2)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)
 endif(msis2)
 
-# cmake bug? Object library not a good idea for msis 2.0 as have to specify everywhere
-
-if(NOT hdf5)
-  return()
-endif()
 
 # --- for setting up an equilibrium simulation
 
-add_executable(msis_setup msis_driver.f90)
 target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
-set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_target_properties(msis_setup PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+DEBUG_POSTFIX .debug
+RELWITHDEBINFO_POSTFIX .debug
+)
 
 install(TARGETS msis_setup EXPORT ${PROJECT_NAME}-targets)
 
@@ -76,6 +76,7 @@ set_tests_properties(unit:msis00_generate PROPERTIES
 FIXTURES_SETUP msis00_gen_fxt
 LABELS unit
 TIMEOUT 10
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 add_test(NAME unit:msis00_setup
@@ -87,6 +88,7 @@ FIXTURES_REQUIRED msis00_gen_fxt
 LABELS unit
 REQUIRED_FILES ${msis00_in}
 TIMEOUT 10
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 add_test(NAME unit:msis00_compare
@@ -97,6 +99,7 @@ FIXTURES_REQUIRED msis00_fxt
 LABELS unit
 TIMEOUT 10
 REQUIRED_FILES "${msis00_out};${msis00_ref}"
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 set_tests_properties(unit:msis00_setup unit:msis00_compare PROPERTIES
@@ -117,6 +120,7 @@ set_tests_properties(unit:msis2_generate PROPERTIES
 FIXTURES_SETUP msis2_gen_fxt
 LABELS unit
 TIMEOUT 10
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 add_test(NAME unit:msis2_setup
@@ -129,6 +133,7 @@ FIXTURES_REQUIRED msis2_gen_fxt
 LABELS unit
 REQUIRED_FILES ${msis2_in}
 TIMEOUT 10
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 add_test(NAME unit:msis2_compare
@@ -140,6 +145,7 @@ FIXTURES_REQUIRED msis2_fxt
 LABELS unit
 TIMEOUT 10
 REQUIRED_FILES "${msis2_out};${msis2_ref}"
+DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 set_tests_properties(unit:msis2_setup unit:msis2_compare PROPERTIES
