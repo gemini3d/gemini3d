@@ -204,8 +204,8 @@ if(.not.exists) then
 endif
 
 inquire(file=exe, exist=exists)
-if(.not. exists) error stop "did not find " // exe // &
-  " -- please specify path to MPI runnable executable with '-exe path/to/my.bin'"
+if(.not. exists) error stop "gemini3d.run: did not find " // exe // &
+  " : please specify path to MPI runnable executable with option 'gemini3d.run -exe path/to/my.bin'"
 
 end function find_exe
 
