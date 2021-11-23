@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, 
 use phys_consts, only : wp
 use config, only : get_compiler_vendor, gemini_cfg, read_configfile
 use hwloc_ifc, only : get_cpu_count
-use pathlib, only : parent, assert_directory_exists, expanduser, get_suffix
+use pathlib, only : parent, file_name, assert_directory_exists, expanduser, suffix
 use timeutils, only : date_filename,dateinc
 
 implicit none (type, external)
@@ -56,8 +56,6 @@ path = trim(buf)
 call assert_directory_exists(path)
 
 plan = .false.
-exe = ""
-mpiexec = ""
 extra = ""
 Ncpu = 0
 
@@ -73,10 +71,10 @@ do i = 2, argc
   case ('-exe', '-gemexe')
     !! FIXME: -gemexe is deprecated
     call get_command_argument(i+1, buf)
-    exe = trim(buf)
+    exe = find_exe(trim(buf))
   case ('-mpiexec')
     call get_command_argument(i+1, buf)
-    mpiexec = trim(buf)
+    mpiexec = find_mpiexec(trim(buf))
   case ('-plan')
     plan = .true.
   !> options passed to child executable
@@ -110,8 +108,8 @@ do i = 2, argc
   end select
 end do
 
-exe = find_exe(exe)
-mpiexec = find_mpiexec(mpiexec)
+if(.not.allocated(exe)) exe = find_exe("")
+if(.not.allocated(mpiexec)) mpiexec = find_mpiexec("")
 
 end subroutine cli_parser
 
@@ -156,12 +154,11 @@ endif
 end function get_Ncpu
 
 
-function find_exe(name, prog_name) result(exe)
+function find_exe(name) result(exe)
 
 character(*), intent(in) :: name
-character(*), intent(in), optional :: prog_name
 
-character(:), allocatable :: my, exe
+character(:), allocatable :: exe, work
 logical :: exists
 character(1000) :: buf
 
@@ -171,40 +168,44 @@ if(len_trim(name) > 0) then
     exe = name
     return
   endif
+  inquire(file=name // '.exe', exist=exists)
+  if(exists) then
+    exe = name // '.exe'
+    return
+  endif
 endif
 
 call get_command_argument(0, buf)
 
-if(present(prog_name)) then
-  my = prog_name
-else
-  if(index(buf, "gemini3d.run") > 0) then
-    my = "gemini.bin"
-  elseif(index(buf, "magcalc.run") > 0) then
-    my = "magcalc.bin"
-  else
-    error stop "please specify the program name you seek"
-  endif
-endif
-
 if(len_trim(name) == 0) then
-  if (len_trim(parent(buf)) > 0) then
-    exe = trim(parent(buf)) // '/' // my
+  if (index(buf, "gemini3d.run.debug") > 0) then
+    work = "gemini.bin.debug"
+  elseif (index(buf, "gemini3d.run") > 0) then
+    work = "gemini.bin"
+  elseif (index(buf, "magcalc.run.debug") > 0) then
+    work = "magcalc.bin.debug"
+  elseif (index(buf, "magcalc.run") > 0) then
+    work = "magcalc.bin"
   else
-    !! running from the same directory
-    exe = my
+    error stop "frontend: find_exe: please specify the program name you seek"
   endif
-endif
-inquire(file=exe, exist=exists)
-if(.not.exists) then
-  inquire(file=exe // '.exe', exist=exists)
-  if(exists) then
-    exe = exe // '.exe'
+
+  work = parent(buf) // '/' // work
+
+  inquire(file=work, exist=exists)
+  if (exists) then
+    exe = work
+    return
+  else
+    inquire(file=work // '.exe', exist=exists)
+    if(exists) then
+      exe = work // '.exe'
+      return
+    endif
   endif
 endif
 
-inquire(file=exe, exist=exists)
-if(.not. exists) error stop "gemini3d.run: did not find " // exe // &
+error stop "gemini3d.run: did not find " // exe // " from " // name // &
   " : please specify path to MPI runnable executable with option 'gemini3d.run -exe path/to/my.bin'"
 
 end function find_exe
@@ -218,8 +219,6 @@ character(:), allocatable :: mpiexec
 character(1000) :: buf
 integer :: i, L
 
-mpiexec = ""
-
 if(len_trim(exe) > 0) then
   if(check_mpiexec(expanduser(exe))) mpiexec = exe
 else
@@ -229,7 +228,7 @@ else
   endif
 endif
 
-if(len_trim(mpiexec) == 0) mpiexec = "mpiexec"
+if(.not.allocated(mpiexec)) mpiexec = "mpiexec"
 
 end function find_mpiexec
 
@@ -338,7 +337,7 @@ character(*), intent(in) :: path
 type(gemini_cfg) :: cfg
 integer, dimension(3) :: ymd
 real(wp) :: UTsec
-character(:), allocatable :: fn, suffix
+character(:), allocatable :: fn
 logical :: exists
 
 cfg%outdir = path
@@ -351,12 +350,11 @@ call read_configfile(cfg)
 ymd = cfg%ymd0
 UTsec = cfg%UTsec0
 
-suffix = get_suffix(cfg%indatsize)
-fn = date_filename(cfg%outdir, ymd, UTsec) // suffix
+fn = date_filename(cfg%outdir, ymd, UTsec) // suffix(cfg%indatsize)
 
 do
   !! new filename, add the 1 if it is the first
-  fn = date_filename(cfg%outdir, ymd, UTsec) // suffix
+  fn = date_filename(cfg%outdir, ymd, UTsec) // suffix(cfg%indatsize)
 
   inquire(file=fn, exist=exists)
   if ( .not. exists ) exit
