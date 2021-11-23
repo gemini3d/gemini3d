@@ -22,6 +22,6 @@ target_link_libraries(test_proj PRIVATE config const reader inputdata
 neutraldata neutraldata3D neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 timeutils pathlib mpimod const
 hwm_ifc
-msis_ifc
+msis_ifc msis00mod
 MPI::MPI_Fortran
 )

@@ -79,8 +79,10 @@ foreach(l ${gemini_internal_mods})
   EXPORT ${PROJECT_NAME}-targets
   )
 
+  target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
+
   target_link_libraries(gemini3d
-  PRIVATE $<TARGET_OBJECTS:${l}>
+  # PRIVATE $<TARGET_OBJECTS:${l}>
   # $<BUILD_INTERFACE:${l}>
   $<INSTALL_INTERFACE:${l}>
   # ${l}

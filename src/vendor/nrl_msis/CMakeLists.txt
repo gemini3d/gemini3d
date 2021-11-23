@@ -12,8 +12,7 @@ set(msis_intel_flags -nowarn)
 
 # --- MSISE00 is always available, but MSIS 2.0 might not be available.
 
-add_library(msis00mod msis00_gfortran.f msise00_data.f)
-# keep msis00 NOT an OBJECT to avoid having to link it explicitly everywhere
+add_library(msis00mod OBJECT msis00_gfortran.f msise00_data.f)
 target_compile_options(msis00mod PRIVATE
 "$<$<Fortran_COMPILER_ID:GNU>:${msis00_gnu_flags}>"
 "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>")
@@ -41,7 +40,7 @@ endif(msis2)
 
 # --- for setting up an equilibrium simulation
 
-target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran
+target_link_libraries(msis_setup PRIVATE msis_ifc msis00mod const h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 set_target_properties(msis_setup PROPERTIES
@@ -60,7 +59,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_executable(msis_compare test_msis.f90)
-target_link_libraries(msis_compare PRIVATE assert msis_ifc h5fortran::h5fortran
+target_link_libraries(msis_compare PRIVATE assert msis_ifc msis00mod h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
