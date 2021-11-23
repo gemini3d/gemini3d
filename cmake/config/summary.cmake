@@ -2,10 +2,14 @@ include(FeatureSummary)
 
 # --- recommendations
 
-if(NOT CMAKE_GENERATOR MATCHES Ninja)
-  message(VERBOSE "Recommendation: Install Ninja build system:
-      cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake
-  Then, set environment variable CMAKE_GENERATOR=Ninja")
+# if(NOT CMAKE_GENERATOR MATCHES Ninja)
+#   message(VERBOSE "Recommendation: Install Ninja build system:
+#       cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake
+#   Then, set environment variable CMAKE_GENERATOR=Ninja")
+# endif()
+
+if(WIN32 AND CMAKE_VERSION VERSION_LESS 3.21)
+  message(STATUS "For full build features on Windows, CMake >= 3.21 is recommended (currently using CMake ${CMAKE_VERSION}).")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.5.0)
