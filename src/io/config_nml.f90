@@ -99,7 +99,7 @@ call check_nml_io(i, cfg%infile, "files")
 if (len_trim(file_format) > 0) then
   cfg%out_format = trim(file_format)
 else
-  file_format = get_suffix(indat_size)
+  file_format = suffix(indat_size)
   cfg%out_format = file_format(2:)
 endif
 

@@ -1,7 +1,7 @@
 submodule (io) plasma_input
 !! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
 use reader, only : get_simsize3
-use pathlib, only : get_suffix
+use pathlib, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 
 implicit none (type, external)
@@ -100,7 +100,7 @@ module procedure input_plasma
 
   if (mpi_cfg%myid==0) then
     !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-    select case (get_suffix(indatsize))
+    select case (suffix(indatsize))
     case ('.h5')
       call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
     case ('.nc')   !neither netcdf now raw input support restarting right now
@@ -108,7 +108,7 @@ module procedure input_plasma
     case ('.dat')
       call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
     case default
-      error stop 'input_plasma: unknown grid format: ' // get_suffix(indatsize)
+      error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
     end select
 
     !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.

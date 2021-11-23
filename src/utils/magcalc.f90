@@ -16,7 +16,7 @@ use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
 mpi_cfg, mpi_realprec, tag=>gemini_mpi
 use h5fortran, only : hdf5_file
-use pathlib, only : get_suffix
+use pathlib, only : suffix
 
 implicit none (type, external)
 
@@ -176,11 +176,8 @@ allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 block
   integer :: u
   type(hdf5_file) :: hf
-  character(:), allocatable :: suffix
 
-  suffix = get_suffix(cfg%indatsize)
-
-  select case (suffix)
+  select case (suffix(cfg%indatsize))
   case ('.dat')
     open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
     read(u) lpoints    !size of coordinates for field points

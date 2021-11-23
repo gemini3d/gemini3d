@@ -12,7 +12,6 @@ character(:), allocatable :: new_file, ref_file
 integer :: i, ymd(3), lx1, lx2all, lx3all
 
 real(wp) :: UTsec, t
-character(:), allocatable :: suffix
 logical :: exists, ok
 
 call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
@@ -25,11 +24,10 @@ call read_configfile(cfg)
 
 ymd = cfg%ymd0
 UTsec = cfg%UTsec0
-suffix = get_suffix(cfg%indatsize)
 t = 0
 
 do while (t <= cfg%tdur)
-  ref_file = date_filename(ref_path, ymd, UTsec) // suffix
+  ref_file = date_filename(ref_path, ymd, UTsec) // suffix(cfg%indatsize)
 
   !> FIXME: regenerate the reference data then remove this workaround
   if(t == 0) then
@@ -38,14 +36,14 @@ do while (t <= cfg%tdur)
       ref_file = date_filename(ref_path, ymd, UTsec)
       i = len_trim(ref_file)
       ref_file(i:i) = "1"
-      ref_file = ref_file // suffix
+      ref_file = ref_file // suffix(cfg%indatsize)
       inquire(file=ref_file, exist=exists)
       if(.not. exists) error stop "compare: first ref file not found: " // ref_file
     endif
   endif
   !! end workaround
 
-  new_file = date_filename(new_path, ymd, UTsec) // suffix
+  new_file = date_filename(new_path, ymd, UTsec) // suffix(cfg%indatsize)
 
   ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all, P)
   if(.not. ok) then

@@ -1,9 +1,12 @@
 program pathlib_test
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute, directory_exists
+use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute, directory_exists, &
+file_name, parent, stem, suffix
 
 implicit none (type, external)
+
+call test_manip()
 
 call test_get_filename()
 
@@ -13,6 +16,26 @@ call test_directory_exists()
 
 
 contains
+
+
+subroutine test_manip()
+
+if (stem("hi.a.b") /= "hi.a") error stop "stem failed"
+if (stem(stem("hi.a.b")) /= "hi") error stop "stem nest failed"
+if (stem("hi") /= "hi") error stop "stem idempotent failed"
+
+if (parent("a/b/c") /= "a/b") error stop "parent failed"
+if (parent(parent("a/b/c")) /= "a") error stop "parent nest failed"
+if (parent("a") /= ".") error stop "parent idempotent failed"
+
+if (file_name("a/b/c") /= "c") error stop "file_name failed"
+if (file_name("c") /= "c") error stop "file_name idempotent failed"
+
+if (suffix("hi.a.b") /= ".b") error stop "suffix failed"
+if (suffix(suffix("hi.a.b")) /= "") error stop "suffix nest failed"
+if (suffix("hi") /= "") error stop "suffix idempotent failed"
+
+end subroutine test_manip
 
 
 subroutine test_directory_exists()

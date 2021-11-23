@@ -13,7 +13,7 @@ use reader, only: get_grid2,get_neutral2
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use pathlib, only: get_suffix,get_filename
+use pathlib, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)

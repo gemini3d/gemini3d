@@ -4,10 +4,10 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none (type, external)
 private
-public :: mkdir, copyfile, expanduser, home, get_suffix, &
-  filesep_windows, filesep_unix, &
-  directory_exists, assert_directory_exists, assert_file_exists,&
-  make_absolute, is_absolute, get_filename, parent, file_name
+public :: mkdir, copyfile, expanduser, home, suffix, &
+filesep_windows, filesep_unix, &
+directory_exists, assert_directory_exists, assert_file_exists, &
+make_absolute, is_absolute, get_filename, parent, file_name, stem
 
 interface  ! pathlib_{unix,windows}.f90
 module subroutine copyfile(source, dest)
@@ -33,14 +33,22 @@ end interface
 
 contains
 
-pure function get_suffix(filename)
+pure function suffix(filename)
 !! extracts path suffix, including the final "." dot
 character(*), intent(in) :: filename
-character(:), allocatable :: get_suffix
+character(:), allocatable :: suffix
 
-get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
+integer :: i
 
-end function get_suffix
+i = index(filename, '.', back=.true.)
+
+if (i > 1) then
+  suffix = trim(filename(i:))
+else
+  suffix = ''
+end if
+
+end function suffix
 
 
 pure function parent(instr)
@@ -53,51 +61,71 @@ integer :: i
 
 work = filesep_unix(instr)
 
-i = scan(work, "/", back=.true.)
-parent = work(1:i-1)
+i = index(work, "/", back=.true.)
+if (i > 0) then
+  parent = work(:i-1)
+else
+  parent = "."
+end if
 
 end function parent
 
 
-pure function file_name(instr, filesep)
+pure function file_name(instr)
 
 character(*), intent(in) :: instr
-character(1), intent(in), optional :: filesep
 character(:), allocatable :: file_name
 
-character(1) :: sep
-integer :: i
+character(len(instr)) :: work
 
-sep = '/'
-if(present(filesep)) sep = filesep
+work = filesep_unix(instr)
 
-i = scan(instr, sep, back=.true.)
-file_name = instr(i+1:len(instr))
+file_name = trim(work(index(work, "/", back=.true.) + 1:))
 
 end function file_name
 
 
-function get_filename(path, stem) result(fn)
+pure function stem(instr)
+
+character(*), intent(in) :: instr
+character(:), allocatable :: stem
+
+character(len(instr)) :: work
+integer :: i
+
+work = file_name(instr)
+
+i = index(work, '.', back=.true.)
+if (i > 0) then
+  stem = work(:i - 1)
+else
+  stem = work
+endif
+
+end function stem
+
+
+function get_filename(path, fstem) result(fn)
 !! given a path and stem, find the full filename
 !! assumes:
 !! 1. "stem" is the file name we wish to find (without suffix or directories)
 !! 2. a file exists with suffix (else error)
 character(*), intent(in) :: path
-character(*), intent(in), optional :: stem
+character(*), intent(in), optional :: fstem
 
 character(:), allocatable :: fn, path1
 integer :: i, L
 logical :: exists
-character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat']
+character(*), parameter :: suff(3) = [character(4) :: '.h5', '.nc', '.dat']
 
 fn = trim(path)  !< first to avoid undefined return
 
 if(len(fn) == 0) return
 
-if(present(stem)) then
-  if(index(fn, stem, back=.true.) == 0) then
+if(present(fstem)) then
+  if(index(fn, fstem, back=.true.) == 0) then
     !> assume we wish to append stem to path
-    fn = fn // '/' // stem
+    fn = fn // '/' // fstem
   elseif(index(fn, '.', back=.true.) > 4) then
     !> it's a stem-matching full path with a suffix
     inquire(file=fn, exist=exists)
@@ -111,15 +139,15 @@ if(exists) return
 
 path1 = fn
 
-do i = 1, size(suffix)
-  fn = path1 // trim(suffix(i))
+do i = 1, size(suff)
+  fn = path1 // trim(suff(i))
   inquire(file=fn, exist=exists)
   if (exists) return
 enddo
 
 fn = ''
-if(present(stem)) then
-  write(stderr,*) 'ERROR:pathlib:get_filename: ',stem,' not found in ', path
+if(present(fstem)) then
+  write(stderr,*) 'ERROR:pathlib:get_filename: ',fstem,' not found in ', path
 else
   write(stderr,*) 'ERROR:pathlib:get_filename: file not found: ',path
 endif

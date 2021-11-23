@@ -105,14 +105,12 @@ class(params), intent(in) :: P
 
 character(3), parameter :: var(*) = [character(3) :: "Qp", "E0p"]
 
-character(:),allocatable :: new_file, ref_file, suffix
+character(:),allocatable :: new_file, ref_file
 type(hdf5_file) :: href, hnew
 integer :: i, lx2, lx3, ymd(3)
 real(wp) :: UTsec, t
 
 real, allocatable :: new(:,:), ref(:,:)
-
-suffix = get_suffix(cfg%indatsize)
 
 call check_simsize2(new_path // "/" // cfg%precdir, ref_path // "/" // cfg%precdir, lx2, lx3)
 
@@ -123,8 +121,8 @@ UTsec = cfg%UTsec0
 
 do while (t <= cfg%tdur)
 
-  new_file = date_filename(new_path // "/" // cfg%precdir, ymd, UTsec) // suffix
-  ref_file = date_filename(ref_path // "/" // cfg%precdir, ymd, UTsec) // suffix
+  new_file = date_filename(new_path // "/" // cfg%precdir, ymd, UTsec) // suffix(cfg%indatsize)
+  ref_file = date_filename(ref_path // "/" // cfg%precdir, ymd, UTsec) // suffix(cfg%indatsize)
 
   call hnew%open(new_file, action='r')
   call href%open(ref_file, action='r')
@@ -173,14 +171,12 @@ class(params), intent(in) :: P
 
 character(8), parameter :: var(*) = [character(8) :: "Exit", "Eyit", "Vminx1it", "Vmaxx1it"]
 
-character(:),allocatable :: new_file, ref_file, suffix
+character(:),allocatable :: new_file, ref_file
 type(hdf5_file) :: href, hnew
 integer :: i, lx2, lx3, ymd(3)
 real(wp) :: UTsec, t
 
 real, allocatable :: new(:,:), ref(:,:)
-
-suffix = get_suffix(cfg%indatsize)
 
 call check_simsize2(new_path // "/" // cfg%E0dir, ref_path // "/" // cfg%E0dir, lx2, lx3)
 
@@ -191,8 +187,8 @@ UTsec = cfg%UTsec0
 
 do while (t <= cfg%tdur)
 
-  new_file = date_filename(new_path // "/" // cfg%E0dir, ymd, UTsec) // suffix
-  ref_file = date_filename(ref_path // "/" // cfg%E0dir, ymd, UTsec) // suffix
+  new_file = date_filename(new_path // "/" // cfg%E0dir, ymd, UTsec) // suffix(cfg%indatsize)
+  ref_file = date_filename(ref_path // "/" // cfg%E0dir, ymd, UTsec) // suffix(cfg%indatsize)
 
   call hnew%open(new_file, action='r')
   call href%open(ref_file, action='r')

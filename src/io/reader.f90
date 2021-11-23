@@ -4,7 +4,7 @@ module reader
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use phys_consts, only: wp, debug
-use pathlib, only : get_suffix, get_filename
+use pathlib, only : suffix, get_filename
 
 implicit none (type, external)
 private
@@ -162,7 +162,7 @@ character(:), allocatable :: fn
 fn = get_filename(path, 'simsize')
 if (len_trim(fn) == 0) error stop "reader:simsize2 No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_simsize2_hdf5(fn, llon, llat)
 case ('.nc')
@@ -185,7 +185,7 @@ character(:), allocatable :: fn
 fn = get_filename(path, 'simsize')
 if (len_trim(fn) == 0) error stop "reader:simsize3 No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_simsize3_hdf5(fn, lx1, lx2all, lx3all)
 case ('.nc')
@@ -208,7 +208,7 @@ character(:), allocatable :: fn
 fn = get_filename(path, 'simgrid')
 if (len_trim(fn) == 0) error stop "reader:grid2 No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_grid2_hdf5(fn, mlonp, mlatp)
 case ('.nc')
@@ -234,7 +234,7 @@ character(:), allocatable :: fn
 fn = get_filename(path)
 if (len_trim(fn) == 0) error stop "reader:Efield No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_Efield_hdf5(fn, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 case ('.nc')
@@ -268,7 +268,7 @@ if (len_trim(fn) == 0) then
 endif
 if (len_trim(fn) == 0) error stop "reader:precip No file found on " // path1
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_precip_hdf5(fn, Qp, E0p)
 case ('.nc')
@@ -305,7 +305,7 @@ character(:), allocatable :: fn
 fn = get_filename(path)
 if (len_trim(fn) == 0) error stop "reader:neutral2 No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_neutral2_hdf5(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 case ('.nc')
@@ -313,7 +313,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral2_raw(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 case default
-  error stop 'reader:get_neutral2: unknown file suffix' // get_suffix(fn)
+  error stop 'reader:get_neutral2: unknown file suffix' // suffix(fn)
 end select
 end subroutine get_neutral2
 
@@ -328,7 +328,7 @@ character(:), allocatable :: fn
 fn = get_filename(path)
 if (len_trim(fn) == 0) error stop "reader:neutral3 No file found on " // path
 
-select case (get_suffix(fn))
+select case (suffix(fn))
 case ('.h5')
   call get_neutral3_hdf5(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 case ('.nc')
@@ -336,7 +336,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral3_raw(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 case default
-  error stop 'reader:get_neutral3: unknown file suffix' // get_suffix(fn)
+  error stop 'reader:get_neutral3: unknown file suffix' // suffix(fn)
 end select
 end subroutine get_neutral3
 
