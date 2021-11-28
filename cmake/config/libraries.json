@@ -59,7 +59,7 @@
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",
   "tag": "v5.4.1.8",
-  "upstream_version": "5.4.1"
+  "upstream_version": "5.3.5"
 },
 "scalapack": {
   "git": "https://github.com/scivision/scalapack.git",

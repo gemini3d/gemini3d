@@ -14,6 +14,10 @@ if(WIN32)
     HINTS ${MSYS_INSTALL_PATH}
     PATH_SUFFIXES bin usr/bin
     )
+    if(NOT PATCH)
+      message(STATUS "Please install GNU Patch from MSYS2 Terminal:
+        pacman -S patch")
+    endif()
   endif()
 
   if(NOT PATCH)
@@ -27,10 +31,16 @@ endif()
 function(patch_file in_file patch_file out_file)
 
 if(PATCH)
+
   execute_process(COMMAND ${PATCH} ${in_file} --input=${patch_file} --output=${out_file}
   TIMEOUT 15
-  COMMAND_ERROR_IS_FATAL ANY
+  RESULT_VARIABLE ret
   )
+
+  if(ret)
+    message(FATAL_ERROR "Failed to apply patch ${patch_file} to ${in_file} with ${PATCH}")
+  endif()
+
 elseif(WSL)
   execute_process(COMMAND ${WSL} wslpath ${in_file}
   TIMEOUT 5
