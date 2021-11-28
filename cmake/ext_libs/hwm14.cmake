@@ -18,7 +18,7 @@ else()
 endif()
 
 set(hwm14_cmake_args
--DCMAKE_INSTALL_PREFIX:PATH=${HWM14_ROOT}
+--install-prefix=${HWM14_ROOT}
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false

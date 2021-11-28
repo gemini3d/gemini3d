@@ -23,11 +23,11 @@ else()
 endif()
 
 set(zlib_cmake_args
+--install-prefix=${ZLIB_ROOT}
 -DZLIB_COMPAT:BOOL=on
 -DZLIB_ENABLE_TESTS:BOOL=off
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
--DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
 )
 
 ExternalProject_Add(ZLIB

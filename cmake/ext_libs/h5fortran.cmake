@@ -36,8 +36,8 @@ if(hdf5)
   endif()
 
   set(h5fortran_cmake_args
+  --install-prefix=${h5fortran_ROOT}
   -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-  -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT}
   -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DCMAKE_BUILD_TYPE=Release
   -DBUILD_TESTING:BOOL=false
@@ -70,4 +70,6 @@ else(hdf5)
 
   add_library(h5fortran::h5fortran INTERFACE IMPORTED)
   target_link_libraries(h5fortran::h5fortran INTERFACE h5fortran)
+
+  install(TARGETS h5fortran EXPORT ${PROJECT_NAME}-targets)
 endif(hdf5)
