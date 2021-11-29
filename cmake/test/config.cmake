@@ -28,8 +28,6 @@ endif()
 add_test(NAME gemini:hdf5:${name}:dryrun
 COMMAND ${test_cmd} -dryrun
 )
-# we prefer default WorkingDirectory of PROJECT_BINARY_DIR to make MSIS 2.x msis2*.parm use simpler
-# otherwise, we have to generate source for msis_interface.f90
 
 set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
 TIMEOUT 60

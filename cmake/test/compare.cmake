@@ -56,7 +56,7 @@ endfunction(python_compare)
 function(fortran_compare outdir refdir name)
 
 add_test(NAME gemini:compare:hdf5:${name}
-COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
+COMMAND gemini3d.compare ${outdir} ${refdir})
 
 set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
