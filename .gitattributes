@@ -1,1 +1,14 @@
-text eol=lf
+.gitattributes text eol=lf
+*.txt text eol=lf
+*.cmake text eol=lf
+*.in text eol=lf
+*.h text eol=lf
+*.patch text eol=lf
+*.f90 text eol=lf
+*.f text eol=lf
+*.c text eol=lf
+*.cpp text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.cff text eol=lf
