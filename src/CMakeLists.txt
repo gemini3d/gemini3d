@@ -124,13 +124,16 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 
 
 # --- Gemini_c.bin
-# This is an example of a C/C++ main program, instead of or in addition to the main Fortran gemini.bin
-# this could be used as a starting point for C/C++ programs that use the GEMINI3D API
+# This is an example of a C++ main program, instead of or in addition to the main Fortran gemini.bin
+# this could be used as a starting point for C++ programs that use the GEMINI3D API
 
-add_executable(gemini_c.bin gemini_main.c)
+include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/iniparser.cmake)
+# for gemini_c C++ front end
+
+add_executable(gemini_c.bin gemini_main.cpp pathlib.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-LINKER_LANGUAGE C
+#LINKER_LANGUAGE CXX
 RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
 )
@@ -147,8 +150,10 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
+iniparser
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
+target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
 # NOTE: gemini_c.bin does not yet have unit testing, as we are deciding whether to make it a separate example
 # or even in a separate project. See https://github.com/gemini3d/libgemini

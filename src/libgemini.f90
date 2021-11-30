@@ -14,7 +14,7 @@
 
 module gemini3d
 ! top-level module for Gemini3D
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use gemini_init, only : find_config, check_input_files
@@ -43,10 +43,13 @@ use timeutils, only: dateinc, find_lastdate
 implicit none (type, external)
 
 type, bind(C) :: c_params
-logical(c_bool) :: fortran_cli
-logical(c_bool) :: debug
-logical(c_bool) :: dryrun
+!! this MUST match gemini3d.h and gemini_main.f90 exactly including order
+logical(c_bool) :: fortran_cli, debug, dryrun
 character(kind=c_char) :: out_dir(1000)
+!! .ini [base]
+integer(c_int) :: ymd(3)
+real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
+!! .ini
 end type c_params
 
 contains

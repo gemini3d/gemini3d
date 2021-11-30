@@ -1,4 +1,6 @@
-set(_names glow hwm14 msis2
+set(_names
+iniparser
+glow hwm14 msis2
 hwloc openmpi
 lapack mumps scalapack
 matgemini

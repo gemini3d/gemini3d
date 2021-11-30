@@ -15,7 +15,7 @@ endif()
 # --- main Gemini3D build
 
 project(gemini3d
-LANGUAGES C Fortran
+LANGUAGES C CXX Fortran
 # Gemini3D is Fortran, but external libraries use C, and some find_package need C.
 DESCRIPTION "3-D ionospheric model"
 HOMEPAGE_URL https://github.com/gemini3d/gemini
@@ -57,7 +57,6 @@ if(glow)
 endif(glow)
 
 include(cmake/compilers/flags.cmake)
-# flags.cmake comes last to avoid intermittent failures
 
 # unit test DLL paths
 include(cmake/test/lib_path.cmake)

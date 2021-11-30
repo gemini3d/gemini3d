@@ -1,4 +1,8 @@
 {
+  "iniparser": {
+    "git": "https://github.com/ndevilla/iniparser.git",
+    "tag": "0a38e85c9cde1e099ca3bf70083bd00f89c3e5b6"
+  },
 
 "hwloc": {
   "url": "https://download.open-mpi.org/release/hwloc/v2.6/hwloc-2.6.0.tar.gz",
