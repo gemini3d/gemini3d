@@ -122,10 +122,16 @@ LABELS unit
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
+install(TARGETS gemini3d gemini.bin
+EXPORT ${PROJECT_NAME}-targets
+)
+
 
 # --- Gemini_c.bin
 # This is an example of a C++ main program, instead of or in addition to the main Fortran gemini.bin
 # this could be used as a starting point for C++ programs that use the GEMINI3D API
+
+if(cpp_frontend)
 
 include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/iniparser.cmake)
 # for gemini_c C++ front end
@@ -158,9 +164,9 @@ target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 # NOTE: gemini_c.bin does not yet have unit testing, as we are deciding whether to make it a separate example
 # or even in a separate project. See https://github.com/gemini3d/libgemini
 
-install(TARGETS
-gemini3d
-gemini.bin gemini_c.bin
+install(TARGETS gemini_c.bin
 EXPORT ${PROJECT_NAME}-targets
 )
 install(FILES gemini3d.h TYPE INCLUDE)
+
+endif(cpp_frontend)
