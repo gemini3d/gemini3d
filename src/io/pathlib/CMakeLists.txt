@@ -11,8 +11,8 @@ if(BUILD_TESTING)
   add_executable(test_pathlib test_pathlib.f90)
   target_link_libraries(test_pathlib PRIVATE pathlib)
 
-  add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
-  set_tests_properties(unit:pathlib PROPERTIES
+  add_test(NAME pathlib COMMAND test_pathlib)
+  set_tests_properties(pathlib PROPERTIES
   LABELS unit
   TIMEOUT 10
   )

@@ -6,7 +6,7 @@ contains
 
 
 module procedure is_absolute
-
+!! is path absolute
 character :: f
 
 character(:), allocatable  :: buf
@@ -26,9 +26,10 @@ end procedure is_absolute
 
 
 module procedure copyfile
-
-integer :: i,j
+!! copy file from source to destination
+!!
 !! https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/copy
+integer :: i,j
 character(*), parameter :: CMD='copy /y '
 
 character(:), allocatable  :: s,d

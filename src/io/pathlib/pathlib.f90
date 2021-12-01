@@ -51,15 +51,15 @@ end if
 end function suffix
 
 
-pure function parent(instr)
-
-character(*), intent(in) :: instr
+pure function parent(path)
+!! returns parent directory of path
+character(*), intent(in) :: path
 character(:), allocatable :: parent
 
-character(len(instr)) :: work
+character(len_trim(path)) :: work
 integer :: i
 
-work = filesep_unix(instr)
+work = filesep_unix(path)
 
 i = index(work, "/", back=.true.)
 if (i > 0) then
@@ -71,29 +71,29 @@ end if
 end function parent
 
 
-pure function file_name(instr)
-
-character(*), intent(in) :: instr
+pure function file_name(path)
+!! returns file name without path
+character(*), intent(in) :: path
 character(:), allocatable :: file_name
 
-character(len(instr)) :: work
+character(len_trim(path)) :: work
 
-work = filesep_unix(instr)
+work = filesep_unix(path)
 
 file_name = trim(work(index(work, "/", back=.true.) + 1:))
 
 end function file_name
 
 
-pure function stem(instr)
+pure function stem(path)
 
-character(*), intent(in) :: instr
+character(*), intent(in) :: path
 character(:), allocatable :: stem
 
-character(len(instr)) :: work
+character(len_trim(path)) :: work
 integer :: i
 
-work = file_name(instr)
+work = file_name(path)
 
 i = index(work, '.', back=.true.)
 if (i > 0) then
@@ -202,7 +202,7 @@ pure function filesep_windows(path) result(swapped)
 !! '/' => '\' for Windows systems
 
 character(*), intent(in) :: path
-character(len(path)) :: swapped
+character(len_trim(path)) :: swapped
 integer :: i
 
 swapped = path
@@ -219,7 +219,7 @@ pure function filesep_unix(path) result(swapped)
 !! '\' => '/'
 
 character(*), intent(in) :: path
-character(len(path)) :: swapped
+character(len_trim(path)) :: swapped
 integer :: i
 
 swapped = path
@@ -235,8 +235,8 @@ end function filesep_unix
 function expanduser(in) result (out)
 !! resolve home directory as Fortran does not understand tilde
 !! works for Linux, Mac, Windows, etc.
-character(:), allocatable :: out, homedir
 character(*), intent(in) :: in
+character(:), allocatable :: out, homedir
 
 out = filesep_unix(in)
 
@@ -265,7 +265,10 @@ end function expanduser
 
 
 function home()
+!! returns home directory, or empty string if not found
+!!
 !! https://en.wikipedia.org/wiki/Home_directory#Default_home_directory_per_operating_system
+
 character(:), allocatable :: home
 character(256) :: buf
 integer :: L, istat

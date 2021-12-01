@@ -6,7 +6,7 @@ contains
 
 
 module procedure is_absolute
-
+!! is path absolute
 character(:), allocatable  :: buf
 
 is_absolute = .false.
@@ -19,9 +19,10 @@ end procedure is_absolute
 
 
 module procedure copyfile
-
-integer :: i, j
+!! copy file from src to dst
+!!
 !! https://linux.die.net/man/1/cp
+integer :: i, j
 character(*), parameter ::  CMD='cp -rf '
 
 character(:), allocatable  :: s,d
