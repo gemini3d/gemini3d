@@ -22,7 +22,7 @@ TIMEOUT 180
 # construct command
 set(test_cmd gemini3d.run ${out_dir} -exe $<TARGET_FILE:gemini.bin>)
 if(mpi)
-  list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE}>)
+  list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
 endif()
 
 add_test(NAME gemini:hdf5:${name}:dryrun
