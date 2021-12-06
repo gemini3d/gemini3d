@@ -53,29 +53,6 @@ endif()
 
 set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
 
-function(check_tls)
-# some CMake may not have SSL/TLS enabled, or may have missing/broken system certificates.
-# this is a publicly-usable service (as per their TOS)
-
-set(url https://www.howsmyssl.com/a/check)
-set(temp ${CMAKE_CURRENT_LIST_DIR}/test_ssl.json)
-
-file(DOWNLOAD ${url} ${temp} INACTIVITY_TIMEOUT 5)
-file(READ ${temp} json)
-
-if(CMAKE_VERSION VERSION_LESS 3.19)
-  string(REGEX MATCH "(\"rating\":\"Probably Okay\")" rating ${json})
-else()
-  string(JSON rating ERROR_VARIABLE e GET ${json} rating)
-endif()
-
-message(STATUS "TLS status: ${rating}")
-if(NOT rating)
-  message(WARNING "TLS seems to be broken on your system. Download will probably fail.  ${rating}")
-endif()
-
-endfunction(check_tls)
-
 
 function(checkup exe)
 
@@ -87,8 +64,6 @@ endif()
 
 endfunction(checkup)
 
-
-check_tls()
 
 if(APPLE)
 
