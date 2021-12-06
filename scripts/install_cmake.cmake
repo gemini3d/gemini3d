@@ -67,31 +67,21 @@ endfunction(checkup)
 
 if(APPLE)
 
-find_program(brew
-  NAMES brew
-  PATHS /usr/local /opt/homebrew
-  PATH_SUFFIXES bin)
+if(version VERSION_LESS 3.19)
+  set(stem cmake-${version}-Darwin-x86_64)
+else()
+  set(stem cmake-${version}-macos-universal)
+endif()
 
-if(brew)
-  execute_process(COMMAND ${brew} install cmake)
-else(brew)
-  message(STATUS "please use Homebrew https://brew.sh to install cmake:
-    brew install cmake
-  or use Python:
-    pip install cmake")
-endif(brew)
+set(name ${stem}.tar.gz)
 
-return()
-
-endif(APPLE)
-
-
-if(UNIX)
+elseif(UNIX)
 
 execute_process(COMMAND uname -m
-  OUTPUT_VARIABLE arch
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  TIMEOUT 5)
+OUTPUT_VARIABLE arch
+OUTPUT_STRIP_TRAILING_WHITESPACE
+TIMEOUT 5
+)
 
 if(arch STREQUAL x86_64)
   if(version VERSION_LESS 3.20)
@@ -132,6 +122,7 @@ endif()
 set(name ${stem}.zip)
 
 endif()
+
 
 if(NOT stem)
   message(FATAL_ERROR "unknown CPU arch ${arch}.  Try building CMake from source:
