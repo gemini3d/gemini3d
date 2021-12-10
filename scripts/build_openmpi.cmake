@@ -4,9 +4,8 @@ if(WIN32)
   message(FATAL_ERROR "OpenMPI does not work on Windows. Use MS-MPI or Intel MPI instead.")
 endif()
 
-if(NOT version)
-  set(version 4.1.1)
-endif()
+file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
+string(JSON openmpi_version GET ${_j} openmpi)
 
 if(NOT prefix)
   set(prefix "~")
@@ -19,9 +18,9 @@ endif()
 
 set(CMAKE_TLS_VERIFY true)
 
-string(SUBSTRING ${version} 0 3 subver)
+string(SUBSTRING ${openmpi_version} 0 3 subver)
 
-set(stem openmpi-${version})
+set(stem openmpi-${openmpi_version})
 set(archive ${prefix}/${stem}.tar.bz2)
 
 set(url https://download.open-mpi.org/release/open-mpi/v${subver}/${stem}.tar.bz2)

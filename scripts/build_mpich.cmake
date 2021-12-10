@@ -4,9 +4,8 @@ if(WIN32)
   message(FATAL_ERROR "MPICH does not work on Windows. Use MS-MPI or Intel MPI instead.")
 endif()
 
-if(NOT version)
-  set(version 3.4.2)
-endif()
+file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
+string(JSON mpich_version GET ${_j} mpich)
 
 if(NOT prefix)
   set(prefix "~")
@@ -19,10 +18,10 @@ endif()
 
 set(CMAKE_TLS_VERIFY true)
 
-set(stem mpich-${version})
+set(stem mpich-${mpich_version})
 set(archive ${prefix}/${stem}.tar.gz)
 
-set(url http://www.mpich.org/static/downloads/${version}/${stem}.tar.gz)
+set(url http://www.mpich.org/static/downloads/${mpich_version}/${stem}.tar.gz)
 
 set(install_dir ${prefix}/${stem})
 set(src_dir ${install_dir}/${stem})
@@ -53,6 +52,7 @@ endif()
 if(FC MATCHES gfortran)
   execute_process(COMMAND ${FC} -dumpversion
   OUTPUT_VARIABLE FC_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
   COMMAND_ERROR_IS_FATAL ANY
   TIMEOUT 5
   )

@@ -23,8 +23,8 @@ if(NOT prefix)
 endif()
 
 if(version VERSION_LESS 2.8.12.2)
-  file(STRINGS ${CMAKE_CURRENT_LIST_DIR}/CMAKE_VERSION version
-    REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
+  file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
+  string(JSON version GET ${_j} cmake)
 endif()
 
 set(host https://github.com/Kitware/CMake/releases/download/v${version}/)

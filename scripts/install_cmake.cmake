@@ -29,7 +29,7 @@ endif()
 string(LENGTH ${version} L)
 if (L LESS 5)  # 3.x or 3.xx
   if(version MATCHES "^3.22")
-    set(version "3.22.0")
+    set(version "3.22.1")
   elseif(version MATCHES "^3.21")
     set(version "3.21.4")
   elseif(version MATCHES "^3.20")
