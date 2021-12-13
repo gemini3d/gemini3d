@@ -40,7 +40,7 @@ Teinf = 1500.0                ! Teinf:  exospheric electron temperature
 ! Flags controlling various aspects of solve and output behavior
 &flags
 potsolve = 1                  ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
-flagperiodic = 0              ! whether to consider the x3 dimension periodic:  0 - no; 1 - yes
+flagperiodic = 0              ! whether to consider the x3 dimension periodic:  0 - no; nonzero - yes; 1 - yes and force periodicity in glat/glon across x3 (good for instability simulations needed a uniform background neutral atmosphere and SZA)
 flagoutput = 1                ! what information to put in output files:  1 - all state variables; 2 - averaged plasma parameters; 3 - electron density only
 /
 

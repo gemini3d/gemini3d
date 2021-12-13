@@ -11,7 +11,6 @@ contains
 !   must also set those.
 module procedure read_grid_cart
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-  real(wp), dimension(1:lx1,1:lx2) :: refalt,refglat,refglon
 
   call x%set_center(glonctr,glatctr)
 
@@ -49,11 +48,7 @@ module procedure read_grid_cart
   end if
 
   !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
-  if (flagperiodic==1) then
-    refalt=x%alt(:,:,1); refglon=x%glon(:,:,1); refglat=x%glat(:,:,1);
-    call gather_ref_meridian(refalt,refglon,refglat)
-    call x%set_periodic(flagperiodic,refalt,refglon,refglat)
-  end if
+  call enforce_gridmpi_periodic(flagperiodic,x)
 
   !> Set flags for module scope vars.
   gridflag=x%gridflag
@@ -105,11 +100,7 @@ module procedure read_grid_dipole
   end if
 
   !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
-  if (flagperiodic==1) then
-    refalt(:,:)=x%alt(:,:,1); refglon(:,:)=x%glon(:,:,1); refglat(:,:)=x%glat(:,:,1);
-    call gather_ref_meridian(refalt,refglon,refglat)
-    call x%set_periodic(flagperiodic,refalt,refglon,refglat)
-  end if
+  call enforce_gridmpi_periodic(flagperiodic,x)
 
   !> Set flags for module scope vars.
   gridflag=x%gridflag
@@ -123,6 +114,27 @@ module procedure read_grid_dipole
 end procedure read_grid_dipole
 
 !--------------------------------------------------------------------------------------------------
+! submodule specific procedures
+
+
+!> Assign periodic or not based on user input -- this needs to be done "outside" object methods
+subroutine enforce_gridmpi_periodic(flagperiodic,x)
+  integer, intent(in) :: flagperiodic
+  class(curvmesh), intent(inout) :: x
+  real(wp), dimension(1:lx1,1:lx2) :: refalt,refglat,refglon
+
+  refalt=0.0; refglon=0.0; refglat=0.0     ! these not used unless flagperiodic==1, which then will overwrite
+  if (flagperiodic/=0) then
+    select case (flagperiodic)
+      case(1)
+        refalt=x%alt(:,:,1); refglon=x%glon(:,:,1); refglat=x%glat(:,:,1);
+        call gather_ref_meridian(refalt,refglon,refglat)
+        call x%set_periodic(flagperiodic,refalt,refglon,refglat)
+      case default
+        call x%set_periodic(flagperiodic,refalt,refglon,refglat)       
+    end select
+  end if
+end subroutine enforce_gridmpi_periodic
 
 
 !> grab reference meridian data from first column of workers, input ref varables should be prepoluated

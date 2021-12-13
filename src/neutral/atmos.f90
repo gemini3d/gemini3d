@@ -36,15 +36,9 @@ module procedure neutral_atmos
   do ix3=1,lx3
     do ix2=1,lx2
       do ix1=1,lx1
-        !if (flagperiodic) then     ! an issues here is that periodicity is enforced per worker!!!
-        !  glonnow=glon(ix1,ix2,1)
-        !  glatnow=glat(ix1,ix2,1)
-        !  altnow=alt(ix1,ix2,1)/1000
-        !else
-          glonnow=glon(ix1,ix2,ix3)
-          glatnow=glat(ix1,ix2,ix3)
-          altnow= alt(ix1,ix2,ix3)/1000
-        !end if
+        glonnow=glon(ix1,ix2,ix3)
+        glatnow=glat(ix1,ix2,ix3)
+        altnow= alt(ix1,ix2,ix3)/1000
 
         if (altnow < 0.0) then
           altnow = 1.0     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations

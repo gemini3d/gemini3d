@@ -20,7 +20,7 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 
 interface !< atmos.f90
-  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn,msis_version,flagperiodic)
+  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn,msis_version)
     integer, intent(in) :: ymd(3), msis_version
     real(wp), intent(in) :: UTsecd
     real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
@@ -29,7 +29,6 @@ interface !< atmos.f90
     !! intent(out)
     real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: Tn
     !! intent(out)
-    logical, intent(in) :: flagperiodic
   end subroutine neutral_atmos
 end interface
 
@@ -108,7 +107,7 @@ contains
 
     !! call msis to get an initial neutral background atmosphere
     if (mpi_cfg%myid == 0) call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version,x%flagper)
+    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
     if (mpi_cfg%myid == 0) then
       call cpu_time(tfin)
       print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart

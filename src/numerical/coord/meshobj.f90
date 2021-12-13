@@ -312,18 +312,26 @@ contains
     integer :: ix3
 
     ! flag appropriately
-    if (flagperiodic==1) then
+    if (flagperiodic/=0) then
       self%flagper=.true.
     else
       self%flagper=.false.
     end if
 
+    ! In the special case where the user wants flagperiodic==1, we take the additional step of forcing
+    !   glat/glon to be the same across the x3 dimension so that the neutral atmosphere and photoionization
+    !   will be constant vs. x3.  This is most typically used in instability simulations when one wants to
+    !   explicitly remove any dependence of background parameters on the x3 direction.  One would not want to use
+    !   this when simply trying to model an angular coordinate (e.g. longitude) across the full globe as the 
+    !   atmospheric and SZA changes are needed to realistically capture the system.  
     ! force periodicity in geographic locations using reference meridian data
-    do ix3=1,self%lx3
-      self%glat(:,:,ix3)=refglat(:,:)
-      self%glon(:,:,ix3)=refglon(:,:)
-      self%alt(:,:,ix3)=refalt(:,:)
-    end do
+    if (flagperiodic==1) then
+      do ix3=1,self%lx3
+        self%glat(:,:,ix3)=refglat(:,:)
+        self%glon(:,:,ix3)=refglon(:,:)
+        self%alt(:,:,ix3)=refalt(:,:)
+      end do
+    end if
   end subroutine set_periodic
 
 
