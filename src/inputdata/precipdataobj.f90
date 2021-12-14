@@ -210,6 +210,42 @@ contains
 
 
   !> have root read in next input frame data and distribute to parallel workers
+!  subroutine load_data_precip(self,t,dtmodel,ymdtmp,UTsectmp)
+!    class(precipdata), intent(inout) :: self
+!    real(wp), intent(in) :: t,dtmodel
+!    integer, dimension(3), intent(inout) :: ymdtmp
+!    real(wp), intent(inout) :: UTsectmp
+!    integer :: iid,ierr
+!
+!    !! all workers should update the date
+!    ymdtmp = self%ymdref(:,2)
+!    UTsectmp = self%UTsecref(2)
+!    call dateinc(self%dt, ymdtmp, UTsectmp)
+!
+!    !! this read must be done repeatedly through simulation so have only root do file io
+!    if (mpi_cfg%myid==0) then
+!      !print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
+!      print*, '  date and time:  ',ymdtmp,UTsectmp
+!      print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+!      ! read in the data for the "next" frame from file
+!      call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
+!
+!      print*, ' precip data succesfully input...'
+!  
+!      ! send a full copy of the data to all of the workers
+!      do iid=1,mpi_cfg%lid-1
+!        call mpi_send(self%Qp,self%llon*self%llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%E0p,self%llon*self%llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
+!      end do
+!    else
+!      ! workers receive data from root
+!      call mpi_recv(self%Qp,self%llon*self%llat,mpi_realprec,0,tag%Qp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%E0p,self%llon*self%llat,mpi_realprec,0,tag%E0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!    end if
+!  end subroutine load_data_precip
+
+
+  !> have all processes read in data from file to avoid any message passing
   subroutine load_data_precip(self,t,dtmodel,ymdtmp,UTsectmp)
     class(precipdata), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
@@ -223,25 +259,12 @@ contains
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
     !! this read must be done repeatedly through simulation so have only root do file io
-    if (mpi_cfg%myid==0) then
-      !print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
-      print*, '  date and time:  ',ymdtmp,UTsectmp
-      print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
-      ! read in the data for the "next" frame from file
-      call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
+    print*, '  date and time:  ',ymdtmp,UTsectmp
+    print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+    ! read in the data for the "next" frame from file
+    call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
 
-      print*, ' precip data succesfully input...'
-  
-      ! send a full copy of the data to all of the workers
-      do iid=1,mpi_cfg%lid-1
-        call mpi_send(self%Qp,self%llon*self%llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%E0p,self%llon*self%llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
-      end do
-    else
-      ! workers receive data from root
-      call mpi_recv(self%Qp,self%llon*self%llat,mpi_realprec,0,tag%Qp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%E0p,self%llon*self%llat,mpi_realprec,0,tag%E0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    end if
+    print*, ' precip data succesfully input...'
   end subroutine load_data_precip
 
 
