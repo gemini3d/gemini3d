@@ -206,6 +206,78 @@ contains
 
 
   !> Load 2D neutral data from file.  Should work regardless of whether axisymmetric or cartesian input used.
+!  subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
+!    class(neutraldata2D), intent(inout) :: self
+!    real(wp), intent(in) :: t,dtmodel
+!    integer, dimension(3), intent(inout) :: ymdtmp
+!    real(wp), intent(inout) :: UTsectmp
+!    integer :: iid,ierr
+!    integer :: lhorzn,lzn                        !number of horizontal grid points
+!    real(wp), dimension(:,:,:), allocatable :: paramall
+!    type(hdf5_file) :: hf
+!    character(:), allocatable :: fn
+!
+!    ! sizes for convenience
+!    lhorzn=self%lhorzn; lzn=self%lzn;
+!
+!    ymdtmp = self%ymdref(:,2)
+!    UTsectmp = self%UTsecref(2)
+!    call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
+!
+!    if (mpi_cfg%myid==0) then    !root
+!      call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
+!        self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
+!
+!      if (debug) then
+!        print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
+!        print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
+!        print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
+!        print *, 'Min/max values for dvnhorz:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
+!        print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
+!        print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
+!      endif
+!
+!      if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
+!      if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
+!      if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
+!      if (.not. all(ieee_is_finite(self%dvnhorz))) error stop 'dvnhorz: non-finite value(s)'
+!      if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
+!      if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
+!
+!      !send a full copy of the data to all of the workers
+!      do iid=1,mpi_cfg%lid-1
+!        call mpi_send(self%dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%dTn,lhorzn*lzn,mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%dvnhorz,lhorzn*lzn,mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
+!        call mpi_send(self%dvnz,lhorzn*lzn,mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
+!      end do
+!    else     !workers
+!      !receive a full copy of the data from root
+!      call mpi_recv(self%dnO,lhorzn*lzn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%dnN2,lhorzn*lzn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%dnO2,lhorzn*lzn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%dTn,lhorzn*lzn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%dvnhorz,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!      call mpi_recv(self%dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!    end if
+!
+!    ! print some diagnostics for the input data
+!    if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+!      print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
+!      print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
+!      print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
+!      print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
+!      print *, 'Min/max values for dvnrho:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
+!      print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
+!      print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
+!      !print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
+!    end if
+!  end subroutine load_data_neu2D
+
+
+  !> Have all workers separately load data out of file to avoid message passing
   subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
     class(neutraldata2D), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
@@ -224,47 +296,27 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
 
-    if (mpi_cfg%myid==0) then    !root
-      call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
-        self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
+    call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
+      self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
 
-      if (debug) then
-        print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
-        print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
-        print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
-        print *, 'Min/max values for dvnhorz:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
-        print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
-        print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
-      endif
+    if (debug) then
+      print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
+      print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
+      print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
+      print *, 'Min/max values for dvnhorz:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
+      print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
+      print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
+    endif
 
-      if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
-      if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
-      if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
-      if (.not. all(ieee_is_finite(self%dvnhorz))) error stop 'dvnhorz: non-finite value(s)'
-      if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
-      if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
-
-      !send a full copy of the data to all of the workers
-      do iid=1,mpi_cfg%lid-1
-        call mpi_send(self%dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%dTn,lhorzn*lzn,mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%dvnhorz,lhorzn*lzn,mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%dvnz,lhorzn*lzn,mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
-      end do
-    else     !workers
-      !receive a full copy of the data from root
-      call mpi_recv(self%dnO,lhorzn*lzn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%dnN2,lhorzn*lzn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%dnO2,lhorzn*lzn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%dTn,lhorzn*lzn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%dvnhorz,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    end if
+    if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
+    if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
+    if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
+    if (.not. all(ieee_is_finite(self%dvnhorz))) error stop 'dvnhorz: non-finite value(s)'
+    if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
+    if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
 
     ! print some diagnostics for the input data
-    if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+    if (debug) then
       print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
       print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
       print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
