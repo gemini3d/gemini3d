@@ -64,7 +64,6 @@ end procedure read_grid_cart
 
 module procedure read_grid_dipole
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-  real(wp), dimension(1:lx1,1:lx2) :: refalt,refglat,refglon
 
   !> Create the grid object
   call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
