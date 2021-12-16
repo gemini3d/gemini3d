@@ -16,7 +16,9 @@ module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 
-use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
+!use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
+use advec_mpi, only: halo_interface_vels_allspec,interface_vels_allspec,set_global_boundaries_allspec, &
+                     sweep3_allspec,sweep1_allspec,sweep2_allspec
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
@@ -24,7 +26,7 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
-use mpimod, only: mpi_cfg, tag=>gemini_mpi
+use mpimod, only: mpi_cfg, tag=>gemini_mpi, halo
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
@@ -79,9 +81,12 @@ real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta!,chrgflux
 real(wp), dimension(0:size(ns,1)-3,0:size(ns,2)-3,0:size(ns,3)-3) :: divvs
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
+!real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
+!real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
+!real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
+real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
 
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
@@ -130,30 +135,49 @@ end do
 call cpu_time(tstart)
 chrgflux = 0
 
-do isp=1,lsp
-  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communication pattern (all-to-neighbors)
-
-  if(isp<lsp) then   !electron info found from charge neutrality and current density
-    param=ns(:,:,:,isp)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%ns)   !second to last argument is tensor rank of thing being advected
-    ns(:,:,:,isp)=param
-
-    param=rhovs1(:,:,:,isp)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tag%vs1)
-    rhovs1(:,:,:,isp)=param
-
-    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
-    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
-  else
-    ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
-  end if
-
-  param=rhoes(:,:,:,isp)
-  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
-  rhoes(:,:,:,isp)=param
-end do
+!do isp=1,lsp
+!  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communication pattern (all-to-neighbors)
+!
+!  if(isp<lsp) then   !electron info found from charge neutrality and current density
+!    param=ns(:,:,:,isp)
+!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%ns)   !second to last argument is tensor rank of thing being advected
+!    ns(:,:,:,isp)=param
+!
+!    param=rhovs1(:,:,:,isp)
+!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tag%vs1)
+!    rhovs1(:,:,:,isp)=param
+!
+!    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
+!    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
+!  else
+!    ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
+!!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+!    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+!  end if
+!
+!  param=rhoes(:,:,:,isp)
+!  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
+!  rhoes(:,:,:,isp)=param
+!end do
+call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
+call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
+call halo(ns,2,tag%ns,x%flagper)
+call halo(rhovs1,2,tag%vs1,x%flagper)
+call halo(rhoes,2,tag%Ts,x%flagper)
+call sweep3_allspec(ns,vs3i,dt,x,0,6)
+call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
+call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
+call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank
+call sweep1_allspec(rhovs1,vs1i,dt,x,6)
+call sweep1_allspec(rhoes,vs1i,dt,x,7)
+call halo(ns,2,tag%ns,x%flagper)
+call halo(rhovs1,2,tag%vs1,x%flagper)
+call halo(rhoes,2,tag%Ts,x%flagper)
+call sweep2_allspec(ns,vs2i,dt,x,0,6)
+call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
+call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+call rhov12v1(ns,rhovs1,vs1)
 
 call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
@@ -401,6 +425,25 @@ call clean_param(x,1,ns)
 !should the electron velocity be recomputed here now that densities have changed...
 
 end subroutine fluid_adv
+
+
+!> Compute electron density and velocity given ion momenta
+subroutine rhov12v1(ns,rhovs1,vs1)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhovs1,vs1
+  integer :: isp,lsp
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
+
+  lsp=size(ns,4)
+
+  chrgflux=0.0
+  do isp=1,lsp-1
+    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
+    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
+  end do
+  ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
+!!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+  vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+end subroutine rhov12v1
 
 
 subroutine clean_param(x,paramflag,param)
