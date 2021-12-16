@@ -179,6 +179,7 @@ end interface bcast_recv1D_3
 
 interface halo
   module procedure halo_23
+  module procedure halo_allspec_23
 end interface halo
 interface bcast_send3D_x3i
   module procedure bcast_send3D_x3i_23
@@ -420,7 +421,12 @@ interface ! mpihalo.f90
     integer, intent(in) :: tag
     logical, intent(in) :: isperiodic
   end subroutine halo_23
-
+  module subroutine halo_allspec_23(param,lhalo,tag,isperiodic)
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
+    integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
+    integer, intent(in) :: tag
+    logical, intent(in) :: isperiodic
+  end subroutine halo_allspec_23
   module subroutine halo_end_23(param,paramend,paramtop,paramcorner,tag)
     real(wp), dimension(:,:,:), intent(inout) :: param
     real(wp), dimension(:,:), intent(inout) :: paramend
