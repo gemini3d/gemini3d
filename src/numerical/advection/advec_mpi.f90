@@ -418,6 +418,21 @@ subroutine set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i)
 end subroutine set_global_boundaries
 
 
+!> set global boundaries for all species
+subroutine set_global_boundaries_allspec(isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
+  logical, intent(in) :: isperiodic
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+  real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,1:size(vs1,4)), intent(in) :: vs1i
+  integer, intent(in) :: lsp
+  integer :: isp
+
+  if (lsp>size(vs1,4)) error stop 'number of global boundaries must be less than or equal to total species number'
+  do isp=1,lsp
+    call set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i(:,:,:,isp))
+  end do
+end subroutine set_global_boundaries_allspec
+
+
 !> 3D advection subroutine
 function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank,tagf)
 !------------------------------------------------------------
