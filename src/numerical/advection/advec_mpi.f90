@@ -8,7 +8,8 @@ use mpimod, only: mpi_cfg, halo, tag=>gemini_mpi
 
 implicit none (type, external)
 private
-public :: advec3d_mc_mpi, advec_prep_mpi
+public :: advec3d_mc_mpi, advec_prep_mpi, halo_interface_vels_allspec,interface_vels_allspec,set_global_boundaries_allspec, &
+          sweep3_allspec,sweep1_allspec,sweep2_allspec
 
 !> OVERLOAD ADVECTION TO DEAL WITH THE CURVILINEAR GRID/MESH STRUCTURE.
 !> NOTE THAT THE LOWER-LEVEL CALLS ARE DISTINCT, NOT-OVERLOADED PROCEDURES.
@@ -525,7 +526,7 @@ subroutine sweep3_allspec(fs,vs3i,dt,x,frank,lsp)
 
   if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
   do isp=1,lsp
-    call sweep2(fs(:,:,:,isp),vs3i(:,:,:,isp),dt,x,frank)
+    call sweep3(fs(:,:,:,isp),vs3i(:,:,:,isp),dt,x,frank)
   end do
 end subroutine sweep3_allspec
 
