@@ -202,10 +202,50 @@ subroutine advec_prep_mpi_23(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,
 end subroutine advec_prep_mpi_23
 
 
-!> do haloing and averaging to compute cell interface velocities
-subroutine interface_vels(isp,isperiodic,vs1,vs2,vs3,v1i,v2i,v3i)
+!> Perform haloing needed to ghost-fill so cell interface vels (single species) can be computed across the grid
+subroutine halo_interface_vels(isp,isperiodic,vs2,vs3,v2i,v3i)
   integer, intent(in) :: isp
   logical, intent(in) :: isperiodic
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
+  real(wp), dimension(1:size(vs2,1)-4,1:size(vs2,2)-3,1:size(vs2,3)-4), intent(inout) :: v2i
+  !! intent(out)
+  real(wp), dimension(1:size(vs3,1)-4,1:size(vs3,2)-4,1:size(vs3,3)-3), intent(inout) :: v3i
+  real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param
+
+  !> NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
+  param=vs2(:,:,:,isp)
+  call halo(param,1,tag%vs2BC,isperiodic)
+  !! we only need one ghost cell to compute interface velocities
+  vs2(:,:,:,isp)=param
+
+  !> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
+  param=vs3(:,:,:,isp)
+  call halo(param,1,tag%vs3BC,isperiodic)
+  !! we only need one ghost cell to compute interface velocities
+  vs3(:,:,:,isp)=param
+end subroutine halo_interface_vels
+
+
+!> Repeat haloing operations for all species.  
+subroutine halo_interface_vels_allspec(isperiodic,vs2,vs3,vs2i,vs3i,lsp)
+  logical, intent(in) :: isperiodic
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
+  real(wp), dimension(1:size(vs2,1)-4,1:size(vs2,2)-3,1:size(vs2,3)-4,1:size(vs2,4)), intent(inout) :: vs2i
+  real(wp), dimension(1:size(vs3,1)-4,1:size(vs3,2)-4,1:size(vs3,3)-3,1:size(vs3,4)), intent(inout) :: vs3i
+  integer, intent(in) :: lsp
+  integer :: isp
+
+  if (lsp>size(vs2,4)) error stop 'number of haloed species must be less than or equal to total species number'
+  do isp=1,lsp
+    call halo_interface_vels(isp,isperiodic,vs2,vs3,vs2i(:,:,:,isp),vs3i(:,:,:,isp))
+  end do
+end subroutine halo_interface_vels_allspec
+
+
+!> do averaging to compute cell interface velocities; required pre-haloing in order for cells
+!    to have updated boundary info from ghost cells.  Single species only, "isp"  
+subroutine interface_vels(isp,vs1,vs2,vs3,v1i,v2i,v3i)
+  integer, intent(in) :: isp
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
   real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(inout) :: v1i
   !! intent(out)
@@ -213,7 +253,6 @@ subroutine interface_vels(isp,isperiodic,vs1,vs2,vs3,v1i,v2i,v3i)
   !! intent(out)
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(inout) :: v3i
   integer :: lx1,lx2,lx3
-  real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param
 
   lx1=size(vs1,1)-4
   lx2=size(vs1,2)-4
@@ -247,26 +286,31 @@ subroutine interface_vels(isp,isperiodic,vs1,vs2,vs3,v1i,v2i,v3i)
   !      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:)      !cleans up large current situations
   !    end if
 
-  !> NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
-  param=vs2(:,:,:,isp)
-  call halo(param,1,tag%vs2BC,isperiodic)
-  !! we only need one ghost cell to compute interface velocities
-  vs2(:,:,:,isp)=param
-
-  !> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
-  param=vs3(:,:,:,isp)
-  call halo(param,1,tag%vs3BC,isperiodic)
-  !! we only need one ghost cell to compute interface velocities
-  vs3(:,:,:,isp)=param
-
   !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
   v2i(:,1:lx2+1,:)=0.5_wp*(vs2(1:lx1,0:lx2,1:lx3,isp)+vs2(1:lx1,1:lx2+1,1:lx3,isp))
   v3i(:,:,1:lx3+1)=0.5_wp*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 end subroutine interface_vels
 
 
+subroutine interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
+  real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,1:size(vs1,4)), intent(inout) :: vs1i
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,1:size(vs2,4)), intent(inout) :: vs2i
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,1:size(vs3,4)), intent(inout) :: vs3i
+  integer, intent(in) :: lsp
+  integer :: isp
+
+  if (lsp>size(vs1,4)) error stop 'number of interface vels must be less than or equal to total species number'
+  do isp=1,lsp
+    call interface_vels(isp,vs1,vs2,vs3,vs1i(:,:,:,isp),vs2i(:,:,:,isp),vs3i(:,:,:,isp))
+  end do
+end subroutine interface_vels_allspec
+
+
 !> set values in global boundary ghost cells based on extrapolation, can be done by each worker
-!    without input from the root process
+!    without input from the root process; does not require mpi.  This does require the inteferface
+!    velocities from the x1 direction so in sense it must be preceded by an mpi call of some sort.
+!    This function works for a single species "isp"
 subroutine set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i)
   integer, intent(in) :: isp
   logical, intent(in) :: isperiodic
@@ -438,13 +482,14 @@ end subroutine sweep1_allspec
 
 
 !> 2-dimensionally split transport for all species
-subroutine sweep2_allspec(fs,vs2i,dt,x,frank)
+subroutine sweep2_allspec(fs,vs2i,dt,x,frank,lsp)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: fs    !fs includes ghost cells and all species
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i           ! includes all species velocities
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: frank
-  integer :: isp,lsp
+  integer, intent(in) :: lsp
+  integer :: isp
 
   if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
   do isp=1,lsp
@@ -454,13 +499,14 @@ end subroutine sweep2_allspec
 
 
 !> 3-dimensionally split transport for all species
-subroutine sweep3_allspec(fs,vs3i,dt,x,frank)
+subroutine sweep3_allspec(fs,vs3i,dt,x,frank,lsp)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: fs    !fs includes ghost cells and all species
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i           ! includes all species velocities
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: frank
-  integer :: isp,lsp
+  integer, intent(in) :: lsp
+  integer :: isp
 
   if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
   do isp=1,lsp
