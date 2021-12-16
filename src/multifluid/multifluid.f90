@@ -129,6 +129,7 @@ end do
 !ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
 chrgflux = 0
+
 do isp=1,lsp
   call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communication pattern (all-to-neighbors)
 
@@ -154,8 +155,8 @@ do isp=1,lsp
   rhoes(:,:,:,isp)=param
 end do
 
+call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
-  call cpu_time(tfin)
   print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
