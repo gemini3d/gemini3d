@@ -42,6 +42,9 @@ integer, parameter :: lprec=2
 real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
 real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
+real(wp), parameter :: xicon = 3
+!! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
+
 contains
 
 subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first)
@@ -79,8 +82,7 @@ real(wp) :: f107,f107a
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta!,chrgflux
-real(wp), dimension(0:size(ns,1)-3,0:size(ns,2)-3,0:size(ns,3)-3) :: divvs
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,lambda,beta!,chrgflux
 !real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
 !real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
 !real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
@@ -95,13 +97,7 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
 real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
 integer :: iprec
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate
-!! temp interface velocities for art. viscosity
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate
-!! interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon = 3
-!! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 
 !> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE.  FIXME: should only be done if first=.true. right???
@@ -133,32 +129,6 @@ end do
 
 !ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
-chrgflux = 0
-
-!do isp=1,lsp
-!  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communication pattern (all-to-neighbors)
-!
-!  if(isp<lsp) then   !electron info found from charge neutrality and current density
-!    param=ns(:,:,:,isp)
-!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%ns)   !second to last argument is tensor rank of thing being advected
-!    ns(:,:,:,isp)=param
-!
-!    param=rhovs1(:,:,:,isp)
-!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tag%vs1)
-!    rhovs1(:,:,:,isp)=param
-!
-!    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
-!    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
-!  else
-!    ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-!!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-!    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
-!  end if
-!
-!  param=rhoes(:,:,:,isp)
-!  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
-!  rhoes(:,:,:,isp)=param
-!end do
 call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
 call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
 call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
@@ -178,7 +148,6 @@ call sweep2_allspec(ns,vs2i,dt,x,0,6)
 call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
 call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
 call rhov12v1(ns,rhovs1,vs1)
-
 call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
@@ -191,47 +160,16 @@ call clean_param(x,1,ns)
 call clean_param(x,2,vs1)
 
 
-!ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
-! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
-do isp=1,lsp-1
-  v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
-  dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
-  Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
-end do
-Q(:,:,:,lsp) = 0
-
-
-!NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
+! Compute artifical viscosity and then execute compression calculation
 call cpu_time(tstart)
-do isp=1,lsp
-  call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
-
-  divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
-                vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
-                vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  !! diff with one set of ghost cells to preserve second order accuracy over the grid
-  paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-
-  rhoeshalf = paramtrim - dt/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
-  !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
-
-  paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
-  rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-
-  Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
-end do
-
-!> NaN check - FIXME: superfluous???
-!if (any(ieee_is_nan(Ts))) error stop 'multifluid:fluid_adv: NaN detected in Ts after div3D()'
-
+call VNRicht_artvisc(ns,vs1,Q)
+call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
+call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
+call clean_param(x,3,Ts)
+call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
-  call cpu_time(tfin)
   print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
-
-!CLEAN TEMPERATURE
-call clean_param(x,3,Ts)
 
 
 !DIFFUSION OF ENERGY
@@ -427,7 +365,7 @@ call clean_param(x,1,ns)
 end subroutine fluid_adv
 
 
-!> Compute electron density and velocity given ion momenta
+!> Compute electron density and velocity given ion momenta, compute ion velocities as well
 subroutine rhov12v1(ns,rhovs1,vs1)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhovs1,vs1
   integer :: isp,lsp
@@ -446,6 +384,72 @@ subroutine rhov12v1(ns,rhovs1,vs1)
 end subroutine rhov12v1
 
 
+!> Compute artifical viscosity
+subroutine VNRicht_artvisc(ns,vs1,Q)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)), intent(inout) :: Q
+  real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate
+!! temp interface velocities for art. viscosity
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate
+!! interface diffs. for art. visc.
+  integer :: isp,lsp
+
+  lsp=size(ns,4)
+  !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
+  ! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
+  do isp=1,lsp-1
+    v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
+    dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
+    Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
+  end do
+  Q(:,:,:,lsp) = 0
+end subroutine VNRicht_artvisc
+
+
+!> halo all species velocities in order to be ready for compression substep
+subroutine RK2_prep_mpi_allspec(vs1,vs2,vs3,isperiodic)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
+  logical, intent(in) :: isperiodic
+  integer isp,lsp
+
+  lsp=size(vs1,4)
+  do isp=1,lsp
+    call RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
+  end do
+end subroutine
+
+
+!> Adiabatic compression term, including (precomputed) artifical viscosity
+subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs1,vs2,vs3,Q
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes,Ts,ns
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
+  real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
+  integer :: isp,lsp
+
+  lsp=size(vs1,4)
+  do isp=1,lsp
+    divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
+                  vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
+                  vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    !! diff with one set of ghost cells to preserve second order accuracy over the grid
+    paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
+  
+    rhoeshalf = paramtrim - dt/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
+    !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
+  
+    paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
+    rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
+  
+    Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+    Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+  end do
+end subroutine compression
+
+
+!> Deal with cells outside computation domain
 subroutine clean_param(x,paramflag,param)
 
 !------------------------------------------------------------
