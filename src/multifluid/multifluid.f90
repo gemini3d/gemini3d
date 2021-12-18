@@ -38,7 +38,6 @@ public :: fluid_adv
 
 integer, parameter :: lprec=2
 !! number of precipitating electron populations
-
 real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
 real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
@@ -49,9 +48,7 @@ contains
 
 subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first)
 !! J1 needed for heat conduction; E1 for momentum equation
-
 !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
-
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
 real(wp), dimension(:,:,:), intent(in) :: J1
@@ -82,10 +79,7 @@ real(wp) :: f107,f107a
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,lambda,beta!,chrgflux
-!real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
-!real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
-!real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim!,chrgflux
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
@@ -114,20 +108,17 @@ if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
   iverG(:,:,:)=0
 end if
 
-
 ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
 f107=cfg%activ(2)
 f107a=cfg%activ(1)
 
-
-!CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
+! Prior to advection substep convert velocity and temperature to momentum and enegy density
 do isp=1,lsp
   rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
 
-
-!ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
+! advection substep for all species
 call cpu_time(tstart)
 call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
 call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
@@ -138,7 +129,7 @@ call halo(rhoes,2,tag%Ts,x%flagper)
 call sweep3_allspec(ns,vs3i,dt,x,0,6)
 call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
 call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
-call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank
+call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
 call sweep1_allspec(rhovs1,vs1i,dt,x,6)
 call sweep1_allspec(rhoes,vs1i,dt,x,7)
 call halo(ns,2,tag%ns,x%flagper)
@@ -153,53 +144,33 @@ if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
-
-!CLEAN DENSITY AND VELOCITY - SETS THE NULL CELLS TO SOME SENSIBLE VALUE SO
-!THEY DON'T MESS UP FINITE DIFFERENCES LATER
+! post advection filling of null cells
 call clean_param(x,1,ns)
 call clean_param(x,2,vs1)
-
 
 ! Compute artifical viscosity and then execute compression calculation
 call cpu_time(tstart)
 call VNRicht_artvisc(ns,vs1,Q)
 call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
+call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)   ! this applies compression substep and then converts back to temperature
 call clean_param(x,3,Ts)
 call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
-
-!DIFFUSION OF ENERGY
+! Energy diffusion (thermal conduction) substep
 call cpu_time(tstart)
-do isp=1,lsp
-  param=Ts(:,:,:,isp)     !temperature for this species
-  call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
-
-  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,cfg%Teinf)
-  select case (cfg%diffsolvetype)
-    case (1)
-      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
-    case (2)
-      param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
-    case default
-      print*, 'Unsupported diffusion solver type/mode:  ',cfg%diffsolvetype,'.  Should be either 1 or 2.'
-      error stop
-  end select
-
-  Ts(:,:,:,isp) = param
-  Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
-end do
-
+call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
+call cpu_time(tfin)
 if (mpi_cfg%myid==0 .and. debug) then
-  call cpu_time(tfin)
   print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
-!ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
+! post diffusion cleaning of temperature variables
 call clean_param(x,3,Ts)
+
+! convert to specific internal energy density for sources substeps
 do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
@@ -419,7 +390,8 @@ subroutine RK2_prep_mpi_allspec(vs1,vs2,vs3,isperiodic)
 end subroutine
 
 
-!> Adiabatic compression term, including (precomputed) artifical viscosity
+!> Adiabatic compression term, including (precomputed) artifical viscosity.  All velocities must be haloed a single
+!    point prior to calling this procedure.  
 subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -445,143 +417,177 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
   
     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+    !! convert internal specific energy density back into temperature
   end do
 end subroutine compression
 
 
-!> Deal with cells outside computation domain
+!> Execute energy diffusion substep, no mpi required
+subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: Ts
+  real(wp), dimension(:,:,:), intent(in) :: J1
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: Tn
+  integer, intent(in) :: flagdiffsolve
+  real(wp), intent(in) :: Teinf
+  real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
+  integer :: isp,lsp
+
+  lsp=size(Ts,4)
+  do isp=1,lsp
+    param=Ts(:,:,:,isp)     !temperature for this species
+    call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+  
+    call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+    select case (flagdiffsolve)
+      case (1)
+        param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+      case (2)
+        param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+      case default
+        print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
+        error stop
+    end select
+  
+    Ts(:,:,:,isp) = param
+    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
+  end do
+end subroutine energy_diffusion
+
+
+!> Deal with cells outside computation domain; i.e. apply fill values.  
 subroutine clean_param(x,paramflag,param)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
-!-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
-!------------------------------------------------------------
-
-class(curvmesh), intent(in) :: x
-integer, intent(in) :: paramflag
-real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
-
-real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
-integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
-
-select case (paramflag)
-  case (1)    !density
-    param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)
-    param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)       !enforce charge neutrality based on ion densities
-
-    do isp=1,lsp             !set null cells to some value
-      if (isp==1) then
+  !------------------------------------------------------------
+  !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
+  !-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
+  !------------------------------------------------------------
+  class(curvmesh), intent(in) :: x
+  integer, intent(in) :: paramflag
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
+  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
+  integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
+  
+  select case (paramflag)
+    case (1)    !density
+      param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)
+      param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)       !enforce charge neutrality based on ion densities
+  
+      do isp=1,lsp             !set null cells to some value
+        if (isp==1) then
+          do iinull=1,x%lnull
+            ix1=x%inull(iinull,1)
+            ix2=x%inull(iinull,2)
+            ix3=x%inull(iinull,3)
+  
+            param(ix1,ix2,ix3,isp)=mindensnull*1e-2_wp
+          end do
+        else
+          do iinull=1,x%lnull
+            ix1=x%inull(iinull,1)
+            ix2=x%inull(iinull,2)
+            ix3=x%inull(iinull,3)
+  
+            param(ix1,ix2,ix3,isp)=mindensnull
+          end do
+        end if
+      end do
+  
+  
+      !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
+      param(-1:0,:,:,:)=mindensdiv
+      param(lx1+1:lx1+2,:,:,:)=mindensdiv
+      param(:,-1:0,:,:)=mindensdiv
+      param(:,lx2+1:lx2+2,:,:)=mindensdiv
+      param(:,:,-1:0,:)=mindensdiv
+      param(:,:,lx3+1:lx3+2,:)=mindensdiv
+    case (2)    !velocity
+      do isp=1,lsp       !set null cells to zero mometnum
         do iinull=1,x%lnull
           ix1=x%inull(iinull,1)
           ix2=x%inull(iinull,2)
           ix3=x%inull(iinull,3)
-
-          param(ix1,ix2,ix3,isp)=mindensnull*1e-2_wp
+  
+          param(ix1,ix2,ix3,isp) = 0
         end do
-      else
-        do iinull=1,x%lnull
-          ix1=x%inull(iinull,1)
-          ix2=x%inull(iinull,2)
-          ix3=x%inull(iinull,3)
-
-          param(ix1,ix2,ix3,isp)=mindensnull
+      end do
+  
+      !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
+      if (x%gridflag==0) then      ! closed dipole
+        do isp=1,lsp
+          do ix3=1,lx3
+            do ix2=1,lx2
+              ix1beg=1
+              do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+                ix1beg=ix1beg+1
+              end do
+  
+              ix1end=ix1beg
+              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the first non-null index for this field line
+                ix1end=ix1end+1
+              end do
+  
+              if (ix1beg /= lx1) then    !only do this if we actually have null grid points
+                param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
+              end if
+              if (ix1end /= lx1) then
+                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+              end if
+            end do
+          end do
+        end do
+      elseif (x%gridflag==1) then     ! open dipole grid, inverted
+        do isp=1,lsp
+          do ix3=1,lx3
+            do ix2=1,lx2
+              ix1end=1
+              do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
+                ix1end=ix1end+1
+              end do
+  
+              if (ix1end /= lx1) then
+                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+              end if
+            end do
+          end do
         end do
       end if
-    end do
-
-
-    !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
-    param(-1:0,:,:,:)=mindensdiv
-    param(lx1+1:lx1+2,:,:,:)=mindensdiv
-    param(:,-1:0,:,:)=mindensdiv
-    param(:,lx2+1:lx2+2,:,:)=mindensdiv
-    param(:,:,-1:0,:)=mindensdiv
-    param(:,:,lx3+1:lx3+2,:)=mindensdiv
-  case (2)    !velocity
-    do isp=1,lsp       !set null cells to zero mometnum
-      do iinull=1,x%lnull
-        ix1=x%inull(iinull,1)
-        ix2=x%inull(iinull,2)
-        ix3=x%inull(iinull,3)
-
-        param(ix1,ix2,ix3,isp) = 0
-      end do
-    end do
-
-    !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
-    if (x%gridflag==0) then      ! closed dipole
-      do isp=1,lsp
-        do ix3=1,lx3
-          do ix2=1,lx2
-            ix1beg=1
-            do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
-              ix1beg=ix1beg+1
-            end do
-
-            ix1end=ix1beg
-            do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the first non-null index for this field line
-              ix1end=ix1end+1
-            end do
-
-            if (ix1beg /= lx1) then    !only do this if we actually have null grid points
-              param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
-            end if
-            if (ix1end /= lx1) then
-              param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
-            end if
-          end do
+  
+  !MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...  Okay so the deal here is that the ghost cell velocity values are used to compute artificial viscosity in fluid_adv, so one cannot clear them out without ruining the solution.  AFAIK no other params have this issue...
+      !ZERO OUT THE GHOST CELL VELOCITIES
+  !    param(-1:0,:,:,:)= 0
+  !    param(lx1+1:lx1+2,:,:,:)= 0
+  !    param(:,-1:0,:,:)= 0
+  !    param(:,lx2+1:lx2+2,:,:)= 0
+  !    param(:,:,-1:0,:)= 0
+  !    param(:,:,lx3+1:lx3+2,:)= 0
+    case (3)    !temperature
+      param=max(param,100._wp)     !temperature floor
+  
+      do isp=1,lsp       !set null cells to some value
+        do iinull=1,x%lnull
+          ix1=x%inull(iinull,1)
+          ix2=x%inull(iinull,2)
+          ix3=x%inull(iinull,3)
+  
+          param(ix1,ix2,ix3,isp) = 100
         end do
       end do
-    elseif (x%gridflag==1) then     ! open dipole grid, inverted
-      do isp=1,lsp
-        do ix3=1,lx3
-          do ix2=1,lx2
-            ix1end=1
-            do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
-              ix1end=ix1end+1
-            end do
-
-            if (ix1end /= lx1) then
-              param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
-            end if
-          end do
-        end do
-      end do
-    end if
-
-!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...  Okay so the deal here is that the ghost cell velocity values are used to compute artificial viscosity in fluid_adv, so one cannot clear them out without ruining the solution.  AFAIK no other params have this issue...
-    !ZERO OUT THE GHOST CELL VELOCITIES
-!    param(-1:0,:,:,:)= 0
-!    param(lx1+1:lx1+2,:,:,:)= 0
-!    param(:,-1:0,:,:)= 0
-!    param(:,lx2+1:lx2+2,:,:)= 0
-!    param(:,:,-1:0,:)= 0
-!    param(:,:,lx3+1:lx3+2,:)= 0
-  case (3)    !temperature
-    param=max(param,100._wp)     !temperature floor
-
-    do isp=1,lsp       !set null cells to some value
-      do iinull=1,x%lnull
-        ix1=x%inull(iinull,1)
-        ix2=x%inull(iinull,2)
-        ix3=x%inull(iinull,3)
-
-        param(ix1,ix2,ix3,isp) = 100
-      end do
-    end do
-
-    !> SET TEMPS TO SOME NOMINAL VALUE in the ghost cells
-    param(-1:0,:,:,:) = 100
-    param(lx1+1:lx1+2,:,:,:) = 100
-    param(:,-1:0,:,:) = 100
-    param(:,lx2+1:lx2+2,:,:) = 100
-    param(:,:,-1:0,:) = 100
-    param(:,:,lx3+1:lx3+2,:) = 100
-  case default
-    !! throw an error as the code is likely not going to behave in a predictable way in this situation...
-    error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
-end select
-
+  
+      !> SET TEMPS TO SOME NOMINAL VALUE in the ghost cells
+      param(-1:0,:,:,:) = 100
+      param(lx1+1:lx1+2,:,:,:) = 100
+      param(:,-1:0,:,:) = 100
+      param(:,lx2+1:lx2+2,:,:) = 100
+      param(:,:,-1:0,:) = 100
+      param(:,:,lx3+1:lx3+2,:) = 100
+    case default
+      !! throw an error as the code is likely not going to behave in a predictable way in this situation...
+      error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
+  end select
 end subroutine clean_param
 
 end module multifluid
