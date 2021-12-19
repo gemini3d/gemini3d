@@ -189,44 +189,23 @@ Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each
 Qeprecip=0.0
 Prpreciptmp=0.0
 Qepreciptmp=0.0
-call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
-
-!> now add in photoionization sources
-call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
-
-!> collisional interactions
-call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-
-!> source loss numerical solution(s)
-call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns) 
+call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
+call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)     ! solar ionization source
+call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
+call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
 if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
-!CLEAN TEMPERATURE
+! Temperature cleaned after sources
 call clean_param(x,3,Ts)
 
 
 !ALL VELOCITY SOURCES
 call cpu_time(tstart)
 call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-do isp=1,lsp-1
-  paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
-  paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
-  rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-
-  vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
-end do
-
-!ELECTRON VELOCITY SOLUTION
-! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
-chrgflux = 0
-do isp=1,lsp-1
-  chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
-end do
-!  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
 
 !CLEAN VELOCITY
 call clean_param(x,2,vs1)
@@ -519,6 +498,37 @@ subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
   end do
 end subroutine energy_source_loss
+
+
+!>  Momentum source/loss processes
+subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: Pr
+  real(wp), dimension(:,:,:,:), intent(in) :: Lo
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1,vs1
+  real(wp), dimension(1:size(rhovs1,1)-4,1:size(rhovs1,2)-4,1:size(rhovs1,3)-4) :: paramtrim
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
+  integer :: isp,lsp
+
+  lsp=size(rhovs1,4)
+  do isp=1,lsp-1
+    paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
+    paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
+    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
+  end do
+  
+  !ELECTRON VELOCITY SOLUTION
+  ! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
+  chrgflux = 0.0
+  do isp=1,lsp-1
+    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
+  end do
+  !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+  vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+end subroutine momentum_source_loss
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.  
