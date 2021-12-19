@@ -87,7 +87,6 @@ real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) 
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip,Qepreciptmp
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
 real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
 integer :: iprec
@@ -184,42 +183,21 @@ else
   call precipBCs(t,x,cfg,W0,PhiWmWm2)
 end if
 
-
-!STIFF/BALANCED ENERGY SOURCES
+! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
 call cpu_time(tstart)
-Prprecip=0.0
+Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
 Qeprecip=0.0
 Prpreciptmp=0.0
 Qepreciptmp=0.0
 call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
 
 !> now add in photoionization sources
-chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
-if (mpi_cfg%myid==0 .and. debug) then
-  print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
-    minval(chi)*180/pi, maxval(chi)*180/pi
-end if
+call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
 
-Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
-
-if (mpi_cfg%myid==0 .and. debug) then
-  print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
-    minval(Prpreciptmp), maxval(Prpreciptmp)
-end if
-
-Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
-!! enforce minimum production rate to preserve conditioning for species that rely on constant production
-!! testing should probably be done to see what the best choice is...
-
-Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
-!! thermal electron heating rate from Swartz and Nisbet, (1978)
-
-!> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
-Prprecip = Prprecip + Prpreciptmp
-Qeprecip = Qeprecip + Qepreciptmp
-
+!> collisional interactions
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 
+!> source loss numerical solution(s)
 do isp=1,lsp
   if (isp==lsp) then
     Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
@@ -446,27 +424,27 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
   if (gridflag/=0) then
     if (cfg%flagglow==0) then
-      !! RUN FANG APPROXIMATION
+      !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
         Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang)
         !! calculation based on Fang et al [2008]
         Prprecip=Prprecip+Prpreciptmp
       end do
-      Prprecip = max(Prprecip, 1e-5_wp)
-      Qeprecip = eheating(nn,Tn,Prprecip,ns)
+      Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
+      Qeprecip = eheating(nn,Tn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
     else
-      !! GLOW USED, AURORA PRODUCED
+      !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
         if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
         PrprecipG=0; QeprecipG=0; iverG=0;
         call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
-                            QeprecipG, iverG, PrprecipG)
+                            QeprecipG, iverG, PrprecipG)    ! bit messy but this will internally iterate over populations
         PrprecipG=max(PrprecipG, 1e-5_wp)
       end if
-      Prprecip=PrprecipG
+      Prprecip=PrprecipG    ! glow returns rates from all populations so this becomes a straight assignments instead of accumlation
       Qeprecip=QeprecipG
-      iver=iverG
+      iver=iverG            ! store integrated VER computed by GLOW
     end if
   else
     !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
@@ -484,6 +462,49 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       minval(iver(:,:,2)), maxval(iver(:,:,2))
   end if
 end subroutine impact_ionization
+
+
+!> Ionization from solar radiation, *accumulates* rates
+subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
+  real(wp), intent(in) :: t
+  class(curvmesh), intent(in) :: x
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  real(wp), intent(in) :: f107a,f107
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip  
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: Tn
+  real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3),1:size(Prprecip,4)) :: Prpreciptmp
+  real(wp), dimension(1:size(Qeprecip,1),1:size(Qeprecip,2),1:size(Qeprecip,3)) :: Qepreciptmp
+  real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3)) :: chi
+
+  ! solar zenith angle
+  chi=sza(ymd(1),ymd(2),ymd(3),UTsec,x%glat,x%glon)
+  if (mpi_cfg%myid==0 .and. debug) then
+    print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
+      minval(chi)*180/pi, maxval(chi)*180/pi
+  end if
+  
+  ! solar fluxes and resulting ionization rates
+  Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
+  if (mpi_cfg%myid==0 .and. debug) then
+    print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
+      minval(Prpreciptmp), maxval(Prpreciptmp)
+  end if
+  
+  Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
+  !! enforce minimum production rate to preserve conditioning for species that rely on constant production
+  !! testing should probably be done to see what the best choice is...
+  
+  Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
+  !! thermal electron heating rate from Swartz and Nisbet, (1978)
+  
+  !> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
+  Prprecip = Prprecip + Prpreciptmp
+  Qeprecip = Qeprecip + Qepreciptmp
+end subroutine solar_ionization
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.  
