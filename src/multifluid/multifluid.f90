@@ -170,13 +170,13 @@ end if
 ! post diffusion cleaning of temperature variables
 call clean_param(x,3,Ts)
 
+! FIXME: need to clean up back and forth between state parameters
 ! convert to specific internal energy density for sources substeps
 do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
 
-
-!> LOAD ELECTRON PRECIPITATION PATTERN
+!> Establish top boundary conditions for electron precipitation
 if (cfg%flagprecfile==1) then
   call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 else
@@ -187,50 +187,11 @@ end if
 
 !STIFF/BALANCED ENERGY SOURCES
 call cpu_time(tstart)
-Prprecip=0
-Qeprecip=0
-Prpreciptmp=0
-Qepreciptmp=0
-if (gridflag/=0) then
-  if (cfg%flagglow==0) then
-    !! RUN FANG APPROXIMATION
-    do iprec=1,lprec
-      !! loop over the different populations of precipitation (2 here?), accumulating production rates
-      Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang)
-      !! calculation based on Fang et al [2008]
-      Prprecip=Prprecip+Prpreciptmp
-    end do
-    Prprecip = max(Prprecip, 1e-5_wp)
-    Qeprecip = eheating(nn,Tn,Prprecip,ns)
-  else
-    !! GLOW USED, AURORA PRODUCED
-    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
-      if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
-      PrprecipG=0; QeprecipG=0; iverG=0;
-      call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
-                          QeprecipG, iverG, PrprecipG)
-      PrprecipG=max(PrprecipG, 1e-5_wp)
-    end if
-    Prprecip=PrprecipG
-    Qeprecip=QeprecipG
-    iver=iverG
-  end if
-else
-  !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
-  if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
-  end if
-end if
-
-if (mpi_cfg%myid==0) then
-  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
-    minval(Prprecip), maxval(Prprecip)
-end if
-
-if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
-  if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
-    minval(iver(:,:,2)), maxval(iver(:,:,2))
-end if
+Prprecip=0.0
+Qeprecip=0.0
+Prpreciptmp=0.0
+Qepreciptmp=0.0
+call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
 
 !> now add in photoionization sources
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
@@ -457,6 +418,72 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
     Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
   end do
 end subroutine energy_diffusion
+
+
+!> *Accumulates* ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
+!    rates from impact ionization these arrays will need to be initialized to zero before calling this
+!    procedure.  
+subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), intent(in) :: t,dt
+  class(curvmesh), intent(in) :: x
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  real(wp), intent(in) :: f107a,f107
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
+  real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
+  real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: Tn
+  logical, intent(in) :: first  !< first time step
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
+  integer :: iprec,lprec
+  ! note PrprecipG and the like are module-scope variables
+
+  lprec=size(W0,3)    ! just recompute the number of precipitating populations
+  if (gridflag/=0) then
+    if (cfg%flagglow==0) then
+      !! RUN FANG APPROXIMATION
+      do iprec=1,lprec
+        !! loop over the different populations of precipitation (2 here?), accumulating production rates
+        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang)
+        !! calculation based on Fang et al [2008]
+        Prprecip=Prprecip+Prpreciptmp
+      end do
+      Prprecip = max(Prprecip, 1e-5_wp)
+      Qeprecip = eheating(nn,Tn,Prprecip,ns)
+    else
+      !! GLOW USED, AURORA PRODUCED
+      if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
+        if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
+        PrprecipG=0; QeprecipG=0; iverG=0;
+        call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
+                            QeprecipG, iverG, PrprecipG)
+        PrprecipG=max(PrprecipG, 1e-5_wp)
+      end if
+      Prprecip=PrprecipG
+      Qeprecip=QeprecipG
+      iver=iverG
+    end if
+  else
+    !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
+    if (mpi_cfg%myid==0 .and. debug) then
+      print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
+    end if
+  end if
+  
+  if (mpi_cfg%myid==0) then
+    if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
+      minval(Prprecip), maxval(Prprecip)
+  end if
+  if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
+    if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
+      minval(iver(:,:,2)), maxval(iver(:,:,2))
+  end if
+end subroutine impact_ionization
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.  
