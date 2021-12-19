@@ -198,18 +198,7 @@ call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 
 !> source loss numerical solution(s)
-do isp=1,lsp
-  if (isp==lsp) then
-    Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
-  end if
-  paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-  paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
-  rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-
-  Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
-end do
-
+call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns) 
 if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -505,6 +494,31 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
   Prprecip = Prprecip + Prpreciptmp
   Qeprecip = Qeprecip + Qepreciptmp
 end subroutine solar_ionization
+
+
+!> Energy source/loss solutions
+subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
+  real(wp), intent(in) :: dt
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr
+  real(wp), dimension(:,:,:,:), intent(in) :: Lo
+  real(wp), dimension(:,:,:), intent(in) :: Qeprecip
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes,Ts,ns
+  real(wp), dimension(1:size(rhoes,1)-4,1:size(rhoes,2)-4,1:size(rhoes,3)-4) :: paramtrim
+  integer :: isp,lsp
+
+  lsp=size(rhoes,4)
+  do isp=1,lsp
+    if (isp==lsp) then
+      Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
+    end if
+    paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
+    paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
+  
+    Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+    Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+  end do
+end subroutine energy_source_loss
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.  
