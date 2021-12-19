@@ -47,199 +47,174 @@ real(wp), parameter :: xicon = 3
 contains
 
 subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first)
-!! J1 needed for heat conduction; E1 for momentum equation
-!! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
-real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
-real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-real(wp), dimension(:,:,:), intent(in) :: J1
-!! needed for thermal conduction in electron population
-real(wp), dimension(:,:,:), intent(inout) :: E1
-!! will have ambipolar field added into it in this procedure...
+  !! J1 needed for heat conduction; E1 for momentum equation
+  !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
+  real(wp), dimension(:,:,:), intent(in) :: J1
+  !! needed for thermal conduction in electron population
+  real(wp), dimension(:,:,:), intent(inout) :: E1
+  !! will have ambipolar field added into it in this procedure...
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), intent(in) :: t,dt
+  class(curvmesh), intent(in) :: x
+  !! grid structure variable
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  logical, intent(in) :: first  !< first time step
+  real(wp), dimension(:,:,:), intent(inout) :: iver
+  !! intent(out)
+  integer :: isp
+  real(wp) :: tstart,tfin
+  real(wp) :: f107,f107a
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim!,chrgflux
+  real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
+  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
+  real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
+  integer :: iprec
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
 
-type(gemini_cfg), intent(in) :: cfg
-real(wp), intent(in) :: t,dt
-
-class(curvmesh), intent(in) :: x
-!! grid structure variable
-
-real(wp), dimension(:,:,:,:), intent(in) :: nn
-real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-logical, intent(in) :: first  !< first time step
-
-real(wp), dimension(:,:,:), intent(inout) :: iver
-!! intent(out)
-
-integer :: isp
-real(wp) :: tstart,tfin
-
-real(wp) :: f107,f107a
-
-real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
-real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim!,chrgflux
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
-
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip,Qepreciptmp
-real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
-
-integer :: iprec
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-
-
-!> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE.  FIXME: should only be done if first=.true. right???
-if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
-  allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-  PrprecipG(:,:,:,:)=0
-end if
-if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
-  allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-  QeprecipG(:,:,:)=0
-end if
-if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
-  allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-  iverG(:,:,:)=0
-end if
-
-! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
-f107=cfg%activ(2)
-f107a=cfg%activ(1)
-
-! Prior to advection substep convert velocity and temperature to momentum and enegy density
-do isp=1,lsp
-  rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
-  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-end do
-
-! advection substep for all species
-call cpu_time(tstart)
-call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
-call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-call halo(ns,2,tag%ns,x%flagper)
-call halo(rhovs1,2,tag%vs1,x%flagper)
-call halo(rhoes,2,tag%Ts,x%flagper)
-call sweep3_allspec(ns,vs3i,dt,x,0,6)
-call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
-call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
-call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
-call sweep1_allspec(rhovs1,vs1i,dt,x,6)
-call sweep1_allspec(rhoes,vs1i,dt,x,7)
-call halo(ns,2,tag%ns,x%flagper)
-call halo(rhovs1,2,tag%vs1,x%flagper)
-call halo(rhoes,2,tag%Ts,x%flagper)
-call sweep2_allspec(ns,vs2i,dt,x,0,6)
-call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
-call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
-call rhov12v1(ns,rhovs1,vs1)
-call cpu_time(tfin)
-if (mpi_cfg%myid==0 .and. debug) then
-  print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-end if
-
-! post advection filling of null cells
-call clean_param(x,1,ns)
-call clean_param(x,2,vs1)
-
-! Compute artifical viscosity and then execute compression calculation
-call cpu_time(tstart)
-call VNRicht_artvisc(ns,vs1,Q)
-call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)   ! this applies compression substep and then converts back to temperature
-call clean_param(x,3,Ts)
-call cpu_time(tfin)
-if (mpi_cfg%myid==0 .and. debug) then
-  print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-end if
-
-! Energy diffusion (thermal conduction) substep
-call cpu_time(tstart)
-call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
-call cpu_time(tfin)
-if (mpi_cfg%myid==0 .and. debug) then
-  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-end if
-
-! post diffusion cleaning of temperature variables
-call clean_param(x,3,Ts)
-
-! FIXME: need to clean up back and forth between state parameters
-! convert to specific internal energy density for sources substeps
-do isp=1,lsp
-  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-end do
-
-!> Establish top boundary conditions for electron precipitation
-if (cfg%flagprecfile==1) then
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
-else
-  !! no file input specified, so just call 'regular' function
-  call precipBCs(t,x,cfg,W0,PhiWmWm2)
-end if
-
-! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
-call cpu_time(tstart)
-Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
-Qeprecip=0.0
-Prpreciptmp=0.0
-Qepreciptmp=0.0
-call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
-call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)     ! solar ionization source
-call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
-call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
-if (mpi_cfg%myid==0 .and. debug) then
+  !> FIXME: should only be done if first=.true. right???
+  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
+    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
+    PrprecipG(:,:,:,:)=0
+  end if
+  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
+    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
+    QeprecipG(:,:,:)=0
+  end if
+  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
+    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
+    iverG(:,:,:)=0
+  end if
+  
+  ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
+  f107=cfg%activ(2)
+  f107a=cfg%activ(1)
+  
+  ! Prior to advection substep convert velocity and temperature to momentum and enegy density
+  do isp=1,lsp
+    rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
+    rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
+  end do
+  
+  ! advection substep for all species
+  call cpu_time(tstart)
+  call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
+  call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+  call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
+  call halo(ns,2,tag%ns,x%flagper)
+  call halo(rhovs1,2,tag%vs1,x%flagper)
+  call halo(rhoes,2,tag%Ts,x%flagper)
+  call sweep3_allspec(ns,vs3i,dt,x,0,6)
+  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
+  call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
+  call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
+  call sweep1_allspec(rhovs1,vs1i,dt,x,6)
+  call sweep1_allspec(rhoes,vs1i,dt,x,7)
+  call halo(ns,2,tag%ns,x%flagper)
+  call halo(rhovs1,2,tag%vs1,x%flagper)
+  call halo(rhoes,2,tag%Ts,x%flagper)
+  call sweep2_allspec(ns,vs2i,dt,x,0,6)
+  call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
+  call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+  call rhov12v1(ns,rhovs1,vs1)
   call cpu_time(tfin)
-  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-end if
-
-! Temperature cleaned after sources
-call clean_param(x,3,Ts)
-
-
-!ALL VELOCITY SOURCES
-call cpu_time(tstart)
-call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
-
-!CLEAN VELOCITY
-call clean_param(x,2,vs1)
-
-if (mpi_cfg%myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
+    print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! post advection filling of null cells
+  call clean_param(x,1,ns)
+  call clean_param(x,2,vs1)
+  
+  ! Compute artifical viscosity and then execute compression calculation
+  call cpu_time(tstart)
+  call VNRicht_artvisc(ns,vs1,Q)
+  call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
+  call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)   ! this applies compression substep and then converts back to temperature
+  call clean_param(x,3,Ts)
   call cpu_time(tfin)
-  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-end if
-
-
-!ALL MASS SOURCES
-call cpu_time(tstart)
-call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-Pr(:,:,:,1:6)=Pr(:,:,:,1:6)+Prprecip
-do isp=1,lsp-1
-  paramtrim=ns(1:lx1,1:lx2,1:lx3,isp)
-  paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
-  ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
-end do
-
-if (mpi_cfg%myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
+    print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! Energy diffusion (thermal conduction) substep
+  call cpu_time(tstart)
+  call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
   call cpu_time(tfin)
-  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-end if
-
-!ELECTRON DENSITY SOLUTION
-ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-
-
-!CLEAN DENSITY (CONSERVED VARIABLES WILL BE RECOMPUTED AT THE BEGINNING OF NEXT TIME STEP
-call clean_param(x,1,ns)
-
-!should the electron velocity be recomputed here now that densities have changed...
-
+  if (mpi_cfg%myid==0 .and. debug) then
+    print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! post diffusion cleaning of temperature variables
+  call clean_param(x,3,Ts)
+  
+  ! FIXME: need to clean up back and forth between state parameters
+  ! convert to specific internal energy density for sources substeps
+  do isp=1,lsp
+    rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
+  end do
+  
+  !> Establish top boundary conditions for electron precipitation
+  if (cfg%flagprecfile==1) then
+    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+  else
+    !! no file input specified, so just call 'regular' function
+    call precipBCs(t,x,cfg,W0,PhiWmWm2)
+  end if
+  
+  ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
+  call cpu_time(tstart)
+  Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
+  Qeprecip=0.0
+  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
+  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)     ! solar ionization source
+  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
+  call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+  if (mpi_cfg%myid==0 .and. debug) then
+    call cpu_time(tfin)
+    print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! Temperature cleaned after sources
+  call clean_param(x,3,Ts)
+  
+  
+  !ALL VELOCITY SOURCES
+  call cpu_time(tstart)
+  call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
+  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  if (mpi_cfg%myid==0 .and. debug) then
+    call cpu_time(tfin)
+    print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! velocity cleaned after source/loss substep
+  call clean_param(x,2,vs1)
+  
+  !ALL MASS SOURCES
+  call cpu_time(tstart)
+  call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+  call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  if (mpi_cfg%myid==0 .and. debug) then
+    call cpu_time(tfin)
+    print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  end if
+  
+  ! density to be cleaned after source/loss
+  call clean_param(x,1,ns)
+  
+  !should the electron velocity be recomputed here now that densities have changed...
 end subroutine fluid_adv
 
 
@@ -529,6 +504,27 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
   vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
 end subroutine momentum_source_loss
+
+
+!> Mass source and loss processes
+subroutine mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  real(wp), intent(in) :: dt
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr
+  real(wp), dimension(:,:,:,:), intent(in) :: Lo
+  real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim
+  integer :: isp,lsp
+
+  lsp=size(ns,4)
+  Pr(:,:,:,1:6)=Pr(:,:,:,1:6)+Prprecip
+  do isp=1,lsp-1
+    paramtrim=ns(1:lx1,1:lx2,1:lx3,isp)
+    paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
+  end do
+  ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
+end subroutine mass_source_loss
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.  
