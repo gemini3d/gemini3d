@@ -60,7 +60,8 @@ do i=1,lx1
       case (20)
         call msis_gtd8(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:))
       case default
-        error stop 'expected msis_version = {0,20}'
+        write (stderr,*) 'ERROR: expected msis_version = {0,20}, but got ', msis_version
+        error stop
       end select
 
       !> sanity check N2 density
@@ -91,14 +92,16 @@ real(real32), intent(inout), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
 
 type(hdf5_file) :: hf
 integer(hsize_t), allocatable :: dims(:)
-integer:: lx1,lx2,lx3
+integer:: lx1,lx2,lx3, doy_int
 
 call hf%open(filename, action='r')
 
 call hf%read("/msis_version", msis_version)
+if(msis_version < 0) error stop "msis_driver: msis_version must be >= 0"
 
-call hf%read("/doy", doy)
-if(doy < 1 .or. doy > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'
+call hf%read("/doy", doy_int)
+if(doy_int < 1 .or. doy_int > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'
+doy = doy_int
 
 call hf%read("/UTsec", sec)
 if(sec < 0 .or. sec > 86400) error stop 'msis_driver:input_hdf5: 0 <= sec <= 86400'

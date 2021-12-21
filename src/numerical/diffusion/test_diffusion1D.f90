@@ -13,7 +13,7 @@ type(hdf5_file) :: h5f
 integer, parameter :: npts=256,lt=20*5
 
 character(:), allocatable :: outfile
-character(1024) :: argv
+character(2048) :: argv
 
 character(4) :: ic
 
@@ -47,9 +47,9 @@ outfile = trim(argv)
 ! write(u,*) lx1
 ! call writearray(u,x1)
 call h5f%open(outfile, action='w')
-call h5f%write('/lt', lt, ierr)
-call h5f%write('/lx1', lx1, ierr)
-call h5f%write('/x1', x1, ierr)
+call h5f%write('/lt', lt)
+call h5f%write('/lx1', lx1)
+call h5f%write('/x1', x1)
 
 !! initial conditions
 TsEuler(-1:lx1+2)=sin(2*pi*x1(-1:lx1+2))+sin(8*pi*x1(-1:lx1+2))
@@ -86,12 +86,12 @@ do it=1,lt
   ! call writearray(u,TsEuler(1:lx1))
   ! call writearray(u,TsBDF2(1:lx1))
   ! call writearray(u,Tstrue(1:lx1))
-  call h5f%write('/t'//ic, t, ierr)
-  call h5f%write('/TsEuler'//ic, TsEuler(1:lx1), ierr)
-  call h5f%write('/TsBDF2'//ic, TsBDF2(1:lx1), ierr)
-  call h5f%write('/TsTrue'//ic, Tstrue(1:lx1), ierr)
-  call h5f%write('/coeffs'//ic,abc,ierr)
-  call h5f%write('/rhs'//ic,y,ierr)
+  call h5f%write('/t'//ic, t)
+  call h5f%write('/TsEuler'//ic, TsEuler(1:lx1))
+  call h5f%write('/TsBDF2'//ic, TsBDF2(1:lx1))
+  call h5f%write('/TsTrue'//ic, Tstrue(1:lx1))
+  call h5f%write('/coeffs'//ic,abc)
+  call h5f%write('/rhs'//ic,y)
 
   !check the validity of the numerical solutions at this time step
   errorEuler(1:lx1)=TsEuler(1:lx1)-Tstrue(1:lx1)

@@ -17,7 +17,7 @@ real(wp), allocatable, dimension(:,:,:) :: f, fi
 
 real(wp), allocatable, dimension(:) :: x1ilist,x2ilist,x3ilist,filist
 
-integer :: ix1,ix2,ix3,ik, ierr
+integer :: ix1,ix2,ix3,ik
 
 allocate(x1(lx1), x2(lx2), x3(lx3), f(lx1,lx2,lx3))
 allocate(x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i))
@@ -82,13 +82,13 @@ print "(A,/,A,/,A)", "interp3d: Finished test interpolation"
 !> dump results to a file so we can check things
 call hout%open(trim(argv), action="w")
 
-call hout%write("/lx1", lx1, ierr)
-call hout%write("/lx2", lx2, ierr)
-call hout%write("/lx3", lx3, ierr)
-call hout%write("/x1", x1, ierr)
-call hout%write("/x2", x2, ierr)
-call hout%write("/x3", x3, ierr)
-call hout%write("/f", f, ierr)
+call hout%write("/lx1", lx1)
+call hout%write("/lx2", lx2)
+call hout%write("/lx3", lx3)
+call hout%write("/x1", x1)
+call hout%write("/x2", x2)
+call hout%write("/x3", x3)
+call hout%write("/f", f)
 
 call hout%close()
 
@@ -98,13 +98,13 @@ if(argv=="") error stop 'please specify output filename'
 
 call hout%open(trim(argv), action="w")
 
-call hout%write("/lx1", lx1i, ierr)
-call hout%write("/lx2", lx2i, ierr)
-call hout%write("/lx3", lx3i, ierr)
-call hout%write("/x1", x1i, ierr)
-call hout%write("/x2", x2i, ierr)
-call hout%write("/x3", x3i, ierr)
-call hout%write("/f", fi, ierr)
+call hout%write("/lx1", lx1i)
+call hout%write("/lx2", lx2i)
+call hout%write("/lx3", lx3i)
+call hout%write("/x1", x1i)
+call hout%write("/x2", x2i)
+call hout%write("/x3", x3i)
+call hout%write("/f", fi)
 
 call hout%close()
 
