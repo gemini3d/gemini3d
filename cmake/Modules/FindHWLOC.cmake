@@ -33,13 +33,17 @@ pkg_search_module(pc_hwloc hwloc)
 # CMake won't look for lib prefix automatically.
 
 find_library(HWLOC_LIBRARY
-  NAMES hwloc libhwloc
-  NAMES_PER_DIR
-  HINTS ${pc_hwloc_LIBRARY_DIRS} ${pc_hwloc_LIBDIR})
+NAMES hwloc libhwloc
+NAMES_PER_DIR
+HINTS ${pc_hwloc_LIBRARY_DIRS} ${pc_hwloc_LIBDIR}
+DOC "HWLOC library"
+)
 
 find_path(HWLOC_INCLUDE_DIR
-  NAMES hwloc.h
-  HINTS ${pc_hwloc_INCLUDE_DIRS})
+NAMES hwloc.h
+HINTS ${pc_hwloc_INCLUDE_DIRS}
+DOC "HWLOC header"
+)
 
 if(HWLOC_LIBRARY AND HWLOC_INCLUDE_DIR)
   set(CMAKE_REQUIRED_INCLUDES ${HWLOC_INCLUDE_DIR})
@@ -49,10 +53,10 @@ endif()
 
 if(HWLOC_TOPO_LOAD)
   find_file(hwloc_conf
-    NAMES config.h
-    HINTS ${HWLOC_INCLUDE_DIR} ${pc_hwloc_INCLUDE_DIRS}
-    PATH_SUFFIXES hwloc/autogen
-    DOC "HWLOC configuration header"
+  NAMES config.h
+  HINTS ${HWLOC_INCLUDE_DIR} ${pc_hwloc_INCLUDE_DIRS}
+  PATH_SUFFIXES hwloc/autogen
+  DOC "HWLOC configuration header"
   )
 
   if(hwloc_conf)
@@ -69,8 +73,10 @@ set(CMAKE_REQUIRED_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HWLOC
-    REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD
-    VERSION_VAR HWLOC_VERSION)
+REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD
+VERSION_VAR HWLOC_VERSION
+HANDLE_VERSION_RANGE
+)
 
 if(HWLOC_FOUND)
 set(HWLOC_LIBRARIES ${HWLOC_LIBRARY})
