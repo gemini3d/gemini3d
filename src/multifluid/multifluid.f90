@@ -46,7 +46,8 @@ real(wp), parameter :: xicon = 3
 
 contains
 
-subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first)
+!> this advances the fluid soluation by time interval dt
+subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
   !! J1 needed for heat conduction; E1 for momentum equation
   !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
@@ -102,11 +103,9 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   f107a=cfg%activ(1)
   
   ! Prior to advection substep convert velocity and temperature to momentum and enegy density
-  do isp=1,lsp
-    rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
-    rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-  end do
-  
+  call v12rhov1(ns,vs1,rhovs1)
+  call T2rhoe(ns,Ts,rhoes) 
+ 
   ! advection substep for all species
   call cpu_time(tstart)
   call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
@@ -161,9 +160,10 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   
   ! FIXME: need to clean up back and forth between state parameters
   ! convert to specific internal energy density for sources substeps
-  do isp=1,lsp
-    rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-  end do
+  call T2rhoe(ns,Ts,rhoes)
+  !do isp=1,lsp
+  !  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
+  !end do
   
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
@@ -216,6 +216,45 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   
   !should the electron velocity be recomputed here now that densities have changed...
 end subroutine fluid_adv
+
+
+!> Compute temperatures from internal energy densities
+subroutine rhoe2T(ns,rhoes,Ts)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhoes,Ts
+  integer :: isp,lsp
+
+  lsp=size(rhoes,4)
+  do isp=1,lsp
+    Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+    Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+    !! convert internal specific energy density back into temperature
+  end do
+end subroutine rhoe2T
+
+
+!> Convert temperature to specific internal energy density
+subroutine T2rhoe(ns,Ts,rhoes)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhoes,Ts
+  integer :: isp,lsp
+
+  ! convert temperature to enegy density
+  lsp=size(Ts,4)
+  do isp=1,lsp
+    rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
+  end do
+end subroutine T2rhoe
+
+
+!> Convert velocity to momentum
+subroutine v12rhov1(ns,vs1,rhovs1)
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,rhovs1
+  integer :: isp,lsp
+
+  lsp=size(vs1,4)
+  do isp=1,lsp
+    rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
+  end do
+end subroutine v12rhov1
 
 
 !> Compute electron density and velocity given ion momenta, compute ion velocities as well
@@ -273,7 +312,9 @@ end subroutine
 
 
 !> Adiabatic compression term, including (precomputed) artifical viscosity.  All velocities must be haloed a single
-!    point prior to calling this procedure.  
+!    point prior to calling this procedure.  Upon entering this procedure the specific internal energy density contains
+!    the most recent updated state, while the temperature may or mat not.  Upon exit both the energy density and temp.
+!    can be considered fully updated.  
 subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -296,15 +337,13 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
   
     paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-  
-    Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-    Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
-    !! convert internal specific energy density back into temperature
   end do
+  call rhoe2T(ns,rhoes,Ts)
 end subroutine compression
 
 
-!> Execute energy diffusion substep, no mpi required
+!> Execute energy diffusion substep, no mpi required.  Upon entering this procedure the temperature needs to be have its
+!     most recently updated state.  Upon exit the temperature will be updated with diffusion properly applied.  
 subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -336,14 +375,14 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
     end select
   
     Ts(:,:,:,isp) = param
-    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
+    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
   end do
 end subroutine energy_diffusion
 
 
 !> *Accumulates* ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
 !    rates from impact ionization these arrays will need to be initialized to zero before calling this
-!    procedure.  
+!    procedure.  Note that this procedure does need updated density and temperature data (i.e. ns and Ts)
 subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: t,dt
@@ -407,7 +446,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
 end subroutine impact_ionization
 
 
-!> Ionization from solar radiation, *accumulates* rates
+!> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want soley solar sources :)
 subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
@@ -450,7 +489,8 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
 end subroutine solar_ionization
 
 
-!> Energy source/loss solutions
+!> Energy source/loss solutions.  Upon entry the energy density should have the most recently updated state.  Upon exit
+!    both the energy density and temperature are fully updated.  
 subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
@@ -475,7 +515,8 @@ subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
 end subroutine energy_source_loss
 
 
-!>  Momentum source/loss processes
+!>  Momentum source/loss processes.  Upon entry the momentum density should be updated to most recent; upon exit
+!     both momentum density and velocity will be updated.  
 subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -495,7 +536,7 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
   end do
   
-  !ELECTRON VELOCITY SOLUTION
+  ! Update velocity and momentum for electrons
   ! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
   chrgflux = 0.0
   do isp=1,lsp-1
@@ -503,6 +544,7 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   end do
   !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
   vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+  rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)              ! update electron momentum in case it is ever used
 end subroutine momentum_source_loss
 
 

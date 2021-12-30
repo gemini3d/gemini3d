@@ -501,13 +501,8 @@ if (mpi_cfg%myid==0) deallocate(Phiall)
 
 if (cfg%flagglow/=0) deallocate(iver)
 
-!> DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
-!call clear_grid(x)
+!> Neutral module has various arrays that technically should be deallocated
 call clear_dneu()
-! now taken care of by an object destructor...
-!call clear_precip_fileinput()
-!call clear_potential_fileinput()
-!call clear_BGfield()
 
 end subroutine gemini_main
 
