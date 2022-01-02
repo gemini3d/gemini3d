@@ -8,14 +8,11 @@ use mpimod, only: mpi_cfg, halo, tag=>gemini_mpi
 
 implicit none (type, external)
 private
-public :: advec3d_mc_mpi, advec_prep_mpi, halo_interface_vels_allspec,interface_vels_allspec,set_global_boundaries_allspec, &
+public :: advec_prep_mpi, halo_interface_vels_allspec,interface_vels_allspec,set_global_boundaries_allspec, &
           sweep3_allspec,sweep1_allspec,sweep2_allspec
 
 !> OVERLOAD ADVECTION TO DEAL WITH THE CURVILINEAR GRID/MESH STRUCTURE.
 !> NOTE THAT THE LOWER-LEVEL CALLS ARE DISTINCT, NOT-OVERLOADED PROCEDURES.
-interface advec3D_MC_mpi
-  module procedure advec3D_MC_mpi_curv_23
-end interface advec3D_MC_mpi
 interface advec_prep_mpi
   module procedure advec_prep_mpi_23
 end interface advec_prep_mpi
@@ -243,7 +240,7 @@ subroutine halo_interface_vels_allspec(isperiodic,vs2,vs3,vs2i,vs3i,lsp)
 end subroutine halo_interface_vels_allspec
 
 
-!> do averaging to compute cell interface velocities; required pre-haloing in order for cells
+!> do averaging to compute cell interface velocities; requires pre-haloing in order for cells
 !    to have updated boundary info from ghost cells.  Single species only, "isp"  
 subroutine interface_vels(isp,vs1,vs2,vs3,v1i,v2i,v3i)
   integer, intent(in) :: isp
@@ -432,53 +429,6 @@ subroutine set_global_boundaries_allspec(isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,
     call set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i(:,:,:,isp))
   end do
 end subroutine set_global_boundaries_allspec
-
-
-!> 3D advection subroutine
-function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank,tagf)
-!------------------------------------------------------------
-!-------ADVECT A VARIABLE IN 3D FOR AN MPI SIMULATION
-!------------------------------------------------------------
-!-------It is critical that the mpi'd dimension be advected
-!-------first to avoid having to repass ghost cells between
-!-------workers after 1 and 2 dimension are advected.
-!-------
-!-------NOTE: also that the ghost cells should really
-!-------be updated after each sweep.  Ie the x2 boundary regions
-!-------should be updated after x3 sweep and the x1 boundary
-!-------conditions should be updated after x3,x2 sweeps.  I'm
-!-------really to lazy to deal with this now...
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
-  real(wp), dimension(:,:,:), intent(in) :: v1i
-  real(wp), dimension(:,:,:), intent(in) :: v2i
-  real(wp), dimension(:,:,:), intent(in) :: v3i
-  real(wp), intent(in) :: dt
-  class(curvmesh), intent(in) :: x
-  integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
-  integer, intent(in) :: tagf
-  real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv_23
-  
-  !We are assuming here that the data have been pre-haloed before this function is called.  This must be the case
-  !to avoid tearing artifacts...  In the future this should be removed in favor of explicit haloing withint
-  !this procedure, which is already required for x2 message passsing.
-  
-  !we must recopying the boundary conditions after any halo operation (which assumes periodic)
-  advec3D_MC_mpi_curv_23=f
-  call halo(advec3D_MC_mpi_curv_23,2,tagf,x%flagper)
-  
-  !x3-sweep
-  call sweep3(advec3D_MC_mpi_curv_23,v3i,dt,x,frank)
-  
-  !x1-sweep
-  call sweep1(advec3D_MC_mpi_curv_23,v1i,dt,x)
-  
-  !at this point if we've divided in two dimensions with mpi it is necessary to halo again before
-  !the final sweep to avoid tearing artifacts...
-  call halo(advec3D_MC_mpi_curv_23,2,tagf,x%flagper)
-  
-  !x2-sweep, if necessary
-  call sweep2(advec3D_MC_mpi_curv_23,v2i,dt,x,frank)
-end function advec3D_MC_mpi_curv_23
 
 
 !> sweep all species along the 1 axis
