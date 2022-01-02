@@ -16,9 +16,8 @@ module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 
-!use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
-use advec_mpi, only: halo_interface_vels_allspec,interface_vels_allspec,set_global_boundaries_allspec, &
-                     sweep3_allspec,sweep1_allspec,sweep2_allspec
+use advec, only: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
+use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
