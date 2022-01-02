@@ -12,8 +12,7 @@ add_subdirectory(calculus)
 
 add_subdirectory(diffusion)
 
-add_library(advec OBJECT advection/advec_mpi.f90)
-target_link_libraries(advec PRIVATE const mpimod grid meshobj)
+add_subdirectory(advection)
 
 add_subdirectory(potential)
 
