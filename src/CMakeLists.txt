@@ -28,7 +28,7 @@ add_subdirectory(neutral)
 add_subdirectory(sources)
 
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj ionization mpimod precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid meshobj ionization mpimod precipBCs sources timeutils config)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)
@@ -47,6 +47,7 @@ LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 
 set(gemini_internal_mods
 advec
+advec_mpi
 calculus config
 const
 collision
