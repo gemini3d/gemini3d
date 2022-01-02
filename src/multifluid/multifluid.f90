@@ -12,10 +12,11 @@
 ! See the License for the specific language governing permissions and
 ! limitations under the License.
 
+!>  This module contains subroutines to be called by a gemini main program in order to execute numerical solutions
+!     to the ionospheric transport equations (electrodynamics calls are located elsewhere).  
 module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
-
 use advec, only: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use calculus, only: etd_uncoupled, div3d
@@ -27,7 +28,8 @@ use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use mpimod, only: mpi_cfg, tag=>gemini_mpi, halo
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
-use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
+use sources, only: srcsenergy, srcsmomentum, srcscontinuity
+use sources_mpi, only: RK2_prep_mpi_allspec
 use timeutils, only : sza
 use config, only: gemini_cfg
 
@@ -295,19 +297,6 @@ subroutine VNRicht_artvisc(ns,vs1,Q)
   end do
   Q(:,:,:,lsp) = 0
 end subroutine VNRicht_artvisc
-
-
-!> halo all species velocities in order to be ready for compression substep
-subroutine RK2_prep_mpi_allspec(vs1,vs2,vs3,isperiodic)
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
-  logical, intent(in) :: isperiodic
-  integer isp,lsp
-
-  lsp=size(vs1,4)
-  do isp=1,lsp
-    call RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
-  end do
-end subroutine
 
 
 !> Adiabatic compression term, including (precomputed) artifical viscosity.  All velocities must be haloed a single

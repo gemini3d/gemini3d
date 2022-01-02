@@ -84,7 +84,7 @@ meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 neutral
 PDEparabolic gbsv
-precipBCs reader sanity_check errors sources temporal timeutils
+precipBCs reader sanity_check errors sources sources_mpi temporal timeutils
 exe_frontend
 grid io
 PDEelliptic potential mumps_interface
