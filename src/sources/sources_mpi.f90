@@ -9,7 +9,7 @@ private
 public :: RK2_prep_mpi_allspec
 
 contains
-  module subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
+  subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
     integer, intent(in) :: isp
     logical, intent(in) :: isperiodic
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
@@ -83,5 +83,5 @@ contains
     do isp=1,lsp
       call RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
     end do
-  end subroutine
+  end subroutine RK2_prep_mpi_allspec
 end module sources_mpi
