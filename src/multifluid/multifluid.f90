@@ -73,17 +73,12 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   real(wp) :: f107,f107a
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim!,chrgflux
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim
   real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
-  real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
-  integer :: iprec
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
+
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
 
   !> FIXME: should only be done if first=.true. right???
   if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
@@ -115,18 +110,12 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   call halo(ns,2,tag%ns,x%flagper)
   call halo(rhovs1,2,tag%vs1,x%flagper)
   call halo(rhoes,2,tag%Ts,x%flagper)
-  call sweep3_allspec(ns,vs3i,dt,x,0,6)
-  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
-  call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
-  call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
-  call sweep1_allspec(rhovs1,vs1i,dt,x,6)
-  call sweep1_allspec(rhoes,vs1i,dt,x,7)
+  call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
+  call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
   call halo(ns,2,tag%ns,x%flagper)
   call halo(rhovs1,2,tag%vs1,x%flagper)
   call halo(rhoes,2,tag%Ts,x%flagper)
-  call sweep2_allspec(ns,vs2i,dt,x,0,6)
-  call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
-  call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+  call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
   call rhov12v1(ns,rhovs1,vs1)
   call cpu_time(tfin)
   if (mpi_cfg%myid==0 .and. debug) then
@@ -157,12 +146,85 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
     print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
   
-  ! post diffusion cleaning of temperature variables
+  ! cleanup and convert to specific internal energy density for sources substeps
   call clean_param(x,3,Ts)
-  
-  ! convert to specific internal energy density for sources substeps
   call T2rhoe(ns,Ts,rhoes)
   
+  !> solve all source/loss processes
+  call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver)
+
+  ! density to be cleaned after source/loss
+  call clean_param(x,3,Ts)
+  call clean_param(x,2,vs1)
+  call clean_param(x,1,ns)
+  
+  !should the electron velocity be recomputed here now that densities have changed...
+end subroutine fluid_adv
+
+
+!> sweep advection for all plasma parameters in the x3 direction
+subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: vs3i
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
+ 
+  call sweep3_allspec(ns,vs3i,dt,x,0,6)
+  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
+  call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
+end subroutine sweep3_allparams
+
+
+!> sweep all parameters in the x1 direction
+subroutine sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: vs1i
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
+
+  call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
+  call sweep1_allspec(rhovs1,vs1i,dt,x,6)
+  call sweep1_allspec(rhoes,vs1i,dt,x,7)
+end subroutine sweep1_allparams
+
+
+!> sweep all parameters in the x2 direction
+subroutine sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: vs2i
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
+
+  call sweep2_allspec(ns,vs2i,dt,x,0,6)
+  call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
+  call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+end subroutine sweep2_allparams
+
+
+!> execute diffusion of energy and then source/loss terms for all equations
+subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver)
+  real(wp), intent(in) :: dt,t
+  type(gemini_cfg), intent(in) :: cfg
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:), intent(in) :: E1
+  real(wp), dimension(:,:,:,:), intent(in) :: Q
+  real(wp), intent(in) :: f107a,f107
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  logical, intent(in) :: first
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
+  real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
+  integer :: iprec
+  real(wp) :: tstart,tfin
+
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
     call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
@@ -179,47 +241,29 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+  call cpu_time(tfin)
   if (mpi_cfg%myid==0 .and. debug) then
-    call cpu_time(tfin)
     print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   end if
-  
-  ! Temperature cleaned after sources
-  call clean_param(x,3,Ts)
-  
   
   !ALL VELOCITY SOURCES
   call cpu_time(tstart)
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
   call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  call cpu_time(tfin)
   if (mpi_cfg%myid==0 .and. debug) then
-    call cpu_time(tfin)
     print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   end if
-  
-  ! velocity cleaned after source/loss substep
-  call clean_param(x,2,vs1)
   
   !ALL MASS SOURCES
   call cpu_time(tstart)
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
   call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  call cpu_time(tfin)
   if (mpi_cfg%myid==0 .and. debug) then
-    call cpu_time(tfin)
     print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   end if
-  
-  ! density to be cleaned after source/loss
-  call clean_param(x,1,ns)
-  
-  !should the electron velocity be recomputed here now that densities have changed...
-end subroutine fluid_adv
-
-
-!> execute diffusion of energy and then source/loss terms for all equations
-!subroutine diffusion_all_source_loss()
-!
-!end subroutine diffusion_all_source_loss
+end subroutine source_loss_allparams
 
 
 !> Compute temperatures from internal energy densities
