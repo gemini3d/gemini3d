@@ -8,20 +8,11 @@ use grid, only : g1
 
 implicit none (type, external)
 private
-public :: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
+public :: srcsenergy, srcsmomentum, srcscontinuity
 
 interface srcsMomentum
   module procedure srcsMomentum_curv
 end interface srcsMomentum
-
-interface ! sources_mpi.f90
-module subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
-integer, intent(in) :: isp
-logical, intent(in) :: isperiodic
-real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
-end subroutine RK2_prep_mpi
-end interface
-
 
 contains
 
