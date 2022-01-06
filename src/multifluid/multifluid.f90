@@ -141,7 +141,8 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   call cpu_time(tstart)
   call VNRicht_artvisc(ns,vs1,Q)
   call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-  call compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)   ! this applies compression substep and then converts back to temperature
+  call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep and then converts back to temperature
+  call rhoe2T(ns,rhoes,Ts)
   call clean_param(x,3,Ts)
   call cpu_time(tfin)
   if (mpi_cfg%myid==0 .and. debug) then
@@ -159,12 +160,8 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   ! post diffusion cleaning of temperature variables
   call clean_param(x,3,Ts)
   
-  ! FIXME: need to clean up back and forth between state parameters
   ! convert to specific internal energy density for sources substeps
   call T2rhoe(ns,Ts,rhoes)
-  !do isp=1,lsp
-  !  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-  !end do
   
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
@@ -217,6 +214,12 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   
   !should the electron velocity be recomputed here now that densities have changed...
 end subroutine fluid_adv
+
+
+!> execute diffusion of energy and then source/loss terms for all equations
+!subroutine diffusion_all_source_loss()
+!
+!end subroutine diffusion_all_source_loss
 
 
 !> Compute temperatures from internal energy densities
@@ -303,11 +306,11 @@ end subroutine VNRicht_artvisc
 !    point prior to calling this procedure.  Upon entering this procedure the specific internal energy density contains
 !    the most recent updated state, while the temperature may or mat not.  Upon exit both the energy density and temp.
 !    can be considered fully updated.  
-subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
+subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs1,vs2,vs3,Q
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes,Ts,ns
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
   real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
   integer :: isp,lsp
@@ -326,7 +329,6 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes,Ts,ns)
     paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
   end do
-  call rhoe2T(ns,rhoes,Ts)
 end subroutine compression
 
 
