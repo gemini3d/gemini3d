@@ -27,7 +27,7 @@ endif()
 set(name zstd-${zstd_version}.tar.gz)
 set(archive ${tmpdir}/${name})
 
-set(src ${tmpdir}/zstd-${zstd_ersion}/build/cmake)
+set(src ${tmpdir}/zstd-${zstd_version}/build/cmake)
 set(build ${src}/build)
 
 if(NOT IS_DIRECTORY ${src})
