@@ -11,7 +11,6 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_efield
 !! note that only root uses this data object since this concerns the potential solver
-!use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use grid, only: lx1,lx2,lx2all,lx3,lx3all,gridflag
 
