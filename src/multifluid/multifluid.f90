@@ -26,13 +26,13 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
-use mpimod, only: mpi_cfg, tag=>gemini_mpi, halo
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use sources_mpi, only: RK2_prep_mpi_allspec
 use timeutils, only : sza
 use config, only: gemini_cfg
 use multifluid_mpi, only: halo_allparams
+use mpimod, only: mpi_cfg
 
 implicit none (type, external)
 private
