@@ -340,13 +340,11 @@ contains
       ! FIXME: need to keep self%ymd, etc. in sync?  Update will do this?  YES
       self%tref(1)=UTsectmp-UTsec-2*self%dt
       self%tref(2)=self%tref(1)+self%dt
-      !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
       !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
       !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
       !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
       call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
 
-      !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
       !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
       !  loads up a current state so that we get a proper interpolation for the first time step.
       call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
@@ -413,10 +411,6 @@ contains
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
 
       !Spatial interpolation for the frame we just read in
-      !if (mpi_cfg%myid==0 .and. debug) then
-        !print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
-        !              self%dataname,' for date:  ',self%ymdref(:,2),' ',self%UTsecref(2)
-      !end if
       call self%spaceinterp()
 
       !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
