@@ -8,10 +8,8 @@ use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use neutraldata2Dobj, only: neutraldata2D
 use reader, only: get_simsize3
-use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 
 implicit none (type, external)
-external :: mpi_send,mpi_recv
 public :: neutraldata2Dcart
 
 !> type extension for neutral 2D axisymmetric input data
@@ -77,9 +75,7 @@ contains
     theta1=pi/2-cfg%sourcemlat*pi/180
 
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
-    if (mpi_cfg%myid==0) then
-      print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
-    end if
+    print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
     self%zimat=x%alt     !vertical coordinate
     do ix3=1,x%lx3
       do ix2=1,x%lx2
@@ -164,19 +160,16 @@ contains
     !call clear_unitvecs(x)
 
     !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
-    if (mpi_cfg%myid==0 .and. debug) then
-      print *, 'Min/max yi,zi values',minval(self%yi),maxval(self%yi),minval(self%zi),maxval(self%zi)
-      print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
-      print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
-      print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
-    end if
+    print *, 'Min/max yi,zi values',minval(self%yi),maxval(self%yi),minval(self%zi),maxval(self%zi)
+    print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
+    print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
 
     self%flagcoordsi=.true.
   end subroutine set_coordsi_neu2Dcart
 
 
-  !! FIXME: may be specific to axisymmetric vs. cartesian
-  !> load source data size and grid information and communicate to worker processes.
+  !> load source data size and grid information -- all workers will separately read
   !    Note that this routine will allocate sizes for source coordinates grids in constrast
   !    with other inputdata type extensions which have separate load_size, allocate, and
   !    load_grid procedures.
@@ -198,25 +191,16 @@ contains
     self%lxn=1     ! treat as a 3D dataset with singleton dimension along x
 
     !Establish the size of the grid based on input file and distribute to workers
-    if (mpi_cfg%myid==0) then    !root
-      print '(A,/,A)', 'Inputting neutral size from:  ',self%sourcedir
+    print '(A,/,A)', 'Inputting neutral size from:  ',self%sourcedir
 
-      ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
-      !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
-      call get_simsize3(cfg%sourcedir, lx1=self%lhorzn, lx2all=self%lzn)
+    ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
+    !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
+    call get_simsize3(cfg%sourcedir, lx1=self%lhorzn, lx2all=self%lzn)
 
-      print *, 'Neutral data has lhorzn,lz size:  ',self%lhorzn,self%lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
-      if (self%lhorzn < 1 .or. self%lzn < 1) then
-        write(stderr,*) 'ERROR: reading ' // self%sourcedir
-        error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
-      end if
-      do iid=1,mpi_cfg%lid-1
-        call mpi_send(self%lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
-      end do
-    else                 !workers
-      call mpi_recv(self%lhorzn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    print *, 'Neutral data has lhorzn,lz size:  ',self%lhorzn,self%lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
+    if (self%lhorzn < 1 .or. self%lzn < 1) then
+      write(stderr,*) 'ERROR: reading ' // self%sourcedir
+      error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
     end if
     self%lyn=>self%lhorzn
 
@@ -230,10 +214,7 @@ contains
     meanhorzn=sum(self%horzn,1)/size(self%horzn,1)
     self%horzn=self%horzn-meanhorzn     !the neutral grid should be centered on zero for a cartesian interpolation
     self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]
-
-    if (mpi_cfg%myid==0) then
-      print *, 'Creating neutral grid with y,z extent:',minval(self%yn),maxval(self%yn),minval(self%zn),maxval(self%zn)
-    end if
+    print *, 'Creating neutral grid with y,z extent:',minval(self%yn),maxval(self%yn),minval(self%zn),maxval(self%zn)
 
     self%flagdatasize=.true.
   end subroutine load_sizeandgrid_neu2Dcart
