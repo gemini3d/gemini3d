@@ -1,7 +1,5 @@
 module neutraldata2Dobj
 
-! FIXME: defaults to axisymmetric for now
-
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp,debug,pi,Re
@@ -10,14 +8,12 @@ use neutraldataobj, only: neutraldata
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use reader, only: get_grid2,get_neutral2
-use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use pathlib, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
-external :: mpi_send,mpi_recv
 public :: neutraldata2D
 
 !> type definition for 3D neutral data
@@ -205,78 +201,6 @@ contains
   end subroutine load_grid_neu2D
 
 
-  !> Load 2D neutral data from file.  Should work regardless of whether axisymmetric or cartesian input used.
-!  subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
-!    class(neutraldata2D), intent(inout) :: self
-!    real(wp), intent(in) :: t,dtmodel
-!    integer, dimension(3), intent(inout) :: ymdtmp
-!    real(wp), intent(inout) :: UTsectmp
-!    integer :: iid,ierr
-!    integer :: lhorzn,lzn                        !number of horizontal grid points
-!    real(wp), dimension(:,:,:), allocatable :: paramall
-!    type(hdf5_file) :: hf
-!    character(:), allocatable :: fn
-!
-!    ! sizes for convenience
-!    lhorzn=self%lhorzn; lzn=self%lzn;
-!
-!    ymdtmp = self%ymdref(:,2)
-!    UTsectmp = self%UTsecref(2)
-!    call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
-!
-!    if (mpi_cfg%myid==0) then    !root
-!      call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
-!        self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
-!
-!      if (debug) then
-!        print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
-!        print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
-!        print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
-!        print *, 'Min/max values for dvnhorz:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
-!        print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
-!        print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
-!      endif
-!
-!      if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
-!      if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
-!      if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
-!      if (.not. all(ieee_is_finite(self%dvnhorz))) error stop 'dvnhorz: non-finite value(s)'
-!      if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
-!      if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
-!
-!      !send a full copy of the data to all of the workers
-!      do iid=1,mpi_cfg%lid-1
-!        call mpi_send(self%dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
-!        call mpi_send(self%dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
-!        call mpi_send(self%dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
-!        call mpi_send(self%dTn,lhorzn*lzn,mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
-!        call mpi_send(self%dvnhorz,lhorzn*lzn,mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
-!        call mpi_send(self%dvnz,lhorzn*lzn,mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
-!      end do
-!    else     !workers
-!      !receive a full copy of the data from root
-!      call mpi_recv(self%dnO,lhorzn*lzn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(self%dnN2,lhorzn*lzn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(self%dnO2,lhorzn*lzn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(self%dTn,lhorzn*lzn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(self%dvnhorz,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(self%dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    end if
-!
-!    ! print some diagnostics for the input data
-!    if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
-!      print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
-!      print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
-!      print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
-!      print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
-!      print *, 'Min/max values for dvnrho:  ',minval(self%dvnhorz),maxval(self%dvnhorz)
-!      print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
-!      print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
-!      !print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
-!    end if
-!  end subroutine load_data_neu2D
-
-
   !> Have all workers separately load data out of file to avoid message passing
   subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
     class(neutraldata2D), intent(inout) :: self
@@ -317,7 +241,7 @@ contains
 
     ! print some diagnostics for the input data
     if (debug) then
-      print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
+      print*, 'neutral data size:  ',lhorzn,lzn
       print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
       print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
       print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
@@ -347,27 +271,26 @@ contains
     call self%rotate_winds()
 
     ! print some diagnostic data once the udpate has occurred
-    !if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
     if (debug) then
       print*, ''
-      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lhorzn,self%lxn
+      print*, 'neutral data size:  ',self%lzn,self%lhorzn,self%lxn
       print*, 'neutral data time:  ',ymd,UTsec
       print*, ''
-      print *, 'Min/max values for dnOinext:  ',mpi_cfg%myid,minval(self%dnOinext),maxval(self%dnOinext)
-      print *, 'Min/max values for dnN2inext:  ',mpi_cfg%myid,minval(self%dnN2inext),maxval(self%dnN2inext)
-      print *, 'Min/max values for dnO2inext:  ',mpi_cfg%myid,minval(self%dnO2inext),maxval(self%dnO2inext)
-      print *, 'Min/max values for dvn1inext:  ',mpi_cfg%myid,minval(self%dvn1inext),maxval(self%dvn1inext)
-      print *, 'Min/max values for dvn2inext:  ',mpi_cfg%myid,minval(self%dvn2inext),maxval(self%dvn2inext)
-      print *, 'Min/max values for dvn3inext:  ',mpi_cfg%myid,minval(self%dvn3inext),maxval(self%dvn3inext)
-      print *, 'Min/max values for dTninext:  ',mpi_cfg%myid,minval(self%dTninext),maxval(self%dTninext)
+      print *, 'Min/max values for dnOinext:  ',minval(self%dnOinext),maxval(self%dnOinext)
+      print *, 'Min/max values for dnN2inext:  ',minval(self%dnN2inext),maxval(self%dnN2inext)
+      print *, 'Min/max values for dnO2inext:  ',minval(self%dnO2inext),maxval(self%dnO2inext)
+      print *, 'Min/max values for dvn1inext:  ',minval(self%dvn1inext),maxval(self%dvn1inext)
+      print *, 'Min/max values for dvn2inext:  ',minval(self%dvn2inext),maxval(self%dvn2inext)
+      print *, 'Min/max values for dvn3inext:  ',minval(self%dvn3inext),maxval(self%dvn3inext)
+      print *, 'Min/max values for dTninext:  ',minval(self%dTninext),maxval(self%dTninext)
       print*, ''
-      print *, 'Min/max values for dnOinow:  ',mpi_cfg%myid,minval(self%dnOinow),maxval(self%dnOinow)
-      print *, 'Min/max values for dnN2inow:  ',mpi_cfg%myid,minval(self%dnN2inow),maxval(self%dnN2inow)
-      print *, 'Min/max values for dnO2inow:  ',mpi_cfg%myid,minval(self%dnO2inow),maxval(self%dnO2inow)
-      print *, 'Min/max values for dvn1inow:  ',mpi_cfg%myid,minval(self%dvn1inow),maxval(self%dvn1inow)
-      print *, 'Min/max values for dvn2inow:  ',mpi_cfg%myid,minval(self%dvn2inow),maxval(self%dvn2inow)
-      print *, 'Min/max values for dvn3inow:  ',mpi_cfg%myid,minval(self%dvn3inow),maxval(self%dvn3inow)
-      print *, 'Min/max values for dTninow:  ',mpi_cfg%myid,minval(self%dTninow),maxval(self%dTninow)
+      print *, 'Min/max values for dnOinow:  ',minval(self%dnOinow),maxval(self%dnOinow)
+      print *, 'Min/max values for dnN2inow:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
+      print *, 'Min/max values for dnO2inow:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
+      print *, 'Min/max values for dvn1inow:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
+      print *, 'Min/max values for dvn2inow:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
+      print *, 'Min/max values for dvn3inow:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
+      print *, 'Min/max values for dTninow:  ',minval(self%dTninow),maxval(self%dTninow)
     end if
   end subroutine update
 

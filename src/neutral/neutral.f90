@@ -7,7 +7,9 @@ use timeutils, only : find_lastdate
 use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
 use neutraldataobj, only: neutraldata
-use neutraldata3Dobj, only: neutraldata3D
+!!! FIXME: this should be conditioned on actually compiling with libgemini-mpi
+use neutraldata3Dobj_mpi, only: neutraldata3D
+!!!
 use neutraldata2Daxisymmobj, only: neutraldata2Daxisymm
 use neutraldata2Dcartobj, only: neutraldata2Dcart
 
@@ -95,8 +97,10 @@ contains
         allocate(neutraldata2Dcart::atmosperturb)
       case (1)
         allocate(neutraldata2Daxisymm::atmosperturb)
+      !!! FIXME: conditioned on compiling with libgemini-mpi
       case (3)
         allocate(neutraldata3D::atmosperturb)
+      !!!
       case default
         error stop 'non-standard neutral interpolation type chosen in config.nml...'
       end select

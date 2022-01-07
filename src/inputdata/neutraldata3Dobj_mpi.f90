@@ -1,4 +1,4 @@
-module neutraldata3Dobj
+module neutraldata3Dobj_mpi
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
@@ -701,4 +701,4 @@ contains
     nullify(self%xn,self%yn,self%zn);
     nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
   end subroutine destructor
-end module neutraldata3Dobj
+end module neutraldata3Dobj_mpi
