@@ -32,6 +32,7 @@ use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use sources_mpi, only: RK2_prep_mpi_allspec
 use timeutils, only : sza
 use config, only: gemini_cfg
+use multifluid_mpi, only: halo_allparams
 
 implicit none (type, external)
 private
@@ -77,28 +78,13 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
-
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
-
-  !> FIXME: should only be done if first=.true. right???
-  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
-    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-    PrprecipG(:,:,:,:)=0
-  end if
-  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
-    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-    QeprecipG(:,:,:)=0
-  end if
-  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
-    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-    iverG(:,:,:)=0
-  end if
   
   ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
   f107=cfg%activ(2)
   f107a=cfg%activ(1)
   
-  ! Prior to advection substep convert velocity and temperature to momentum and enegy density
+  ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
   call v12rhov1(ns,vs1,rhovs1)
   call T2rhoe(ns,Ts,rhoes) 
  
@@ -107,14 +93,10 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,y
   call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
   call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
   call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-  call halo(ns,2,tag%ns,x%flagper)
-  call halo(rhovs1,2,tag%vs1,x%flagper)
-  call halo(rhoes,2,tag%Ts,x%flagper)
+  call halo_allparams(ns,rhovs1,rhoes,x%flagper)
   call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
-  call halo(ns,2,tag%ns,x%flagper)
-  call halo(rhovs1,2,tag%vs1,x%flagper)
-  call halo(rhoes,2,tag%Ts,x%flagper)
+  call halo_allparams(ns,rhovs1,rhoes,x%flagper)
   call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
   call rhov12v1(ns,rhovs1,vs1)
   call cpu_time(tfin)
@@ -435,8 +417,23 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
   integer :: iprec,lprec
-  ! note PrprecipG and the like are module-scope variables
+  !! note PrprecipG and the like are module-scope variables
 
+  ! first check that our module-scope arrays are allocated before going on to calculations
+  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
+    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
+    PrprecipG(:,:,:,:)=0
+  end if
+  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
+    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
+    QeprecipG(:,:,:)=0
+  end if
+  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
+    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
+    iverG(:,:,:)=0
+  end if
+
+  ! compute impact ionization given input boundary conditions
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
   if (gridflag/=0) then
     if (cfg%flagglow==0) then

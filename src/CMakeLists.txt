@@ -27,8 +27,10 @@ target_link_libraries(collision PRIVATE const config)
 add_subdirectory(neutral)
 add_subdirectory(sources)
 
+add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
+target_link_libraries(multifluid_mpi PRIVATE const mpimod)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid meshobj ionization mpimod precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid meshobj ionization multifluid_mpi precipBCs sources timeutils config)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)
@@ -57,6 +59,7 @@ inputdata precipdata efielddata
 neutraldata neutraldata3D neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
+multifluid_mpi
 neutral
 pathlib
 PDEparabolic gbsv
