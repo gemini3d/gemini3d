@@ -2,7 +2,7 @@ add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90)
 target_compile_options(neutral PRIVATE ${gfortran_opts})
 target_link_libraries(neutral PRIVATE config const reader grid meshobj interp mpimod
 timeutils
-inputdata neutraldata neutraldata3D
+inputdata neutraldata neutraldata3D_mpi
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran

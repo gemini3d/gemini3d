@@ -1,4 +1,4 @@
-submodule (neutraldata3Dobj) neuslab
+submodule (neutraldata3Dobj_mpi) neuslab_mpi
 
 !> this submodule contains utility procedures specifically for computing overlaps between GEMINI and MAGIC grids
 !    Because this involving mpi splitting of input data we also have e.g. various custom message passing procedures
@@ -193,4 +193,4 @@ contains
     lzn=size(param,1); lxn=size(param,2); lyn=size(param,3);
     call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end procedure dneu_workers_from_root
-end submodule neuslab
+end submodule neuslab_mpi
