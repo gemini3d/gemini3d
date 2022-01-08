@@ -42,15 +42,15 @@ contains
     ! append type of interp. to dataname
     strname=self%dataname//' Cartesian'     ! append type of 2D interpolation to name
     call self%set_name(strname)                ! overwrite generic neutral 2D data name
+    print*, '...update to dataset name:  ',self%dataname
 
-    ! bind axisymmetric specific pointers for convenience, in case they are needed elsewhere
+    ! bind cartesian specific pointers for convenience, in case they are needed elsewhere
     self%lyn=>self%lhorzn
     self%yn=>self%horzn
     self%yi=>self%horzi
   end subroutine init_neu2Dcart
 
 
-  !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
   subroutine set_coordsi_neu2Dcart(self,cfg,x)
     class(neutraldata2Dcart), intent(inout) :: self
@@ -63,6 +63,7 @@ contains
     integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
 
     ! Space for coordinate sites and projections in neutraldata2D object
+    print*, x%lx1,x%lx2,x%lx3
     allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord2i(x%lx1*x%lx2*x%lx3))
     allocate(self%coord3i(0))    ! destructor assumes this has been allocated
     self%zi=>self%coord1i; self%horzi=>self%coord2i;     ! coordinates of interpolation sites
@@ -160,7 +161,7 @@ contains
     !call clear_unitvecs(x)
 
     !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
-    print *, 'Min/max yi,zi values',minval(self%yi),maxval(self%yi),minval(self%zi),maxval(self%zi)
+    print *, 'Min/max yi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
     print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
     print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
     print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
