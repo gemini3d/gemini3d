@@ -54,7 +54,6 @@ contains
   end subroutine init_neu2Daxisymm
 
 
-  !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
   subroutine set_coordsi_neu2Daxisymm(self,cfg,x)
     class(neutraldata2Daxisymm), intent(inout) :: self
@@ -187,7 +186,6 @@ contains
   end subroutine set_coordsi_neu2Daxisymm
 
 
-  !! FIXME: may be specific to axisymmetric vs. cartesian
   !> load source data size and grid information -- all workers will separates read these data.
   !    Note that this routine will allocate sizes for source coordinates grids in constrast
   !    with other inputdata type extensions which have separate load_size, allocate, and
