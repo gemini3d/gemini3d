@@ -1,4 +1,4 @@
-submodule (grid) grid_read
+submodule (grid_mpi) grid_read_mpi
 
 !use mpimod, only : mpi_realprec
 
@@ -51,10 +51,12 @@ module procedure read_grid_cart
   call enforce_gridmpi_periodic(flagperiodic,x)
 
   !> Set flags for module scope vars.
-  gridflag=x%gridflag
+  !gridflag=x%gridflag
+  call set_gridflag(x%gridflag)
 
   !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-  g1=>x%g1; g2=>x%g2; g3=>x%g3
+  !g1=>x%g1; g2=>x%g2; g3=>x%g3
+  call bind_grav_ptrs(x%g1,x%g2,x%g3)
 
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
@@ -102,10 +104,12 @@ module procedure read_grid_dipole
   call enforce_gridmpi_periodic(flagperiodic,x)
 
   !> Set flags for module scope vars.
-  gridflag=x%gridflag
+  !gridflag=x%gridflag
+  call set_gridflag(x%gridflag)
 
   !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-  g1=>x%g1; g2=>x%g2; g3=>x%g3
+  !g1=>x%g1; g2=>x%g2; g3=>x%g3
+  call bind_grav_ptrs(x%g1,x%g2,x%g3)
 
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
@@ -256,4 +260,4 @@ subroutine gather_grid_workers(h1,h2,h3, &
   call gather_send(glon,tag%glon)
 end subroutine gather_grid_workers
 
-end submodule grid_read
+end submodule grid_read_mpi

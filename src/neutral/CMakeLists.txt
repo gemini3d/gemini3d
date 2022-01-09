@@ -14,12 +14,12 @@ MPI::MPI_Fortran
 add_executable(test_proj test_proj.f90
 $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:geomagnetic>
 $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole>
-$<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:autogrid>
+$<TARGET_OBJECTS:grid_mpi> $<TARGET_OBJECTS:autogrid>
 $<TARGET_OBJECTS:neutral> $<TARGET_OBJECTS:interp>
 )
 target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(test_proj PRIVATE config const reader inputdata
-neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
+neutraldata grid neutraldata3D_mpi neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 timeutils pathlib mpimod const
 hwm_ifc
 msis_ifc msis00mod

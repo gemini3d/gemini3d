@@ -30,7 +30,7 @@ add_subdirectory(sources)
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
 target_link_libraries(multifluid_mpi PRIVATE const mpimod)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid meshobj ionization multifluid_mpi precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid_mpi grid meshobj ionization multifluid_mpi precipBCs sources timeutils config)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)
@@ -65,7 +65,7 @@ pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources sources_mpi temporal timeutils
 exe_frontend
-grid io
+grid grid_mpi io
 PDEelliptic potential mumps_interface
 mpimod
 autogrid
