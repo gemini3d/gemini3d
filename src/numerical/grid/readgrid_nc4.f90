@@ -1,4 +1,4 @@
-submodule (grid:grid_read) readgrid_nc4
+submodule (grid) readgrid_nc4
 
 use phys_consts, only: debug
 use nc4fortran, only: netcdf_file

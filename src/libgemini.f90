@@ -22,7 +22,8 @@ use gemini_cli, only : cli
 use config, only : read_configfile
 use sanity_check, only : check_finite_output, check_finite_pertub
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
+use grid, only: lx1,lx2,lx3,lx2all,lx3all
+use grid_mpi, only: grid_size,read_grid,grid_drift
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,output_plasma, output_aur, output_cond, find_milestone

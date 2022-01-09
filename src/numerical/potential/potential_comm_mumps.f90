@@ -9,7 +9,7 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
-use grid, only: gridflag, lx1,lx2all,lx3all, g1,g2,g3
+use grid, only: gridflag, lx1,lx2all,lx3all,g1,g2,g3
 use meshobj, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt

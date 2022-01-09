@@ -10,7 +10,7 @@ endif()
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)
 target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90
-$<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid>
+$<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid_mpi>  $<TARGET_OBJECTS:grid>
 $<TARGET_OBJECTS:mpimod>
 $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:geomagnetic>
 $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>

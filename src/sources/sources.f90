@@ -4,7 +4,6 @@ use calculus, only : grad3d1
 use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use meshobj, only : curvmesh
-use grid, only : g1
 
 implicit none (type, external)
 private
@@ -424,7 +423,7 @@ do isp=1,lsp
                 -pressure*gradlp1 &
                 -gradQ &
                 +geom &
-                +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*g1
+                +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*x%g1
 end do
 
 end subroutine srcsMomentum_curv
