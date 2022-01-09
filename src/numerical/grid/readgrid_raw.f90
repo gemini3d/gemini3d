@@ -1,4 +1,4 @@
-submodule (grid:grid_read) readgrid_raw
+submodule (grid) readgrid_raw
 
 use phys_consts, only: debug
 

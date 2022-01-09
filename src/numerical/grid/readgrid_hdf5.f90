@@ -1,4 +1,4 @@
-submodule (grid:grid_read) readgrid_hdf5
+submodule (grid) readgrid_hdf5
 
 use phys_consts, only: debug
 use h5fortran, only: hdf5_file
