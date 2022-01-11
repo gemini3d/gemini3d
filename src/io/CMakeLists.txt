@@ -5,8 +5,6 @@ add_library(logging OBJECT logging.f90)
 add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
 
-add_subdirectory(pathlib)
-
 # --- error handling -- dump data to disk
 add_library(errors OBJECT error_stop.f90)
 target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
@@ -49,7 +47,9 @@ endif()
 
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
-target_link_libraries(config PRIVATE pathlib const)
+target_link_libraries(config PRIVATE const
+FortranPathlib::pathlib
+)
 
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
 
@@ -64,7 +64,9 @@ TIMEOUT 10
 )
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
-target_link_libraries(test_compiler_vendor PRIVATE config pathlib)
+target_link_libraries(test_compiler_vendor PRIVATE config
+FortranPathlib::pathlib
+)
 add_test(NAME unit:compiler_vendor
 COMMAND $<TARGET_FILE:test_compiler_vendor>
 )
@@ -75,7 +77,9 @@ TIMEOUT 10
 )
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
-target_link_libraries(test_expand_envvar PRIVATE config pathlib)
+target_link_libraries(test_expand_envvar PRIVATE config
+FortranPathlib::pathlib
+)
 add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
 set_tests_properties(unit:expand_envvar PROPERTIES
 ENVIRONMENT test__gem=hello
@@ -96,13 +100,17 @@ plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_ra
 milestone.f90
 )
 
-target_link_libraries(io PRIVATE calculus config const reader grid mpimod pathlib sanity_check timeutils
+target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
 h5fortran::h5fortran nc4fortran::nc4fortran
+FortranPathlib::pathlib
 )
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
-target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
+target_link_libraries(reader PRIVATE const
+h5fortran::h5fortran nc4fortran::nc4fortran
+FortranPathlib::pathlib
+)
 
 if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
   add_executable(test_simsize_nc4 test_simsize_nc4.f90)

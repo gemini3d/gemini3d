@@ -5,6 +5,7 @@ hwloc openmpi
 lapack mumps scalapack
 matgemini
 nc4fortran h5fortran
+pathlib
 )
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)

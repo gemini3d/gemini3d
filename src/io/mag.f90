@@ -1,7 +1,7 @@
 submodule (io) mag
 
 use sanity_check, only : check_finite_mag
-use pathlib, only : copyfile, mkdir
+use pathlib, only : mkdir
 
 implicit none (type, external)
 
@@ -42,7 +42,7 @@ integer :: ierr
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
 call mkdir(outdir//'/magfields/')
 ! call mkdir(outdir//'/magfields/input/')
-! call copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
+! call copy_file(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
 
 end procedure create_outdir_mag
 

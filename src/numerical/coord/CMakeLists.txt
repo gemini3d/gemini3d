@@ -38,13 +38,15 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
-target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj pathlib const
+target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+FortranPathlib::pathlib
 )
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
-target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj pathlib const
+target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+FortranPathlib::pathlib
 )
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)

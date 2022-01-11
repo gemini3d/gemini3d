@@ -57,7 +57,6 @@ neutraldata neutraldata3D neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 neutral
-pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources temporal timeutils
 exe_frontend
@@ -109,6 +108,7 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
+FortranPathlib::pathlib
 )
 
 # same link logic applied to src/unit_tests/test_mumps
