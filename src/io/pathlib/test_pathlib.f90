@@ -1,7 +1,7 @@
 program pathlib_test
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute, directory_exists, &
+use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute, is_dir, &
 file_name, parent, stem, suffix
 
 implicit none (type, external)
@@ -12,7 +12,7 @@ call test_get_filename()
 
 call test_expanduser_absolute()
 
-call test_directory_exists()
+call test_is_dir()
 
 
 contains
@@ -38,19 +38,19 @@ if (suffix("hi") /= "") error stop "suffix idempotent failed"
 end subroutine test_manip
 
 
-subroutine test_directory_exists()
+subroutine test_is_dir()
 
 integer :: i
 
-if(.not.(directory_exists('.'))) error stop "did not detect '.' as directory"
+if(.not.(is_dir('.'))) error stop "did not detect '.' as directory"
 
 open(newunit=i, file='test-pathlib.h5', status='replace')
 close(i)
-if((directory_exists('test-pathlib.h5'))) error stop "detected file as directory"
+if((is_dir('test-pathlib.h5'))) error stop "detected file as directory"
 call unlink('test-pathlib.h5')
 
-print *," OK: pathlib: directory_exists"
-end subroutine test_directory_exists
+print *," OK: pathlib: is_dir"
+end subroutine test_is_dir
 
 
 subroutine test_get_filename()

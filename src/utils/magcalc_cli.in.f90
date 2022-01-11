@@ -2,7 +2,7 @@ module magcalc_cli
 
 use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
-use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
+use pathlib, only : assert_is_file, assert_is_dir, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use phys_consts, only : wp
 use timeutils, only : dateinc
@@ -28,8 +28,6 @@ integer :: argc, i, iarg, ierr
 character(256) :: argv
 character(8) :: date
 character(10) :: time
-
-logical :: file_exists
 
 
 cfg%git_revision = "@git_rev@"
@@ -132,9 +130,9 @@ call read_configfile(cfg)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (mpi_cfg%myid==0) then
-  call assert_file_exists(cfg%indatsize)
-  call assert_file_exists(cfg%indatgrid)
-  call assert_file_exists(cfg%indatfile)
+  call assert_is_file(cfg%indatsize)
+  call assert_is_file(cfg%indatgrid)
+  call assert_is_file(cfg%indatfile)
 
   print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' start year-month-day:  ',cfg%ymd0(1),'-',cfg%ymd0(2),'-',cfg%ymd0(3)
   print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
@@ -143,7 +141,7 @@ if (mpi_cfg%myid==0) then
   print '(A,/,A,/,A,/,A)', 'magcalc.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
   if(cfg%flagdneu==1) then
-    call assert_directory_exists(cfg%sourcedir)
+    call assert_is_dir(cfg%sourcedir)
     print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
     print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
     print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
@@ -151,13 +149,13 @@ if (mpi_cfg%myid==0) then
   end if
 
   if (cfg%flagprecfile==1) then
-    call assert_directory_exists(cfg%precdir)
+    call assert_is_dir(cfg%precdir)
     print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
     print *, 'Precipitation file input source directory:  ' // cfg%precdir
   end if
 
   if(cfg%flagE0file==1) then
-    call assert_directory_exists(cfg%E0dir)
+    call assert_is_dir(cfg%E0dir)
     print *, 'Electric field file input cadence (s):  ',cfg%dtE0
     print *, 'Electric field file input source directory:  ' // cfg%E0dir
   end if

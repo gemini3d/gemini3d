@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, 
 use phys_consts, only : wp
 use config, only : get_compiler_vendor, gemini_cfg, read_configfile
 use hwloc_ifc, only : get_cpu_count
-use pathlib, only : parent, file_name, assert_directory_exists, expanduser, suffix
+use pathlib, only : parent, file_name, assert_is_dir, expanduser, suffix
 use timeutils, only : date_filename,dateinc
 
 implicit none (type, external)
@@ -53,7 +53,7 @@ endif
 
 !> simulation data directory
 path = trim(buf)
-call assert_directory_exists(path)
+call assert_is_dir(path)
 
 plan = .false.
 extra = ""

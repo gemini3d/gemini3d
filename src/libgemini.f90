@@ -25,7 +25,7 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
-use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
+use io, only : input_plasma,create_outdir,output_plasma, output_aur, output_cond, find_milestone
 use pathlib, only : expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
@@ -188,7 +188,6 @@ call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 
 if (mpi_cfg%myid==0) then
   call create_outdir(cfg)
-  if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
 end if
 
 
@@ -342,7 +341,9 @@ allocate(muP(lx1,lx2,lx3,lsp))
 allocate(muH, nusn, mold=muP)
 call conductivities(nn,Tn,ns,Ts,vs1,B1, sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
-deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+!> optional output to file
+call output_cond(cfg%outdir, ymd, UTsec, sig0, sigP, sigH, cfg%out_format)
+deallocate(sig0, sigP, sigH, muP, muH, nusn, sigPgrav, sigHgrav)
 deallocate(E01,E02,E03)
 if(mpi_cfg%myid == 0) then
   print*, 'Recomputed initial drifts:  '

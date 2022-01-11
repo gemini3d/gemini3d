@@ -4,10 +4,8 @@ implicit none (type, external)
 
 contains
 
-module procedure directory_exists
-
-inquire(directory=expanduser(path), exist=exists)
-
-end procedure directory_exists
+module procedure is_dir
+inquire(directory=expanduser(path), exist=is_dir)
+end procedure is_dir
 
 end submodule pathlib_intel

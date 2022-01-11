@@ -85,6 +85,9 @@ integer :: x3all=95
 !> AURORAL (S)
 integer :: Aur=96
 
+!> conductivity file write
+integer :: io_sig0 = 116, io_sigP = 117, io_sigH = 118
+
 !!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS; MZ - probably need to fix???
 !integer :: genericparam=97
 

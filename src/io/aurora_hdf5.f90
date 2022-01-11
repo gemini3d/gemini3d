@@ -1,13 +1,12 @@
 submodule(io:io_aurora) io_aurora_hdf5
 
-use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
+
 implicit none (type, external)
 
 contains
 
 module procedure output_aur_root_hdf5
-  ! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
   !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
   !! NO GHOST CELLS (I HOPE)
 
@@ -21,8 +20,6 @@ module procedure output_aur_root_hdf5
   real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !< output array in the order scripts expect
   integer :: iwave
 
-  character(:), allocatable :: outdir_composite, filenamefull
-
   !! gather output from workers
   do iwave=1,lwave
     emistmp=iver(:,:,iwave)
@@ -31,11 +28,9 @@ module procedure output_aur_root_hdf5
   end do
 
   !! create an output file
-  outdir_composite=outdir//'/aurmaps/'
-  filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.h5'
-  print *, 'Output file name (auroral maps):  ',filenamefull
+  print *, 'write aurora:  ',filename
 
-  call hout%open(filenamefull, action='rw', comp_lvl=comp_lvl)
+  call hout%open(filename, action='w', comp_lvl=comp_lvl)
 
   !! write data to file
   call hout%write('/aurora/iverout', real(iverout))

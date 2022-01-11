@@ -89,6 +89,7 @@ endif()
 configure_file(output.in.f90 output.f90 @ONLY)
 add_library(io OBJECT io.f90 ${CMAKE_CURRENT_BINARY_DIR}/output.f90
 aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
+cond.f90 cond_hdf5.f90
 mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
 plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
 plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90

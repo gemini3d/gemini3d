@@ -14,12 +14,11 @@ private
 public :: create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
-  create_outdir_aur, output_aur,find_milestone
+  output_aur, output_cond, &
+  find_milestone
 
-interface ! aurora.f90
-  module subroutine create_outdir_aur(outdir)
-    character(*), intent(in) :: outdir
-  end subroutine create_outdir_aur
+
+interface !< aurora.f90
 
   module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
     character(*), intent(in) :: outdir, out_format
@@ -29,12 +28,22 @@ interface ! aurora.f90
     real(wp), dimension(:,:,:), intent(in) :: iver
   end subroutine output_aur
 
-  module subroutine output_aur_workers(iver)
-    real(wp), dimension(:,:,:), intent(in) :: iver
-  end subroutine output_aur_workers
 end interface
 
-interface ! mag.f90
+
+interface !< cond.f90
+
+  module subroutine output_cond(outdir, ymd, UTsec, sig0, sigP, sigH, out_format)
+    character(*), intent(in) :: outdir, out_format
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(in) :: sig0, sigP, sigH
+  end subroutine output_cond
+
+end interface
+
+
+interface !< mag.f90
   module subroutine create_outdir_mag(outdir,fieldpointfile)
     character(*), intent(in) :: outdir
     character(*), intent(in) :: fieldpointfile
@@ -48,7 +57,8 @@ interface ! mag.f90
   end subroutine output_magfields
 end interface
 
-interface ! plasma.f90
+
+interface !< plasma.f90
   module subroutine input_plasma(out_dir, x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
     character(*), intent(in) :: out_dir
     real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
@@ -81,13 +91,15 @@ interface ! plasma.f90
   end subroutine output_plasma
 end interface
 
-interface ! output.f90
+
+interface !< output.f90
   module subroutine create_outdir(cfg)
     class(gemini_cfg), intent(in) :: cfg
   end subroutine create_outdir
 end interface
 
-interface ! milestone.f90
+
+interface !< milestone.f90
   module subroutine find_milestone(cfg, tmile,ymdmile,UTsecmile,filemile)
     class(gemini_cfg), intent(in) :: cfg
     real(wp), intent(out) :: tmile

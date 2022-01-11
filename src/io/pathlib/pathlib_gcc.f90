@@ -4,8 +4,8 @@ implicit none (type, external)
 
 contains
 
-module procedure directory_exists
-!! For GCC Gfortran, similar for other compilers
+module procedure is_dir
+
 integer :: i, statb(13)
 character(:), allocatable :: wk
 
@@ -13,23 +13,22 @@ wk = expanduser(path)
 
 !! must not have trailing slash on Windows
 i = len_trim(wk)
-if (wk(i:i) == char(92) .or. wk(i:i) == '/') wk = wk(1:i-1)
+if (wk(i:i) == '/') wk = wk(1:i-1)
 
-
-inquire(file=wk, exist=exists)
-if(.not.exists) return
+inquire(file=wk, exist=is_dir)
+if(.not.is_dir) return
 
 i = stat(wk, statb)
 if(i /= 0) then
-  exists = .false.
+  is_dir = .false.
   return
 endif
 
 i = iand(statb(3), O'0040000')
-exists = i == 16384
+is_dir = i == 16384
 
 ! print '(O8)', statb(3)
 
-end procedure directory_exists
+end procedure is_dir
 
 end submodule pathlib_gcc

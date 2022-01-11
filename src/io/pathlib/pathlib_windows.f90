@@ -52,7 +52,7 @@ character(:), allocatable  :: buf
 
 buf = expanduser(path)
 
-if(directory_exists(buf)) return
+if(is_dir(buf)) return
 
 call execute_command_line(CMD // filesep_windows(buf), exitstat=i, cmdstat=j)
 if (i /= 0 .or. j /= 0) error stop "could not create directory " // path
