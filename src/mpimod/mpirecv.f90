@@ -52,7 +52,7 @@ module procedure gather_recv3D_23
 integer :: ierr
 integer :: lx1,lx2,lx3,lx2all,lx3all
 integer :: iid
-integer, dimension(4) :: inds
+integer, dimension(4) :: i
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
 !! buffer space for mpi receive, includes only x1 ghost cells
 
@@ -73,8 +73,8 @@ do iid=1,mpi_cfg%lid-1
   call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
                 mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   !! receive chunk of data into buffer
-  inds=slabinds(iid,lx2,lx3)
-  paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
+  i = slabinds(iid, lx2, lx3)
+  paramtrimall(1:lx1, i(1):i(2), i(3):i(4)) = paramtmp    !note the exclusion of the ghost cells
 end do
 
 end procedure gather_recv3D_23
@@ -134,12 +134,12 @@ module procedure gather_recv3D_ghost_23
   integer :: iid
   real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
   integer, dimension(4) :: inds
-  
+
   !> note here that param has ghost cells
   lx1=size(param,1)-4
   lx2=size(param,2)-4
   lx3=size(param,3)-4
-  
+
   paramall(-1:lx1+2,-1:lx2+2,-1:lx3+2)=param(-1:lx1+2,-1:lx2+2,-1:lx3+2)
   !! root records his own piece of the grid into full grid variable
 
@@ -160,12 +160,12 @@ module procedure gather_recv3D_x2i_23
   integer :: iid
   real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
-  
+
   !> note here that param has ghost cells
   lx1=size(param,1)
   lx2=size(param,2)-1    ! input data has extra interface for x2
   lx3=size(param,3)
-  
+
   paramall(1:lx1,1:lx2+1,1:lx3)=param(1:lx1,1:lx2+1,1:lx3)
   !! root records his own piece of the grid into full grid variable
 
@@ -186,12 +186,12 @@ module procedure gather_recv3D_x3i_23
   integer :: iid
   real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
-  
+
   !> note here that param has ghost cells
   lx1=size(param,1)
   lx2=size(param,2)
   lx3=size(param,3)-1    ! x3 interface
-  
+
   paramall(1:lx1,1:lx2,1:lx3+1)=param(1:lx1,1:lx2,1:lx3+1)
   !! root records his own piece of the grid into full grid variable
 
