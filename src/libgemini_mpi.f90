@@ -1,0 +1,149 @@
+module gemini3d_mpi
+
+implicit none (type, external)
+
+contains
+  !> establish gemini process grid
+  subroutine procgrid()
+    if (lid2in==-1) then
+      call process_grid_auto(lx2all, lx3all)
+      !! grid_size defines lx2all and lx3all
+    else
+      call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
+    endif
+    print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
+    print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
+  end subroutine procgrid
+
+  !> Create output directories and allocate root-only variables
+  subroutine outdir_fullgridvaralloc()
+    !> create a place, if necessary, for output datafiles 
+    if (mpi_cfg%myid==0) then
+      call create_outdir(cfg)
+      if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
+    end if  
+
+    !> fullgrid variable allocations only needed for the potential variable
+    if (mpi_cfg%myid==0) then
+      allocate(Phiall(lx1,lx2all,lx3all))
+    end if
+  end subroutine outdir_fullgridvars()
+
+
+  !> Determine whether we are restarting vs. starting from a user-specified state.  Note that this uses mpi right now but
+  !    with Michael's h5fortran-mpi library this call will be executed by all workers
+  subroutine get_initial_state()
+    call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
+    if ( ttmp > 0 ) then
+      !! restart scenario
+      !if (mpi_cfg%myid==0) then
+        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+        print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
+        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+      !end if
+    
+      !! Set start variables accordingly and read in the milestone
+      UTsec=UTsectmp
+      ymd=ymdtmp
+      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
+      !if (mpi_cfg%myid==0) then
+        print*, 'Treating the following file as initial conditions:  ',filetmp
+        print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
+      !end if
+    
+      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
+    
+      cfg%tdur=tdur         ! just to insure consistency
+      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
+    else !! start at the beginning
+      UTsec = cfg%UTsec0
+      ymd = cfg%ymd0
+      tdur = cfg%tdur
+    
+      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
+      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
+    end if
+  end subroutine get_initial_state
+
+
+  !> add in background field, accounting for whether the user specified a lagrangian grid
+  subroutine BGfield_Lagrangian()
+    allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
+    E01=0; E02=0; E03=0;
+    if (cfg%flagE0file==1) then
+      call get_BGEfields(x,E01,E02,E03)
+    end if
+    if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
+      call grid_drift(x,E02,E03,v2grid,v3grid)
+      if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
+    else                            ! stationary grid
+      v2grid = 0
+      v3grid = 0
+      E1 = E1 + E01    ! FIXME: this is before dist fields are computed???
+      E2 = E2 + E02
+      E3 = E3 + E03
+    end if
+  end subroutine BGfields_Lagrangian
+
+
+  !> check whether user called for a dryrun and end the program if so
+  subroutine check_dryrun()
+    if (cfg%dryrun) then
+      ierr = mpibreakdown()
+      if (ierr /= 0) error stop 'Gemini dry run MPI shutdown failure'
+      block
+        character(8) :: date
+        character(10) :: time
+  
+        call date_and_time(date,time)
+        print '(/,A)', 'DONE: ' // date(1:4) // '-' // date(5:6) // '-' // date(7:8) // 'T' &
+          // time(1:2) // ':' // time(3:4) // ':' // time(5:)
+        stop "OK: Gemini dry run"
+      end block
+    endif
+  end subroutine check_dryrun 
+
+
+  !> see if we need to perform an output
+  subroutine check_fileoutput()
+    if (abs(t-tout) < 1d-5) then
+      tout = tout + cfg%dtout
+      if (cfg%nooutput ) then
+        if (mpi_cfg%myid==0) write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
+        cycle main
+      endif
+      !! close enough to warrant an output now...
+      if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
+  
+      !! We may need to adjust flagoutput if we are hitting a milestone
+      flagoutput=cfg%flagoutput
+      if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
+        flagoutput=1    !force a full output at the milestone
+        call output_plasma(cfg%outdir,flagoutput,ymd, &
+          UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+          cfg%out_format)
+        tmilestone = t + cfg%dtout * cfg%mcadence
+        if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
+      else
+        call output_plasma(cfg%outdir,flagoutput,ymd, &
+          UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+          cfg%out_format)
+      end if
+      if (mpi_cfg%myid==0 .and. debug) then
+        call cpu_time(tfin)
+        print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      endif
+    end if
+  
+    !> GLOW file output
+    if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
+      call cpu_time(tstart)
+      call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, iver, cfg%out_format)
+      if (mpi_cfg%myid==0) then
+        call cpu_time(tfin)
+        print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
+      end if
+      tglowout = tglowout + cfg%dtglowout
+    end if
+  end subroutine check_fileoutput
+end module gemini3d_mpi
