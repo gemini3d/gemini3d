@@ -141,134 +141,34 @@ contains
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp,ttmp,tdur
     character(:), allocatable :: filetmp
-      !> For reproducing initial drifts; these are allocated and the deallocated since they can be large
-    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
-    real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
-    real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
       !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
       character(*), parameter :: msis2_param_file = "msis20.parm"
     
     !> initialize message passing
-    call mpisetup()
-    if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
+    call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
-    !> command line interface    
-    if(p%fortran_cli) then
-      call cli(cfg, lid2in, lid3in, debug)
-    else
-      block
-        character(size(p%out_dir)) :: buf
-        integer :: i
-        buf = "" !< ensure buf has no garbage characters
-    
-        do i = 1, len(buf)
-          if (p%out_dir(i) == c_null_char) exit
-          buf(i:i) = p%out_dir(i)
-        enddo
-        cfg%outdir = expanduser(buf)
-    
-        cfg%dryrun = p%dryrun
-        debug = p%debug
-      end block
-    endif
-
-    !> read the config input file 
-    call find_config(cfg)
-    call read_configfile(cfg, verbose=.false.)
-    call check_input_files(cfg)
-    
-    !> read the size out of the grid file
-    call grid_size(cfg%indatsize)
+    call cli_config_gridsize()
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
-    if (lid2in==-1) then
-      call process_grid_auto(lx2all, lx3all)
-      !! grid_size defines lx2all and lx3all
-    else
-      call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
-    endif
-    print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
-    print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
+    call procgrid()
     
     !> load the grid data from the input file
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
     
-    !> create a place, if necessary, for output datafiles 
-    if (mpi_cfg%myid==0) then
-      call create_outdir(cfg)
-      if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
-    end if
-   
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
     !> Allocate space for solutions
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-    allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
-      vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
-    allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2),B1(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
-             B2(-1:lx1+2,-1:lx2+2,-1:lx3+2),B3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-    allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
-             v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-    allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
-    allocate(Phi(lx1,lx2,lx3))
-    allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
-
-     !> space for integrated volume emission rates
-    if (cfg%flagglow /= 0) then
-      allocate(iver(lx2,lx3,lwave))
-      iver = 0
-    end if
-   
-    !> fullgrid variable allocations
-    if (mpi_cfg%myid==0) then
-      allocate(Phiall(lx1,lx2all,lx3all))
-    end if
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-
+    call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+ 
+    !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
+    call outdir_fullgridvaralloc()
     
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-    !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
-    !        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
-    !        should be anyway since that is what the user probably would expect and there is little performance penalty.
-    call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
-    if ( ttmp > 0 ) then
-      !! restart scenario
-      if (mpi_cfg%myid==0) then
-        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
-        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      end if
-    
-      !! Set start variables accordingly and read in the milestone
-      UTsec=UTsectmp
-      ymd=ymdtmp
-      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-      if (mpi_cfg%myid==0) then
-        print*, 'Treating the following file as initial conditions:  ',filetmp
-        print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
-      end if
-    
-      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
-    
-      cfg%tdur=tdur         ! just to insure consistency
-      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
-    else !! start at the beginning
-      UTsec = cfg%UTsec0
-      ymd = cfg%ymd0
-      tdur = cfg%tdur
-    
-      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
-      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
-    end if
-    
-    it = 1
-    t = 0
-    tout = t
-    tglowout = t
-    tneuBG=t
+    call get_initial_state()
+
+    !> Initialize some variables need for time stepping and output 
+    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
     
     !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
     !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -276,13 +176,7 @@ contains
     !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
     !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
     !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-    rhov2 = 0
-    rhov3 = 0
-    v2 = 0
-    v3 = 0
-    B2 = 0
-    B3 = 0
-    B1(1:lx1,1:lx2,1:lx3) = x%Bmag
+    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
     
@@ -290,20 +184,23 @@ contains
     if(mpi_cfg%myid==0) print*, 'Priming electric field input'
     call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
     
-    allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
-    E01=0; E02=0; E03=0;
-    if (cfg%flagE0file==1) then
-      call get_BGEfields(x,E01,E02,E03)
+    !> Recompute electrodynamic quantities needed for restarting
+    !> these do not include background
+    E1 = 0
+    call pot2perpfield(Phi,x,E2,E3)    
+    if(mpi_cfg%myid==0) then
+      print '(A)', 'Recomputed initial dist. fields:'
+      print*, '    gemini ',minval(E1),maxval(E1)
+      print*, '    gemini ',minval(E2),maxval(E2)
+      print*, '    gemini ',minval(E3),maxval(E3)
     end if
-    if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
-      call grid_drift(x,E02,E03,v2grid,v3grid)
-      if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
-    else                            ! stationary grid
-      v2grid = 0
-      v3grid = 0
-      E1 = E1 + E01
-      E2 = E2 + E02
-      E3 = E3 + E03
+    !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
+    call BGfield_Lagrangian()          
+    if (mpi_cfg%myid==0) then    
+      print*, 'Recomputed initial BG fields:'
+      print*, '    ',minval(E01),maxval(E01)
+      print*, '    ',minval(E02),maxval(E02)
+      print*, '    ',minval(E03),maxval(E03)
     end if
     
     !> Precipitation input setup
@@ -318,33 +215,11 @@ contains
         'This limitation comes from how MSIS 2.x is coded internally.'
       call msisinit(parmfile=msis2_param_file)
     end if
-    
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     
-    !> Recompute electrodynamic quantities needed for restarting
-    !> these do not include background
-    E1 = 0
-    call pot2perpfield(Phi,x,E2,E3)
-    if(mpi_cfg%myid==0) then
-      print '(A)', 'Recomputed initial dist. fields:'
-      print*, '    gemini ',minval(E1),maxval(E1)
-      print*, '    gemini ',minval(E2),maxval(E2)
-      print*, '    gemini ',minval(E3),maxval(E3)
-    
-      print*, 'Recomputed initial BG fields:'
-      print*, '    ',minval(E01),maxval(E01)
-      print*, '    ',minval(E02),maxval(E02)
-      print*, '    ',minval(E03),maxval(E03)
-    end if
-    
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
-    allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
-    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
-    deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    deallocate(E01,E02,E03)
+    call get_initial_drifts()
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
@@ -364,7 +239,7 @@ contains
     
     !> Main time loop
     main : do while (t < tdur)
-      !> TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
+      !> time step calculation, requires workers to report their most stringent local stability constraint
       dtprev = dt
       call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
       if (it>1) then
@@ -377,7 +252,7 @@ contains
         end if
       end if
     
-      !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS
+      !> get neutral background
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
         call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
@@ -389,20 +264,18 @@ contains
         end if
       end if
     
-      !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
+      !> get neutral perturbations
       if (cfg%flagdneu==1) then
         call cpu_time(tstart)
         call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
         call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
-    
         if (mpi_cfg%myid==0 .and. debug) then
           call cpu_time(tfin)
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
         endif
       end if
     
-    
-      !> POTENTIAL SOLUTION
+      !> compute potential solution
       call cpu_time(tstart)
       call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
       if (mpi_cfg%myid==0 .and. debug) then
@@ -410,7 +283,7 @@ contains
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
       endif
     
-      !> UPDATE THE FLUID VARIABLES
+      !> update fluid variables
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
       call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
       if (mpi_cfg%myid==0 .and. debug) then
@@ -422,82 +295,26 @@ contains
       ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
       call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
     
-      !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
+      !> update time variables
       it = it + 1
       t = t + dt
       if (mpi_cfg%myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
       call dateinc(dt,ymd,UTsec)
-    
       if (mpi_cfg%myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
       endif
     
-      if (cfg%dryrun) then
-        ierr = mpibreakdown()
-        if (ierr /= 0) error stop 'Gemini dry run MPI shutdown failure'
-        block
-          character(8) :: date
-          character(10) :: time
-    
-          call date_and_time(date,time)
-          print '(/,A)', 'DONE: ' // date(1:4) // '-' // date(5:6) // '-' // date(7:8) // 'T' &
-            // time(1:2) // ':' // time(3:4) // ':' // time(5:)
-          stop "OK: Gemini dry run"
-        end block
-      endif
+      !> see if we are doing a dry run and exit program if so
+      call check_dryrun()
     
       !> File output
-      if (abs(t-tout) < 1d-5) then
-        tout = tout + cfg%dtout
-        if (cfg%nooutput ) then
-          if (mpi_cfg%myid==0) write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
-          cycle main
-        endif
-        !! close enough to warrant an output now...
-        if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-    
-        !! We may need to adjust flagoutput if we are hitting a milestone
-        flagoutput=cfg%flagoutput
-        if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
-          flagoutput=1    !force a full output at the milestone
-          call output_plasma(cfg%outdir,flagoutput,ymd, &
-            UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
-            cfg%out_format)
-          tmilestone = t + cfg%dtout * cfg%mcadence
-          if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
-        else
-          call output_plasma(cfg%outdir,flagoutput,ymd, &
-            UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
-            cfg%out_format)
-        end if
-        if (mpi_cfg%myid==0 .and. debug) then
-          call cpu_time(tfin)
-          print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-        endif
-      end if
-    
-      !> GLOW file output
-      if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
-        call cpu_time(tstart)
-        call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, iver, cfg%out_format)
-        if (mpi_cfg%myid==0) then
-          call cpu_time(tfin)
-          print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
-        end if
-        tglowout = tglowout + cfg%dtglowout
-      end if
+      call check_fileoutput()
     end do main
     
-    
-    !> DEALLOCATE module data. We haven't verified it's strictly necessary, but it's been our practice.
-    deallocate(ns,vs1,vs2,vs3,Ts)
-    deallocate(E1,E2,E3,J1,J2,J3)
-    deallocate(nn,Tn,vn1,vn2,vn3)
+    !> deallocate variables and module data
+    call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
-    if (cfg%flagglow/=0) deallocate(iver)
-    
-    !> Neutral module has various arrays that technically should be deallocated
     call clear_dneu()
   end subroutine gemini_main
   
