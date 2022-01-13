@@ -18,7 +18,6 @@ module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use advec, only: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
-use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
@@ -28,15 +27,14 @@ use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
-use sources_mpi, only: RK2_prep_mpi_allspec
 use timeutils, only : sza
 use config, only: gemini_cfg
-use multifluid_mpi, only: halo_allparams
-use mpimod, only: mpi_cfg
+
 
 implicit none (type, external)
 private
-public :: fluid_adv
+public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
 
 integer, parameter :: lprec=2
 !! number of precipitating electron populations
@@ -47,104 +45,6 @@ real(wp), parameter :: xicon = 3
 !! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 contains
-
-!> this advances the fluid soluation by time interval dt
-subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
-  !! J1 needed for heat conduction; E1 for momentum equation
-  !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-  real(wp), dimension(:,:,:), intent(in) :: J1
-  !! needed for thermal conduction in electron population
-  real(wp), dimension(:,:,:), intent(inout) :: E1
-  !! will have ambipolar field added into it in this procedure...
-  type(gemini_cfg), intent(in) :: cfg
-  real(wp), intent(in) :: t,dt
-  class(curvmesh), intent(in) :: x
-  !! grid structure variable
-  real(wp), dimension(:,:,:,:), intent(in) :: nn
-  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
-  logical, intent(in) :: first  !< first time step
-  real(wp), dimension(:,:,:), intent(inout) :: iver
-  !! intent(out)
-  integer :: isp
-  real(wp) :: tstart,tfin
-  real(wp) :: f107,f107a
-  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
-  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim
-  real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
-  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
-  real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
-  
-  ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
-  f107=cfg%activ(2)
-  f107a=cfg%activ(1)
-  
-  ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
-  call v12rhov1(ns,vs1,rhovs1)
-  call T2rhoe(ns,Ts,rhoes) 
- 
-  ! advection substep for all species
-  call cpu_time(tstart)
-  call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
-  call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-  call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-  call halo_allparams(ns,rhovs1,rhoes,x%flagper)
-  call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
-  call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
-  call halo_allparams(ns,rhovs1,rhoes,x%flagper)
-  call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
-  call rhov12v1(ns,rhovs1,vs1)
-  call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-  end if
-  
-  ! post advection filling of null cells
-  call clean_param(x,1,ns)
-  call clean_param(x,2,vs1)
-  
-  ! Compute artifical viscosity and then execute compression calculation
-  call cpu_time(tstart)
-  call VNRicht_artvisc(ns,vs1,Q)
-  call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-  call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep and then converts back to temperature
-  call rhoe2T(ns,rhoes,Ts)
-  call clean_param(x,3,Ts)
-  call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-  end if
-  
-  ! Energy diffusion (thermal conduction) substep
-  call cpu_time(tstart)
-  call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
-  call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-  end if
-  
-  ! cleanup and convert to specific internal energy density for sources substeps
-  call clean_param(x,3,Ts)
-  call T2rhoe(ns,Ts,rhoes)
-  
-  !> solve all source/loss processes
-  call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver)
-
-  ! density to be cleaned after source/loss
-  call clean_param(x,3,Ts)
-  call clean_param(x,2,vs1)
-  call clean_param(x,1,ns)
-  
-  !should the electron velocity be recomputed here now that densities have changed...
-end subroutine fluid_adv
-
-
 !> sweep advection for all plasma parameters in the x3 direction
 subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   real(wp), intent(in) :: dt
@@ -224,27 +124,27 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
+  !if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  end if
+  !end if
   
   !ALL VELOCITY SOURCES
   call cpu_time(tstart)
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
   call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
+  !if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  end if
+  !end if
   
   !ALL MASS SOURCES
   call cpu_time(tstart)
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
   call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
   call cpu_time(tfin)
-  if (mpi_cfg%myid==0 .and. debug) then
+  !if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  end if
+  !end if
 end subroutine source_loss_allparams
 
 
@@ -449,7 +349,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
     else
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
-        if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
+        !if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
         PrprecipG=0; QeprecipG=0; iverG=0;
         call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
                             QeprecipG, iverG, PrprecipG)    ! bit messy but this will internally iterate over populations
@@ -461,19 +361,19 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
     end if
   else
     !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
-    if (mpi_cfg%myid==0 .and. debug) then
+    !if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
-    end if
+    !end if
   end if
   
-  if (mpi_cfg%myid==0) then
+  !if (mpi_cfg%myid==0) then
     if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
       minval(Prprecip), maxval(Prprecip)
-  end if
-  if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
-    if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
+  !end if
+  !if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
+    if (cfg%flagglow/=0 .and. debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
       minval(iver(:,:,2)), maxval(iver(:,:,2))
-  end if
+  !end if
 end subroutine impact_ionization
 
 
@@ -495,14 +395,16 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)
 
   ! solar zenith angle
   chi=sza(ymd(1),ymd(2),ymd(3),UTsec,x%glat,x%glon)
-  if (mpi_cfg%myid==0 .and. debug) then
+  !if (mpi_cfg%myid==0 .and. debug) then
+  if (debug) then
     print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
       minval(chi)*180/pi, maxval(chi)*180/pi
   end if
   
   ! solar fluxes and resulting ionization rates
   Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
-  if (mpi_cfg%myid==0 .and. debug) then
+  !if (mpi_cfg%myid==0 .and. debug) then
+  if (debug) then
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
       minval(Prpreciptmp), maxval(Prpreciptmp)
   end if
