@@ -52,7 +52,6 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   character(*), intent(in) :: indatsize,indatgrid
   integer, intent(in) :: flagperiodic
   class(curvmesh), allocatable, intent(inout) :: x
-  
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: islstart,islfin
   integer, dimension(2) :: indsgrid
@@ -160,7 +159,6 @@ end subroutine calc_subgrid_size
 
 subroutine grid_size(indatsize)
 !! CHECK THE SIZE OF THE GRID TO BE LOADED AND SET SIZES IN THIS MODULE (NOT IN STRUCTURE THOUGH)
-
   character(*), intent(in) :: indatsize
 
   if (mpi_cfg%myid==0) then
@@ -174,7 +172,6 @@ end subroutine grid_size
 
 subroutine grid_size_root(indatsize)
 !! DETERMINE THE SIZE OF THE GRID TO BE LOADED
-
   character(*), intent(in) :: indatsize
   integer :: i, ierr
   integer :: lx1,lx2all,lx3all
@@ -214,7 +211,6 @@ end subroutine grid_size_worker
 
 subroutine grid_drift(x,E02,E03,v2grid,v3grid)
 !! Compute the speed the grid is moving at given a background electric field
-
   class(curvmesh), intent(in) :: x
   reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
   real(wp), intent(inout) :: v2grid,v3grid
