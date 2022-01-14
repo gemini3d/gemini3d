@@ -86,12 +86,12 @@ print '(/,A,I0,A,I0,A)', 'GEMINI normal termination, Process # ', mpi_cfg%myid,'
 contains
   subroutine gemini_main(p, lid2in, lid3in)  bind(C)
     !! NOTE: if use_cli=.true., then {out_dir, lid2in, lid3in} are ignored and CLI is used instead.
-      type(c_params), intent(in) :: p
+    type(c_params), intent(in) :: p
     !! output directory for Gemini3D to write simulation data to (can be large files GB, TB, ...)
     integer(c_int), intent(inout) :: lid2in, lid3in  !< inout to allow optional CLI
-      integer :: ierr
+    integer :: ierr
     logical :: exists
-      !> VARIABLES READ IN FROM CONFIG FILE
+    !> VARIABLES READ IN FROM CONFIG FILE
     real(wp) :: UTsec
     !! UT (s)
     integer, dimension(3) :: ymd
