@@ -39,13 +39,19 @@ add_subdirectory(inputdata)
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
-add_library(gemini3d
-libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 )
 set_target_properties(gemini3d PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
+
+add_library(gemini3d_mpi libgemini_mpi.f90)
+set_target_properties(gemini3d_mpi PROPERTIES
+ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+target_link_libraries(gemini3d_mpi PRIVATE consts mpimod meshobj config io potential grid_mpi)
 
 set(gemini_internal_mods
 advec
