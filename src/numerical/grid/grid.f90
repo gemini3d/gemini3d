@@ -3,6 +3,7 @@
 module grid
 
 use phys_consts, only: wp
+use reader, only: get_simsize3
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
@@ -15,7 +16,7 @@ real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
 
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
-             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs
+             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs,grid_size
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
@@ -59,4 +60,14 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
 
     g1=>g1in; g2=>g2in; g3=>g3in
   end subroutine bind_grav_ptrs
+
+
+  subroutine grid_size(indatsize)
+  !! CHECK THE SIZE OF THE GRID TO BE LOADED AND SET SIZES IN THIS MODULE (NOT IN STRUCTURE THOUGH)
+    character(*), intent(in) :: indatsize
+  
+    call get_simsize3(indatsize, lx1, lx2all, lx3all)
+    print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
+    call set_total_grid_sizes(lx1,lx2all,lx3all)    !! set module global sizes for use on other contexts
+  end subroutine grid_size
 end module grid
