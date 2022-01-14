@@ -14,29 +14,53 @@
 
 module gemini3d
 
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
+use gemini_cli, only : cli
+use gemini_init, only : find_config, check_input_files
+use phys_consts, only: wp,debug,lnchem,lwave
+use meshobj, only: curvmesh
+use config, only: gemini_cfg
+use collisions, only: conductivities
+use pathlib, only : expanduser
+use grid, only: grid_size
+use config, only : read_configfile
+use potential_comm, only: velocities
+
 implicit none (type, external)
+
+type, bind(C) :: c_params
+  !! this MUST match gemini3d.h and libgemini.f90 exactly including order
+  logical(c_bool) :: fortran_cli, debug, dryrun
+  character(kind=c_char) :: out_dir(1000)
+  !! .ini [base]
+  integer(c_int) :: ymd(3)
+  real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
+  !! .ini
+end type c_params
 
 contains
   !> read command line args, config file, and size of grid
-  subroutine cli_config_gridsize()
+  subroutine cli_config_gridsize(p,cfg,lid2in,lid3in)
+    type(c_params), intent(in) :: p
+    type(gemini_cfg), intent(inout) :: cfg
+    integer, intent(inout) :: lid2in,lid3in
+    character(size(p%out_dir)) :: buf
+    integer :: i
+
     !> command line interface    
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
     else
-      block
-        character(size(p%out_dir)) :: buf
-        integer :: i
-        buf = "" !< ensure buf has no garbage characters
-    
-        do i = 1, len(buf)
-          if (p%out_dir(i) == c_null_char) exit
-          buf(i:i) = p%out_dir(i)
-        enddo
-        cfg%outdir = expanduser(buf)
-    
-        cfg%dryrun = p%dryrun
-        debug = p%debug
-      end block
+      buf = "" !< ensure buf has no garbage characters
+  
+      do i = 1, len(buf)
+        if (p%out_dir(i) == c_null_char) exit
+        buf(i:i) = p%out_dir(i)
+      enddo
+      cfg%outdir = expanduser(buf)
+  
+      cfg%dryrun = p%dryrun
+      debug = p%debug
     endif
 
     !> read the config input file 
@@ -51,12 +75,16 @@ contains
 
   !> allocate arrays
   ! FIXME: eventually needs to be a single block of memory
-  subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhomE1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+  subroutine gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
+    integer :: lx1,lx2,lx3,lsp
+
+    lx1=size(ns,1)-4; lx2=size(ns,2)-4; lx3=size(ns,3)-4; lsp=size(ns,4);
 
     allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
       vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
@@ -77,24 +105,33 @@ contains
 
 
   !> Compute initial perp drifts
-  subroutine get_initial_drifts()
+  subroutine get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), intent(in) :: ns,Ts,vs1
+    real(wp), dimension(:,:,:,:), intent(inout) :: vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) :: B1
+    real(wp), dimension(:,:,:), intent(in) :: E2,E3
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
-    real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
-
+    integer :: lx1,lx2,lx3,lsp
+    
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
     call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    deallocate(E01,E02,E03)
-  end subroutine initial_drifts
+  end subroutine get_initial_drifts
 
 
   !> deallocate arrays
-  subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+  subroutine gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,E1,E2,E3,J1,J2,J3,Phi
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
@@ -111,5 +148,4 @@ contains
       deallocate(iver)
     end if 
   end subroutine gemini_dealloc
-
 end module gemini3d

@@ -16,17 +16,13 @@ program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use gemini_init, only : find_config, check_input_files
-use gemini_cli, only : cli
-use config, only : read_configfile
 use sanity_check, only : check_finite_output, check_finite_pertub
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: lx1,lx2,lx3,lx2all,lx3all
-use grid_mpi, only: grid_size,read_grid,grid_drift
+use grid_mpi, only: read_grid,grid_drift
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
-use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
-use pathlib, only : expanduser
+use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
@@ -34,26 +30,18 @@ use multifluid_mpi, only: halo_allparams
 use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
 use potentialBCs_mumps, only: init_Efieldinput
-use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
-use collisions, only: conductivities
+use potential_comm,only : electrodynamics,pot2perpfield
 use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,get_initial_drifts
+use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian,check_dryrun,check_fileoutput
+use mpimod, only: mpi_init
 
 implicit none (type, external)
-
-type, bind(C) :: c_params
-  !! this MUST match gemini3d.h and libgemini.f90 exactly including order
-  logical(c_bool) :: fortran_cli, debug, dryrun
-  character(kind=c_char) :: out_dir(1000)
-  !! .ini [base]
-  integer(c_int) :: ymd(3)
-  real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
-  !! .ini
-end type c_params
 
 integer(c_int) :: lid2in, lid3in
 character(8) :: date
@@ -130,29 +118,24 @@ contains
     real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
       !> WORK ARRAYS
     real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
-      real(wp) :: tglowout
+    real(wp) :: tglowout
     !! time for next GLOW output
       !> TO CONTROL THROTTLING OF TIME STEP
     real(wp), parameter :: dtscale=2
       !> Temporary variable for toggling full vs. other output
     integer :: flagoutput
     real(wp) :: tmilestone = 0
-      !> Milestone information
-    integer, dimension(3) :: ymdtmp
-    real(wp) :: UTsectmp,ttmp,tdur
-    character(:), allocatable :: filetmp
       !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
-      character(*), parameter :: msis2_param_file = "msis20.parm"
+    character(*), parameter :: msis2_param_file = "msis20.parm"
     
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-
-    call cli_config_gridsize()
+    call cli_config_gridsize(p,cfg,lid2in,lid3in)
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
-    call procgrid()
+    call init_procgrid(lx2all,lx3all,lid2in,lid3in)
     
     !> load the grid data from the input file
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
@@ -162,10 +145,10 @@ contains
     call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
  
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
-    call outdir_fullgridvaralloc()
+    call outdir_fullgridvaralloc(cfg,Phiall,lx1,lx2all,lx3all)
     
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state()
+    call get_initial_state(cfg,x,ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
 
     !> Initialize some variables need for time stepping and output 
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
@@ -195,12 +178,12 @@ contains
       print*, '    gemini ',minval(E3),maxval(E3)
     end if
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian()          
+    call BGfield_Lagrangian(x,v2grid,v3grid,E1,E2,E3) 
     if (mpi_cfg%myid==0) then    
-      print*, 'Recomputed initial BG fields:'
-      print*, '    ',minval(E01),maxval(E01)
-      print*, '    ',minval(E02),maxval(E02)
-      print*, '    ',minval(E03),maxval(E03)
+      print*, 'Recomputed initial fields including background:'
+      print*, '    ',minval(E1),maxval(E1)
+      print*, '    ',minval(E2),maxval(E2)
+      print*, '    ',minval(E3),maxval(E3)
     end if
     
     !> Precipitation input setup
@@ -306,10 +289,10 @@ contains
       endif
     
       !> see if we are doing a dry run and exit program if so
-      call check_dryrun()
+      call check_dryrun(cfg)
     
       !> File output
-      call check_fileoutput()
+      call check_fileoutput(t,tout,tglowout,cfg,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
     end do main
     
     !> deallocate variables and module data
