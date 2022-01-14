@@ -103,6 +103,7 @@ jobs:
       CC: gcc-7
       CXX: g++-7
       FC: gfortran-7
+      cmake_version: '3.20.6'
 
     steps:
     - uses: actions/checkout@v2
@@ -110,12 +111,23 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install packages
+    - name: Install apt packages
+      timeout-minutes: 3
       run: |
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake 2>&1)
+
+    - name: Install Ninja
+      timeout-minutes: 1
+      run: |
         cmake -P scripts/install_ninja.cmake
         echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
+
+    - name: Install CMake 3.20
+      timeout-minutes: 1
+      run: |
+        cmake -Dversion=${cmake_version} -P scripts/install_cmake.cmake
+        echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Configure multi
       run: cmake --preset multi
