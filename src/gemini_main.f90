@@ -39,9 +39,9 @@ use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,get_initial_drifts
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian,check_dryrun,check_fileoutput
-use mpimod, only: mpi_init
 
 implicit none (type, external)
+external :: mpi_init
 
 integer(c_int) :: lid2in, lid3in
 character(8) :: date
@@ -113,19 +113,19 @@ contains
     !! time for next output and time between outputs
     real(wp) :: tstart,tfin
     !! temp. vars. for measuring performance of code blocks
-    integer :: it,isp, iupdate
+    integer :: it,isp,iupdate
     !! time and species loop indices
     real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
       !> WORK ARRAYS
     real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
-    real(wp) :: tglowout
+    real(wp) :: tglowout,tdur
     !! time for next GLOW output
-      !> TO CONTROL THROTTLING OF TIME STEP
+    !> TO CONTROL THROTTLING OF TIME STEP
     real(wp), parameter :: dtscale=2
-      !> Temporary variable for toggling full vs. other output
+    !> Temporary variable for toggling full vs. other output
     integer :: flagoutput
     real(wp) :: tmilestone = 0
-      !> Describing Lagrangian grid (if used)
+    !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
     character(*), parameter :: msis2_param_file = "msis20.parm"
     
@@ -142,7 +142,8 @@ contains
     !! read in a previously generated grid from filenames listed in input file
     
     !> Allocate space for solutions
-    call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+                        E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
  
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,Phiall,lx1,lx2all,lx3all)
@@ -178,7 +179,7 @@ contains
       print*, '    gemini ',minval(E3),maxval(E3)
     end if
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(x,v2grid,v3grid,E1,E2,E3) 
+    call BGfield_Lagrangian(cfg,x,v2grid,v3grid,E1,E2,E3) 
     if (mpi_cfg%myid==0) then    
       print*, 'Recomputed initial fields including background:'
       print*, '    ',minval(E1),maxval(E1)
@@ -202,7 +203,7 @@ contains
     call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    call get_initial_drifts()
+    call get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
@@ -292,11 +293,11 @@ contains
       call check_dryrun(cfg)
     
       !> File output
-      call check_fileoutput(t,tout,tglowout,cfg,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
+      call check_fileoutput(t,tout,tglowout,tmilestone,cfg,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
     call clear_dneu()
   end subroutine gemini_main
