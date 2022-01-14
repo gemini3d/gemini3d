@@ -10,6 +10,8 @@ use potential_comm, only: get_BGEfields
 use grid_mpi, only: grid_drift
 
 implicit none (type, external)
+private
+public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput
 
 contains
   !> establish gemini process grid

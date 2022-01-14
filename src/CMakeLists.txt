@@ -46,12 +46,11 @@ ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 
-add_library(gemini3d_mpi libgemini_mpi.f90)
+add_library(gemini3d_mpi OBJECT libgemini_mpi.f90)
 set_target_properties(gemini3d_mpi PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-target_link_libraries(gemini3d_mpi PRIVATE consts mpimod meshobj config io potential grid_mpi)
 
 set(gemini_internal_mods
 advec
@@ -90,6 +89,7 @@ foreach(l ${gemini_internal_mods})
   )
 
   target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
+  target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
 
   target_link_libraries(gemini3d
   # PRIVATE $<TARGET_OBJECTS:${l}>
@@ -109,6 +109,7 @@ DEBUG_POSTFIX .debug
 )
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
+gemini3d_mpi
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK

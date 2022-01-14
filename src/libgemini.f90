@@ -17,16 +17,18 @@ module gemini3d
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
-use phys_consts, only: wp,debug,lnchem,lwave
+use phys_consts, only: wp,debug,lnchem,lwave,lsp
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use pathlib, only : expanduser
-use grid, only: grid_size
+use grid, only: grid_size,lx1,lx2,lx3
 use config, only : read_configfile
 use potential_comm, only: velocities
 
 implicit none (type, external)
+private
+public :: c_params, cli_config_gridsize, gemini_alloc, get_initial_drifts, gemini_dealloc
 
 type, bind(C) :: c_params
   !! this MUST match gemini3d.h and libgemini.f90 exactly including order
@@ -68,7 +70,7 @@ contains
     call read_configfile(cfg, verbose=.false.)
     call check_input_files(cfg)
     
-    !> read the size out of the grid file
+    !> read the size out of the grid file, store in module variables
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
 
@@ -82,9 +84,6 @@ contains
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
-    integer :: lx1,lx2,lx3,lsp
-
-    lx1=size(ns,1)-4; lx2=size(ns,2)-4; lx3=size(ns,3)-4; lsp=size(ns,4);
 
     allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
       vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
