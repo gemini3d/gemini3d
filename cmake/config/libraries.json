@@ -20,7 +20,7 @@
 
 "pathlib": {
   "git": "https://github.com/scivision/fortran-pathlib.git",
-  "tag": "v2.3.5"
+  "tag": "v2.4.2"
 },
 
 "h5fortran": {
