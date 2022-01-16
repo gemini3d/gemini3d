@@ -34,9 +34,9 @@ add_subdirectory(neutral)
 add_subdirectory(sources)
 
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
-target_link_libraries(multifluid_mpi PRIVATE const mpimod)
+target_link_libraries(multifluid_mpi PRIVATE const mpimod grid_mpi advec_mpi)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec advec_mpi calculus collision const diffusion grid_mpi grid meshobj ionization multifluid_mpi precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj ionization precipBCs sources timeutils config)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)
@@ -79,6 +79,32 @@ LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 
 set(gemini_internal_mods
 advec
+calculus config
+const
+collision
+diffusion fang interp
+ionization
+inputdata precipdata efielddata
+neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
+multifluid
+neutral
+pathlib
+PDEparabolic gbsv
+precipBCs reader sanity_check errors sources timeutils
+exe_frontend
+grid
+autogrid
+msis_ifc msis00mod
+hwm_ifc
+hwloc_ifc hwloc_c
+)
+if(msis2)
+  list(APPEND gemini_internal_mods msis2mod)
+endif()
+
+set(gemini_mpi_internal_mods
+advec
 advec_mpi
 calculus config
 const
@@ -101,16 +127,30 @@ autogrid
 hwloc_ifc hwloc_c
 )
 
-foreach(l ${gemini_internal_mods})
 
+foreach(l ${gemini_internal_mods})
   install(TARGETS ${l}
   EXPORT ${PROJECT_NAME}-targets
   )
 
   target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
-  target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
 
   target_link_libraries(gemini3d PUBLIC
+  # PRIVATE $<TARGET_OBJECTS:${l}>
+  # $<BUILD_INTERFACE:${l}>
+  $<INSTALL_INTERFACE:${l}>
+  # ${l}
+  )
+endforeach()
+
+foreach(l ${gemini_mpi_internal_mods})
+  install(TARGETS ${l}
+  EXPORT ${PROJECT_NAME}-mpi-targets
+  )
+
+  target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
+
+  target_link_libraries(gemini3d_mpi
   # PRIVATE $<TARGET_OBJECTS:${l}>
   # $<BUILD_INTERFACE:${l}>
   $<INSTALL_INTERFACE:${l}>
