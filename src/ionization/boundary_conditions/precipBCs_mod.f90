@@ -17,8 +17,6 @@ implicit none (type, external)
 private
 public :: precipBCs_fileinput, precipBCs, init_precipinput
 
-external :: mpi_send, mpi_recv
-
 ! single object containing all of the precipitation data input
 type(precipdata) :: eprecip
 
