@@ -26,6 +26,7 @@ use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
+use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
@@ -37,8 +38,9 @@ use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,get_initial_drifts
-use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian,check_dryrun,check_fileoutput
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc
+use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
+                          check_dryrun,check_fileoutput,get_initial_drifts
 
 implicit none (type, external)
 external :: mpi_init

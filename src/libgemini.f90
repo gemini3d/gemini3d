@@ -24,11 +24,10 @@ use collisions, only: conductivities
 use pathlib, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3
 use config, only : read_configfile
-use potential_comm, only: velocities
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, get_initial_drifts, gemini_dealloc
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc
 
 type, bind(C) :: c_params
   !! this MUST match gemini3d.h and libgemini.f90 exactly including order
@@ -101,29 +100,6 @@ contains
       iver = 0
     end if 
   end subroutine gemini_alloc
-
-
-  !> Compute initial perp drifts
-  subroutine get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
-    type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(in) :: nn
-    real(wp), dimension(:,:,:), intent(in) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:,:), intent(in) :: ns,Ts,vs1
-    real(wp), dimension(:,:,:,:), intent(inout) :: vs2,vs3
-    real(wp), dimension(:,:,:), intent(in) :: B1
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3
-    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
-    real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
-    integer :: lx1,lx2,lx3,lsp
-    
-    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
-    allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
-    allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
-    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
-    deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-  end subroutine get_initial_drifts
 
 
   !> deallocate arrays
