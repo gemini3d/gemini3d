@@ -334,6 +334,7 @@ contains
     real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
     real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
+    real(wp) :: gavg,Tninf
     
     ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
     f107=cfg%activ(2)
@@ -386,10 +387,13 @@ contains
     ! cleanup and convert to specific internal energy density for sources substeps
     call clean_param(x,3,Ts)
     call T2rhoe(ns,Ts,rhoes)
-    
+
+    !> all workers need to "agree" on a gravity and exospheric temperature
+    call get_gavg_Tinf(gavg,Tninf)
+
     !> solve all source/loss processes
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                     Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver)
+                                     Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
   
     ! density to be cleaned after source/loss
     call clean_param(x,3,Ts)
