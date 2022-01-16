@@ -7,7 +7,6 @@ use ionize_fang, only: fang2008, fang2010
 use grid, only: lx1,lx2,lx3,g1,g2,g3
 use meshobj, only: curvmesh
 use timeutils, only: ymd2doy
-use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
 implicit none (type, external)
 private
@@ -34,7 +33,7 @@ end interface
 contains
 
 
-function photoionization(x,nn,chi,f107,f107a)
+function photoionization(x,nn,chi,f107,f107a,gavg,Tninf)
 
 !------------------------------------------------------------
 !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
@@ -45,7 +44,7 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 !real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(:,:,:), intent(in) :: chi
 real(wp), intent(in) :: f107,f107a
-
+real(wp), intent(in) :: gavg,Tninf
 integer, parameter :: ll=22     !number of wavelength bins
 integer :: il,isp
 real(wp), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
@@ -56,10 +55,6 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
 real(wp) :: gavg,H,Tninf
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
-
-real(wp) :: Tninftmp
-integer :: iid, ierr
-
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 
 
@@ -117,38 +112,6 @@ pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.00
 
 !IRRADIANCE ACCORDING TO [RICHARDS, 1994]
 Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
-
-
-!GRAVITATIONAL FIELD AND AVERAGE VALUE
-g=sqrt(g1**2+g2**2+g3**2)
-!    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing column dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
-gavg=8._wp
-
-Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
-
-!both g and Tinf need to be computed as average over the entire grid...
-if (mpi_cfg%myid==0) then     !root
-  ierr=0
-  do iid=1,mpi_cfg%lid-1
-      call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      if (Tninf < Tninftmp) Tninf=Tninftmp
-  end do
-  if (ierr /= 0) error stop 'root failed to mpi_recv Tninf'
-
-  ierr=0
-  do iid=1,mpi_cfg%lid-1
-    call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,ierr)
-  end do
-  if (ierr /= 0) error stop 'root failed to mpi_send Tninf'
-
-  if (debug) print *, 'Exospheric temperature used for photoionization:  ',Tninf
-else                  !workders
-  call mpi_send(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
-  if (ierr /= 0) error stop 'worker failed to mpi_send Tninf'
-  call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
-  if (ierr /= 0) error stop 'worker failed to mpi_recv Tninf'
-end if
-
 
 
 !O COLUMN DENSITY
