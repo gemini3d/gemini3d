@@ -86,7 +86,7 @@ end subroutine sweep2_allparams
 
 !> execute diffusion of energy and then source/loss terms for all equations
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver)
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -100,6 +100,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   logical, intent(in) :: first
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), intent(in) :: gavg,Tninf
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
@@ -120,7 +121,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
   Qeprecip=0.0
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
-  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn)     ! solar ionization source
+  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
