@@ -1,7 +1,6 @@
 module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
-use neutral, only: Tnmsis
 use ionize_fang, only: fang2008, fang2010
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3,g1,g2,g3
@@ -53,7 +52,7 @@ real(wp), dimension(ll) :: Iinf
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: g,bigX,y,Chfn
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
-real(wp) :: gavg,H,Tninf
+real(wp) :: H
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 
