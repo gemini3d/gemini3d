@@ -1,10 +1,12 @@
 module ionization_mpi
 
-use phys_consts, only: wp
+use phys_consts, only: wp,debug
 use grid, only: lx1,lx2,lx3,g1,g2,g3
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
+use neutral, only: Tnmsis
 
 implicit none (type, external)
+external :: mpi_send,mpi_recv
 
 contains
   !> Query workers to get a single value for Tninf and gavg (or makes something up)
@@ -12,8 +14,10 @@ contains
     real(wp), intent(out) :: gavg,Tninf
     real(wp) :: Tninftmp
     integer :: iid, ierr
+    real(wp), dimension(:,:,:), allocatable :: g
 
     ! use an average value for the gravitational field; FIXME: perhaps should be done via averaging over all workers???
+    allocate(g(1:lx1,1:lx2,1:lx3))
     g=sqrt(g1**2+g2**2+g3**2)
     !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing column dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension; problematic for x2divisions...
     gavg=8._wp
@@ -42,5 +46,6 @@ contains
       call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
       if (ierr /= 0) error stop 'worker failed to mpi_recv Tninf'
     end if
+    deallocate(g)
   end subroutine
 end module ionization_mpi

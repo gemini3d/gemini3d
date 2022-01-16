@@ -60,10 +60,10 @@ collision
 diffusion fang interp
 ionization
 inputdata precipdata efielddata
-neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+#neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
-neutral
+#neutral
 pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
@@ -86,6 +86,7 @@ const
 collision
 diffusion fang interp
 ionization
+ionization_mpi
 inputdata precipdata efielddata
 neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
@@ -151,6 +152,19 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
 gemini3d_mpi
+mpimod
+advec_mpi
+grid_mpi
+io
+ionization_mpi
+multifluid_mpi
+neutral
+neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+potential
+sources_mpi
+temporal
+PDEparabolic gbsv
+PDEelliptic
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK

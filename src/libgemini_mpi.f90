@@ -6,12 +6,14 @@ use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir,create_outdir_aur
-use potential_comm, only: get_BGEfields
+use potential_comm, only: get_BGEfields,velocities
 use grid_mpi, only: grid_drift
+use collisions, only: conductivities
 
 implicit none (type, external)
 private
-public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput
+public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
+            get_initial_drifts
 
 contains
   !> establish gemini process grid
@@ -122,6 +124,29 @@ contains
     end if
     deallocate(E01,E02,E03)
   end subroutine BGfield_Lagrangian
+
+
+  !> Compute initial perp drifts
+  subroutine get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), intent(in) :: ns,Ts,vs1
+    real(wp), dimension(:,:,:,:), intent(inout) :: vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) :: B1
+    real(wp), dimension(:,:,:), intent(in) :: E2,E3
+    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
+    integer :: lx1,lx2,lx3,lsp
+    
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
+    allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
+    allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
+    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+    deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+  end subroutine get_initial_drifts
 
 
   !> check whether user called for a dryrun and end the program if so
