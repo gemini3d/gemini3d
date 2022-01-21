@@ -1,6 +1,6 @@
 submodule (io) io_aurora
 
-use pathlib, only : mkdir, is_dir
+use filesystem, only : mkdir, is_dir
 use timeutils, only : date_filename
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite

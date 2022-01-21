@@ -1,6 +1,6 @@
 submodule (io) io_cond
 !! output conductivity to file
-use pathlib, only : is_dir, mkdir
+use filesystem, only : is_dir, mkdir
 use timeutils, only : date_filename
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite

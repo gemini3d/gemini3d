@@ -1,7 +1,7 @@
 submodule (io) plasma_input
 !! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
 use reader, only : get_simsize3
-use pathlib, only : suffix
+use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 
 implicit none (type, external)

@@ -4,7 +4,7 @@ module reader
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use phys_consts, only: wp, debug
-use pathlib, only : suffix, get_filename
+use filesystem, only : suffix, get_filename
 
 implicit none (type, external)
 private

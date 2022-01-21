@@ -2,7 +2,7 @@ module config
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 
-use pathlib, only : expanduser, suffix, make_absolute
+use filesystem, only : expanduser, suffix, make_absolute
 use phys_consts, only : wp
 
 implicit none (type, external)

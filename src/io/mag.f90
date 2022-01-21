@@ -1,7 +1,7 @@
 submodule (io) mag
 
 use sanity_check, only : check_finite_mag
-use pathlib, only : mkdir
+use filesystem, only : mkdir
 
 implicit none (type, external)
 

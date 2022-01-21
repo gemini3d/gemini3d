@@ -9,7 +9,7 @@ use phys_consts, only : wp
 use timeutils, only : date_filename, dateinc
 use config, only : gemini_cfg, read_configfile
 use h5fortran, only : hdf5_file
-use pathlib, only : suffix, file_name
+use filesystem, only : suffix, file_name
 use reader, only : get_simsize3, get_simsize2
 use assert, only : isclose
 

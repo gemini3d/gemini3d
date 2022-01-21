@@ -1,6 +1,6 @@
 program fullgrid_dipole_testdriver
 
-use pathlib, only : mkdir
+use filesystem, only : mkdir
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 

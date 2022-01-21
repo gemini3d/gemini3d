@@ -12,7 +12,7 @@ use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use reader, only : get_simsize3
-use pathlib, only: suffix,get_filename
+use filesystem, only: suffix, get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
@@ -545,7 +545,7 @@ contains
       fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
       fn=get_filename(fn)
       if (debug) print *, 'READ neutral 3D data from file: ',fn
-      if (suffix(fn)=='.h5') then
+      if (suffix(fn) == '.h5') then
         call hf%open(fn, action='r')
       else
         error stop '3D neutral input only supported for hdf5 files; please regenerate input'

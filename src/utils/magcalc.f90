@@ -16,7 +16,7 @@ use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
 mpi_cfg, mpi_realprec, tag=>gemini_mpi
 use h5fortran, only : hdf5_file
-use pathlib, only : suffix
+use filesystem, only : suffix
 
 implicit none (type, external)
 

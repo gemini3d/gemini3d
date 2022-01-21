@@ -26,7 +26,7 @@ use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,output_plasma, output_aur, output_cond, find_milestone
-use pathlib, only : expanduser
+use filesystem, only : expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
 

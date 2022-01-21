@@ -1,6 +1,6 @@
 submodule (compare_h5) compare_in_h5
 
-use pathlib, only : parent
+use filesystem, only : parent
 
 implicit none (type, external)
 

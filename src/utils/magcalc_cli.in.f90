@@ -2,7 +2,7 @@ module magcalc_cli
 
 use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
-use pathlib, only : assert_is_file, assert_is_dir, expanduser
+use filesystem, only : assert_is_file, assert_is_dir, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use phys_consts, only : wp
 use timeutils, only : dateinc

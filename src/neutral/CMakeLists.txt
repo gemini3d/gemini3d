@@ -8,7 +8,7 @@ inputdata neutraldata neutraldata3D
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 # self-tests
@@ -28,5 +28,5 @@ timeutils mpimod const
 hwm_ifc
 msis_ifc msis00mod
 MPI::MPI_Fortran
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )

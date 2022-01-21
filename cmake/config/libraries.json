@@ -18,9 +18,9 @@
   "tag": "v0.981.0.11"
 },
 
-"pathlib": {
-  "git": "https://github.com/scivision/fortran-pathlib.git",
-  "tag": "v2.4.2"
+"filesystem": {
+  "git": "https://github.com/scivision/fortran-filesystem.git",
+  "tag": "v3.1.0"
 },
 
 "h5fortran": {

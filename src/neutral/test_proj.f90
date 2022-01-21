@@ -1,7 +1,7 @@
 !> tests the projections for a given grid structure
 program test_proj
 
-use pathlib, only : mkdir
+use filesystem, only : mkdir
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 use neutral, only : store_geo2native_projections
@@ -78,4 +78,3 @@ contains
     print*, '-------------------------------------------------------'
   end subroutine printmats
 end program test_proj
-

@@ -2,7 +2,7 @@ submodule (io) milestone
 
 use timeutils, only : date_filename,dateinc
 use h5fortran, only : h5exist
-use pathlib, only : suffix
+use filesystem, only : suffix
 
 implicit none (type,external)   !! external procedures must be explicitly denoted thusly
 

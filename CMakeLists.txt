@@ -35,7 +35,8 @@ include(cmake/config/libraries.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
-include(cmake/ext_libs/pathlib.cmake)
+# Fortran filesystem library
+include(cmake/ext_libs/filesystem.cmake)
 
 if(mpi)
   find_package(MPI COMPONENTS C Fortran REQUIRED)

@@ -19,7 +19,7 @@ target_link_libraries(magcalc.bin PRIVATE exe_frontend
 sanity_check errors config timeutils const
 hwloc_ifc hwloc_c
 nc4fortran::nc4fortran h5fortran::h5fortran
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
@@ -54,7 +54,7 @@ INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
 
 add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
 target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c timeutils const
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 # --- gemini3d.run
@@ -64,7 +64,7 @@ h5fortran::h5fortran nc4fortran::nc4fortran
 hwloc_ifc hwloc_c
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
@@ -80,7 +80,7 @@ target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config ti
 h5fortran::h5fortran nc4fortran::nc4fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
@@ -109,7 +109,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90
 target_link_libraries(gemini3d.compare PRIVATE assert config reader timeutils const
 nc4fortran::nc4fortran h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run

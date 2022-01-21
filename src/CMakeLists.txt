@@ -108,7 +108,7 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-FortranPathlib::pathlib
+FortranFilesystem::filesystem
 )
 
 # same link logic applied to src/unit_tests/test_mumps

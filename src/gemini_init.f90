@@ -2,7 +2,7 @@ module gemini_init
 
 use config, only : gemini_cfg
 use mpimod, only : mpi_cfg
-use pathlib, only : assert_is_file, assert_is_dir
+use filesystem, only : assert_is_file, assert_is_dir
 
 implicit none (type, external)
 
