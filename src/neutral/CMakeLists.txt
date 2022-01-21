@@ -12,15 +12,18 @@ FortranPathlib::pathlib
 )
 
 # self-tests
-add_executable(test_proj test_proj.f90
-$<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:geomagnetic>
-$<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole>
-$<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:autogrid>
-$<TARGET_OBJECTS:neutral> $<TARGET_OBJECTS:interp>
+add_executable(test_proj test_proj.f90)
+
+foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
+neutraldata neutraldata3D neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 )
+
+  target_sources(test_proj PRIVATE $<TARGET_OBJECTS:${t}>)
+
+endforeach()
+
 target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(test_proj PRIVATE config const reader inputdata
-neutraldata neutraldata3D neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 timeutils mpimod const
 hwm_ifc
 msis_ifc msis00mod

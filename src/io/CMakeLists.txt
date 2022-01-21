@@ -18,10 +18,16 @@ if(${PROJECT_NAME}_BUILD_TESTING)
   endif()
 
   add_executable(test_dump_write test_dump_write.f90)
-  target_link_libraries(test_dump_write PRIVATE errors const h5fortran::h5fortran)
+  target_link_libraries(test_dump_write PRIVATE errors const
+  h5fortran::h5fortran
+  $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+  )
 
   add_executable(test_dump_read test_dump_read.f90)
-  target_link_libraries(test_dump_read PRIVATE h5fortran::h5fortran)
+  target_link_libraries(test_dump_read PRIVATE
+  h5fortran::h5fortran
+  $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+  )
 
   foreach(t root worker input)
     set(f ${CMAKE_CURRENT_BINARY_DIR}/dump_${t}.h5)
