@@ -29,7 +29,8 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use msis_interface, only : msisinit
-use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
+use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_neuBG
+use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield
 use precipBCs_mod, only: init_precipinput
@@ -202,8 +203,10 @@ contains
       call msisinit(parmfile=msis2_param_file)
     end if
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
-    call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-    
+    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call init_neutralperturb(cfg,x,dt,ymd,UTsec)
+
+ 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
     call get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
     if(mpi_cfg%myid==0) then
@@ -241,9 +244,11 @@ contains
       !> get neutral background
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
-        call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
-        call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
-        tneuBG=tneuBG+cfg%dtneuBG;
+        call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
+        call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x)
+        call neutral_denstemp_update(nn,Tn)    ! empirical model calls don't automatically assign state to main variables
+        call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+        tneuBG=tneuBG+cfg%dtneuBG
         if (mpi_cfg%myid==0) then
           call cpu_time(tfin)
           print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
@@ -301,6 +306,7 @@ contains
     !> deallocate variables and module data
     call gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
+    call clear_neuBG()
     call clear_dneu()
   end subroutine gemini_main
   
