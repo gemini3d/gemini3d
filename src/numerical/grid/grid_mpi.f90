@@ -61,7 +61,6 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   !!  Also set the grid center position if not already dictated by the coordinate system
   
   call calc_subgrid_size(lx2all,lx3all)
-  print*, shape(x1)
   !! everyone computes what the size of their subgrid should be
   allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
   !! tmp space for coords from file
