@@ -11,6 +11,19 @@ hwm14::hwm_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )
 
+add_library(neutral_perturbations OBJECT neutral_perturbations.f90)
+target_compile_options(neutral_perturbations PRIVATE ${gfortran_opts})
+target_link_libraries(neutral_perturbations PRIVATE config const reader grid meshobj interp mpimod
+timeutils
+inputdata neutraldata neutraldata3D_mpi
+neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
+h5fortran::h5fortran
+MPI::MPI_Fortran
+msis::msis_ifc
+hwm14::hwm_ifc
+ffilesystem::filesystem ${lib_filesystem}
+)
+
 # self-tests
 add_executable(test_proj test_proj.f90)
 

@@ -88,7 +88,7 @@ inputdata precipdata efielddata
 #neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
-#neutral
+neutral
 pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
@@ -117,7 +117,7 @@ neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dca
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 multifluid_mpi
-neutral
+neutral_perturbations
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources sources_mpi temporal timeutils
 exe_frontend
@@ -177,6 +177,7 @@ io
 ionization_mpi
 multifluid_mpi
 neutral
+neutral_perturbations
 neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 potential
 sources_mpi

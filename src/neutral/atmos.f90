@@ -8,10 +8,11 @@ use msis_interface, only : msis_gtd7, msis_gtd8
 implicit none (type, external)
 
 contains
-
-!! subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn)
-!! CALL NRL-MSISE-00 AND ORGANIZE THE RESULTS.  APPEND
-!! OTHER AUXILIARY NEUTRAL DENSITY DATA USED BY MAIN CODE
+!>  This procedure makes the call to MSIS for density/temperature.  It loads those data into the neutral module background
+!     arrays but does not directly assign them to any "output" variables as it used to - this avoids the need, strictly
+!     spreaking to have this procedure call another procedure that is dependend on mpi.  At the same time it does require
+!     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
+!     program for neutral parameters.  
 module procedure neutral_atmos
   integer :: ix1,ix2,ix3,lx1,lx2,lx3
   integer :: doy
@@ -77,7 +78,7 @@ module procedure neutral_atmos
   !! see winds submodule for HWM handling
 
   !> Update current state with new background and existing perturbations, if used
-  call neutral_denstemp_update(nn,Tn)
+  !call neutral_denstemp_update(nn,Tn)
 end procedure neutral_atmos
 
 end submodule atmos

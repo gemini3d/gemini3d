@@ -6,7 +6,11 @@ use timeutils, only : ymd2doy
 implicit none (type, external)
 
 contains
-
+!>  This procedure makes the call to HWM for horizontal winds.  It loads those winds into the neutral module background
+!     arrays but does not directly assign them to any "output" variables as it used to - this avoids the need, strictly
+!     spreaking to have this procedure call another procedure that is dependend on mpi. At the same time it does require
+!     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
+!     program for neutral parameters.   
 module procedure neutral_winds
   real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt, v1, v2, v3
   integer :: i1,i2,i3, dayOfYear
@@ -23,15 +27,9 @@ module procedure neutral_winds
   x3: do i3 = 1,lx3
     x2: do i2 = 1,lx2
       x1: do i1 = 1,lx1
-        !if (x%flagper) then
-        !  glonnow=x%glon(i1,i2,1)
-        !  glatnow=x%glat(i1,i2,1)
-        !  altnow=x%alt(i1,i2,1)/1.0e3
-        !else
-          glonnow=x%glon(i1,i2,i3)
-          glatnow=x%glat(i1,i2,i3)
-          altnow=x%alt(i1,i2,i3)/1.0e3
-        !end if
+        glonnow=x%glon(i1,i2,i3)
+        glatnow=x%glat(i1,i2,i3)
+        altnow=x%alt(i1,i2,i3)/1.0e3
         if (altnow<0.0) altnow=1.0
         call hwm_14(dayOfYear, UTsec, &
           alt_km=altnow, glat=glatnow, glon=glonnow, Ap=Ap, &
@@ -71,18 +69,8 @@ module procedure neutral_winds
     end do
   end do  
 
-  !! we really don't resolve mesosphere properly so kill off those winds, these probably don't contribute much to currents???
-  !where (x%alt<120e3)
-    !vn1base=0.0
-    !vn2base=0.0
-    !vn3base=0.0
-  !end where
-
-  !! force parallel winds to zero to avoid issues...
-  !vn1base=0.0     ! it appears to be the case that the parallel drift drives hte model crazy...
-
   !! update GEMINI wind variables
-  call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+  !call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
 end procedure neutral_winds
 
 end submodule wind
