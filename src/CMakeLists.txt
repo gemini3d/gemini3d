@@ -45,7 +45,7 @@ add_subdirectory(inputdata)
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
-add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90 libgem_utils.f90
 )
 target_include_directories(gemini3d PUBLIC
 $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
