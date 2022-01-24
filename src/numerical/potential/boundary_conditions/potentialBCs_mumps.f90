@@ -319,19 +319,4 @@ subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
 end subroutine potentialBCs2D
 
 
-impure elemental subroutine assert_is_file(path)
-  !! throw error if file does not exist
-  !! this accommodates non-Fortran 2018 error stop with variable character
-
-  character(*), intent(in) :: path
-  logical :: exists
-
-  inquire(file=path, exist=exists)
-
-  if (.not.exists) then
-    write(stderr,*) path // ' does not exist'
-    error stop
-  endif
-end subroutine assert_is_file
-
 end module potentialBCs_mumps
