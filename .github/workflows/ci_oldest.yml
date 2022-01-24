@@ -1,0 +1,64 @@
+name: ci_oldest
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CTEST_PARALLEL_LEVEL: 2
+
+on:
+  push:
+    paths:
+      - "**.c"
+      - "**.f90"
+      - "**.F90"
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci_oldest.yml"
+# paths ignore starting with "!"
+      - "!docs/**"
+      - "!scripts/**"
+
+
+jobs:
+
+  linux-gcc8-cmake-320:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      CC: gcc-8
+      CXX: g++-8
+      FC: gfortran-8
+      cmake_version: '3.20.6'
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install apt packages
+      timeout-minutes: 3
+      run: |
+        sudo apt update -yq
+        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+
+    - name: install GCC 8 (ABI compatible with GCC 9 system libs)
+      run: sudo apt install gcc-8 g++-8 gfortran-8
+
+    - name: Install CMake 3.20
+      timeout-minutes: 1
+      run: |
+        cmake -Dversion=${cmake_version} -P scripts/install_cmake.cmake
+        echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
+
+    - name: Configure release
+      run: cmake -B build
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release unit test
+      run: ctest --test-dir build -L unit
+
+    - name: Release core test
+      run: ctest --test-dir build -LE unit -E 3d
