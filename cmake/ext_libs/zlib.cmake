@@ -3,7 +3,6 @@
 
 include(ExternalProject)
 
-# need to be sure _ROOT isn't empty, defined is not enough
 if(NOT ZLIB_ROOT)
   set(ZLIB_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
@@ -28,6 +27,9 @@ set(zlib_cmake_args
 -DZLIB_ENABLE_TESTS:BOOL=off
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
+-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 ExternalProject_Add(ZLIB

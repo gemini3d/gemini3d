@@ -47,7 +47,7 @@ else()
   add_subdirectory(src/vendor/mpi_stubs)
 endif()
 
-include(cmake/ext_libs/h5fortran.cmake)
+include(cmake/ext_libs/h5fortran-hdf5.cmake)
 include(cmake/ext_libs/nc4fortran.cmake)
 
 # do these after h5fortran to avoid threads test failure

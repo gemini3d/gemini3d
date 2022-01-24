@@ -10,6 +10,11 @@ if(hdf5_parallel)
   find_package(MPI REQUIRED COMPONENTS C)
 endif()
 
+# pass MPI hints to HDF5
+if(NOT MPI_ROOT AND DEFINED ENV{MPI_ROOT})
+  set(MPI_ROOT $ENV{MPI_ROOT})
+endif()
+
 # need to be sure _ROOT isn't empty, DEFINED is not enough
 if(NOT HDF5_ROOT)
   set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
@@ -49,6 +54,9 @@ ${zlib_root}
 -DBUILD_STATIC_LIBS:BOOL=$<NOT:$<BOOL:${BUILD_SHARED_LIBS}>>
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
+-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 -DHDF5_BUILD_FORTRAN:BOOL=true
 -DHDF5_BUILD_CPP_LIB:BOOL=false
 -DBUILD_TESTING:BOOL=false
@@ -56,9 +64,11 @@ ${zlib_root}
 -DUSE_LIBAEC:bool=true
 -DHDF5_BUILD_TOOLS:BOOL=$<NOT:$<BOOL:${hdf5_parallel}>>
 -DHDF5_ENABLE_PARALLEL:BOOL=$<BOOL:${hdf5_parallel}>
--DMPI_ROOT:PATH=${MPI_ROOT}
 )
-# https://github.com/HDFGroup/hdf5/issues/818  for broken ph5diff
+# https://github.com/HDFGroup/hdf5/issues/818  for broken ph5diff in HDF5_BUILD_TOOLS
+if(MPI_ROOT)
+  list(APPEND hdf5_cmake_args -DMPI_ROOT:PATH=${MPI_ROOT})
+endif()
 
 ExternalProject_Add(HDF5
 URL ${hdf5_url}
@@ -82,6 +92,18 @@ target_include_directories(HDF5::HDF5 INTERFACE "${HDF5_INCLUDE_DIRS}")
 target_link_libraries(HDF5::HDF5 INTERFACE "${HDF5_LIBRARIES}")
 
 add_dependencies(HDF5::HDF5 HDF5)
+
+# --- HDF5 parallel compression support
+# this could be improved by making it an ExternalProject post-build step instead of assumptions made here
+if(hdf5_parallel)
+  if(MPI_VERSION VERSION_GREATER_EQUAL 3)
+    message(STATUS "Building HDF5-MPI: MPI-3 available, assuming HDF5 parallel compression enabled")
+    set(hdf5_parallel_compression ".true." CACHE STRING "configure variable for HDF5 parallel compression")
+  else()
+    message(STATUS "Building HDF5-MPI: MPI-3 NOT available => HDF5 parallel compression disabled")
+    set(hdf5_parallel_compression ".false." CACHE STRING "configure variable for HDF5 parallel compression: MPI < 3")
+  endif()
+endif(hdf5_parallel)
 
 # --- external deps
 find_package(Threads)
