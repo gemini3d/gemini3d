@@ -131,25 +131,25 @@ end do
 end subroutine day_wrap
 
 
-pure function date_filename(outdir, ymd, UTsec) result(filename)
+pure function date_filename(outdir, ymd, UTsec)
 !! GENERATE A FILENAME stem OUT OF A GIVEN DATE/TIME
 !! (does not include suffix like .h5)
 
 character(*), intent(in) :: outdir
 integer, intent(in) :: ymd(3)
 class(*), intent(in) :: UTsec
+character(:), allocatable :: date_filename
 
-character(:), allocatable :: filename
 character(len=21) :: stem
 
 stem = utsec2filestem(ymd, UTsec)
 
-filename = outdir // '/' // stem
+date_filename = outdir // '/' // stem
 
 end function date_filename
 
 
-pure character(21) function utsec2filestem(ymd, UTsec) result(fn)
+pure character(21) function utsec2filestem(ymd, UTsec)
 !! file stem is exactly 21 characters long, per Matt Z's de facto spec.
 !! we keep microsecond dummy precision filenames to be legacy compatible
 !! true filename resolution is 10 milliseconds due to real32 7 digits of precision vis 86400 second day.
@@ -194,7 +194,7 @@ frac = millisec*1000 - seconds * 1000000  !< microseconds
 
 write(sec_str, '(I5.5, A1, I6.6)') seconds, '.', frac
 
-write(fn,'(i4,I2.2,I2.2,a13)') year, month, day, '_' // sec_str
+write(utsec2filestem, '(i4,I2.2,I2.2,a13)') year, month, day, '_' // sec_str
 
 end function utsec2filestem
 
