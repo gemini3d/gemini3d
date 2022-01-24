@@ -8,7 +8,7 @@ inputdata neutraldata neutraldata3D
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 
 # self-tests
@@ -28,6 +28,6 @@ timeutils mpimod const
 hwm_ifc
 msis_ifc msis00mod
 MPI::MPI_Fortran
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)

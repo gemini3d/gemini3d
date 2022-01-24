@@ -19,7 +19,7 @@ target_link_libraries(magcalc.bin PRIVATE exe_frontend
 sanity_check errors config timeutils const
 hwloc_ifc hwloc_c
 nc4fortran::nc4fortran h5fortran::h5fortran
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran

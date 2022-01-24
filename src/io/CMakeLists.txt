@@ -54,7 +54,7 @@ endif()
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE const
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
@@ -71,7 +71,7 @@ TIMEOUT 10
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE config
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 set_target_properties(test_compiler_vendor PROPERTIES LINKER_LANGUAGE CXX)
 add_test(NAME unit:compiler_vendor
@@ -85,7 +85,7 @@ TIMEOUT 10
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
 target_link_libraries(test_expand_envvar PRIVATE config
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 set_target_properties(test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
 add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
@@ -110,14 +110,14 @@ milestone.f90
 
 target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
 h5fortran::h5fortran nc4fortran::nc4fortran
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
 target_link_libraries(reader PRIVATE const
 h5fortran::h5fortran nc4fortran::nc4fortran
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 
 if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)

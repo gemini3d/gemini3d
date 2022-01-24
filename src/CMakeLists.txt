@@ -108,7 +108,7 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-ffilesystem::filesystem
+ffilesystem::filesystem ${lib_filesystem}
 )
 set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 
