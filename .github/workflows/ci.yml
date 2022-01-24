@@ -129,17 +129,17 @@ jobs:
         cmake -Dversion=${cmake_version} -P scripts/install_cmake.cmake
         echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
-    - name: Configure multi
-      run: cmake --preset multi
+    - name: Configure release
+      run: cmake -B build
 
     - name: Release build
-      run: cmake --build --preset release
+      run: cmake --build build
 
     - name: Release unit test
-      run: ctest --preset release -L unit
+      run: ctest --test-dir build -L unit
 
     - name: Release core test
-      run: ctest --preset release -LE unit -E 3d
+      run: ctest --test-dir build -LE unit -E 3d
 
 
   MSIS-20:
