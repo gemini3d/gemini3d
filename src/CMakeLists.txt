@@ -143,7 +143,6 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
 )
-# LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 MUMPS::MUMPS

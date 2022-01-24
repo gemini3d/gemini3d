@@ -43,5 +43,11 @@ file(MAKE_DIRECTORY ${ffilesystem_INCLUDE_DIRS})
 add_library(ffilesystem::filesystem INTERFACE IMPORTED)
 target_link_libraries(ffilesystem::filesystem INTERFACE ${ffilesystem_LIBRARIES})
 target_include_directories(ffilesystem::filesystem INTERFACE ${ffilesystem_INCLUDE_DIRS})
+set_target_properties(ffilesystem::filesystem PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+  target_link_libraries(ffilesystem::filesystem INTERFACE stdc++)
+endif()
+# this hints to CMake that targets using filesystem should link with CXX to get stdc++
+# If getting link errors with missing C++ stdlib, set linker_langauge CXX for the specific target(s)
 
 add_dependencies(ffilesystem::filesystem FFILESYSTEM)

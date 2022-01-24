@@ -8,7 +8,6 @@ module procedure check_plasma_output_hdf5
 
 type(gemini_cfg) :: cfg
 
-character(:), allocatable :: new_file, ref_file
 integer :: i, ymd(3), lx1, lx2all, lx3all
 
 real(wp) :: UTsec, t
@@ -27,25 +26,12 @@ UTsec = cfg%UTsec0
 t = 0
 
 do while (t <= cfg%tdur)
-  ref_file = date_filename(ref_path, ymd, UTsec) // suffix(cfg%indatsize)
 
-  !> FIXME: regenerate the reference data then remove this workaround
-  if(t == 0) then
-    inquire(file=ref_file, exist=exists)
-    if(.not. exists) then
-      ref_file = date_filename(ref_path, ymd, UTsec)
-      i = len_trim(ref_file)
-      ref_file(i:i) = "1"
-      ref_file = ref_file // suffix(cfg%indatsize)
-      inquire(file=ref_file, exist=exists)
-      if(.not. exists) error stop "compare: first ref file not found: " // ref_file
-    endif
-  endif
-  !! end workaround
+  ok = check_out(cfg, &
+    new_file=date_filename(new_path, ymd, UTsec) // suffix(cfg%indatsize), &
+    ref_file=date_filename(ref_path, ymd, UTsec) // suffix(cfg%indatsize), &
+    lx1=lx1, lx2all=lx2all, lx3all=lx3all, P=P)
 
-  new_file = date_filename(new_path, ymd, UTsec) // suffix(cfg%indatsize)
-
-  ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all, P)
   if(.not. ok) then
     write(stderr,*) "gemini3d.compare: MISMATCHED data at", ymd, UTsec
     check_plasma_output_hdf5 = .false.
@@ -75,6 +61,9 @@ character(8), parameter :: varsV(3) = ['v1avgall', 'v2avgall', 'v3avgall']
 character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
 integer :: flagoutput
+
+if(.not. is_file(new_file)) error stop "gemini3d.compare:check_out: new data file not found: " // new_file
+if(.not. is_file(ref_file)) error stop "gemini3d.compare:check_out: reference data file not found: " // ref_file
 
 call hnew%open(new_file, action='r')
 call href%open(ref_file, action='r')
