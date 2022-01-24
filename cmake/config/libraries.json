@@ -20,7 +20,7 @@
 
 "ffilesystem": {
   "git": "https://github.com/scivision/fortran-filesystem.git",
-  "tag": "v3.2.2"
+  "tag": "v3.2.3"
 },
 
 "h5fortran": {

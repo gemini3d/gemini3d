@@ -26,6 +26,8 @@ VERSION ${PROJECT_VERSION}
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
 
+message(STATUS "Gemini3D: CMake ${CMAKE_VERSION}")
+
 if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
 endif()

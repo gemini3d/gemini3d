@@ -117,12 +117,6 @@ jobs:
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
-    - name: Install Ninja
-      timeout-minutes: 1
-      run: |
-        cmake -P scripts/install_ninja.cmake
-        echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
-
     - name: Install CMake 3.20
       timeout-minutes: 1
       run: |
