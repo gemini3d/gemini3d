@@ -48,7 +48,7 @@ else()
 endif()
 
 include(cmake/ext_libs/h5fortran-hdf5.cmake)
-include(cmake/ext_libs/nc4fortran.cmake)
+include(cmake/ext_libs/nc4fortran-ncdf.cmake)
 
 # do these after h5fortran to avoid threads test failure
 include(cmake/compilers/compilers.cmake)
