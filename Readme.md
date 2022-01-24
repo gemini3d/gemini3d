@@ -44,7 +44,7 @@ To build Gemini and run self-tests takes about 10 minutes on a laptop.
 Requirements:
 
 * Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) if needed.
-  * Gfortran / GCC &ge; 7.5
+  * Gfortran / GCC &ge; 8 (GCC &ge; 9 recommended)
   * Intel oneAPI HPC Toolkit (free to use for all)
 * [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P scripts/install_cmake.cmake` or from Python `pip install cmake`
 * Git: the Gemini3D software stack uses Git to version lock reproducible builds.
