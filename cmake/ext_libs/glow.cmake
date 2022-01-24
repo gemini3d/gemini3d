@@ -27,7 +27,7 @@ endif()
 set(GLOW_INCLUDE_DIRS ${GLOW_ROOT}/include)
 
 set(glow_cmake_args
---install-prefix=${GLOW_ROOT}
+-DCMAKE_INSTALL_PREFIX=${GLOW_ROOT}
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false

@@ -28,7 +28,7 @@ if(netcdf)
 
   set(nc4fortran_cmake_args
   -DNetCDF_ROOT:PATH=${NetCDF_ROOT}
-  --install-prefix=${nc4fortran_ROOT}
+  -DCMAKE_INSTALL_PREFIX=${nc4fortran_ROOT}
   -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DCMAKE_BUILD_TYPE=Release
   -DBUILD_TESTING:BOOL=false

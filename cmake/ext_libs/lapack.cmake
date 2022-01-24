@@ -34,7 +34,7 @@ else()
 endif()
 
 set(lapack_cmake_args
---install-prefix=${LAPACK_ROOT}
+-DCMAKE_INSTALL_PREFIX=${LAPACK_ROOT}
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false

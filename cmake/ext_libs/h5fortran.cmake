@@ -36,7 +36,7 @@ if(hdf5)
   endif()
 
   set(h5fortran_cmake_args
-  --install-prefix=${h5fortran_ROOT}
+  -DCMAKE_INSTALL_PREFIX=${h5fortran_ROOT}
   -DZLIB_ROOT:PATH=${ZLIB_ROOT}
   -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DCMAKE_BUILD_TYPE=Release

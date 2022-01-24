@@ -21,7 +21,7 @@ endif()
 set(ffilesystem_INCLUDE_DIRS ${ffilesystem_ROOT}/include)
 
 set(ffilesystem_cmake_args
---install-prefix=${ffilesystem_ROOT}
+-DCMAKE_INSTALL_PREFIX=${ffilesystem_ROOT}
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
