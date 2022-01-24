@@ -30,3 +30,4 @@ msis_ifc msis00mod
 MPI::MPI_Fortran
 ffilesystem::filesystem
 )
+set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)

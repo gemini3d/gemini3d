@@ -110,6 +110,7 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
 ffilesystem::filesystem
 )
+set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 
 # same link logic applied to src/unit_tests/test_mumps
 

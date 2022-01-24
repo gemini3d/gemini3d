@@ -73,6 +73,7 @@ add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE config
 ffilesystem::filesystem
 )
+set_target_properties(test_compiler_vendor PROPERTIES LINKER_LANGUAGE CXX)
 add_test(NAME unit:compiler_vendor
 COMMAND $<TARGET_FILE:test_compiler_vendor>
 )
@@ -86,6 +87,7 @@ add_executable(test_expand_envvar test_expand_envvar.f90)
 target_link_libraries(test_expand_envvar PRIVATE config
 ffilesystem::filesystem
 )
+set_target_properties(test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
 add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
 set_tests_properties(unit:expand_envvar PROPERTIES
 ENVIRONMENT test__gem=hello

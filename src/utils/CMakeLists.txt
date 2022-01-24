@@ -21,6 +21,7 @@ hwloc_ifc hwloc_c
 nc4fortran::nc4fortran h5fortran::h5fortran
 ffilesystem::filesystem
 )
+set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
@@ -66,6 +67,7 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
+set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE CXX)
 
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
@@ -82,6 +84,7 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
+set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE CXX)
 
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
 set_tests_properties(unit:magcalc_run_ok PROPERTIES
@@ -111,6 +114,7 @@ nc4fortran::nc4fortran h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
+set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
 
 set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
 PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
