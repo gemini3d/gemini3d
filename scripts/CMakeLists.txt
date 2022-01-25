@@ -1,10 +1,10 @@
 # for systems where you can't use "cmake -P scripts/install_prereq.cmake"
 # this project builds the prereqs
 
-cmake_minimum_required(VERSION 3.20...3.22)
+cmake_minimum_required(VERSION 3.21...3.22)
 
 project(BuildGeminiPrereq
-LANGUAGES C Fortran
+LANGUAGES C CXX Fortran
 )
 
 set(arith "s;d")
@@ -15,7 +15,7 @@ option(openmpi "build OpenMPI")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(FATAL_ERROR "Specify where to install libraries by adding cmake option like:
-   --install-prefix=/path/to/install")
+  cmake -B build --install-prefix=/path/to/install")
 endif()
 
 # NOTE: lists must be passed via CMAKE_CACHE_ARGS using -Dvar:STRING=${var}
@@ -25,6 +25,7 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECT
 
 include(${PROJECT_SOURCE_DIR}/../cmake/config/libraries.cmake)
 
+set(ffilesystem_ROOT ${CMAKE_INSTALL_PREFIX})
 set(HWLOC_ROOT ${CMAKE_INSTALL_PREFIX})
 set(OPENMPI_ROOT ${CMAKE_INSTALL_PREFIX})
 set(LAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
@@ -35,7 +36,7 @@ set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
 set(H5FORTRAN_ROOT ${CMAKE_INSTALL_PREFIX})
 set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
 
-set(roots HWLOC_ROOTLAPACK_ROOT SCALAPACK_ROOT MUMPS_ROOT ZLIB_ROOT HDF5_ROOT H5FORTRAN_ROOT GLOW_ROOT)
+set(roots ffilesystem_ROOT HWLOC_ROOT LAPACK_ROOT SCALAPACK_ROOT MUMPS_ROOT ZLIB_ROOT HDF5_ROOT H5FORTRAN_ROOT GLOW_ROOT)
 if(openmpi)
   list(APPEND OPENMPI_ROOT)
 endif()
@@ -44,6 +45,26 @@ message(STATUS "please add system environment variables:")
 foreach(p ${roots})
   message(STATUS "   ${p}=${${p}}")
 endforeach()
+
+# Fortran filesystem
+set(ffilesystem_cmake_args
+-DCMAKE_INSTALL_PREFIX=${ffilesystem_ROOT}
+-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+-DCMAKE_BUILD_TYPE=Release
+-DBUILD_TESTING:BOOL=false
+-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+)
+
+ExternalProject_Add(FFILESYSTEM
+GIT_REPOSITORY ${ffilesystem_git}
+GIT_TAG ${ffilesystem_tag}
+CMAKE_ARGS ${ffilesystem_cmake_args}
+TEST_COMMAND ""
+INACTIVITY_TIMEOUT 15
+CONFIGURE_HANDLED_BY_BUILD true
+)
 
 # --- HWLOC
 
@@ -58,6 +79,19 @@ if(NOT LibXml2_FOUND)
   list(APPEND hwloc_args --disable-libxml2)
 endif()
 
+if(WIN32)
+
+ExternalProject_Add(HWLOC
+URL ${hwloc_url}
+URL_HASH SHA256=${hwloc_sha256}
+SOURCE_SUBDIR contrib/windows-cmake
+CMAKE_ARGS --install-prefix=${HWLOC_ROOT} -DCMAKE_BUILD_TYPE=Release -DHWLOC_ENABLE_TESTING:BOOL=off
+TEST_COMMAND ""
+INACTIVITY_TIMEOUT 15
+)
+
+else()
+
 ExternalProject_Add(HWLOC
 URL ${hwloc_url}
 URL_HASH SHA256=${hwloc_sha256}
@@ -68,6 +102,8 @@ TEST_COMMAND ""
 CONFIGURE_HANDLED_BY_BUILD ON
 INACTIVITY_TIMEOUT 15
 )
+
+endif()
 
 # --- OpenMPI
 if(openmpi)
@@ -104,6 +140,8 @@ set(lapack_cmake_args
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 ExternalProject_Add(LAPACK
@@ -111,6 +149,7 @@ GIT_REPOSITORY ${lapack_git}
 GIT_TAG ${lapack_tag}
 CMAKE_ARGS ${lapack_cmake_args}
 CMAKE_CACHE_ARGS -Darith:STRING=${arith}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 )
@@ -123,6 +162,8 @@ set(scalapack_cmake_args
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
 -Dautobuild:BOOL=false
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 set(scalapack_deps LAPACK)
@@ -135,6 +176,7 @@ GIT_REPOSITORY ${scalapack_git}
 GIT_TAG ${scalapack_tag}
 CMAKE_ARGS ${scalapack_cmake_args}
 CMAKE_CACHE_ARGS -Darith:STRING=${arith}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS ${scalapack_deps}
@@ -152,6 +194,8 @@ set(mumps_cmake_args
 -Dopenmp:BOOL=false
 -Dparallel:BOOL=true
 -Dautobuild:BOOL=false
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 ExternalProject_Add(MUMPS
@@ -159,6 +203,7 @@ GIT_REPOSITORY ${mumps_git}
 GIT_TAG ${mumps_tag}
 CMAKE_ARGS ${mumps_cmake_args}
 CMAKE_CACHE_ARGS -Darith:STRING=${arith}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS SCALAPACK
@@ -171,12 +216,14 @@ set(zlib_cmake_args
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 --install-prefix=${ZLIB_ROOT}
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 )
 
 ExternalProject_Add(ZLIB
 URL ${zlib_url}
 URL_HASH SHA256=${zlib_sha256}
 CMAKE_ARGS ${zlib_cmake_args}
+TEST_COMMAND ""
 CONFIGURE_HANDLED_BY_BUILD ON
 INACTIVITY_TIMEOUT 15
 )
@@ -204,12 +251,15 @@ ${hdf5_zlib}
 -DHDF5_BUILD_TOOLS:BOOL=$<NOT:$<BOOL:${hdf5_parallel}>>
 -DHDF5_ENABLE_PARALLEL:BOOL=$<BOOL:${hdf5_parallel}>
 -DMPI_ROOT:PATH=${MPI_ROOT}
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 ExternalProject_Add(HDF5
 URL ${hdf5_url}
 URL_HASH SHA256=${hdf5_sha256}
 CMAKE_ARGS ${hdf5_cmake_args}
+TEST_COMMAND ""
 CONFIGURE_HANDLED_BY_BUILD ON
 INACTIVITY_TIMEOUT 15
 DEPENDS ZLIB
@@ -222,6 +272,8 @@ set(h5fortran_args
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
 -Dautobuild:BOOL=off
+-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 set(h5fortran_deps HDF5)
@@ -233,6 +285,7 @@ ExternalProject_Add(H5FORTRAN
 GIT_REPOSITORY ${h5fortran_git}
 GIT_TAG ${h5fortran_tag}
 CMAKE_ARGS ${h5fortran_args}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS ${h5fortran_deps}
@@ -243,12 +296,14 @@ set(glow_args
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
+-DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 )
 
 ExternalProject_Add(GLOW
 GIT_REPOSITORY ${glow_git}
 GIT_TAG ${glow_tag}
 CMAKE_ARGS ${glow_args}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 )
