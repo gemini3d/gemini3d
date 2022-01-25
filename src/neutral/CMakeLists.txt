@@ -30,4 +30,8 @@ msis_ifc msis00mod
 MPI::MPI_Fortran
 ffilesystem::filesystem ${lib_filesystem}
 )
-set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
+endif()

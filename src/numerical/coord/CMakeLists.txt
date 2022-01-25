@@ -42,14 +42,22 @@ target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomag
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem ${lib_filesystem}
 )
-set_target_properties(fullgrid_dipole_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(fullgrid_dipole_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(fullgrid_dipole_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
 target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem ${lib_filesystem}
 )
-set_target_properties(fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
 target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const

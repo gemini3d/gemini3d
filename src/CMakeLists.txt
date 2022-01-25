@@ -110,7 +110,11 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
 ffilesystem::filesystem ${lib_filesystem}
 )
-set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
 # same link logic applied to src/unit_tests/test_mumps
 

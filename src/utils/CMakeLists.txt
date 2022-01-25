@@ -21,7 +21,11 @@ hwloc_ifc hwloc_c
 nc4fortran::nc4fortran h5fortran::h5fortran
 ffilesystem::filesystem ${lib_filesystem}
 )
-set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
@@ -67,8 +71,11 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
-set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE CXX)
-
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
@@ -84,8 +91,11 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
-set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE CXX)
-
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
 set_tests_properties(unit:magcalc_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
@@ -114,8 +124,11 @@ nc4fortran::nc4fortran h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
-set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
-
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
 PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
