@@ -100,9 +100,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
 
     - name: Install packages
       run: |
@@ -111,6 +108,32 @@ jobs:
 
     - name: Configure release
       run: cmake -B build --preset release -Dmsis2:BOOL=true
+
+    - name: Build release
+      run: cmake --build build
+
+    - name: Release unit test
+      run: ctest --test-dir build --preset default -L unit
+
+    - name: Release core test
+      run: ctest --test-dir build --preset default -LE unit -E 3d
+
+
+  HWM14:
+    needs: linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+
+    - name: Configure release
+      run: cmake -B build --preset release -Dhwm14:BOOL=true
 
     - name: Build release
       run: cmake --build build
