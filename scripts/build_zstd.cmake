@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20...3.22)
+cmake_minimum_required(VERSION 3.21...3.22)
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
 string(JSON zstd_version GET ${_j} zstd)
@@ -18,11 +18,7 @@ else()
   set(tmpdir ~/tmp)
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.21)
-  get_filename_component(tmpdir ${tmpdir} ABSOLUTE)
-else()
-  file(REAL_PATH ${tmpdir} tmpdir EXPAND_TILDE)
-endif()
+file(REAL_PATH ${tmpdir} tmpdir EXPAND_TILDE)
 
 set(name zstd-${zstd_version}.tar.gz)
 set(archive ${tmpdir}/${name})

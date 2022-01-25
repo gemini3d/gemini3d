@@ -22,7 +22,8 @@ endif()
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
 
-if(version VERSION_LESS 3.13)
+if(version VERSION_LESS 3.1)
+  # URL patterns changed in CMake 3.1
   string(JSON version GET ${_j} cmake latest)
 endif()
 
@@ -88,7 +89,9 @@ elseif(WIN32)
 set(arch $ENV{PROCESSOR_ARCHITECTURE})
 
 if(arch STREQUAL AMD64)
-  if(version VERSION_LESS 3.20)
+  if(version VERSION_LESS 3.6)
+    set(stem cmake-${version}-win32-x86)
+  elseif(version VERSION_LESS 3.20)
     set(stem cmake-${version}-win64-x64)
   else()
     set(stem cmake-${version}-windows-x86_64)

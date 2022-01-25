@@ -24,7 +24,7 @@ endif()
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
 
-if(version VERSION_LESS 3.13)
+if(version VERSION_LESS 3.1)
   string(JSON version GET ${_j} cmake latest)
 endif()
 

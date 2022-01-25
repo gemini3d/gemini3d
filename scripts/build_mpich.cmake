@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20...3.22)
+cmake_minimum_required(VERSION 3.21...3.22)
 
 if(WIN32)
   message(FATAL_ERROR "MPICH does not work on Windows. Use MS-MPI or Intel MPI instead.")
@@ -10,11 +10,7 @@ string(JSON mpich_version GET ${_j} mpich)
 if(NOT prefix)
   set(prefix "~")
 endif()
-if(CMAKE_VERSION VERSION_LESS 3.21)
-  get_filename_component(prefix ${prefix} ABSOLUTE)
-else()
-  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
-endif()
+file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
 
 set(CMAKE_TLS_VERIFY true)
 
