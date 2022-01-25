@@ -9,11 +9,8 @@ endif()
 
 # --- build abstract HWM interface
 # default is HWM14
-
-include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/hwm14.cmake)
-
 target_sources(hwm_ifc PRIVATE hwm_interface.f90)
-target_link_libraries(hwm_ifc PRIVATE HWM14::HWM14)
+target_link_libraries(hwm_ifc PUBLIC HWM14::hwm14)
 
 if(BUILD_TESTING)
 

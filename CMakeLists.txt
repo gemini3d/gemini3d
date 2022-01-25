@@ -58,9 +58,14 @@ if(mpi)
 endif()
 # first this to get libs
 include(cmake/ext_libs/mumps.cmake)
+
 if(glow)
-  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/glow.cmake)
+  include(cmake/ext_libs/glow.cmake)
 endif(glow)
+
+if(hwm14)
+  include(cmake/ext_libs/hwm14.cmake)
+endif()
 
 include(cmake/compilers/flags.cmake)
 

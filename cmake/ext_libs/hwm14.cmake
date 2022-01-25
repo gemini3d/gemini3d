@@ -1,4 +1,4 @@
-# this enables CMake imported target HWM14::HWM14
+# this enables CMake imported target HWM14::hwm14
 include(ExternalProject)
 
 find_package(hwm14 CONFIG QUIET)
@@ -47,7 +47,8 @@ ExternalProject_Add_Step(HWM14 hwm14_copy_data DEPENDEES install
 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_dat_files} $<TARGET_FILE_DIR:gemini.bin>)
 install(FILES ${hwm14_dat_files} TYPE BIN)
 
-add_library(HWM14::HWM14 INTERFACE IMPORTED)
-target_link_libraries(HWM14::HWM14 INTERFACE "${HWM14_LIBRARIES}")
 
-add_dependencies(HWM14::HWM14 HWM14)
+add_library(HWM14::hwm14 INTERFACE IMPORTED)
+target_link_libraries(HWM14::hwm14 INTERFACE "${HWM14_LIBRARIES}")
+
+add_dependencies(HWM14::hwm14 HWM14)
