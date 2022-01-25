@@ -1,11 +1,12 @@
 # this enables CMake imported target HWM14::HWM14
 include(ExternalProject)
 
-# find_package(hwm14 CONFIG)
+find_package(hwm14 CONFIG QUIET)
 
-# if(hwm14_FOUND)
-#   return()
-# endif()
+if(hwm14_FOUND)
+  message(STATUS "HWM14 found: ${hwm14_DIR}")
+  return()
+endif()
 
 if(NOT HWM14_ROOT)
   set(HWM14_ROOT ${CMAKE_INSTALL_PREFIX})
@@ -21,8 +22,6 @@ set(hwm14_cmake_args
 -DCMAKE_INSTALL_PREFIX=${HWM14_ROOT}
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
--DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
--DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 -DBUILD_TESTING:BOOL=false
 )
@@ -33,20 +32,19 @@ GIT_TAG ${hwm14_tag}
 CMAKE_ARGS ${hwm14_cmake_args}
 CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
 BUILD_BYPRODUCTS ${HWM14_LIBRARIES}
+TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
 )
 
-ExternalProject_Get_property(HWM14 SOURCE_DIR)
-
 
 set(hwm14_dat_files
-${SOURCE_DIR}/src/hwm14/hwm123114.bin
-${SOURCE_DIR}/src/hwm14/dwm07b104i.dat
-${SOURCE_DIR}/src/hwm14/gd2qd.dat
+${HWM14_ROOT}/share/data/HWM14/hwm123114.bin
+${HWM14_ROOT}/share/data/HWM14/dwm07b104i.dat
+${HWM14_ROOT}/share/data/HWM14/gd2qd.dat
 )
-ExternalProject_Add_Step(HWM14 hwm_cp1 DEPENDEES update
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_dat_files} ${PROJECT_BINARY_DIR})
+ExternalProject_Add_Step(HWM14 hwm14_copy_data DEPENDEES install
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_dat_files} $<TARGET_FILE_DIR:gemini.bin>)
 install(FILES ${hwm14_dat_files} TYPE BIN)
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
