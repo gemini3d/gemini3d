@@ -1,10 +1,12 @@
 include(ExternalProject)
 
-find_package(ffilesystem CONFIG QUIET)
+if(NOT ffilesystem_external)
+  find_package(ffilesystem CONFIG QUIET)
 
-if(ffilesystem_FOUND)
-  message(STATUS "Fortran Filesystem found: ${ffilesystem_DIR}")
-  return()
+  if(ffilesystem_FOUND)
+    message(STATUS "Fortran Filesystem found: ${ffilesystem_DIR}")
+    return()
+  endif()
 endif()
 
 if(NOT ffilesystem_ROOT)
