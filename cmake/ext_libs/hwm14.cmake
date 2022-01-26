@@ -1,12 +1,16 @@
 # this enables CMake imported target HWM14::hwm14
 include(ExternalProject)
 
-find_package(hwm14 CONFIG QUIET)
+if(NOT hwm14_external)
+  find_package(hwm14 CONFIG)
 
-if(hwm14_FOUND)
-  message(STATUS "HWM14 found: ${hwm14_DIR}")
-  return()
+  if(hwm14_FOUND)
+    message(STATUS "HWM14 found: ${hwm14_DIR}")
+    return()
+  endif()
 endif()
+
+set(hwm14_external TRUE CACHE BOOL "Build HWM14")
 
 if(NOT HWM14_ROOT)
   set(HWM14_ROOT ${CMAKE_INSTALL_PREFIX})

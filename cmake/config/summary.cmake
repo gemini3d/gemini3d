@@ -9,7 +9,7 @@ include(FeatureSummary)
 # endif()
 
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 3.21)
-  message(STATUS "For full build features on Windows, CMake >= 3.21 is recommended (currently using CMake ${CMAKE_VERSION}).")
+  message(STATUS "For Windows, CMake >= 3.21 is recommended (currently using CMake ${CMAKE_VERSION}).")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.5.0)

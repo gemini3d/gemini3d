@@ -1,16 +1,19 @@
 include(ExternalProject)
 
-find_package(glow CONFIG QUIET)
+if(NOT glow_external)
+  find_package(glow CONFIG)
 
-if(glow_FOUND)
-  message(STATUS "GLOW found: ${glow_DIR}")
-  return()
+  if(glow_FOUND)
+    message(STATUS "GLOW found: ${glow_DIR}")
+    return()
+  endif()
 endif()
+
+set(glow_external true CACHE BOOL "build GLOW")
 
 if(NOT GLOW_ROOT)
   set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
-
 
 if(BUILD_SHARED_LIBS)
   set(GLOW_LIBRARIES

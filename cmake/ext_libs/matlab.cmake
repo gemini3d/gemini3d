@@ -22,8 +22,9 @@ if(MATGEMINI_DIR)
 endif()
 
 execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${matgemini_SOURCE_DIR}/setup.m'), stdlib.fileio.expanduser('~');"
-  TIMEOUT 90
-  COMMAND_ERROR_IS_FATAL ANY)
+TIMEOUT 90
+COMMAND_ERROR_IS_FATAL ANY
+)
 
 message(STATUS "MatGemini found: ${matgemini_SOURCE_DIR}")
 set(MATGEMINI_DIR ${matgemini_SOURCE_DIR} CACHE PATH "MatGemini path")

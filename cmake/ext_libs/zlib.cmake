@@ -1,6 +1,3 @@
-# build Zlib to ensure compatibility.
-# We use Zlib 2.x for speed and robustness.
-
 include(ExternalProject)
 
 if(NOT ZLIB_ROOT)

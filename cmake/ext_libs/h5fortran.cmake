@@ -3,7 +3,7 @@ include(ExternalProject)
 if(NOT hdf5_external)
   # h5fortran inside if() because h5fortran config calls find_package(HDF5)
   # disabled h5fortran search for now because we're undergoing rapid devel soon for MPI.
-  find_package(h5fortran CONFIG QUIET)
+  find_package(h5fortran CONFIG)
   if(h5fortran_FOUND)
     message(STATUS "Found h5fortran ${h5fortran_DIR}")
     return()
