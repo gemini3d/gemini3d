@@ -16,6 +16,8 @@ if(NOT HWM14_ROOT)
   set(HWM14_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
 
+set(HWM14_INCLUDE_DIRS ${HWM14_ROOT}/include)
+
 if(BUILD_SHARED_LIBS)
   set(HWM14_LIBRARIES ${HWM14_ROOT}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}hwm14${CMAKE_SHARED_LIBRARY_SUFFIX})
 else()
@@ -54,5 +56,6 @@ install(FILES ${hwm14_dat_files} TYPE BIN)
 
 add_library(HWM14::hwm14 INTERFACE IMPORTED)
 target_link_libraries(HWM14::hwm14 INTERFACE "${HWM14_LIBRARIES}")
+target_include_directories(HWM14::hwm14 INTERFACE ${HWM14_INCLUDE_DIRS})
 
 add_dependencies(HWM14::hwm14 HWM14)

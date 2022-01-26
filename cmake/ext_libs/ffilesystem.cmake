@@ -55,15 +55,17 @@ file(MAKE_DIRECTORY ${ffilesystem_INCLUDE_DIRS})
 if(BUILD_SHARED_LIBS)
   add_library(ffilesystem::filesystem SHARED IMPORTED)
   if(WIN32)
-  set_target_properties(ffilesystem::filesystem PROPERTIES IMPORTED_IMPLIB ${ffs_implib})
+    set_target_properties(ffilesystem::filesystem PROPERTIES IMPORTED_IMPLIB ${ffs_implib})
   endif()
 else()
   add_library(ffilesystem::filesystem STATIC IMPORTED)
 endif()
 
-set_target_properties(ffilesystem::filesystem PROPERTIES IMPORTED_LOCATION ${ffilesystem_LIBRARIES})
-target_include_directories(ffilesystem::filesystem INTERFACE ${ffilesystem_INCLUDE_DIRS})
-set_target_properties(ffilesystem::filesystem PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(ffilesystem::filesystem PROPERTIES
+IMPORTED_LOCATION ${ffilesystem_LIBRARIES}
+INTERFACE_INCLUDE_DIRECTORIES ${ffilesystem_INCLUDE_DIRS}
+LINKER_LANGUAGE CXX
+)
 target_link_libraries(ffilesystem::filesystem INTERFACE ${lib_filesystem})
 
 # target_link_libraries(ffilesystem::filesystem INTERFACE stdc++)  # did not help
