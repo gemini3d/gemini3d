@@ -9,6 +9,8 @@ if(NOT ffilesystem_external)
   endif()
 endif()
 
+set(ffilesystem_external true CACHE BOOL "build Fortran-filesystem")
+
 if(NOT ffilesystem_ROOT)
   set(ffilesystem_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
