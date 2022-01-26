@@ -44,6 +44,9 @@ target_include_directories(gemini3d PUBLIC
 $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(gemini3d PUBLIC
+ffilesystem::filesystem ${lib_filesystem}
+)
 # need to have this explicit include for use of Gemini3D from ExternalProject
 # else compiler will fail to include top-level build/include for some targets e.g. filesystem
 set_target_properties(gemini3d PROPERTIES
