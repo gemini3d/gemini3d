@@ -40,6 +40,12 @@ configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 add_library(gemini3d
 libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 )
+target_include_directories(gemini3d PUBLIC
+$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+$<INSTALL_INTERFACE:include>
+)
+# need to have this explicit include for use of Gemini3D from ExternalProject
+# else compiler will fail to include top-level build/include for some targets e.g. filesystem
 set_target_properties(gemini3d PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -80,7 +86,7 @@ foreach(l ${gemini_internal_mods})
 
   target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
 
-  target_link_libraries(gemini3d
+  target_link_libraries(gemini3d PUBLIC
   # PRIVATE $<TARGET_OBJECTS:${l}>
   # $<BUILD_INTERFACE:${l}>
   $<INSTALL_INTERFACE:${l}>
