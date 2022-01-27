@@ -129,40 +129,62 @@ function(mumps_libs)
 
 if(DEFINED ENV{MKLROOT})
   find_path(MUMPS_INCLUDE_DIR
-    NAMES mumps_compat.h
-    NO_DEFAULT_PATH
-    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-    PATH_SUFFIXES include
-    DOC "MUMPS common header")
+  NAMES mumps_compat.h
+  NO_DEFAULT_PATH
+  HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+  PATH_SUFFIXES include
+  DOC "MUMPS common header"
+  )
 else()
   find_path(MUMPS_INCLUDE_DIR
-    NAMES mumps_compat.h
-    PATH_SUFFIXES MUMPS openmpi-x86_64 mpich-x86_64
-    DOC "MUMPS common header")
+  NAMES mumps_compat.h
+  PATH_SUFFIXES MUMPS openmpi-x86_64 mpich-x86_64
+  DOC "MUMPS common header"
+  )
 endif()
 if(NOT MUMPS_INCLUDE_DIR)
   return()
 endif()
 
+# get Mumps version
+find_file(mumps_conf
+NAMES smumps_c.h
+HINTS ${MUMPS_INCLUDE_DIR}
+NO_DEFAULT_PATH
+DOC "MUMPS configuration header"
+)
+
+if(mumps_conf)
+  file(STRINGS ${mumps_conf} _def
+  REGEX "^[ \t]*#[ \t]*define[ \t]+MUMPS_VERSION[ \t]+" )
+
+  if("${_def}" MATCHES "MUMPS_VERSION[ \t]+\"([0-9]+\\.[0-9]+\\.[0-9]+)?\"")
+    set(MUMPS_VERSION "${CMAKE_MATCH_1}" PARENT_SCOPE)
+  endif()
+endif()
+
 # --- Mumps Common ---
 if(DEFINED ENV{MKLROOT})
   find_library(MUMPS_COMMON
-    NAMES mumps_common
-    NO_DEFAULT_PATH
-    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-    PATH_SUFFIXES lib
-    DOC "MUMPS MPI common libraries")
+  NAMES mumps_common
+  NO_DEFAULT_PATH
+  HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+  PATH_SUFFIXES lib
+  DOC "MUMPS MPI common libraries"
+  )
 elseif(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   find_library(MUMPS_COMMON
-    NAMES mumps_common mumps_common_seq
-    NAMES_PER_DIR
-    DOC "MUMPS no-MPI common libraries")
+  NAMES mumps_common mumps_common_seq
+  NAMES_PER_DIR
+  DOC "MUMPS no-MPI common libraries"
+  )
 else()
   find_library(MUMPS_COMMON
-    NAMES mumps_common mumps_common_mpi mumpso_common mumps_common_shm
-    NAMES_PER_DIR
-    PATH_SUFFIXES openmpi/lib mpich/lib
-    DOC "MUMPS common libraries")
+  NAMES mumps_common mumps_common_mpi mumpso_common mumps_common_shm
+  NAMES_PER_DIR
+  PATH_SUFFIXES openmpi/lib mpich/lib
+  DOC "MUMPS common libraries"
+  )
 endif()
 
 if(NOT MUMPS_COMMON)
@@ -173,17 +195,19 @@ endif()
 
 if(DEFINED ENV{MKLROOT})
   find_library(PORD
-    NAMES pord
-    NO_DEFAULT_PATH
-    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-    PATH_SUFFIXES lib
-    DOC "simplest MUMPS ordering library")
+  NAMES pord
+  NO_DEFAULT_PATH
+  HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+  PATH_SUFFIXES lib
+  DOC "simplest MUMPS ordering library"
+  )
 else()
   find_library(PORD
-    NAMES pord mumps_pord
-    NAMES_PER_DIR
-    PATH_SUFFIXES openmpi/lib mpich/lib
-    DOC "simplest MUMPS ordering library")
+  NAMES pord mumps_pord
+  NAMES_PER_DIR
+  PATH_SUFFIXES openmpi/lib mpich/lib
+  DOC "simplest MUMPS ordering library"
+  )
 endif()
 if(NOT PORD)
   return()
@@ -192,16 +216,18 @@ endif()
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   if(DEFINED ENV{MKLROOT})
     find_library(MUMPS_mpiseq_LIB
-      NAMES mpiseq
-      NO_DEFAULT_PATH
-      HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-      PATH_SUFFIXES lib
-      DOC "No-MPI stub library")
+    NAMES mpiseq
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+    PATH_SUFFIXES lib
+    DOC "No-MPI stub library"
+    )
   else()
     find_library(MUMPS_mpiseq_LIB
     NAMES mpiseq mumps_mpi_seq
     NAMES_PER_DIR
-    DOC "No-MPI stub library")
+    DOC "No-MPI stub library"
+    )
   endif()
   if(NOT MUMPS_mpiseq_LIB)
     return()
@@ -209,16 +235,18 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
 
   if(DEFINED ENV{MKLROOT})
     find_path(MUMPS_mpiseq_INC
-      NAMES mpif.h
-      NO_DEFAULT_PATH
-      HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-      PATH_SUFFIXES include
-      DOC "MUMPS mpiseq header")
+    NAMES mpif.h
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+    PATH_SUFFIXES include
+    DOC "MUMPS mpiseq header"
+    )
   else()
     find_path(MUMPS_mpiseq_INC
-      NAMES mpif.h
-      PATH_SUFFIXES MUMPS mumps/mpi_seq
-      DOC "MUMPS mpiseq header")
+    NAMES mpif.h
+    PATH_SUFFIXES MUMPS mumps mumps/mpi_seq
+    DOC "MUMPS mpiseq header"
+    )
   endif()
   if(NOT MUMPS_mpiseq_INC)
     return()
@@ -237,22 +265,25 @@ foreach(comp ${MUMPS_FIND_COMPONENTS})
 
   if(DEFINED ENV{MKLROOT})
     find_library(MUMPS_${comp}_lib
-      NAMES ${comp}mumps
-      NO_DEFAULT_PATH
-      HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
-      PATH_SUFFIXES lib
-      DOC "MUMPS precision-specific")
+    NAMES ${comp}mumps
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT} ENV MUMPS_ROOT
+    PATH_SUFFIXES lib
+    DOC "MUMPS precision-specific"
+    )
   elseif(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
     find_library(MUMPS_${comp}_lib
-      NAMES ${comp}mumps ${comp}mumps_seq
-      NAMES_PER_DIR
-      DOC "MUMPS no-MPI precision-specific")
+    NAMES ${comp}mumps ${comp}mumps_seq
+    NAMES_PER_DIR
+    DOC "MUMPS no-MPI precision-specific"
+    )
   else()
     find_library(MUMPS_${comp}_lib
-      NAMES ${comp}mumps ${comp}mumps_mpi
-      NAMES_PER_DIR
-      PATH_SUFFIXES openmpi/lib mpich/lib
-      DOC "MUMPS precision-specific")
+    NAMES ${comp}mumps ${comp}mumps_mpi
+    NAMES_PER_DIR
+    PATH_SUFFIXES openmpi/lib mpich/lib
+    DOC "MUMPS precision-specific"
+    )
   endif()
 
   if(NOT MUMPS_${comp}_lib)
@@ -291,8 +322,11 @@ set(CMAKE_REQUIRED_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR MUMPS_links
-  HANDLE_COMPONENTS)
+REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR MUMPS_links
+VERSION_VAR MUMPS_VERSION
+HANDLE_COMPONENTS
+HANDLE_VERSION_RANGE
+)
 
 if(MUMPS_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
@@ -306,16 +340,18 @@ endif()
 if(NOT TARGET MUMPS::MUMPS)
   add_library(MUMPS::MUMPS INTERFACE IMPORTED)
   set_target_properties(MUMPS::MUMPS PROPERTIES
-    INTERFACE_LINK_LIBRARIES "${MUMPS_LIBRARY}"
-    INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}")
+  INTERFACE_LINK_LIBRARIES "${MUMPS_LIBRARY}"
+  INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}"
+  )
 endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   if(NOT TARGET MUMPS::MPISEQ)
     add_library(MUMPS::MPISEQ INTERFACE IMPORTED)
     set_target_properties(MUMPS::MPISEQ PROPERTIES
-      INTERFACE_LINK_LIBRARIES "${MUMPS_mpiseq_LIB}"
-      INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_mpiseq_INC}")
+    INTERFACE_LINK_LIBRARIES "${MUMPS_mpiseq_LIB}"
+    INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_mpiseq_INC}"
+    )
   endif()
 endif()
 
