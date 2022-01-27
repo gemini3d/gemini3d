@@ -147,7 +147,7 @@ print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid locati
 if (mpi_cfg%myid==0) then
   print*, 'Process grid established; reading in full grid file now...'
 end if
-call read_grid(cfg%indatsize,cfg%indatgrid, cfg%flagperiodic,x)
+call read_grid()
 !! read in a previously generated grid from filename listed in input file, distribute subgrids to individual workers
 if (lx2==1) then
   flag2D=1

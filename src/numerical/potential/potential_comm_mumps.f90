@@ -9,7 +9,7 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
-use grid, only: gridflag, lx1,lx2all,lx3all,g1,g2,g3
+use grid, only: x,gridflag, lx1,lx2all,lx3all,g1,g2,g3
 use meshobj, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
@@ -28,7 +28,8 @@ implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
-            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker
+            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
+            pot2perpfield_wrapper
 external :: mpi_send, mpi_recv
 
 !! overloading to deal with vestigial cartesian->curvilinear code
@@ -556,6 +557,15 @@ contains
     J2=J2+sigPgrav*g2-sigHgrav*g3
     J3=J2+sigHgrav*g2+sigPgrav*g3
   end subroutine acc_perpgravcurrents
+
+
+  !> wrapper for pot2perpfield that doesn't need input grid object and so may be called from the main program
+  subroutine pot2perpfield_wrapper(Phi,E2,E3)
+    real(wp), dimension(:,:,:), intent(in) :: Phi
+    real(wp), dimension(:,:,:), intent(inout) :: E2,E3
+
+    call pot2perpfield(Phi,x,E2,E3)
+  end subroutine
   
   
   subroutine pot2perpfield(Phi,x,E2,E3)

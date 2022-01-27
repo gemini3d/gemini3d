@@ -7,7 +7,7 @@ use phys_consts, only : wp
 
 implicit none (type, external)
 private
-public :: read_configfile, gemini_cfg, get_compiler_vendor, expand_envvar
+public :: read_configfile, gemini_cfg, get_compiler_vendor, expand_envvar, cfg
 
 type :: gemini_cfg
   !> basic simulation information (base)
@@ -99,6 +99,8 @@ interface
     class(gemini_cfg), intent(inout) :: cfg
   end subroutine read_ini
 end interface
+
+type(gemini_cfg) :: cfg
 
 contains
   subroutine read_configfile(cfg, verbose)

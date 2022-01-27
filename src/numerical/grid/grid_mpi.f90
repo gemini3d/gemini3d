@@ -12,9 +12,10 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
-use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
+use grid, only: x,lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 get_grid3_coords_raw,get_grid3_coords_hdf5,get_grid3_coords_nc4, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs
+use config, only: cfg
 
 implicit none (type, external)
 private
@@ -47,10 +48,9 @@ end interface
 contains
 
 !> read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size()
-subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-  character(*), intent(in) :: indatsize,indatgrid
-  integer, intent(in) :: flagperiodic
-  class(curvmesh), allocatable, intent(inout) :: x
+subroutine read_grid()
+  character(:), allocatable :: indatsize,indatgrid
+  integer :: flagperiodic
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: islstart,islfin
   integer, dimension(2) :: indsgrid
@@ -60,6 +60,8 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   !!   that the compiler will deal with it automatically
   !!  Also set the grid center position if not already dictated by the coordinate system
   
+  indatsize=cfg%indatsize; indatgrid=cfg%indatgrid; flagperiodic=cfg%flagperiodic
+
   call calc_subgrid_size(lx2all,lx3all)
   !! everyone computes what the size of their subgrid should be
   allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
