@@ -14,7 +14,8 @@ module temporal
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use meshobj, only:  curvmesh
-use config, only: gemini_cfg
+use grid, only: x
+use config, only: gemini_cfg,cfg
 
 implicit none (type, external)
 
@@ -26,13 +27,11 @@ external :: mpi_send, mpi_recv
 contains
 
 
-subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
+subroutine dt_comm(t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt)
 
 real(wp), intent(in) :: t,tout,tglowout
-type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
 real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
-class(curvmesh), intent(in) :: x
 real(wp), intent(out) :: dt
 
 real(wp), dimension(lsp) :: cour1,cour2,cour3

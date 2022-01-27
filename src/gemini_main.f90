@@ -188,7 +188,7 @@ contains
     
     !> Precipitation input setup
     if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+    call init_precipinput(dt,t,ymd,UTsec)
     
     !> Neutral atmosphere setup
     if(cfg%msis_version == 20) then
@@ -199,12 +199,12 @@ contains
       call msisinit(parmfile=msis2_param_file)
     end if
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
-    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-    call init_neutralperturb(cfg,x,dt,ymd,UTsec)
+    call init_neutralBG(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call init_neutralperturb(dt,ymd,UTsec)
 
  
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    call get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    call get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
@@ -226,7 +226,7 @@ contains
     main : do while (t < tdur)
       !> time step calculation, requires workers to report their most stringent local stability constraint
       dtprev = dt
-      call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
+      call dt_comm(t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt)
       if (it>1) then
         if(dt/dtprev > dtscale) then
           !! throttle how quickly we allow dt to increase

@@ -1,10 +1,10 @@
 module neutral
 
 use phys_consts, only: wp, lnchem, pi, Re, debug
-use grid, only: lx1, lx2, lx3
+use grid, only: x, lx1, lx2, lx3
 use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
-use config, only: gemini_cfg
+use config, only: gemini_cfg,cfg
 
 ! also links MSIS from vendor/msis00/
 
@@ -45,12 +45,10 @@ contains
   !    1)  allocating storage space
   !    2)  establishing initial background for density, temperature, and winds
   !! Arguably this should be called for init and for neutral updates, except for the allocation part...
-  subroutine init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  subroutine init_neutralBG(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     real(wp), intent(in) :: dt,t
-    type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
     real(wp), intent(in) :: v2grid,v3grid
     real(wp), dimension(:,:,:,:), intent(inout) :: nn
     !! intent(out)

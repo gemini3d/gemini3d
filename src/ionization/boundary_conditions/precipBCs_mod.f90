@@ -4,13 +4,13 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use reader, only: get_simsize2, get_precip, get_grid2
 use phys_consts, only: pi,wp, debug
-use grid, only : lx1,lx2,lx3
+use grid, only : x,lx1,lx2,lx3
 use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 mpi_realprec, mpi_cfg, tag=>gemini_mpi
-use config, only: gemini_cfg
+use config, only: gemini_cfg,cfg
 use precipdataobj, only: precipdata
 
 implicit none (type, external)
@@ -24,12 +24,10 @@ contains
 
 
 !> initialize variables to hold input file precipitation information, must be called by all workers at the same time
-subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x)
+subroutine init_precipinput(dt,t,ymd,UTsec)
   real(wp), intent(in) :: dt,t
-  type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
-  class(curvmesh), intent(in) :: x
 
   if (cfg%flagprecfile==1) then    !all workers must have this info
     call eprecip%init(cfg,cfg%precdir,x,dt,cfg%dtprec,ymd,UTsec)

@@ -1,7 +1,8 @@
 module neutral_perturbations
 
 use phys_consts, only: wp, lnchem, pi, Re, debug
-use config, only: gemini_cfg
+use config, only: gemini_cfg,cfg
+use grid, only: x
 use meshobj, only: curvmesh
 use mpimod, only: mpi_cfg
 use neutraldataobj, only: neutraldata
@@ -25,9 +26,7 @@ public :: init_neutralperturb,neutral_update,neutral_perturb,neutral_denstemp_up
 
 contains
   !> initialize/allocate neutral perturbation data object
-  subroutine init_neutralperturb(cfg,x,dt,ymd,UTsec)
-    type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(in) :: x
+  subroutine init_neutralperturb(dt,ymd,UTsec)
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec

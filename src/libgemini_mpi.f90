@@ -123,9 +123,7 @@ contains
 
 
   !> Compute initial perp drifts
-  subroutine get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
-    type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(in) :: x
+  subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(:,:,:), intent(in) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:,:), intent(in) :: ns,Ts,vs1
