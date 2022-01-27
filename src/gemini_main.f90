@@ -18,10 +18,10 @@ use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_fl
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use sanity_check, only : check_finite_output, check_finite_pertub
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: lx1,lx2,lx3,lx2all,lx3all
+use grid, only: x,lx1,lx2,lx3,lx2all,lx3all
 use grid_mpi, only: read_grid,grid_drift
 use meshobj, only: curvmesh
-use config, only : gemini_cfg
+use config, only : gemini_cfg,cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
@@ -32,14 +32,14 @@ use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_neuBG
 use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
 use potentialBCs_mumps, only: init_Efieldinput
-use potential_comm,only : electrodynamics,pot2perpfield
+use potential_comm,only : electrodynamics,pot2perpfield_wrapper
 use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_avgparms_Bfield
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts
 
@@ -87,11 +87,14 @@ contains
     !! UT (s)
     integer, dimension(3) :: ymd
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
-      type(gemini_cfg) :: cfg
-    !! holds many user simulation parameters
-      !> grid type (polymorphic) containing geometric information and associate procedures
-    class(curvmesh), allocatable :: x
-      !> STATE VARIABLES
+
+!>  These now module-scope variables in libgemini to fa
+!      type(gemini_cfg) :: cfg
+!    !! holds many user simulation parameters
+!      !> grid type (polymorphic) containing geometric information and associate procedures
+!    class(curvmesh), allocatable :: x
+!      !> STATE VARIABLES
+
     !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
     real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
     !! fluid state variables
@@ -131,50 +134,43 @@ contains
     !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
     character(*), parameter :: msis2_param_file = "msis20.parm"
-    
+
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-    call cli_config_gridsize(p,cfg,lid2in,lid3in)
+    call cli_config_gridsize(p,lid2in,lid3in)    ! results stored in cfg struct in config module
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
-    call init_procgrid(lx2all,lx3all,lid2in,lid3in)
+    call init_procgrid(lx2all,lx3all,lid2in,lid3in)    ! some results stored in mpimod
     
-    !> load the grid data from the input file
-    call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
-    !! read in a previously generated grid from filenames listed in input file
+    !> load the grid data from the input file; must be able to access cfg struct from config module
+    call read_grid()
+    !! read in a previously generated grid from filenames listed in input file; results stored in x obj in grid module
     
     !> Allocate space for solutions
-    call gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+    call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                         E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
  
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
-    call outdir_fullgridvaralloc(cfg,Phiall,lx1,lx2all,lx3all)
+    call outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all)    ! cfg used
     
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(cfg,x,ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
+    call get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)     ! cfg,x used
 
     !> Initialize some variables need for time stepping and output 
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
     
-    !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
-    !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
-    !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INERTIAL CAPACITANCE THERE
-    !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
-    !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
-    !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag
-    !! this assumes that the grid is defined s.t. the x1 direction corresponds
-    !! to the magnetic field direction (hence zero B2 and B3).
+    !> Set the magnetic field and MHD-like variables
+    call init_avgparms_Bfield(rhov2,rhov3,v2,v3,B2,B3,B1)
     
     !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
     if(mpi_cfg%myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
+    call init_Efieldinput(dt,t,ymd,UTsec)
     
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
     E1 = 0
-    call pot2perpfield(Phi,x,E2,E3)    
+    call pot2perpfield_wrapper(Phi,E2,E3)    ! wrapper used to avoid needing to directly reference grid structure.
     if(mpi_cfg%myid==0) then
       print '(A)', 'Recomputed initial dist. fields:'
       print*, '    gemini ',minval(E1),maxval(E1)
@@ -182,7 +178,7 @@ contains
       print*, '    gemini ',minval(E3),maxval(E3)
     end if
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(cfg,x,v2grid,v3grid,E1,E2,E3) 
+    call BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3)
     if (mpi_cfg%myid==0) then    
       print*, 'Recomputed initial fields including background:'
       print*, '    ',minval(E1),maxval(E1)
@@ -304,7 +300,7 @@ contains
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
     call clear_neuBG()
     call clear_dneu()
