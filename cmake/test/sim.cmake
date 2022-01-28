@@ -1,5 +1,5 @@
 # this file defines simulation tests.
-# The names of these must match those in cmake/test/ref_data.json
+# The names of these must match those in ref_data.json
 
 set(sim_timeout 1800)  # seconds to allow simulation tests to run
 
