@@ -20,7 +20,7 @@ foreach(n ${_names})
 endforeach()
 
 # --- Mumps
-string(JSON mumps_upstream_version GET ${_libj} mumps upstream_version)
+string(JSON MUMPS_UPSTREAM_VERSION GET ${_libj} mumps upstream_version)
 
 # --- Zlib
 if(zlib_legacy)
