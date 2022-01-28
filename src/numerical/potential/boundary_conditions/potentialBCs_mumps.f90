@@ -5,12 +5,12 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use mpimod, only : mpi_cfg
 use phys_consts, only: wp, pi, Re, debug
-use grid, only: x, lx1, lx2, lx2all, lx3all, gridflag
+use grid, only: lx1, lx2, lx2all, lx3all, gridflag
 use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use reader, only : get_grid2, get_simsize2, get_Efield
-use config, only: gemini_cfg,cfg
+use config, only: gemini_cfg
 use efielddataobj, only: efielddata
 
 implicit none (type, external)
@@ -26,11 +26,13 @@ integer, private :: ix1eq=-1                ! index for the equatorial location 
 contains
 
 
-subroutine init_Efieldinput(dt,t,ymd,UTsec)
+subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
   !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
   real(wp), intent(in) :: dt,t
+  type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
+  class(curvmesh), intent(in) :: x
 
   !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
   if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...

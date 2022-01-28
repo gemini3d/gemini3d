@@ -24,12 +24,12 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use pathlib, only : expanduser
-use grid, only: grid_size,x,lx1,lx2,lx3
-use config, only : read_configfile,cfg
+use grid, only: grid_size,lx1,lx2,lx3
+use config, only : read_configfile
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_avgparms_Bfield
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -44,29 +44,29 @@ end type c_params
 
 !> libgem_utils.f90
 interface
-  module subroutine cli_config_gridsize(p,lid2in,lid3in)
+  module subroutine cli_config_gridsize(p,cfg,lid2in,lid3in)
     type(c_params), intent(in) :: p
+    type(gemini_cfg), intent(inout) :: cfg
     integer, intent(inout) :: lid2in,lid3in
   end subroutine cli_config_gridsize
-  module subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+  module subroutine gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
-  end subroutine gemini_alloc
-  module subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
+  end subroutine
+  module subroutine gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
-  end subroutine  gemini_dealloc
-  module subroutine init_avgparms_Bfield(rhov2,rhov3,v2,v3,B2,B3,B1)
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,v2,v3,B1,B2,B3
-  end subroutine init_avgparms_Bfield
+  end subroutine
 end interface
 
 contains
