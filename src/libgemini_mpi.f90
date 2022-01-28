@@ -4,10 +4,9 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only: wp,debug
 use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown
 use meshobj, only: curvmesh
-use config, only: gemini_cfg,cfg
+use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir,create_outdir_aur
 use potential_comm, only: get_BGEfields,velocities
-use grid, only: x
 use grid_mpi, only: grid_drift
 use collisions, only: conductivities
 
@@ -33,7 +32,8 @@ contains
 
 
   !> Create output directories and allocate root-only variables
-  subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all)
+  subroutine outdir_fullgridvaralloc(cfg,Phiall,lx1,lx2all,lx3all)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
     integer, intent(in) :: lx1,lx2all,lx3all
 
@@ -52,7 +52,9 @@ contains
 
   !> Determine whether we are restarting vs. starting from a user-specified state.  Note that this uses mpi right now but
   !    with Michael's h5fortran-mpi library this call will be executed by all workers
-  subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
+  subroutine get_initial_state(cfg,x,ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
+    type(gemini_cfg), intent(inout) :: cfg
+    class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(inout) :: ns,vs1,Ts
     real(wp), dimension(:,:,:), intent(inout) :: Phi,Phiall
     real(wp), intent(inout) :: UTsec
@@ -96,7 +98,9 @@ contains
 
 
   !> add in background field, accounting for whether the user specified a lagrangian grid
-  subroutine BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3)
+  subroutine BGfield_Lagrangian(cfg,x,v2grid,v3grid,E1,E2,E3)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
