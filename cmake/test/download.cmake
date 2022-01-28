@@ -19,9 +19,9 @@ message(FATAL_ERROR "${url} failed to download ${archive}")
 endfunction(download_archive)
 
 
-function(gemini_download_ref_data name refroot)
+function(gemini_download_ref_data name refroot arc_json_file)
 
-file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data.json _refj)
+file(READ ${arc_json_file} _refj)
 
 string(JSON url GET ${_refj} tests ${name} url)
 string(JSON archive_name GET ${_refj} tests ${name} archive)
@@ -63,7 +63,7 @@ endfunction(gemini_download_ref_data)
 
 cmake_path(APPEND ref_dir ${refroot} ${name})
 
-gemini_download_ref_data(${name} ${refroot})
+gemini_download_ref_data(${name} ${refroot} ${arc_json_file})
 
 # copy sim inputs into build/${name}/inputs
 file(COPY ${ref_dir}/inputs DESTINATION ${outdir})

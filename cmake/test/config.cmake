@@ -1,6 +1,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 
-function(setup_gemini_test name TIMEOUT)
+function(setup_gemini_test name TIMEOUT arc_json_file)
 
 # --- setup test
 cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
@@ -8,7 +8,7 @@ cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data/compare)
 cmake_path(APPEND ref_dir ${ref_root} ${name})
 
 add_test(NAME ${name}:download
-  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
+  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -Darc_json_file:FILEPATH=${arc_json_file} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
 FIXTURES_SETUP ${name}:download_fxt

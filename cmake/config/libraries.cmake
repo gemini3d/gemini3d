@@ -38,3 +38,10 @@ endif()
 
 string(JSON hdf5_url GET ${_libj} hdf5 ${HDF5_VERSION} url)
 string(JSON hdf5_sha256 GET ${_libj} hdf5 ${HDF5_VERSION} sha256)
+
+# --- download reference data JSON file (for previously generated data)
+cmake_path(APPEND arc_json_file ${CMAKE_CURRENT_BINARY_DIR} ref_data.json)
+if(NOT EXISTS ${arc_json_file})
+  string(JSON url GET ${_libj} ref_data url)
+  file(DOWNLOAD ${url} ${arc_json_file} INACTIVITY_TIMEOUT 15)
+endif()

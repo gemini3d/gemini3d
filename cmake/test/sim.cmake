@@ -20,7 +20,7 @@ endif(glow)
 
 
 foreach(_s ${gemini_test_sim_names})
-  setup_gemini_test(${_s} ${sim_timeout})
+  setup_gemini_test(${_s} ${sim_timeout} ${arc_json_file})
 
   if(python)
     setup_magcalc_test(${_s})
