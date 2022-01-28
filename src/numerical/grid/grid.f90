@@ -4,7 +4,6 @@ module grid
 
 use phys_consts, only: wp
 use reader, only: get_simsize3
-use meshobj, only: curvmesh
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
@@ -15,9 +14,7 @@ integer, protected :: gridflag
 real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
 !! so other modules can simply access gravitational field data
 
-class(curvmesh), allocatable :: x
-
-public :: x,lx1,lx2,lx3,lx2all,lx3all,gridflag, &
+public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs,grid_size
 

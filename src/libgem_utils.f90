@@ -1,4 +1,3 @@
-!> allocation, deallocation, initialization not requiring mpi libraries
 submodule (gemini3d) libgem_utils
 
 implicit none (type, external)
@@ -65,14 +64,6 @@ contains
       iver = 0
     end if 
   end procedure gemini_alloc
-
-
-  !> initialize the
-  module procedure init_avgparms_Bfield
-    !! this assumes that the grid is defined s.t. the x1 direction corresponds
-    !! to the magnetic field direction (hence zero B2 and B3).
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag
-  end procedure init_avgparms_Bfield
 
 
   !> deallocate arrays

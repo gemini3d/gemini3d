@@ -1,5 +1,5 @@
 add_library(grid OBJECT grid.f90 readgrid_hdf5.f90 readgrid_nc4.f90 readgrid_raw.f90)
-target_link_libraries(grid PRIVATE const config reader
+target_link_libraries(grid PRIVATE const reader
 h5fortran::h5fortran nc4fortran::nc4fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
