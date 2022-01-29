@@ -13,7 +13,9 @@
 ! limitations under the License.
 
 !> This module is intended to have various interfaces/wrappers for main gemini functionality
-!!   that does not involve mpi or mpi-dependent modules.  
+!!   that does not involve mpi or mpi-dependent modules.  Note also that c bindings need to
+!!   be passing only "simple" data, i.e. no structures or objects like the config struct or
+!!   the grid object
 module gemini3d
 
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
@@ -25,11 +27,16 @@ use config, only: gemini_cfg
 use collisions, only: conductivities
 use pathlib, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3
-use config, only : read_configfile
+use config, only : gemini_cfg,read_configfile
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x
+
+!> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
+!!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
+type(gemini_cfg) :: cfg
+class(curvmesh), allocatable :: x
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -44,23 +51,20 @@ end type c_params
 
 !> libgem_utils.f90
 interface
-  module subroutine cli_config_gridsize(p,cfg,lid2in,lid3in)
+  module subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
     type(c_params), intent(in) :: p
-    type(gemini_cfg), intent(inout) :: cfg
     integer, intent(inout) :: lid2in,lid3in
   end subroutine cli_config_gridsize
-  module subroutine gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-                                    E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
-    type(gemini_cfg), intent(in) :: cfg
+  module subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+                                    E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
   end subroutine
-  module subroutine gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
-                                      E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
-    type(gemini_cfg), intent(in) :: cfg
+  module subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
+                                      E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn

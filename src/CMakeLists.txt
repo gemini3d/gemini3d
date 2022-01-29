@@ -46,7 +46,7 @@ ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 
-add_library(gemini3d_mpi OBJECT libgemini_mpi.f90)
+add_library(gemini3d_mpi libgemini_mpi.f90 libgem_mpi_io.f90 libgem_mpi_drifts.f90 libgem_mpi_par.f90)
 set_target_properties(gemini3d_mpi PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
