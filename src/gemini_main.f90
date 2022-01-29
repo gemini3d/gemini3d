@@ -39,7 +39,7 @@ use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts
 
@@ -87,10 +87,6 @@ contains
     !! UT (s)
     integer, dimension(3) :: ymd
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
-      type(gemini_cfg) :: cfg
-    !! holds many user simulation parameters
-      !> grid type (polymorphic) containing geometric information and associate procedures
-    class(curvmesh), allocatable :: x
       !> STATE VARIABLES
     !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
     real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
@@ -134,7 +130,7 @@ contains
     
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-    call cli_config_gridsize(p,cfg,lid2in,lid3in)
+    call cli_config_gridsize(p,lid2in,lid3in)
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
@@ -145,14 +141,14 @@ contains
     !! read in a previously generated grid from filenames listed in input file
     
     !> Allocate space for solutions
-    call gemini_alloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+    call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                         E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
  
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
-    call outdir_fullgridvaralloc(cfg,Phiall,lx1,lx2all,lx3all)
+    call outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all)
     
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(cfg,x,ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
+    call get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
 
     !> Initialize some variables need for time stepping and output 
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
@@ -182,7 +178,7 @@ contains
       print*, '    gemini ',minval(E3),maxval(E3)
     end if
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(cfg,x,v2grid,v3grid,E1,E2,E3) 
+    call BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) 
     if (mpi_cfg%myid==0) then    
       print*, 'Recomputed initial fields including background:'
       print*, '    ',minval(E1),maxval(E1)
@@ -208,7 +204,7 @@ contains
 
  
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    call get_initial_drifts(cfg,x,nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    call get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
@@ -297,14 +293,14 @@ contains
       endif
     
       !> see if we are doing a dry run and exit program if so
-      call check_dryrun(cfg)
+      call check_dryrun()
     
       !> File output
-      call check_fileoutput(t,tout,tglowout,tmilestone,cfg,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
+      call check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(cfg,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
     call clear_neuBG()
     call clear_dneu()
