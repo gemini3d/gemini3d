@@ -89,21 +89,21 @@ contains
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
       !> STATE VARIABLES
     !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
-    real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     !! fluid state variables
-    real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3,Phi
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     !! electrodynamic state variables
-    real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3
     !! inductive state vars. (for future use - except for B1 which is used for the background field)
-    real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3
     !! inductive auxiliary
-    real(wp), dimension(:,:,:,:), allocatable :: nn
+    real(wp), dimension(:,:,:,:), pointer :: nn
     !! neutral density array
-    real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3
     !! neutral temperature and velocities
-    real(wp), dimension(:,:,:), allocatable :: Phiall
+    real(wp), dimension(:,:,:), pointer :: Phiall
     !! full-grid potential solution.  To store previous time step value
-    real(wp), dimension(:,:,:), allocatable :: iver
+    real(wp), dimension(:,:,:), pointer :: iver
     !! integrated volume emission rate of aurora calculated by GLOW
     !TEMPORAL VARIABLES
     real(wp) :: t=0, dt=1e-6_wp,dtprev

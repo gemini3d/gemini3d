@@ -19,12 +19,13 @@ public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lag
 
 interface !libgem_mpi_io.f90
   module subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     integer, intent(in) :: lx1,lx2all,lx3all
   end subroutine outdir_fullgridvaralloc
   module subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur) bind(C)
     real(wp), dimension(:,:,:,:), intent(inout) :: ns,vs1,Ts
-    real(wp), dimension(:,:,:), intent(inout) :: Phi,Phiall
+    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: tdur
@@ -36,7 +37,7 @@ interface !libgem_mpi_io.f90
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
     real(wp), dimension(:,:,:), intent(in) :: iver
   end subroutine

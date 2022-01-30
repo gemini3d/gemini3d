@@ -57,7 +57,7 @@ interface ! plasma.f90
     !! intent(out)
     real(wp), dimension(:,:,:), intent(inout) :: Phi
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     !! intent(out)
   end subroutine input_plasma
 
@@ -76,7 +76,7 @@ interface ! plasma.f90
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
     real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
   end subroutine output_plasma
 end interface
