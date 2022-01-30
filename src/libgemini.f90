@@ -18,7 +18,7 @@
 !!   the grid object
 module gemini3d
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_double
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp
@@ -53,23 +53,23 @@ end type c_params
 interface
   module subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
     type(c_params), intent(in) :: p
-    integer, intent(inout) :: lid2in,lid3in
+    integer(kind=c_int), intent(inout) :: lid2in,lid3in
   end subroutine cli_config_gridsize
   module subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-    real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
-    real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
+    real(kind=c_double), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
+    real(kind=c_double), dimension(:,:,:,:), allocatable, intent(inout) :: nn
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: iver
   end subroutine
   module subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-    real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
-    real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
+    real(kind=c_double), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
+    real(kind=c_double), dimension(:,:,:,:), allocatable, intent(inout) :: nn
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: Tn,vn1,vn2,vn3
+    real(kind=c_double), dimension(:,:,:), allocatable, intent(inout) :: iver
   end subroutine
 end interface
 
