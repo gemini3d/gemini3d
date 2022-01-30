@@ -56,7 +56,7 @@ interface
     integer, intent(inout) :: lid2in,lid3in
   end subroutine cli_config_gridsize
   module subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-                                    E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
+                                    E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
@@ -64,7 +64,7 @@ interface
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: iver
   end subroutine
   module subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
-                                      E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
+                                      E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), allocatable, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), allocatable, intent(inout) :: nn
