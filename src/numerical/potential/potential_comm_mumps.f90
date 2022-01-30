@@ -124,7 +124,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
-    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
