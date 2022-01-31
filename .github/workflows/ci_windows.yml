@@ -24,12 +24,10 @@ jobs:
     timeout-minutes: 20
     runs-on: windows-latest
 
-    env:
-      CTEST_PARALLEL_LEVEL: 2
-
     defaults:
       run:
         shell: msys2 {0}
+
     steps:
     - uses: msys2/setup-msys2@v2
       with:
