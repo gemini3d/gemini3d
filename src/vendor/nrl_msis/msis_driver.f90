@@ -14,7 +14,7 @@ real(real32), allocatable, dimension(:,:,:,:) :: Dn, Tn
 real(real32), allocatable, dimension(:,:,:) :: glat, glon, alt
 integer :: u, msis_version, lx1, lx2, lx3
 character(2048) :: buf
-logical :: has_msis2
+logical :: has_msis2, debug = .false.
 character(:), allocatable :: infile,outfile
 character(*), parameter :: parmfile = 'msis20.parm'
 
@@ -76,23 +76,25 @@ do i=1,lx1
       case (20)
         call msis_gtd8(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:))
       case default
-        write (stderr,*) 'ERROR: expected msis_version = {0,20}, but got ', msis_version
+        write (stderr,'(a,i0)') 'ERROR: expected msis_version = {0,20}, but got ', msis_version
         error stop
       end select
 
-      !> sanity check N2 density
-      if(Dn(i,j,k,3) < 0) then
-        write(stderr,*) "MSIS",msis_version, "inputs: doy, UTsec, alt, glat, glon, f107a, f107, Ap", &
+      !> sanity check
+      if(debug .or. any(Dn(i,j,k,:) < 0) .or. any(Tn(i,j,k,:) > 1000000) .or. any(Tn(i,j,k,:) < 0)) then
+        write(stderr,'(a,i0,a,f4.0,1x,f10.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f4.0)') "MSIS", msis_version, &
+          " inputs: doy, UTsec, alt, glat, glon, f107a, f107, Ap ", &
           doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap(1)
-        write(stderr,*) "N2 density < 1e-3 at lat,lon,alt:", glat(i,j,k), glon(i,j,k), alt(i,j,k)
-        error stop "msis_setup failed"
+        write(stderr, '(a,f15.3)') "N2 density: ", Dn(i,j,k,3)
+        write(stderr, '(a,2f18.1)') "Temperature, exo temperature: ", Tn(i,j,k,2), Tn(i,j,k,1)
+        if (.not. debug) error stop "msis_setup failed"
       endif
 
     end do
   end do
 end do
 
-call output_hdf5(outfile, alt, glat, glon, Dn, Tn, msis_version)
+call output_hdf5(outfile, doy, sec, alt, glat, glon, Dn, Tn, msis_version)
 
 contains
 
@@ -153,9 +155,10 @@ call hf%close()
 end subroutine input_hdf5
 
 
-subroutine output_hdf5(filename, alt, glat, glon, Dn, Tn, msis_version)
+subroutine output_hdf5(filename, doy, sec, alt, glat, glon, Dn, Tn, msis_version)
 
 character(*), intent(in) :: filename
+real(real32), intent(in) :: doy, sec
 real(real32), intent(in), dimension(:,:,:) :: alt, glat, glon
 real(real32), intent(in), dimension(:,:,:,:) :: Dn, Tn
 integer, intent(in) :: msis_version
@@ -164,7 +167,10 @@ type(hdf5_file) :: hf
 
 call hf%open(filename, action="w", comp_lvl=comp_lvl)
 
+!> echo back inputs to help dbugging
 call hf%write("/msis_version", msis_version)
+call hf%write("/doy", doy)
+call hf%write("/UTsec", sec)
 call hf%write("/alt", alt)
 call hf%write("/glat", glat)
 call hf%write("/glon", glon)
