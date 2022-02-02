@@ -13,31 +13,47 @@ real(real32) :: doy,sec,f107a,f107, Ap(7)
 real(real32), allocatable, dimension(:,:,:,:) :: Dn, Tn
 real(real32), allocatable, dimension(:,:,:) :: glat, glon, alt
 integer :: u, msis_version, lx1, lx2, lx3
-character(256) :: buf
-logical :: exists
+character(2048) :: buf
+logical :: has_msis2
 character(:), allocatable :: infile,outfile
 character(*), parameter :: parmfile = 'msis20.parm'
 
-!> user options
-if (command_argument_count() < 2) error stop 'msis_setup: must specify input and output filenames'
+!> weak check that MSIS 2 seems to have been built
+!> build system (CMake) places msis20.parm in the binary dir of msis_setup whem cmake -Dmsis2=yes was set
+inquire(file=parmfile, exist=has_msis2)
 
-call get_command_argument(1,buf)
-infile = trim(buf)
-call get_command_argument(2, buf)
-outfile = trim(buf)
+!> user options
+select case (command_argument_count())
+case (1)
+  !! asking for help or features
+  call get_command_argument(1, buf)
+
+  if (buf == '-features') then
+    if(has_msis2) then
+      print '(a)', "MSIS00 MSIS2"
+    else
+      print '(a)', "MSIS00"
+    endif
+    stop
+  endif
+  write(stderr,'(a)') "msis_setup: unknown option: " // trim(buf)
+  error stop "msis_setup: usage: msis_setup infile outfile  |  msis_setup -features"
+case (2)
+  call get_command_argument(1,buf)
+  infile = trim(buf)
+  call get_command_argument(2, buf)
+  outfile = trim(buf)
+case default
+  error stop "msis_setup: usage: msis_setup infile outfile  |  msis_setup -features"
+end select
 
 !> select input format
 call input_hdf5(infile, msis_version, doy,sec,f107a,f107,Ap, glat, glon, alt)
 
-!> ensure MSIS 2.0 setup OK
-if(msis_version == 20) then
-  inquire(file=parmfile, exist=exists)
-  if (.not. exists) then
-    write(stderr,'(a)') parmfile // " not found, required by MSIS 2.x, which requires 'cmake -Dmsis2=yes'"
-    error stop 20
-  endif
+if(msis_version == 20 .and. .not. has_msis2) then
+  write(stderr,'(a)') parmfile // " not found, required by MSIS 2.x, which requires 'cmake -Dmsis2=yes'"
+  error stop 20
 endif
-
 
 !> Run MSIS
 lx1 = size(alt,1)
@@ -92,7 +108,11 @@ real(real32), intent(inout), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
 
 type(hdf5_file) :: hf
 integer(hsize_t), allocatable :: dims(:)
-integer:: lx1,lx2,lx3, doy_int
+integer :: lx1,lx2,lx3, doy_int
+logical :: exists
+
+inquire(file=filename, exist=exists)
+if(.not. exists) error stop "input_hdf5: input MSIS data file not found: " // filename
 
 call hf%open(filename, action='r')
 

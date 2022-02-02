@@ -293,7 +293,7 @@ print '(a,t20,a)', '-compiler', 'tell the compiler family e.g. GNU, Intel, Intel
 print '(a,t20,a)', '-compiler_version', 'like -compiler, and also tell the Fortran compiler version.'
 print '(a,t20,a)', '-git', 'print git revision it was built from. This is not perfect, to be sure use fresh build directory.'
 print '(a,t20,a)', '-compiler_options', 'print compiler flags used to build the executable.'
-print '(a,t20,a)', '-features', 'print Gemini3D exteranl features enabled as a string, machine/human-readable.'
+print '(a,t20,a)', '-features', 'print Gemini3D external features enabled as a string, machine/human-readable.'
 stop 'EOF: gemini3d.run'
 
 end subroutine help_gemini_run
