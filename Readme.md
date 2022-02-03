@@ -18,22 +18,38 @@ A subroutine-level set of
 documentation describing functions of individual program units is given via source code comments which are
 [rendered as webpages](https://gemini3d.github.io/GEMINI/).
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
-Please open a
-[GitHub Issue](https://github.com/gemini3d/gemini/issues)
-if you experience difficulty with GEMINI.
 
 Generally, the Git `main` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen regularly.
 Specific releases corresponding to published results are generally noted in the corresponding journal article.
 
-## Platform agnostic
+## Bug Reporting
 
-Gemini is OS / CPU arch / platform / compiler agnostic.
-Operating system support includes Linux, MacOS, and Windows.
-CPU arch support includes Intel / AMD, ARM and IBM POWER.
+The GEMINI development teams values input from our user community, particulary in the form of reporting of errors.  These allow us to insure that the code functions properly for a wider range of conditions, platforms, and use cases than we are otherwise able to directly test.  
+
+Please open a
+[GitHub Issue](https://github.com/gemini3d/gemini/issues)
+if you experience difficulty with GEMINI.  Try to provide as much detail as possible so we can try to reproduce your error.  
+
+## Platforms
+
+Gemini is intended to be OS / CPU arch / platform / compiler agnostic.
+Operating system support includes:
+
+  * Linux, 
+  * MacOS, and 
+  * Windows.
+
+CPU arch support includes:
+
+  * Intel
+  * AMD
+  * ARM
+  * IBM POWER
+ 
 GEMINI can run on hardware ranging from a Raspberry Pi to laptop to a high-performance computing (HPC) cluster.
-One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.
+Generally speaking one can run large 2D or modest resolution 3D simulations (less than 10 million grid points) on a quad-core workstation, with some patience.
 
-For large 3D simulations (more than 20M grid points), GEMINI should be run in a cluster environment or a "large" multi-core workstation (e.g. 12 or more cores).
+For large 3D simulations (many tens-to-hundreds of millions of grid points), GEMINI is best run in a cluster environment or a very "large" multi-core workstation (e.g. 16 or more cores).
 Runtime depends heavily on the grid spacing used, which determines the time step needed to insure stability,
 For example we have found that a 20M grid point simulations takes about  4 hours on 72 Xeon E5 cores.  200M grid point simulations can take up to a week on 256 cores.
 It has generally been found that acceptable performance requires > 1GB memory per core; moreover, a large amount of storage (hundreds of GB to several TB) is needed to store results from large simulations.
@@ -46,13 +62,14 @@ Requirements:
 
 * Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) if needed.
   * Gfortran / GCC &ge; 8 (GCC &ge; 9 recommended)
-  * Intel oneAPI HPC Toolkit (free to use for all)
+  * Intel oneAPI HPC Toolkit (now free to use for all)
+* Python 3 and/or MATLAB for scripting front- and back-ends
 * [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P scripts/install_cmake.cmake` or from Python `pip install cmake`
 * Git: the Gemini3D software stack uses Git to version lock reproducible builds.
 
 Recommended:
 
-* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only.
+* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, and given that any modern computer has multiple cores, this is not recommended.
 * [Ninja](https://ninja-build.org/) will build/rebuild much faster than GNU Make for any software project. `cmake -P scripts/install_ninja.cmake`
 
 The prerequisite packages used by the CI and typically by devs/users are seen in [requirements.json](./requirements.json)
@@ -75,38 +92,29 @@ The prerequisite packages used by the CI and typically by devs/users are seen in
 Non-default [build options](./docs/Readme_cmake.md) may be used.
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
-To help ensure successful simulations, run the self-tests:
+To verify your GEMINI build, run the self-tests:
 
 ```sh
 ctest --test-dir build
 ```
 
-## How to setup a sim
 
-1. make a [config.nml](./docs/Readme_input.md) with desired parameters for an equilibrium sim.
-2. run the equilibrium sim:
+## GEMINI Numerical Library Dependencies
 
-    ```sh
-    python -m gemini3d.run /path_to/config_eq.nml /path_to/sim_eq/
-    ```
-3. create a new config.nml for the actual simulation and run
+For various numerical solutions Gemini relies on:  
 
-    ```sh
-    python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
-    ```
+* LAPACK
+* scalapack
+* MUMPS
 
-### Windows
+For file input/output we also use:
 
-Occasionally on Windows you may get a system error code `0xc0000005` when trying to run Gemini.
-This typically requires rebooting the Windows computer.
-If this is annoying, please let us know--it happens rarely enough that we're not sure if it's a Microsoft MPI bug or something else.
-
-## Prerequisites
+* hdf5
+* h5fortran
+* zlib
 
 Gemini uses CMake build system to automatically build the entire software library stack,
 checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
-
-### Libraries
 
 Libraries are auto-built by Gemini when building gemini.bin.
 These will generally yield faster Gemini runtime, since they were optimized for the CPU on your hardware.
@@ -115,19 +123,24 @@ If it's desired to use:
 * system libraries: [PyGemini scripts/install_prereqs.py](https://github.com/gemini3d/pygemini)
 * build/install libraries: `python -m gemini3d.prereqs`
 
-## Known limitations and issues of GEMINI
 
-1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
-2. Magnetic field calculations on an open 2D grid do not appear completely consistent with model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
-3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to add this line of code to the potential solver being used for your simulations.  If the problem persists try changing the number to 100.
+## Running GEMINI from a Shell Environment
 
-    ```fortran
-    mumps_par%ICNTL(14)=50
-    ```
-4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
-5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is always good practice anyway).
+For basic operations the GEMINI main program simply needs to be run from the command line with arguments corresponding to to the number of processes to be used for the simulation, the location where the input files are and where the output files are to be written:  
 
-## Command-line options
+```sh
+mpiexec -np <number of processors>  build/gemini.bin <output directory>
+```
+
+for example:
+
+```sh
+mpiexec -np 4 build/gemini.bin ~/mysim3d/arecibo
+```
+
+GEMINI can also be run via scripting frontends, e.g. `python -m gemini3d.run -np` options.
+
+### Advanced Command Line Options
 
 By default, only the current simulation time and a few other messages are shown to keep logs uncluttered.
 gemini.bin command line options include:
@@ -151,26 +164,26 @@ gemini.bin command line options include:
 `-dryrun`
 : only run the first time step, do not write any files. This can be useful to diagnose issues not seen in unit tests, particularly issues with gridding. It runs in a few seconds or less than a minute for larger sims, something that can be done before queuing an HPC job.
 
-### Number of MPI processes
 
-In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.
-The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
+## Running GEMINI through Scripting Environments
 
-This can also be done via `python -m gemini3d.run -np` options.
+If you prefer to issue the GEMINI run command through a scripting environment you may do so (via python) in the following way:  
 
-```sh
-mpiexec -np <number of processors>  build/gemini.bin <output directory>
-```
+1. make a [config.nml](./docs/Readme_input.md) with desired parameters for an equilibrium sim.
+2. run the equilibrium sim:
 
-for example:
+    ```sh
+    python -m gemini3d.run /path_to/config_eq.nml /path_to/sim_eq/
+    ```
+3. create a new config.nml for the actual simulation and run
 
-```sh
-mpiexec -np 4 build/gemini.bin ~/mysim3d/arecibo
-```
+    ```sh
+    python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
+    ```
 
 ## Input file format
 
-See [Readme_input](./docs/Readme_input.md)
+See [Readme_input](./docs/Readme_input.md) for details on how to prepare input data for GEMINI.  Generally speaking there are python and MATLAB scripts available in the mat_gemini and pygemini repositories that will save data in the appropriate format once generated.  
 
 ## Loading and plotting output
 
@@ -186,16 +199,36 @@ contain scripts used for various published and ongoing analyses.
 
 See [Readme_output](./docs/Readme_output.md) for a description of how to load the simulation output files and the different variable names, meanings, and units.
 
+
+## Computing Magnetic Field Perturbations
+
 An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.
 
 
 ## List of other associated Readmes
 
-1. [Readme_output](./docs/Readme_output.md)
-2. [Readme_input](./docs/Readme_input.md)
-3. [Readme_compilers](./docs/Readme_compilers.md)
-4. [Readme_cmake](./docs/Readme_cmake.md)
-5. [Readme_docs](./docs/Readme_docs.md)
-6. [Readme_mpi](./docs/Readme_mpi.md)
-7. [Readme_magcalc](./docs/Readme_magcalc.md)
-8. [Readme_VEGA](./docs/Readme_VEGA.md)
+1. [Readme_output](./docs/Readme_output.md) - information about data included in the output files of a GEMINI simulation
+2. [Readme_input](./docs/Readme_input.md) - information on how input files should be prepared and formatted.  
+3. [Readme_compilers](./docs/Readme_compilers.md) - details regarding various compilers
+4. [Readme_cmake](./docs/Readme_cmake.md) - cmake build options
+5. [Readme_docs](./docs/Readme_docs.md) - information about model documentation
+6. [Readme_mpi](./docs/Readme_mpi.md) - help with mpi-related issues
+7. [Readme_magcalc](./docs/Readme_magcalc.md) - some documentation for the magnetic field calculation program
+8. [Readme_VEGA](./docs/Readme_VEGA.md) - information on how to deploy and run GEMINI on ERAU's VEGA HPC system.  
+9. [Readme_prereqs](./docs/Readme_prereqs.md) - details on how to install prerequisites on common platforms.  
+
+
+## Known limitations and issues of GEMINI
+
+1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
+2. Magnetic field calculations on an open 2D grid do not appear completely consistent with model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
+3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to add this line of code to the potential solver being used for your simulations.  If the problem persists try changing the number to 100.
+
+    ```fortran
+    mumps_par%ICNTL(14)=50
+    ```
+4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
+5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is always good practice anyway).
+6. Occasionally on Windows you may get a system error code `0xc0000005` when trying to run Gemini.
+This typically requires rebooting the Windows computer.
+If this is annoying, please let us know--it happens rarely enough that we're not sure if it's a Microsoft MPI bug or something else.
