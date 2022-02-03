@@ -42,11 +42,8 @@ target_link_libraries(ionization PRIVATE const grid meshobj timeutils fang
 $<$<BOOL:${glow}>:glow::glow>
 )
 
-add_library(ionization_mpi OBJECT ionization_mpi.f90
-$<IF:$<BOOL:${glow}>,glow_run.F90,glow_dummy.f90>
-)
-target_link_libraries(ionization_mpi PRIVATE const neutral grid meshobj timeutils fang
-$<$<BOOL:${glow}>:glow::glow>
+add_library(ionization_mpi OBJECT ionization_mpi.f90)
+target_link_libraries(ionization_mpi PRIVATE ionization const neutral grid meshobj timeutils fang
 mpimod
 MPI::MPI_Fortran
 )
