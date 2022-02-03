@@ -23,8 +23,8 @@ interface !libgem_mpi_io.f90
     integer, intent(in) :: lx1,lx2all,lx3all
   end subroutine outdir_fullgridvaralloc
   module subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur) bind(C)
-    real(wp), dimension(:,:,:,:), intent(inout) :: ns,vs1,Ts
-    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,Ts
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phi
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
@@ -36,10 +36,10 @@ interface !libgem_mpi_io.f90
     integer, intent(inout) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-    real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
-    real(wp), dimension(:,:,:), intent(in) :: iver
+    real(wp), dimension(:,:,:), pointer, intent(in) :: J1,J2,J3
+    real(wp), dimension(:,:,:), pointer, intent(in) :: iver
   end subroutine
   module subroutine check_dryrun() bind(C)
   end subroutine check_dryrun
@@ -51,12 +51,12 @@ interface !libgem_mpi_drifts.f90
     real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3
   end subroutine BGfield_Lagrangian
   module subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3) bind(C)
-    real(wp), dimension(:,:,:,:), intent(in) :: nn
-    real(wp), dimension(:,:,:), intent(in) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:,:), intent(in) :: ns,Ts,vs1
-    real(wp), dimension(:,:,:,:), intent(inout) :: vs2,vs3
-    real(wp), dimension(:,:,:), intent(in) :: B1
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(in) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs2,vs3
+    real(wp), dimension(:,:,:), pointer, intent(in) :: B1
+    real(wp), dimension(:,:,:), pointer, intent(in) :: E2,E3
   end subroutine get_initial_drifts
 end interface
 interface !libgem_mpi_par.f90
