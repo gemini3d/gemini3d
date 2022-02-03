@@ -1,6 +1,6 @@
 # Installing GEMINI Prerequisites
 
-As indicated in the main readme there are a number of prerequisites for GEMINI.  This read covers some details of how to install these on various platforms.  We focus here on ease of use and describe the "least effort" methods for getting needed software.  
+As indicated in the main readme there are a number of prerequisites for GEMINI.  This readme covers some details of how to install these on various platforms.  We focus here on ease of use and describe the "least effort" methods for getting needed software.  
 
 ## Working with MacOS
 
