@@ -204,7 +204,9 @@ contains
 
  
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
+    print*, 'pre-get_initial_drifts:  ',lbound(vs1,4),ubound(vs1,4),lbound(vs2,4),ubound(vs2,4),lbound(vs3,4),ubound(vs3,4)
     call get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    print*, 'post-get_initial_drifts:  ',lbound(vs1,4),ubound(vs1,4),lbound(vs2,4),ubound(vs2,4),lbound(vs3,4),ubound(vs3,4)
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
