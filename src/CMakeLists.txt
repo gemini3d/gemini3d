@@ -167,16 +167,11 @@ sources_mpi
 temporal
 PDEparabolic gbsv
 PDEelliptic
-MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
-nc4fortran::nc4fortran
-h5fortran::h5fortran
-$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
-MPI::MPI_Fortran
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-$<$<BOOL:${glow}>:glow::glow>
+)
+
+get_property(gemlib TARGET gemini.bin PROPERTY LINK_LIBRARIES)
+set_target_properties(gemini.bin PROPERTIES
+LINK_LIBRARIES "${gemlib};MUMPS::MUMPS;$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>;LAPACK::LAPACK;nc4fortran::nc4fortran;h5fortran::h5fortran;$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>;MPI::MPI_Fortran;$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>;$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>;$<$<BOOL:${glow}>:glow::glow>"
 )
 
 # same link logic applied to src/unit_tests/test_mumps
