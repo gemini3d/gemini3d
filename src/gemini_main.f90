@@ -28,7 +28,6 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
-use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_neuBG
 use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
 use potentialBCs_mumps, only: init_Efieldinput
@@ -40,7 +39,7 @@ use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts
 
@@ -82,7 +81,6 @@ contains
     !! output directory for Gemini3D to write simulation data to (can be large files GB, TB, ...)
     integer(c_int), intent(inout) :: lid2in, lid3in  !< inout to allow optional CLI
     integer :: ierr
-    logical :: exists
     !> VARIABLES READ IN FROM CONFIG FILE
     real(wp) :: UTsec
     !! UT (s)
@@ -127,7 +125,6 @@ contains
     real(wp) :: tmilestone = 0
     !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
-    character(*), parameter :: msis2_param_file = "msis20.parm"
     
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
@@ -192,13 +189,7 @@ contains
     call init_precipinput_C(dt,t,ymd,UTsec)
     
     !> Neutral atmosphere setup
-    if(cfg%msis_version == 20) then
-      inquire(file=msis2_param_file, exist=exists)
-      if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
-        ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
-        'This limitation comes from how MSIS 2.x is coded internally.'
-      call msisinit(parmfile=msis2_param_file)
-    end if
+    call msisinit_C()
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     call init_neutralperturb(cfg,x,dt,ymd,UTsec)
