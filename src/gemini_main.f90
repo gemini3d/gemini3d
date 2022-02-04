@@ -33,13 +33,14 @@ use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_
 use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield
-use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x
+
+!> main gemini libraries
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts
 
@@ -188,7 +189,7 @@ contains
     
     !> Precipitation input setup
     if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+    call init_precipinput_C(dt,t,ymd,UTsec)
     
     !> Neutral atmosphere setup
     if(cfg%msis_version == 20) then
