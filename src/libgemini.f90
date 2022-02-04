@@ -28,10 +28,11 @@ use collisions, only: conductivities
 use pathlib, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3
 use config, only : gemini_cfg,read_configfile
+use precipBCs_mod, only: init_precipinput
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -74,6 +75,7 @@ end type c_params
 !end interface
 
 contains
+  !> basic command line and grid size determination
   subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
@@ -105,6 +107,7 @@ contains
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
 
+  !> allocate space for gemini state variables
   subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
@@ -130,6 +133,7 @@ contains
     end if 
   end subroutine
 
+  !> deallocate state variables
   subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
@@ -151,4 +155,13 @@ contains
     end if 
   end subroutine
 
+  !> C binding wrapper for initialization of electron precipitation data
+  subroutine init_precipinput_C(dt,t,ymd,UTsec) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+  end subroutine
 end module gemini3d
