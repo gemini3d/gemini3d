@@ -12,11 +12,13 @@ use grid_mpi, only: grid_drift
 use collisions, only: conductivities
 use gemini3d, only: cfg,x
 use potentialBCs_mumps, only: init_Efieldinput
+use potential_comm,only : pot2perpfield
+use neutral_perturbations, only: init_neutralperturb
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
-            get_initial_drifts, init_Efieldinput_C
+            get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C
 contains
   !> create output directory and allocate full grid potential storage
   subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
@@ -206,6 +208,11 @@ contains
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
     call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+    if(mpi_cfg%myid==0) then
+      print*, 'Recomputed initial drifts:  '
+      print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
+      print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs3(1:lx1,1:lx2,1:lx3,1:lsp))
+    end if
   end subroutine get_initial_drifts
 
   subroutine init_procgrid(lx2all,lx3all,lid2in,lid3in) bind(C)
@@ -219,7 +226,7 @@ contains
     endif
     print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
     print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
-  end subroutine
+  end subroutine init_procgrid
 
 
   !> initialize electric field input data
@@ -230,4 +237,29 @@ contains
 
     call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)    
   end subroutine init_Efieldinput_C
+
+
+  !> convert potential to electric field by differentiating
+  subroutine pot2perpfield_C(Phi,E1,E2,E3) bind(C)
+    real(wp), dimension(:,:,:), pointer :: Phi,E1,E2,E3
+
+    E1 = 0
+    call pot2perpfield(Phi,x,E2,E3)    
+    if(mpi_cfg%myid==0) then
+      print '(A)', 'Recomputed initial dist. fields:'
+      print*, '    gemini ',minval(E1),maxval(E1)
+      print*, '    gemini ',minval(E2),maxval(E2)
+      print*, '    gemini ',minval(E3),maxval(E3)
+    end if
+  end subroutine pot2perpfield_C
+
+
+  !> initialize neutral perturbations
+  subroutine init_neutralperturb_C(dt,ymd,UTsec) bind(C)
+    real(wp), intent(in) :: dt
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call init_neutralperturb(cfg,x,dt,ymd,UTsec)
+  end subroutine init_neutralperturb_C
 end module gemini3d_mpi
