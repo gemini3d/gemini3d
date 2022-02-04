@@ -39,7 +39,8 @@ use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
+                      set_start_values
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts
 
@@ -148,18 +149,8 @@ contains
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
     call get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
 
-    !> Initialize some variables need for time stepping and output 
-    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
-    
-    !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
-    !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
-    !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INERTIAL CAPACITANCE THERE
-    !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
-    !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
-    !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag
-    !! this assumes that the grid is defined s.t. the x1 direction corresponds
-    !! to the magnetic field direction (hence zero B2 and B3).
+    !> initialize time stepping and some aux variables
+    call set_start_values(it,t,tout,tglowout,tneuBG,rhov2,rhov3,v2,v3,B2,B3,B1)
     
     !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
     if(mpi_cfg%myid==0) print*, 'Priming electric field input'
@@ -177,20 +168,14 @@ contains
     end if
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) 
-    if (mpi_cfg%myid==0) then    
-      print*, 'Recomputed initial fields including background:'
-      print*, '    ',minval(E1),maxval(E1)
-      print*, '    ',minval(E2),maxval(E2)
-      print*, '    ',minval(E3),maxval(E3)
-    end if
     
     !> Precipitation input setup
     if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
     call init_precipinput_C(dt,t,ymd,UTsec)
     
     !> Neutral atmosphere setup
-    call msisinit_C()
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
+    call msisinit_C()
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     call init_neutralperturb(cfg,x,dt,ymd,UTsec)
 

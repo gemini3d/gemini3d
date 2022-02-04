@@ -33,7 +33,7 @@ use msis_interface, only : msisinit
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, set_start_values
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -51,30 +51,6 @@ type, bind(C) :: c_params
   real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
   !! .ini
 end type c_params
-
-!!> libgem_utils.f90
-!interface
-!  module subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
-!    type(c_params), intent(in) :: p
-!    integer, intent(inout) :: lid2in,lid3in
-!  end subroutine cli_config_gridsize
-!  module subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-!                                    E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
-!  end subroutine
-!  module subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
-!                                      E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
-!  end subroutine
-!end interface
 
 contains
   !> basic command line and grid size determination
@@ -158,6 +134,28 @@ contains
       deallocate(iver)
     end if 
   end subroutine
+
+
+  !> set start values for some variables
+  subroutine set_start_values(it,t,tout,tglowout,tneuBG, &
+                              rhov2,rhov3,v2,v3,B2,B3,B1) bind(C)
+    integer, intent(inout) :: it
+    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,v2,v3,B2,B3,B1
+
+    !> Initialize some variables need for time stepping and output 
+    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
+    
+    !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
+    !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
+    !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INERTIAL CAPACITANCE THERE
+    !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
+    !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
+    !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
+    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag(1:lx1,1:lx2,1:lx3)
+    !! this assumes that the grid is defined s.t. the x1 direction corresponds
+    !! to the magnetic field direction (hence zero B2 and B3).
+  end subroutine set_start_values 
 
 
   !> C binding wrapper for initialization of electron precipitation data
