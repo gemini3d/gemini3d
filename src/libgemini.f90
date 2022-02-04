@@ -29,15 +29,17 @@ use pathlib, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
+use msis_interface, only : msisinit
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
 type(gemini_cfg) :: cfg
 class(curvmesh), allocatable :: x
+character(*), parameter :: msis2_param_file = "msis20.parm"
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -107,6 +109,7 @@ contains
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
 
+
   !> allocate space for gemini state variables
   subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
@@ -133,6 +136,7 @@ contains
     end if 
   end subroutine
 
+
   !> deallocate state variables
   subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
@@ -155,6 +159,7 @@ contains
     end if 
   end subroutine
 
+
   !> C binding wrapper for initialization of electron precipitation data
   subroutine init_precipinput_C(dt,t,ymd,UTsec) bind(C)
     real(wp), intent(in) :: dt
@@ -163,5 +168,19 @@ contains
     real(wp), intent(in) :: UTsec
 
     call init_precipinput(dt,t,cfg,ymd,UTsec,x)
-  end subroutine
+  end subroutine init_precipinput_C
+
+
+  !> initialization routine needed for MSIS 2.0
+  subroutine msisinit_C()
+    logical :: exists
+
+    if(cfg%msis_version == 20) then
+      inquire(file=msis2_param_file, exist=exists)
+      if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
+        ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
+        'This limitation comes from how MSIS 2.x is coded internally.'
+      call msisinit(parmfile=msis2_param_file)
+    end if
+  end subroutine msisinit_C
 end module gemini3d
