@@ -236,7 +236,8 @@ end subroutine VNRicht_artvisc
 subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs1,vs2,vs3,Q
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs1,vs2,vs3
+  real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
   real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
