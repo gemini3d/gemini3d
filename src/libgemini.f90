@@ -30,10 +30,12 @@ use grid, only: grid_size,lx1,lx2,lx3
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
+use neutral, only: init_neutralBG
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, set_start_values
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
+            set_start_values, init_neutralBG_C, set_update_cadence
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -169,8 +171,8 @@ contains
   end subroutine init_precipinput_C
 
 
-  !> initialization routine needed for MSIS 2.0
-  subroutine msisinit_C()
+  !> initialization procedure needed for MSIS 2.0
+  subroutine msisinit_C() bind(C)
     logical :: exists
 
     if(cfg%msis_version == 20) then
@@ -181,4 +183,34 @@ contains
       call msisinit(parmfile=msis2_param_file)
     end if
   end subroutine msisinit_C
+
+
+  !> call to initialize the neutral background information
+  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
+
+    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  end subroutine init_neutralBG_C
+
+
+  !> set update cadence for printing out diagnostic information during simulation
+  subroutine set_update_cadence(iupdate) bind(C)
+    integer, intent(inout) :: iupdate
+
+    !> control update rate from excessive console printing
+    !! considering small vs. large simulations
+    !! these are arbitrary levels, so feel free to finesse
+    if (lx1*lx2*lx3 < 20000) then
+      iupdate = 50
+    elseif (lx1*lx2*lx3 < 100000) then
+      iupdate = 10
+    else
+      iupdate = 1
+    endif
+  end subroutine set_update_cadence
 end module gemini3d

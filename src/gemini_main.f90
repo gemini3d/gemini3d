@@ -28,9 +28,9 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
-use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_neuBG
-use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
-use potential_comm,only : electrodynamics,pot2perpfield
+use neutral, only : neutral_atmos,neutral_winds,clear_neuBG
+use neutral_perturbations, only: neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
+use potential_comm,only : electrodynamics
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
@@ -39,9 +39,10 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
-                      set_start_values
+                      set_start_values, init_neutralBG_C, set_update_cadence
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
-                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C
+                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
+                          init_neutralperturb_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -157,14 +158,8 @@ contains
     
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
-    E1 = 0
-    call pot2perpfield(Phi,x,E2,E3)    
-    if(mpi_cfg%myid==0) then
-      print '(A)', 'Recomputed initial dist. fields:'
-      print*, '    gemini ',minval(E1),maxval(E1)
-      print*, '    gemini ',minval(E2),maxval(E2)
-      print*, '    gemini ',minval(E3),maxval(E3)
-    end if
+    call pot2perpfield_C(Phi,E1,E2,E3)
+
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) 
     
@@ -175,30 +170,14 @@ contains
     !> Neutral atmosphere setup
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call msisinit_C()
-    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-    call init_neutralperturb(cfg,x,dt,ymd,UTsec)
+    call init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call init_neutralperturb_C(dt,ymd,UTsec)
 
- 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    print*, 'pre-get_initial_drifts:  ',lbound(vs1,4),ubound(vs1,4),lbound(vs2,4),ubound(vs2,4),lbound(vs3,4),ubound(vs3,4)
     call get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
-    print*, 'post-get_initial_drifts:  ',lbound(vs1,4),ubound(vs1,4),lbound(vs2,4),ubound(vs2,4),lbound(vs3,4),ubound(vs3,4)
-    if(mpi_cfg%myid==0) then
-      print*, 'Recomputed initial drifts:  '
-      print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
-      print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs3(1:lx1,1:lx2,1:lx3,1:lsp))
-    end if
     
-    !> control update rate from excessive console printing
-    !! considering small vs. large simulations
-    !! these are arbitrary levels, so feel free to finesse
-    if (lx1*lx2*lx3 < 20000) then
-      iupdate = 50
-    elseif (lx1*lx2*lx3 < 100000) then
-      iupdate = 10
-    else
-      iupdate = 1
-    endif
+    !> control rate of console printing
+    call set_update_cadence(iupdate)
     
     !> Main time loop
     main : do while (t < tdur)
