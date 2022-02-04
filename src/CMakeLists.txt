@@ -45,7 +45,7 @@ add_subdirectory(inputdata)
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
-add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90 libgem_utils.f90
+add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 )
 target_include_directories(gemini3d PUBLIC
 $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -71,7 +71,7 @@ ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 
-add_library(gemini3d_mpi libgemini_mpi.f90 libgem_mpi_io.f90 libgem_mpi_drifts.f90 libgem_mpi_par.f90)
+add_library(gemini3d_mpi libgemini_mpi.f90)
 set_target_properties(gemini3d_mpi PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -104,6 +104,7 @@ if(msis2)
 endif()
 
 set(gemini_mpi_internal_mods
+gemini3d
 advec
 advec_mpi
 calculus config
