@@ -30,7 +30,6 @@ use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use neutral, only : neutral_atmos,make_neuBG,init_neutralBG,neutral_winds,clear_neuBG
 use neutral_perturbations, only: init_neutralperturb,neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
-use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
@@ -42,7 +41,7 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
-                          check_dryrun,check_fileoutput,get_initial_drifts
+                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -154,7 +153,7 @@ contains
     
     !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
     if(mpi_cfg%myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
+    call init_Efieldinput_C(dt,t,ymd,UTsec)
     
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background

@@ -11,13 +11,14 @@ use potential_comm, only: get_BGEfields,velocities
 use grid_mpi, only: grid_drift
 use collisions, only: conductivities
 use gemini3d, only: cfg,x
+use potentialBCs_mumps, only: init_Efieldinput
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
-            get_initial_drifts
+            get_initial_drifts, init_Efieldinput_C
 contains
-
+  !> create output directory and allocate full grid potential storage
   subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     integer, intent(in) :: lx1,lx2all,lx3all
@@ -34,6 +35,8 @@ contains
     end if
   end subroutine outdir_fullgridvaralloc
 
+
+  !> load initial conditions
   subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phi
@@ -78,6 +81,8 @@ contains
     end if
   end subroutine get_initial_state
 
+
+  !> check whether file output should be done and complete it
   subroutine check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver) bind(C)
     real(wp), intent(in) :: t
     real(wp), intent(inout) :: tout,tglowout,tmilestone
@@ -131,6 +136,8 @@ contains
     end if
   end subroutine
 
+
+  !> check whether a dryrun simulation was done
   subroutine check_dryrun() bind(C)
     character(8) :: date
     character(10) :: time
@@ -146,6 +153,8 @@ contains
     endif
   end subroutine check_dryrun
 
+
+  !> prep simulation for use of Lagrangian grid, if needed
   subroutine BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) bind(C)
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3
@@ -178,6 +187,8 @@ contains
     end if
   end subroutine BGfield_Lagrangian
 
+
+  !> initial drifts at the start of the simulation
   subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
     real(wp), dimension(:,:,:), pointer, intent(in) :: Tn,vn1,vn2,vn3
@@ -209,4 +220,14 @@ contains
     print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
     print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
   end subroutine
+
+
+  !> initialize electric field input data
+  subroutine init_Efieldinput_C(dt,t,ymd,UTsec) bind(C)
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)    
+  end subroutine init_Efieldinput_C
 end module gemini3d_mpi
