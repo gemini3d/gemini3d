@@ -16,56 +16,6 @@ implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts
-
-!interface !libgem_mpi_io.f90
-!  module subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-!    integer, intent(in) :: lx1,lx2all,lx3all
-!  end subroutine outdir_fullgridvaralloc
-!  module subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur) bind(C)
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,Ts
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phi
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-!    real(wp), intent(inout) :: UTsec
-!    integer, dimension(3), intent(inout) :: ymd
-!    real(wp), intent(inout) :: tdur
-!  end subroutine get_initial_state
-!  module subroutine check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver) bind(C)
-!    real(wp), intent(in) :: t
-!    real(wp), intent(inout) :: tout,tglowout,tmilestone
-!    integer, intent(inout) :: flagoutput
-!    integer, dimension(3), intent(in) :: ymd
-!    real(wp), intent(in) :: UTsec
-!    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3,ns,vs1,Ts
-!    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-!    real(wp), dimension(:,:,:), pointer, intent(in) :: J1,J2,J3
-!    real(wp), dimension(:,:,:), pointer, intent(in) :: iver
-!  end subroutine
-!  module subroutine check_dryrun() bind(C)
-!  end subroutine check_dryrun
-!end interface
-
-!interface !libgem_mpi_drifts.f90
-!  module subroutine BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) bind(C)
-!    real(wp), intent(inout) :: v2grid,v3grid
-!    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3
-!  end subroutine BGfield_Lagrangian
-!  module subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3) bind(C)
-!    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-!    real(wp), dimension(:,:,:), pointer, intent(in) :: Tn,vn1,vn2,vn3
-!    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1
-!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs2,vs3
-!    real(wp), dimension(:,:,:), pointer, intent(in) :: B1
-!    real(wp), dimension(:,:,:), pointer, intent(in) :: E2,E3
-!  end subroutine get_initial_drifts
-!end interface
-
-!interface !libgem_mpi_par.f90
-!  module subroutine init_procgrid(lx2all,lx3all,lid2in,lid3in) bind(C)
-!    integer, intent(in) :: lx2all,lx3all,lid2in,lid3in
-!  end subroutine
-!end interface
-
 contains
 
   subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
@@ -219,6 +169,13 @@ contains
       E3 = E3 + E03
     end if
     deallocate(E01,E02,E03)
+
+    if (mpi_cfg%myid==0) then    
+      print*, 'Recomputed initial fields including background:'
+      print*, '    ',minval(E1),maxval(E1)
+      print*, '    ',minval(E2),maxval(E2)
+      print*, '    ',minval(E3),maxval(E3)
+    end if
   end subroutine BGfield_Lagrangian
 
   subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3) bind(C)
@@ -252,5 +209,4 @@ contains
     print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
     print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
   end subroutine
-
 end module gemini3d_mpi
