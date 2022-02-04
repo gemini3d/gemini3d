@@ -164,7 +164,7 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
 integer, intent(in) :: isp
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
 
-real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4,ln), intent(in) :: nn
+real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(in) :: J1
 
 real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: lambda,beta
