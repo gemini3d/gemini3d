@@ -28,8 +28,8 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
-use neutral, only : neutral_atmos,neutral_winds,clear_neuBG
-use neutral_perturbations, only: neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
+use neutral, only : clear_neuBG
+use neutral_perturbations, only: neutral_perturb,clear_dneu
 use potential_comm,only : electrodynamics
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
@@ -38,10 +38,10 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
-                      set_start_values, init_neutralBG_C, set_update_cadence
+                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
-                          init_neutralperturb_C, dt_select_C
+                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -183,10 +183,8 @@ contains
       !> get neutral background
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
-        call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
-        call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x)
-        call neutral_denstemp_update(nn,Tn)    ! empirical model calls don't automatically assign state to main variables
-        call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+        call neutral_atmos_winds_C(ymd,UTsec)   ! load background states into module variables
+        call neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
         tneuBG=tneuBG+cfg%dtneuBG
         if (mpi_cfg%myid==0) then
           call cpu_time(tfin)

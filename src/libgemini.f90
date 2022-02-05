@@ -30,12 +30,12 @@ use grid, only: grid_size,lx1,lx2,lx3
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
-use neutral, only: init_neutralBG
+use neutral, only: init_neutralBG,neutral_atmos,neutral_winds
 
 implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
-            set_start_values, init_neutralBG_C, set_update_cadence
+            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -213,4 +213,14 @@ contains
       iupdate = 1
     endif
   end subroutine set_update_cadence
+
+
+  !> compute background neutral density, temperature, and wind
+  subroutine neutral_atmos_winds_C(ymd,UTsec) bind(C)
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x)
+  end subroutine neutral_atmos_winds_C
 end module gemini3d
