@@ -14,11 +14,15 @@ use gemini3d, only: cfg,x
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield
 use neutral_perturbations, only: init_neutralperturb
+use temporal, only : dt_comm
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
-            get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C
+            get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C
+
+real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
+
 contains
   !> create output directory and allocate full grid potential storage
   subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
@@ -262,4 +266,32 @@ contains
 
     call init_neutralperturb(cfg,x,dt,ymd,UTsec)
   end subroutine init_neutralperturb_C
+
+
+  !> select time step and throttle if changing too rapidly
+  subroutine dt_select_C(it,t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt) bind(C)
+    integer, intent(in) :: it
+    real(wp), intent(in) :: t,tout,tglowout
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1,vs2,vs3
+    real(wp), dimension(:,:,:), pointer, intent(in) :: B1,B2,B3
+    real(wp), intent(inout) :: dt
+    real(wp) :: dtprev
+
+    !> save prior time step
+    dtprev = dt
+
+    !> time step calculation, requires workers to report their most stringent local stability constraint
+    call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
+
+    !> do not allow the time step to change too rapidly
+    if (it>1) then
+      if(dt/dtprev > dtscale) then
+        !! throttle how quickly we allow dt to increase
+        dt=dtscale*dtprev
+        if (mpi_cfg%myid == 0) then
+          print '(A,EN14.3)', 'Throttling dt to:  ',dt
+        end if
+      end if
+    end if
+  end subroutine dt_select_C
 end module gemini3d_mpi
