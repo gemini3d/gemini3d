@@ -31,7 +31,6 @@ use multifluid_mpi, only: halo_allparams
 use neutral, only : neutral_atmos,neutral_winds,clear_neuBG
 use neutral_perturbations, only: neutral_perturb,clear_dneu,neutral_denstemp_update,neutral_wind_update
 use potential_comm,only : electrodynamics
-use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
@@ -42,7 +41,7 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg
                       set_start_values, init_neutralBG_C, set_update_cadence
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
-                          init_neutralperturb_C
+                          init_neutralperturb_C, dt_select_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -106,7 +105,7 @@ contains
     real(wp), dimension(:,:,:), pointer :: iver
     !! integrated volume emission rate of aurora calculated by GLOW
     !TEMPORAL VARIABLES
-    real(wp) :: t=0, dt=1e-6_wp,dtprev
+    real(wp) :: t=0, dt=1e-6_wp
     !! time from beginning of simulation (s) and time step (s)
     real(wp) :: tout
     !! time for next output and time between outputs
@@ -119,8 +118,6 @@ contains
     real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
     real(wp) :: tglowout,tdur
     !! time for next GLOW output
-    !> TO CONTROL THROTTLING OF TIME STEP
-    real(wp), parameter :: dtscale=2
     !> Temporary variable for toggling full vs. other output
     integer :: flagoutput
     real(wp) :: tmilestone = 0
@@ -181,18 +178,7 @@ contains
     
     !> Main time loop
     main : do while (t < tdur)
-      !> time step calculation, requires workers to report their most stringent local stability constraint
-      dtprev = dt
-      call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
-      if (it>1) then
-        if(dt/dtprev > dtscale) then
-          !! throttle how quickly we allow dt to increase
-          dt=dtscale*dtprev
-          if (mpi_cfg%myid == 0) then
-            print '(A,EN14.3)', 'Throttling dt to:  ',dt
-          end if
-        end if
-      end if
+      call dt_select_C(it,t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt)
     
       !> get neutral background
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
