@@ -16,10 +16,8 @@ program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: lx1,lx2,lx3,lx2all,lx3all
-use grid_mpi, only: read_grid,grid_drift
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
@@ -30,7 +28,6 @@ use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
-use potential_comm,only : electrodynamics
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
 use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
@@ -39,9 +36,10 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
-use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
+use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
-                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C
+                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
+                          electrodynamics_C, check_finite_output_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -132,9 +130,8 @@ contains
     !    to workers
     call init_procgrid(lx2all,lx3all,lid2in,lid3in)
     
-    !> load the grid data from the input file
-    call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
-    !! read in a previously generated grid from filenames listed in input file
+    !> load the grid data from the input file and store in gemini module
+    call read_grid_C()
     
     !> Allocate space for solutions
     call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
@@ -204,7 +201,7 @@ contains
     
       !> compute potential solution
       call cpu_time(tstart)
-      call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+      call electrodynamics_C(it,t,dt,nn,vn2,vn3,Tn,ns,Ts,vs1,B1,vs2,vs3,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -220,7 +217,7 @@ contains
     
       !> Sanity check key variables before advancing
       ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
-      call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+      call check_finite_output_C(t,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
     
       !> update time variables
       it = it + 1
