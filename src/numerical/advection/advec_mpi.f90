@@ -11,13 +11,10 @@ private
 public :: halo_interface_vels_allspec,set_global_boundaries_allspec
 contains
   !> Perform haloing needed to ghost-fill so cell interface vels (single species) can be computed across the grid
-  subroutine halo_interface_vels(isp,isperiodic,vs2,vs3,v2i,v3i)
+  subroutine halo_interface_vels(isp,isperiodic,vs2,vs3)
     integer, intent(in) :: isp
     logical, intent(in) :: isperiodic
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
-    real(wp), dimension(1:size(vs2,1)-4,1:size(vs2,2)-3,1:size(vs2,3)-4), intent(inout) :: v2i
-    !! intent(out)
-    real(wp), dimension(1:size(vs3,1)-4,1:size(vs3,2)-4,1:size(vs3,3)-3), intent(inout) :: v3i
     real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param
   
     !> NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
@@ -35,17 +32,15 @@ contains
   
   
   !> Repeat haloing operations for all species.  
-  subroutine halo_interface_vels_allspec(isperiodic,vs2,vs3,vs2i,vs3i,lsp)
+  subroutine halo_interface_vels_allspec(isperiodic,vs2,vs3,lsp)
     logical, intent(in) :: isperiodic
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
-    real(wp), dimension(1:size(vs2,1)-4,1:size(vs2,2)-3,1:size(vs2,3)-4,1:size(vs2,4)), intent(inout) :: vs2i
-    real(wp), dimension(1:size(vs3,1)-4,1:size(vs3,2)-4,1:size(vs3,3)-3,1:size(vs3,4)), intent(inout) :: vs3i
     integer, intent(in) :: lsp
     integer :: isp
   
     if (lsp>size(vs2,4)) error stop 'number of haloed species must be less than or equal to total species number'
     do isp=1,lsp
-      call halo_interface_vels(isp,isperiodic,vs2,vs3,vs2i(:,:,:,isp),vs3i(:,:,:,isp))
+      call halo_interface_vels(isp,isperiodic,vs2,vs3)
     end do
   end subroutine halo_interface_vels_allspec
   

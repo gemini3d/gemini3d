@@ -366,11 +366,10 @@ contains
 
 
   !> haloing for computing cell interface velocities
-  subroutine halo_interface_vels_allspec_C(vs2,vs3,vs2i,vs3i,lsp) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3
-    real(wp), dimension(:,:,:,:), intent(inout) :: vs2i,vs3i    ! may need to be pointers to avoid lbound issues
+  subroutine halo_interface_vels_allspec_C(vs2,vs3,lsp) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs2,vs3
     integer, intent(in) :: lsp
 
-    call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)   
+    call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)   
   end subroutine halo_interface_vels_allspec_C
 end module gemini3d_mpi
