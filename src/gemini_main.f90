@@ -30,7 +30,7 @@ use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
-use advec_mpi, only: halo_interface_vels_allspec,set_global_boundaries_allspec
+use advec_mpi, only: set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
@@ -40,7 +40,7 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
-                          electrodynamics_C, check_finite_output_C
+                          electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -287,7 +287,7 @@ contains
    
     ! advection substep for all species
     call cpu_time(tstart)
-    call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)
+    call halo_interface_vels_allspec_C(vs2,vs3,vs2i,vs3i,lsp)
     call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)

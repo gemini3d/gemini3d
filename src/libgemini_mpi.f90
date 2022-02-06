@@ -18,13 +18,15 @@ use temporal, only : dt_comm
 use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use sanity_check, only : check_finite_pertub, check_finite_output
 use potential_comm,only : electrodynamics
+use advec_mpi, only: halo_interface_vels_allspec
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
-            neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C
+            neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C, &
+            halo_interface_vels_allspec_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -363,8 +365,12 @@ contains
   end subroutine check_finite_output_C
 
 
-!  !> haloing for computing cell interface velocities
-!  subroutine halo_interface_vels_allspec_C
-!    call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)   
-!  end subroutine halo_interface_vels_allspec_C
+  !> haloing for computing cell interface velocities
+  subroutine halo_interface_vels_allspec_C(vs2,vs3,vs2i,vs3i,lsp) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3
+    real(wp), dimension(:,:,:,:), intent(inout) :: vs2i,vs3i    ! may need to be pointers to avoid lbound issues
+    integer, intent(in) :: lsp
+
+    call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)   
+  end subroutine halo_interface_vels_allspec_C
 end module gemini3d_mpi
