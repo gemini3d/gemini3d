@@ -22,10 +22,9 @@ use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
-use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
+use multifluid, only : source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,rhov12v1
 use ionization_mpi, only: get_gavg_Tinf
-use multifluid_mpi, only: halo_allparams
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
 use timeutils, only: dateinc, find_lastdate
@@ -34,12 +33,12 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-                      v12rhov1_C,T2rhoe_C,interface_vels_allspec_C
+                      v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
                           electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C, &
-                          set_global_boundaries_allspec_C
+                          set_global_boundaries_allspec_C, halo_allparams_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -289,11 +288,11 @@ contains
     call halo_interface_vels_allspec_C(vs2,vs3,lsp)
     call interface_vels_allspec_C(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec_C(ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-    call halo_allparams(ns,rhovs1,rhoes,x%flagper)
-    call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
-    call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
-    call halo_allparams(ns,rhovs1,rhoes,x%flagper)
-    call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
+    call halo_allparams_C(ns,rhovs1,rhoes)
+    call sweep3_allparams_C(dt,vs3i,ns,rhovs1,rhoes)
+    call sweep1_allparams_C(dt,vs1i,ns,rhovs1,rhoes)
+    call halo_allparams_C(ns,rhovs1,rhoes)
+    call sweep2_allparams_C(dt,vs2i,ns,rhovs1,rhoes)
     call rhov12v1(ns,rhovs1,vs1)
     call cpu_time(tfin)
     if (mpi_cfg%myid==0 .and. debug) then

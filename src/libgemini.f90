@@ -40,7 +40,7 @@ implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C
+            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -265,4 +265,31 @@ contains
 
     call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
   end subroutine interface_vels_allspec_C
+
+
+  !> functions for sweeping advection
+  subroutine sweep3_allparams_C(dt,vs3i,ns,rhovs1,rhoes) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), intent(in) :: vs3i
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
+
+    call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
+  end subroutine sweep3_allparams_C
+  subroutine sweep1_allparams_C(dt,vs1i,ns,rhovs1,rhoes) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), intent(in) :: vs1i
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
+
+    call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
+  end subroutine sweep1_allparams_C
+  subroutine sweep2_allparams_C(dt,vs2i,ns,rhovs1,rhoes) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), intent(in) :: vs2i
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
+
+    call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
+  end subroutine sweep2_allparams_C
 end module gemini3d
