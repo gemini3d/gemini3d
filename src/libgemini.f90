@@ -41,7 +41,7 @@ private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
             v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-            rhov12v1_C, VNRicht_artvisc_C
+            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -312,4 +312,34 @@ contains
 
     call VNRicht_artvisc(ns,vs1,Q)
   end subroutine VNRicht_artvisc_C
+
+
+  !> compression substep for fluid solve
+  subroutine compression_C(dt,vs1,vs2,vs3,Q,rhoes) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs1,vs2,vs3
+    real(wp), dimension(:,:,:,:), intent(in) :: Q
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
+
+    call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
+  end subroutine compression_C
+
+
+  !> convert specific internal energy density into temperature
+  subroutine rhoe2T_C(ns,rhoes,Ts) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: Ts
+
+    call rhoe2T(ns,rhoes,Ts)
+  end subroutine rhoe2T_C
+
+
+  !> deal with null cell solutions
+  subroutine clean_param_C(iparm,parm) bind(C)
+    integer, intent(in) :: iparm
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: parm
+    
+    call clean_param(x,iparm,parm)
+  end subroutine clean_param_C
 end module gemini3d
