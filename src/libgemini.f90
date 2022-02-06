@@ -40,7 +40,8 @@ implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C
+            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
+            rhov12v1_C, VNRicht_artvisc_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -292,4 +293,23 @@ contains
 
     call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
   end subroutine sweep2_allparams_C
+
+
+  !> conversion of momentum density to velocity
+  subroutine rhov12v1_C(ns,rhovs1,vs1) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1
+
+    call rhov12v1(ns,rhovs1,vs1)
+  end subroutine rhov12v1_C
+
+
+  !> compute artifical viscosity
+  subroutine VNRicht_artvisc_C(ns,vs1,Q) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,vs1
+    real(wp), dimension(:,:,:,:), intent(inou) :: Q
+
+    call VNRicht_artvisc(ns,vs1,Q)
+  end subroutine VNRicht_artvisc_C
 end module gemini3d
