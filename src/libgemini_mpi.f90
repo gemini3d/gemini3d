@@ -15,13 +15,14 @@ use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield
 use neutral_perturbations, only: init_neutralperturb
 use temporal, only : dt_comm
-use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update
+use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update,neutral_perturb
+use sanity_check, only : check_finite_pertub
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
-            neutral_atmos_wind_update_C
+            neutral_atmos_wind_update_C, neutral_perturb_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -298,7 +299,7 @@ contains
   end subroutine dt_select_C
 
 
-  !> apply neutral perturbations and assign to main code variables
+  !> apply neutral perturbations/background and assign to main code variables
   subroutine neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
     real(wp), intent(in) :: v2grid,v3grid
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
@@ -308,4 +309,18 @@ contains
     call neutral_denstemp_update(nn,Tn)
     call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
   end subroutine neutral_atmos_wind_update_C
+
+
+  !> compute neutral perturbations and apply to main code variables
+  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
+
+    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
+  end subroutine neutral_perturb_C
 end module gemini3d_mpi

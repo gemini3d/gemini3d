@@ -16,7 +16,7 @@ program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use sanity_check, only : check_finite_output, check_finite_pertub
+use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: lx1,lx2,lx3,lx2all,lx3all
 use grid_mpi, only: read_grid,grid_drift
@@ -29,7 +29,7 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use neutral, only : clear_neuBG
-use neutral_perturbations, only: neutral_perturb,clear_dneu
+use neutral_perturbations, only: clear_dneu
 use potential_comm,only : electrodynamics
 use timeutils, only: dateinc, find_lastdate
 use advec, only: interface_vels_allspec
@@ -41,7 +41,7 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
-                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C
+                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -184,7 +184,7 @@ contains
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
         call neutral_atmos_winds_C(ymd,UTsec)   ! load background states into module variables
-        call neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+        call neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
         if (mpi_cfg%myid==0) then
           call cpu_time(tfin)
@@ -195,8 +195,7 @@ contains
       !> get neutral perturbations
       if (cfg%flagdneu==1) then
         call cpu_time(tstart)
-        call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-        call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
+        call neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
         if (mpi_cfg%myid==0 .and. debug) then
           call cpu_time(tfin)
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
