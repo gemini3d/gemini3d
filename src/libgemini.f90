@@ -30,18 +30,20 @@ use grid, only: grid_size,lx1,lx2,lx3
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
-use neutral, only: init_neutralBG,neutral_atmos,neutral_winds
+use neutral, only: init_neutralBG,neutral_atmos,neutral_winds,clear_neuBG
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1
 use advec, only: interface_vels_allspec
+use timeutils, only: dateinc
 
 implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
             v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C
+            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C, &
+            clear_neuBG_C, dateinc_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -378,4 +380,20 @@ contains
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                      Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
   end subroutine source_loss_allparams_C
+
+
+  !> deallocate module storage for background neutral parameters
+  subroutine clear_neuBG_C() bind(C)
+    call clear_neuBG()
+  end subroutine clear_neuBG_C
+
+
+  !> increment date and time arrays
+  subroutine dateinc_C(dt,ymd,UTsec) bind(C)
+    real(wp), intent(in) :: dt
+    integer, dimension(3), intent(inout) :: ymd
+    real(wp), intent(inout) :: UTsec
+
+    call dateinc(dt,ymd,UTsec)
+  end subroutine dateinc_C
 end module gemini3d
