@@ -41,7 +41,7 @@ private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
             v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C
+            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -355,4 +355,27 @@ contains
 
     call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
   end subroutine energy_diffusion_C
+
+
+  !> source/loss numerical solutions
+  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,E1,Q,f107a,f107,nn,vn1,vn2,vn3,Tn, &
+                                     first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf) bind(C)
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), pointer, intent(in) :: E1
+    real(wp), dimension(:,:,:,:), intent(in) :: Q
+    real(wp), intent(in) :: f107a,f107
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(in) :: vn1,vn2,vn3,Tn
+    logical, intent(in) :: first
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
+    real(wp), intent(in) :: gavg,Tninf
+
+    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
+                                     Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
+  end subroutine source_loss_allparams_C
 end module gemini3d
