@@ -8,7 +8,7 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir,create_outdir_aur
 use potential_comm, only: get_BGEfields,velocities
-use grid_mpi, only: grid_drift
+use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
 use gemini3d, only: cfg,x
 use potentialBCs_mumps, only: init_Efieldinput
@@ -16,13 +16,15 @@ use potential_comm,only : pot2perpfield
 use neutral_perturbations, only: init_neutralperturb
 use temporal, only : dt_comm
 use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update,neutral_perturb
-use sanity_check, only : check_finite_pertub
+use sanity_check, only : check_finite_pertub, check_finite_output
+use potential_comm,only : electrodynamics
 
 implicit none (type, external)
 private
-public :: init_procgrid, outdir_fullgridvaralloc, get_initial_state, BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
+public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state, &
+            BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
-            neutral_atmos_wind_update_C, neutral_perturb_C
+            neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -43,6 +45,13 @@ contains
       allocate(Phiall(lx1,lx2all,lx3all))
     end if
   end subroutine outdir_fullgridvaralloc
+
+
+  !> read in the grid and distribute to workers
+  subroutine read_grid_C() bind(C)
+    call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
+    !! read in a previously generated grid from filenames listed in input file
+  end subroutine read_grid_C
 
 
   !> load initial conditions
@@ -323,4 +332,33 @@ contains
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
   end subroutine neutral_perturb_C
+
+
+  !> call electrodynamics solution
+  subroutine electrodynamics_C(it,t,dt,nn,vn2,vn3,Tn,ns,Ts,vs1,B1, &
+                                 vs2,vs3,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec) bind(C)
+    integer, intent(in) :: it
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(in) :: vn2,vn3,Tn
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1
+    real(wp), dimension(:,:,:), pointer, intent(in) :: B1
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+  end subroutine electrodynamics_C
+
+
+  !> check main state variables for finiteness
+  subroutine check_finite_output_C(t,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3) bind(C)
+    real(wp), intent(in) :: T
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3,ns,Ts,vs1
+    real(wp), dimension(:,:,:), pointer, intent(in) :: Phi,J1,J2,J3
+
+    call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+  end subroutine check_finite_output_C
 end module gemini3d_mpi
