@@ -18,26 +18,20 @@ use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_fl
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: lx1,lx2,lx3,lx2all,lx3all
-use meshobj, only: curvmesh
-use config, only : gemini_cfg
-use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
-use multifluid, only : source_loss_allparams
-use neutral, only : clear_neuBG
-use neutral_perturbations, only: clear_dneu
-use timeutils, only: dateinc, find_lastdate
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
                       rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C
+                      source_loss_allparams_C,clear_neuBG_C,dateinc_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
                           electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C, &
-                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C, get_gavg_Tinf_C
+                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C, get_gavg_Tinf_C, &
+                          clear_dneu_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -207,7 +201,7 @@ contains
     
       !> update fluid variables
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-      call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
+      call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -221,7 +215,7 @@ contains
       it = it + 1
       t = t + dt
       if (mpi_cfg%myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
-      call dateinc(dt,ymd,UTsec)
+      call dateinc_C(dt,ymd,UTsec)
       if (mpi_cfg%myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
@@ -237,13 +231,13 @@ contains
     !> deallocate variables and module data
     call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
-    call clear_neuBG()
-    call clear_dneu()
+    call clear_neuBG_C()
+    call clear_dneu_C()
   end subroutine gemini_main
   
   
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
+  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
     real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  ns,vs1,Ts
@@ -252,9 +246,7 @@ contains
     !! needed for thermal conduction in electron population
     real(wp), dimension(:,:,:), pointer, intent(inout) :: E1
     !! will have ambipolar field added into it in this procedure...
-    type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: t,dt
-    class(curvmesh), intent(in) :: x
     !! grid structure variable
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
     real(wp), dimension(:,:,:), pointer, intent(in) :: vn1,vn2,vn3,Tn
