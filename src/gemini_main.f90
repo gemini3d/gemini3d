@@ -29,14 +29,13 @@ use multifluid_mpi, only: halo_allparams
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
 use timeutils, only: dateinc, find_lastdate
-use advec, only: interface_vels_allspec
 use advec_mpi, only: set_global_boundaries_allspec
 use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-                      v12rhov1_C,T2rhoe_C
+                      v12rhov1_C,T2rhoe_C,interface_vels_allspec_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -287,8 +286,8 @@ contains
    
     ! advection substep for all species
     call cpu_time(tstart)
-    call halo_interface_vels_allspec_C(vs2,vs3,vs2i,vs3i,lsp)
-    call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    call halo_interface_vels_allspec_C(vs2,vs3,lsp)
+    call interface_vels_allspec_C(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)
     call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
