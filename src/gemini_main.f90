@@ -23,7 +23,7 @@ use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,rhov12v1
 use ionization_mpi, only: get_gavg_Tinf
 use multifluid_mpi, only: halo_allparams
 use neutral, only : clear_neuBG
@@ -35,7 +35,8 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
-                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C
+                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
+                      v12rhov1_C,T2rhoe_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -248,22 +249,22 @@ contains
   subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-    real(wp), dimension(:,:,:), intent(in) :: J1
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  ns,vs1,Ts
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  vs2,vs3
+    real(wp), dimension(:,:,:), pointer, intent(in) :: J1
     !! needed for thermal conduction in electron population
-    real(wp), dimension(:,:,:), intent(inout) :: E1
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1
     !! will have ambipolar field added into it in this procedure...
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: t,dt
     class(curvmesh), intent(in) :: x
     !! grid structure variable
-    real(wp), dimension(:,:,:,:), intent(in) :: nn
-    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(in) :: vn1,vn2,vn3,Tn
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     logical, intent(in) :: first  !< first time step
-    real(wp), dimension(:,:,:), intent(inout) :: iver
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
     !! intent(out)
     integer :: isp
     real(wp) :: tstart,tfin
@@ -281,8 +282,8 @@ contains
     call get_solar_indices_C(f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
-    call v12rhov1(ns,vs1,rhovs1)
-    call T2rhoe(ns,Ts,rhoes) 
+    call v12rhov1_C(ns,vs1,rhovs1)
+    call T2rhoe_C(ns,Ts,rhoes) 
    
     ! advection substep for all species
     call cpu_time(tstart)
@@ -326,7 +327,7 @@ contains
     
     ! cleanup and convert to specific internal energy density for sources substeps
     call clean_param(x,3,Ts)
-    call T2rhoe(ns,Ts,rhoes)
+    call T2rhoe_C(ns,Ts,rhoes)
 
     !> all workers need to "agree" on a gravity and exospheric temperature
     call get_gavg_Tinf(gavg,Tninf)

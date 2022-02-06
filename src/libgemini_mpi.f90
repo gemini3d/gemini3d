@@ -361,4 +361,10 @@ contains
 
     call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
   end subroutine check_finite_output_C
+
+
+!  !> haloing for computing cell interface velocities
+!  subroutine halo_interface_vels_allspec_C
+!    call halo_interface_vels_allspec(x%flagper,vs2,vs3,vs2i,vs3i,lsp)   
+!  end subroutine halo_interface_vels_allspec_C
 end module gemini3d_mpi
