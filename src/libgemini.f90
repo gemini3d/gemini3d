@@ -32,12 +32,14 @@ use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
 use neutral, only: init_neutralBG,neutral_atmos,neutral_winds
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
+            rhov12v1,v12rhov1
 
 implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
-            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C
+            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
+            v12rhov1_C, T2rhoe_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -228,10 +230,28 @@ contains
 
 
   !> get solar indices from cfg struct
-  subroutine get_solar_indices_C(f107,f107a)
+  subroutine get_solar_indices_C(f107,f107a) bind(C)
     real(wp), intent(inout) :: f107,f107a
 
     f107=cfg%activ(2)
     f107a=cfg%activ(1)    
   end subroutine get_solar_indices_C
+
+
+  !> convert velocity to momentum density
+  subroutine v12rhov1_C(ns,vs1,rhovs1) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,vs1
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1   ! possible issues with lbound here, may need to be pointer
+
+    call v12rhov1(ns,vs1,rhovs1)
+  end subroutine v12rhov1_C
+
+
+  !> convert temperature to specific internal energy density
+  subroutine T2rhoe_C(ns,Ts,rhoes) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes    ! possible issues with lbound here, maybe convert to pointer
+    
+    call T2rhoe(ns,Ts,rhoes)
+  end subroutine T2rhoe_C
 end module gemini3d
