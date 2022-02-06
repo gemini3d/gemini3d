@@ -22,8 +22,7 @@ use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
-use multifluid, only : source_loss_allparams,impact_ionization
-use ionization_mpi, only: get_gavg_Tinf
+use multifluid, only : source_loss_allparams
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
 use timeutils, only: dateinc, find_lastdate
@@ -37,7 +36,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_in
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
                           electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C, &
-                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C
+                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C, get_gavg_Tinf_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -327,7 +326,7 @@ contains
     call T2rhoe_C(ns,Ts,rhoes)
 
     !> all workers need to "agree" on a gravity and exospheric temperature
-    call get_gavg_Tinf(gavg,Tninf)
+    call get_gavg_Tinf_C(gavg,Tninf)
 
     !> solve all source/loss processes
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
