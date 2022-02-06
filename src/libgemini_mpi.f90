@@ -20,6 +20,7 @@ use sanity_check, only : check_finite_pertub, check_finite_output
 use potential_comm,only : electrodynamics
 use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams
+use sources_mpi, only: RK2_prep_mpi_allspec
 
 implicit none (type, external)
 private
@@ -27,7 +28,8 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
             neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C, &
-            halo_interface_vels_allspec_C, set_global_boundaries_allspec_C, halo_allparams_C
+            halo_interface_vels_allspec_C, set_global_boundaries_allspec_C, halo_allparams_C, &
+            RK2_prep_mpi_allspec_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -395,4 +397,12 @@ contains
 
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)
   end subroutine halo_allparams_C
+
+
+  !> prepare/halo data for compression substep
+  subroutine RK2_prep_mpi_allspec_C(vs1,vs2,vs3) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
+
+    call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
+  end subroutine RK2_prep_mpi_allspec_C
 end module gemini3d_mpi

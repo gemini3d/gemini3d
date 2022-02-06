@@ -28,7 +28,6 @@ use ionization_mpi, only: get_gavg_Tinf
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
 use timeutils, only: dateinc, find_lastdate
-use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
@@ -39,7 +38,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_in
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
                           electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C, &
-                          set_global_boundaries_allspec_C, halo_allparams_C
+                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C
 
 implicit none (type, external)
 external :: mpi_init
@@ -307,7 +306,7 @@ contains
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
     call VNRicht_artvisc_C(ns,vs1,Q)
-    call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
+    call RK2_prep_mpi_allspec_C(vs1,vs2,vs3)
     call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep and then converts back to temperature
     call rhoe2T(ns,rhoes,Ts)
     call clean_param(x,3,Ts)
