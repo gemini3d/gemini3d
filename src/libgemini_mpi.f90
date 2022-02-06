@@ -18,7 +18,7 @@ use temporal, only : dt_comm
 use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use sanity_check, only : check_finite_pertub, check_finite_output
 use potential_comm,only : electrodynamics
-use advec_mpi, only: halo_interface_vels_allspec
+use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
 
 implicit none (type, external)
 private
@@ -26,7 +26,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
             neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C, &
-            halo_interface_vels_allspec_C
+            halo_interface_vels_allspec_C, set_global_boundaries_allspec_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -372,4 +372,17 @@ contains
 
     call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)   
   end subroutine halo_interface_vels_allspec_C
+
+
+  !> enforce global boundary conditions
+  subroutine set_global_boundaries_allspec_C(ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1    ! convert to pointer?
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
+    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
+    real(wp), dimension(:,:,:,:), intent(inout) :: vs1i
+    integer, intent(in) :: lsp
+
+    call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
+  end subroutine set_global_boundaries_allspec_C
 end module gemini3d_mpi
