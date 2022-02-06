@@ -308,7 +308,7 @@ contains
   !> compute artifical viscosity
   subroutine VNRicht_artvisc_C(ns,vs1,Q) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,vs1
-    real(wp), dimension(:,:,:,:), intent(inou) :: Q
+    real(wp), dimension(:,:,:,:), intent(inout) :: Q
 
     call VNRicht_artvisc(ns,vs1,Q)
   end subroutine VNRicht_artvisc_C
