@@ -41,7 +41,7 @@ private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
             v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C
+            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -342,4 +342,17 @@ contains
     
     call clean_param(x,iparm,parm)
   end subroutine clean_param_C
+
+
+  !> diffusion of energy
+  subroutine energy_diffusion_C(dt,ns,Ts,J1,nn,Tn) bind(C)
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: Ts
+    real(wp), dimension(:,:,:), pointer, intent(in) :: J1
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
+    real(wp), dimension(:,:,:), pointer, intent(in) :: Tn
+
+    call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
+  end subroutine energy_diffusion_C
 end module gemini3d

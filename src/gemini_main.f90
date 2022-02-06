@@ -22,8 +22,7 @@ use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,create_outdir_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
-use multifluid, only : source_loss_allparams,VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization
+use multifluid, only : source_loss_allparams,impact_ionization
 use ionization_mpi, only: get_gavg_Tinf
 use neutral, only : clear_neuBG
 use neutral_perturbations, only: clear_dneu
@@ -33,7 +32,7 @@ use timeutils, only: dateinc, find_lastdate
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-                      rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C
+                      rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -317,7 +316,7 @@ contains
     
     ! Energy diffusion (thermal conduction) substep
     call cpu_time(tstart)
-    call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
+    call energy_diffusion_C(dt,ns,Ts,J1,nn,Tn)
     call cpu_time(tfin)
     if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
