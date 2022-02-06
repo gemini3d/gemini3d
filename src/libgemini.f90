@@ -34,12 +34,13 @@ use neutral, only: init_neutralBG,neutral_atmos,neutral_winds
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1
+use advec, only: interface_vels_allspec
 
 implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-            v12rhov1_C, T2rhoe_C
+            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -254,4 +255,14 @@ contains
     
     call T2rhoe(ns,Ts,rhoes)
   end subroutine T2rhoe_C
+
+
+  !> compute interface velocities once haloing has been done
+  subroutine interface_vels_allspec_C(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
+    real(wp), dimension(:,:,:,:), intent(inout) :: vs1i,vs2i,vs3i
+    integer, intent(in) :: lsp
+
+    call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+  end subroutine interface_vels_allspec_C
 end module gemini3d
