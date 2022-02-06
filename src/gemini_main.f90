@@ -35,7 +35,7 @@ use sources_mpi, only: RK2_prep_mpi_allspec
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
-                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
+                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -277,10 +277,9 @@ contains
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
     real(wp) :: gavg,Tninf
     
-    ! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
-    f107=cfg%activ(2)
-    f107a=cfg%activ(1)
-    
+    ! pull solar indices from module type
+    call get_solar_indices_C(f107,f107a)
+
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1(ns,vs1,rhovs1)
     call T2rhoe(ns,Ts,rhoes) 

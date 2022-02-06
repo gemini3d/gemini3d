@@ -31,11 +31,13 @@ use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
 use neutral, only: init_neutralBG,neutral_atmos,neutral_winds
+use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
 
 implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
-            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C
+            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
@@ -223,4 +225,13 @@ contains
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
     call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x)
   end subroutine neutral_atmos_winds_C
+
+
+  !> get solar indices from cfg struct
+  subroutine get_solar_indices_C(f107,f107a)
+    real(wp), intent(inout) :: f107,f107a
+
+    f107=cfg%activ(2)
+    f107a=cfg%activ(1)    
+  end subroutine get_solar_indices_C
 end module gemini3d
