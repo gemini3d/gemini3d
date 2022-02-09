@@ -12,7 +12,7 @@ set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED "hdf5:${name}:run_fxt;netcdf:${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-ENVIRONMENT "${MATLABPATH}"
+ENVIRONMENT "MATLABPATH=${MATLABPATH}"
 LABELS "compare;matlab"
 DISABLED $<NOT:$<BOOL:${MATGEMINI_DIR}>>
 )

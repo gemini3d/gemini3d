@@ -10,12 +10,7 @@ INACTIVITY_TIMEOUT 15
 
 FetchContent_MakeAvailable(MATGEMINI)
 
-if(WIN32)
-  set(path_sep "\;")
-else()
-  set(path_sep ":")
-endif()
-set(MATLABPATH "MATLABPATH=${matgemini_SOURCE_DIR}${path_sep}${matgemini_SOURCE_DIR}/matlab-stdlib/")
+cmake_path(CONVERT "${matgemini_SOURCE_DIR};${matgemini_SOURCE_DIR}/matlab-stdlib/" TO_NATIVE_PATH_LIST MATLABPATH)
 
 if(MATGEMINI_DIR)
   return()
