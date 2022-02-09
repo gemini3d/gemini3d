@@ -15,10 +15,10 @@ set(CMAKE_TLS_VERIFY true)
 
 if(NOT version)
   file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
-  string(JSON version GET ${_j} ninja)
+  string(JSON version GET ${_j} ninja latest)
 endif()
 
-set(host https://github.com/ninja-build/ninja/archive/)
+string(JSON host GET ${_j} ninja source)
 set(name v${version}.zip)
 
 function(checkup ninja)
