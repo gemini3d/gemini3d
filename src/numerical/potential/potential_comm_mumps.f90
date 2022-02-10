@@ -46,25 +46,25 @@ interface ! potential_worker.f90
                                             incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                             flagdirich,E02src,E03src,Vminx1slab,Vmaxx1slab, &
                                             E1,E2,E3,J1,J2,J3)
-  integer, intent(in) :: it
-  real(wp), intent(in) :: t,dt
-  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
-  real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
-  real(wp), dimension(:,:,:), intent(in) ::  incap
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
-  real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
-  type(gemini_cfg), intent(in) :: cfg
-  real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-  class(curvmesh), intent(in) :: x
-  integer, intent(in) :: flagdirich
-  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
-  !! these are BG fields use to compute potential source terms
-  !! viz. they need to be zeroed out if there is a lagrangian grid...
-  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
-  !! need to be able to convert into potential normal deriv.
-  real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
-  !! intent(out)
+    integer, intent(in) :: it
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+    real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
+    !! these are BG fields use to compute potential source terms
+    !! viz. they need to be zeroed out if there is a lagrangian grid...
+    real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
+    !! need to be able to convert into potential normal deriv.
+    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+    !! intent(out)
   end subroutine potential_workers_mpi
 end interface
 
@@ -75,29 +75,29 @@ interface !< potential_root.f90
                                               flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                               Vminx1slab,Vmaxx1slab, &
                                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
-  integer, intent(in) :: it
-  real(wp), intent(in) :: t,dt
-  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
-  real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
-  real(wp), dimension(:,:,:), intent(in) ::  incap
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
-  real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
-  type(gemini_cfg), intent(in) :: cfg
-  real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-  class(curvmesh), intent(in) :: x
-  integer, intent(in) :: flagdirich
-  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
-  real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1    !need to be able to convert these into pot. normal deriv.
-  real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
-  real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
-  real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
-  !! intent(out)
-  real(wp), dimension(:,:,:), intent(inout) :: Phiall
-  !! not good form, but I'm lazy...  Forgot what I meant by this...
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
+    integer, intent(in) :: it
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+    real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
+    real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1    !need to be able to convert these into pot. normal deriv.
+    real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
+    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+    !! intent(out)
+    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    !! not good form, but I'm lazy...  Forgot what I meant by this...
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
   end subroutine potential_root_mpi_curv
 end interface
 
@@ -579,7 +579,7 @@ contains
     !! intent(out)
     real(wp), dimension(0:size(Phi,1)+1,0:size(Phi,2)+1,0:size(Phi,3)+1) :: divtmp
     !! one extra grid point on either end to facilitate derivatives
-    real(wp), dimension(-1:size(Phi,1)+2,-1:size(Phi,2)+2,-1:size(Phi,3)+2) :: J1halo,J2halo,J3halo
+    real(wp), dimension(-1:size(Phi,1)+2,-1:size(Phi,2)+2,-1:size(Phi,3)+2) :: Phihalo
     !! haloing assumes existence of two ghost cells
     integer :: lx1,lx2,lx3
   
@@ -596,19 +596,19 @@ contains
     !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
   
     !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
-    J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
+    Phihalo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
 
-    call halo_pot(J1halo,tag%J1,x%flagper,.true.)
-    !call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+    call halo_pot(Phihalo,tag%J1,x%flagper,.true.)
+    !call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
 
-    divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    divtmp=grad3D2(Phihalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     E2=divtmp(1:lx1,1:lx2,1:lx3)
   
     !COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
-    J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
-    call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+    Phihalo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
+    call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
   
-    divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    divtmp=grad3D3(Phihalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     E3=divtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield
