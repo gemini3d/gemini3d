@@ -78,6 +78,7 @@ contains
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
       !> STATE VARIABLES
     !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
+    real(wp), dimension(:,:,:,:), pointer :: datablock
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     !! fluid state variables
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
@@ -126,7 +127,7 @@ contains
     call read_grid_C()
     
     !> Allocate space for solutions
-    call gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+    call gemini_alloc(datablock,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                         E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
  
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
@@ -229,7 +230,8 @@ contains
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_dealloc(datablock,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+                          E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
     call clear_neuBG_C()
     call clear_dneu_C()
