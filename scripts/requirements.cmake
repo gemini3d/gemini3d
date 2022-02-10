@@ -1,10 +1,9 @@
 # prints Gemini3D prereqs on stderr
 #  cmake -P scripts/requirements.cmake
 
-cmake_minimum_required(VERSION 3.7...3.22)
+cmake_minimum_required(VERSION 3.20...3.23)
 
-set(prereq_file ${CMAKE_CURRENT_LIST_DIR}/../requirements.json)
-cmake_path(ABSOLUTE_PATH prereq_file NORMALIZE)
+cmake_path(SET prereq_file NORMALIZE ${CMAKE_CURRENT_LIST_DIR}/../requirements.json)
 
 # --- helper functions
 
@@ -29,10 +28,6 @@ function(read_prereqs sys_id)
 endfunction(read_prereqs)
 
 # --- main program
-
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(NOTICE "cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
-endif()
 
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
