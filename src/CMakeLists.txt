@@ -167,33 +167,11 @@ sources_mpi
 temporal
 PDEparabolic gbsv
 PDEelliptic
-$<$<BOOL:${glow}>:glow::glow>
-nc4fortran::nc4fortran
-h5fortran::h5fortran
 )
 
-target_link_libraries(gemini.bin PRIVATE
--Wl,--start-group
-${MUMPS_LIBRARIES}
-$<$<BOOL:${mpi}>:${SCALAPACK_LIBRARIES}>
-${LAPACK_LIBRARIES}
-$<$<BOOL:${HWLOC_FOUND}>:${HWLOC_LIBRARIES}>
-"$<$<BOOL:${hdf5}>:${HDF5_Fortran_LIBRARIES};${HDF5_C_LIBRARIES};${ZLIB_LIBRARIES}>"
-${MPI_Fortran_LIBRARIES}
-${MPI_C_LIBRARIES}
-$<$<NOT:$<BOOL:${mpi}>>:${MUMPS_MPISEQ_LIBRARIES}>
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:${Scotch_LIBRARIES};${METIS_LIBRARIES}>"
--Wl,--end-group
-)
-
-target_include_directories(gemini.bin PRIVATE
-$<$<BOOL:${hdf5}>:${HDF5_INCLUDE_DIRS}>
-$<$<BOOL:${HWLOC_FOUND}>:${HWLOC_INCLUDE_DIRS}>
-${MPI_Fortran_INCLUDE_DIRS} ${MPI_C_INCLUDE_DIRS}
-${MUMPS_INCLUDE_DIRS}
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:${Scotch_INCLUDE_DIRS};${METIS_INCLUDE_DIRS}>"
-$<$<BOOL:${mpi}>:${SCALAPACK_INCLUDE_DIRS}>
-${ZLIB_INCLUDE_DIRS}
+get_property(gemlib TARGET gemini.bin PROPERTY LINK_LIBRARIES)
+set_target_properties(gemini.bin PROPERTIES
+LINK_LIBRARIES "${gemlib};MUMPS::MUMPS;$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>;LAPACK::LAPACK;nc4fortran::nc4fortran;h5fortran::h5fortran;$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>;MPI::MPI_Fortran;$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>;$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>;$<$<BOOL:${glow}>:glow::glow>"
 )
 
 # same link logic applied to src/unit_tests/test_mumps
