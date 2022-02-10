@@ -97,25 +97,50 @@ contains
 
 
   !> allocate space for gemini state variables
-  subroutine gemini_alloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+  subroutine gemini_alloc(datablock,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: datablock
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
 
-    allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
-      vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
-    allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2),B1(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
-             B2(-1:lx1+2,-1:lx2+2,-1:lx3+2),B3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    !> one contiguous block for overall simulation data
+    !allocate(datablock(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp+9))
+    allocate(datablock(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
+
+    !> main state variables for gemini (lx1+4,lx2+4,lx3+4,lsp)
+    !allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
+    !  vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
+    ns=>datablock(:,:,:,1:lsp)
+    vs1=>datablock(:,:,:,lsp+1:2*lsp)
+    vs2=>datablock(:,:,:,2*lsp+1:3*lsp)
+    vs3=>datablock(:,:,:,3*lsp+1:4*lsp)
+    Ts=>datablock(:,:,:,4*lsp+1:5*lsp)
+
+    !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
+    allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    allocate(B1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    allocate(B2(-1:lx1+2,-1:lx2+2,-1:lx3+2),B3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
     allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
              v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    !rhov2=>datablock(:,:,:,5*lsp+1)
+    !rhov3=>datablock(:,:,:,5*lsp+2)
+    !B1=>datablock(:,:,:,5*lsp+3)
+    !B2=>datablock(:,:,:,5*lsp+4)
+    !B3=>datablock(:,:,:,5*lsp+5)
+    !v1=>datablock(:,:,:,5*lsp+6)
+    !v2=>datablock(:,:,:,5*lsp+7)
+    !v3=>datablock(:,:,:,5*lsp+8)
+    !rhom=>datablock(:,:,:,5*lsp+9)
+
+    !> electrodynamic variables (lx1,lx2,lx3)
     allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
     allocate(Phi(lx1,lx2,lx3))
     allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
 
-     !> space for integrated volume emission rates
+     !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
       allocate(iver(lx2,lx3,lwave))
       iver = 0
@@ -123,18 +148,26 @@ contains
   end subroutine
 
 
+  !> take a block of memory and assign pointers to various pieces
+
+
   !> deallocate state variables
-  subroutine gemini_dealloc(ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
+  subroutine gemini_dealloc(datablock,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: datablock
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,E1,E2,E3,J1,J2,J3,Phi
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
 
-    deallocate(ns,vs1,vs2,vs3,Ts)
+    !deallocate(ns,vs1,vs2,vs3,Ts)
+    deallocate(datablock)    
+    nullify(ns,vs1,vs2,vs3,Ts)
+
     deallocate(rhov2,rhov3,B1,B2,B3)
     deallocate(v1,v2,v3,rhom)
+    
     deallocate(E1,E2,E3,J1,J2,J3)
     deallocate(Phi)
     deallocate(nn,Tn,vn1,vn2,vn3)
