@@ -14,7 +14,7 @@
 # This script could be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
 # old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
 
-cmake_minimum_required(VERSION 3.19...3.22)
+cmake_minimum_required(VERSION 3.14...3.22)
 
 set(CMAKE_TLS_VERIFY true)
 
@@ -24,7 +24,7 @@ endif()
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/versions.json _j)
 
-if(version VERSION_LESS 3.10)
+if(version VERSION_LESS 3.13)
   string(JSON version GET ${_j} cmake latest)
 endif()
 
@@ -34,8 +34,7 @@ if (L LESS 5)  # 3.x or 3.xx
   string(JSON version GET ${_j} cmake ${version})
 endif()
 
-string(JSON host GET ${_j} cmake source)
-set(host ${host}v${version}/)
+set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
 set(stem cmake-${version})
 set(name ${stem}.tar.gz)
 
