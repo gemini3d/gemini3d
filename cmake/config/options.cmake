@@ -65,14 +65,16 @@ set(CMAKE_DEBUG_POSTFIX .debug)
 # to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
-if(EXISTS ${PROJECT_SOURCE_DIR}/../mat_gemini/setup.m)
-  set(FETCHCONTENT_SOURCE_DIR_MATGEMINI ${PROJECT_SOURCE_DIR}/../mat_gemini CACHE PATH "MatGemini developer path")
+if(EXISTS ${PROJECT_SOURCE_DIR}/../mat_gemini/setup_gemini3d.m)
+  cmake_path(SET FETCHCONTENT_SOURCE_DIR_MATGEMINI NORMALIZE ${PROJECT_SOURCE_DIR}/../mat_gemini)
 endif()
 
 if(dev)
 
 else()
   set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
+  set(FETCHCONTENT_UPDATES_DISCONNECTED_INIPARSER true)
+  set(FETCHCONTENT_UPDATES_DISCONNECTED_MATGEMINI true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_MSIS2 true)
 endif()
 

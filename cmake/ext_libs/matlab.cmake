@@ -8,7 +8,7 @@ GIT_TAG ${matgemini_tag}
 INACTIVITY_TIMEOUT 15
 )
 
-FetchContent_MakeAvailable(MATGEMINI)
+FetchContent_Populate(MATGEMINI)
 
 cmake_path(CONVERT "${matgemini_SOURCE_DIR};${matgemini_SOURCE_DIR}/matlab-stdlib/" TO_NATIVE_PATH_LIST MATLABPATH)
 
