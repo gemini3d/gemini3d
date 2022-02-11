@@ -24,19 +24,19 @@ Specific releases corresponding to published results are generally noted in the 
 
 ## Bug Reporting
 
-The GEMINI development teams values input from our user community, particulary in the form of reporting of errors.  These allow us to insure that the code functions properly for a wider range of conditions, platforms, and use cases than we are otherwise able to directly test.  
+The GEMINI development teams values input from our user community, particulary in the form of reporting of errors.  These allow us to insure that the code functions properly for a wider range of conditions, platforms, and use cases than we are otherwise able to directly test.
 
 Please open a
 [GitHub Issue](https://github.com/gemini3d/gemini/issues)
-if you experience difficulty with GEMINI.  Try to provide as much detail as possible so we can try to reproduce your error.  
+if you experience difficulty with GEMINI.  Try to provide as much detail as possible so we can try to reproduce your error.
 
 ## Platforms
 
 Gemini is intended to be OS / CPU arch / platform / compiler agnostic.
 Operating system support includes:
 
-  * Linux, 
-  * MacOS, and 
+  * Linux,
+  * MacOS, and
   * Windows.
 
 CPU arch support includes:
@@ -45,7 +45,7 @@ CPU arch support includes:
   * AMD
   * ARM
   * IBM POWER
- 
+
 GEMINI can run on hardware ranging from a Raspberry Pi to laptop to a high-performance computing (HPC) cluster.
 Generally speaking one can run large 2D or modest resolution 3D simulations (less than 10 million grid points) on a quad-core workstation, with some patience.
 
@@ -98,10 +98,9 @@ To verify your GEMINI build, run the self-tests:
 ctest --test-dir build
 ```
 
-
 ## GEMINI Numerical Library Dependencies
 
-For various numerical solutions Gemini relies on:  
+For various numerical solutions Gemini relies on:
 
 * LAPACK
 * scalapack
@@ -126,7 +125,7 @@ If it's desired to use:
 
 ## Running GEMINI from a Shell Environment
 
-For basic operations the GEMINI main program simply needs to be run from the command line with arguments corresponding to to the number of processes to be used for the simulation, the location where the input files are and where the output files are to be written:  
+For basic operations the GEMINI main program simply needs to be run from the command line with arguments corresponding to to the number of processes to be used for the simulation, the location where the input files are and where the output files are to be written:
 
 ```sh
 mpiexec -np <number of processors>  build/gemini.bin <output directory>
@@ -167,7 +166,7 @@ gemini.bin command line options include:
 
 ## Running GEMINI through Scripting Environments
 
-If you prefer to issue the GEMINI run command through a scripting environment you may do so (via python) in the following way:  
+If you prefer to issue the GEMINI run command through a scripting environment you may do so (via python) in the following way:
 
 1. make a [config.nml](./docs/Readme_input.md) with desired parameters for an equilibrium sim.
 2. run the equilibrium sim:
@@ -183,7 +182,7 @@ If you prefer to issue the GEMINI run command through a scripting environment yo
 
 ## Input file format
 
-See [Readme_input](./docs/Readme_input.md) for details on how to prepare input data for GEMINI.  Generally speaking there are python and MATLAB scripts available in the mat_gemini and pygemini repositories that will save data in the appropriate format once generated.  
+See [Readme_input](./docs/Readme_input.md) for details on how to prepare input data for GEMINI.  Generally speaking there are python and MATLAB scripts available in the mat_gemini and pygemini repositories that will save data in the appropriate format once generated.
 
 ## Loading and plotting output
 
@@ -208,14 +207,14 @@ An auxiliary program, magcalc.f90, can be used to compute magnetic field perturb
 ## List of other associated Readmes
 
 1. [Readme_output](./docs/Readme_output.md) - information about data included in the output files of a GEMINI simulation
-2. [Readme_input](./docs/Readme_input.md) - information on how input files should be prepared and formatted.  
+2. [Readme_input](./docs/Readme_input.md) - information on how input files should be prepared and formatted.
 3. [Readme_compilers](./docs/Readme_compilers.md) - details regarding various compilers
 4. [Readme_cmake](./docs/Readme_cmake.md) - cmake build options
 5. [Readme_docs](./docs/Readme_docs.md) - information about model documentation
 6. [Readme_mpi](./docs/Readme_mpi.md) - help with mpi-related issues
 7. [Readme_magcalc](./docs/Readme_magcalc.md) - some documentation for the magnetic field calculation program
-8. [Readme_VEGA](./docs/Readme_VEGA.md) - information on how to deploy and run GEMINI on ERAU's VEGA HPC system.  
-9. [Readme_prereqs](./docs/Readme_prereqs.md) - details on how to install prerequisites on common platforms.  
+8. [Readme_VEGA](./docs/Readme_VEGA.md) - information on how to deploy and run GEMINI on ERAU's VEGA HPC system.
+9. [Readme_prereqs](./docs/Readme_prereqs.md) - details on how to install prerequisites on common platforms.
 
 
 ## Known limitations and issues of GEMINI
