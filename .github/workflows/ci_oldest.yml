@@ -50,7 +50,7 @@ jobs:
       timeout-minutes: 3
       run: |
         sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+        sudo $(cmake -P scripts/requirements.cmake)
 
     - name: install Ninja + GCC 8 (ABI compatible with GCC 9 system libs)
       run: sudo apt install ninja-build gcc-8 g++-8 gfortran-8

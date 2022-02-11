@@ -1,4 +1,4 @@
-# prints Gemini3D prereqs on stderr
+# prints Gemini3D prereqs on stdout
 #  cmake -P scripts/requirements.cmake
 
 cmake_minimum_required(VERSION 3.20...3.23)
@@ -31,28 +31,27 @@ endfunction(read_prereqs)
 
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
-if(APPLE)
-  # avoids MacOS-only tools with conflicting names
-  find_program(brew NAMES brew)
-  find_program(port NAMES port)
-else()
-  find_program(apt NAMES apt)
-  find_program(yum NAMES yum)
-  find_program(pacman NAMES pacman)
-endif()
-
-if(apt)
-  read_prereqs("apt")
-elseif(yum)
-  read_prereqs("yum")
-elseif(pacman)
-  read_prereqs("pacman")
-elseif(brew)
-  read_prereqs("brew")
-elseif(port)
-  read_prereqs("port")
-elseif(id MATCHES "^MSYS")
+if(id MATCHES "^MINGW64")
   read_prereqs("msys2")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${cmd} ${prereqs}" TIMEOUT 2)
+  return()
 endif()
 
-message(NOTICE "${cmd} ${prereqs}")
+if(APPLE)
+  set(names brew port)
+elseif(UNIX)
+  set(names apt yum pacman zypper)
+elseif(WIN32)
+  message(FATAL_ERROR "Windows: suggest MSYS2 or WSL")
+endif()
+
+foreach(t IN LISTS names)
+  find_program(${t} NAMES ${t})
+  if(${t})
+    read_prereqs(${t})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${cmd} ${prereqs}" TIMEOUT 2)
+    return()
+  endif()
+endforeach()
+
+message(FATAL_ERROR "Package manager not found ${names}")

@@ -33,7 +33,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+        sudo $(cmake -P scripts/requirements.cmake)
 
     - name: Configure multi
       run: cmake --preset multi -Dautobuild=off
@@ -104,7 +104,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+        sudo $(cmake -P scripts/requirements.cmake)
 
     - name: Configure release
       run: cmake -B build --preset release -Dmsis2:BOOL=true
@@ -130,7 +130,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake 2>&1)
+        sudo $(cmake -P scripts/requirements.cmake)
 
     - name: Configure release
       run: cmake -B build --preset release -Dhwm14:BOOL=true
@@ -156,7 +156,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: $(cmake -P scripts/requirements.cmake 2>&1)
+    - name: Install packages
+      run: $(cmake -P scripts/requirements.cmake)
       timeout-minutes: 15
 
     - name: Configure multi
