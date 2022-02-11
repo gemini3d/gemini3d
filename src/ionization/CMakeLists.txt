@@ -18,12 +18,11 @@ LABELS unit
 
 if(python)
   add_test(NAME unit:fangIonize:python
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>
+  COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>
   )
   set_tests_properties(unit:fangIonize:python PROPERTIES
   TIMEOUT 30
   LABELS "unit;python"
-  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
   )
 endif()
 

@@ -62,14 +62,13 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 if(python)
 
 add_test(NAME unit:potential2:python
-COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile}
+COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile}
 )
 set_tests_properties(unit:potential2:python PROPERTIES
 REQUIRED_FILES ${_potential_testfile}
 TIMEOUT 10
 LABELS "unit;python"
 FIXTURES_REQUIRED gemini_potential_fxt
-DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
 endif()

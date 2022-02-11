@@ -64,18 +64,17 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 if(python)
 
 add_test(NAME unit:interp2:python
-COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
+COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
 )
 set_tests_properties(unit:interp2:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
 TIMEOUT 30
 LABELS "unit;python"
 FIXTURES_REQUIRED gemini_interp2_fxt
-DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
 add_test(NAME unit:interp3:python
-COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
+COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
 )
 set_tests_properties(unit:interp3:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
@@ -83,7 +82,6 @@ TIMEOUT 30
 LABELS "unit;python"
 RESOURCE_LOCK cpu_ram
 FIXTURES_REQUIRED gemini_interp3_fxt
-DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
 endif()

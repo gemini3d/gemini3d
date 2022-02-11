@@ -58,12 +58,6 @@ URL "http://www.netlib.org/lapack/"
 DESCRIPTION "linear algebra library"
 PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
 
-set_package_properties(Python3 PROPERTIES
-TYPE OPTIONAL
-# URL "http://www.python.org/"
-# DESCRIPTION "Python runtime"
-PURPOSE "PyGemini is the standard user interface for Gemini input/output/plotting")
-
 set_package_properties(HWLOC PROPERTIES
 TYPE RECOMMENDED
 URL "https://www.open-mpi.org/projects/hwloc/"
@@ -81,8 +75,8 @@ add_feature_info(MSIS2.0 msis2 "NRL MSIS 2.x neutral atmosphere model")
 
 add_feature_info(NetCDF4 netcdf "file read / write")
 
-add_feature_info(PyGemini PYGEMINI_DIR "simulation generation, HPC script generator and plotting")
-add_feature_info(MatGemini MATGEMINI_DIR "checks not as extensive as Python, and slow")
+add_feature_info(PyGemini python "simulation generation, HPC script generator and plotting")
+add_feature_info(MatGemini matlab "checks not as extensive as Python, and slow")
 
 add_feature_info(HDF5 hdf5 "file read / write")
 add_feature_info(AutoHDF5 hdf5_external "build HDF5")

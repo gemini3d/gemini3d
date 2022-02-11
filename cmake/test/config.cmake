@@ -89,7 +89,7 @@ function(setup_magcalc_test name)
 cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
 
 add_test(NAME magcalc:${name}:setup
-COMMAND ${Python3_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
+COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
 )
 set_tests_properties(magcalc:${name}:setup PROPERTIES
 FIXTURES_REQUIRED hdf5:${name}:run_fxt

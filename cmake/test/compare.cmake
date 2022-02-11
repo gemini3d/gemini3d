@@ -5,7 +5,7 @@ if(hdf5 OR netcdf)
 
 add_test(NAME gemini:compare:${name}:matlab
 COMMAND ${Matlab_MAIN_PROGRAM} -batch "gemini3d.compare('${outdir}', '${refdir}')"
-WORKING_DIRECTORY ${MATGEMINI_DIR}
+WORKING_DIRECTORY ${matgemini_SOURCE_DIR}
 )
 
 set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
@@ -14,7 +14,6 @@ FIXTURES_REQUIRED "hdf5:${name}:run_fxt;netcdf:${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 ENVIRONMENT "MATLABPATH=${MATLABPATH}"
 LABELS "compare;matlab"
-DISABLED $<NOT:$<BOOL:${MATGEMINI_DIR}>>
 )
 
 endif()
@@ -25,7 +24,7 @@ endfunction(matlab_compare)
 function(python_compare outdir refdir name)
 
 add_test(NAME gemini:compare:hdf5:${name}:python
-COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
+COMMAND ${Python_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
 
 set_tests_properties(gemini:compare:hdf5:${name}:python PROPERTIES
 TIMEOUT 120
@@ -38,7 +37,7 @@ DISABLED $<OR:$<NOT:$<BOOL:${PYGEMINI_DIR}>>,$<NOT:$<BOOL:${hdf5}>>>
 if(netcdf)
 
 add_test(NAME gemini:compare:netcdf:${name}:python
-COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format nc)
+COMMAND ${Python_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format nc)
 
 set_tests_properties(gemini:compare:netcdf:${name}:python PROPERTIES
 TIMEOUT 120
