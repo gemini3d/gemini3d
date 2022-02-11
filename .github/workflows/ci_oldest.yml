@@ -20,6 +20,9 @@ on:
 
 jobs:
 
+# Gemini3D is compatible back to GCC 7.5.
+# However, to save test setup effort we use GCC 8 and system libs.
+
   linux-gcc8-cmake-320:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -32,6 +35,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Checkout Gemini3D-External scripts
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
     - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
@@ -46,9 +56,9 @@ jobs:
       run: sudo apt install ninja-build gcc-8 g++-8 gfortran-8
 
     - name: Install CMake 3.20
-      timeout-minutes: 1
+      timeout-minutes: 2
       run: |
-        cmake -Dversion=${cmake_version} -P scripts/install_cmake.cmake
+        cmake -Dversion=${cmake_version} -P $GITHUB_WORKSPACE/gemext/install_cmake.cmake
         echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Configure release
