@@ -97,10 +97,12 @@ contains
 
 
   !> allocate space for gemini state variables
-  subroutine gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+  subroutine gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3,Phi
@@ -118,6 +120,13 @@ contains
     vs2=>fluidvars(:,:,:,2*lsp+1:3*lsp)
     vs3=>fluidvars(:,:,:,3*lsp+1:4*lsp)
     Ts=>fluidvars(:,:,:,4*lsp+1:5*lsp)
+
+    !> fluid momentum and energy density variables
+    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp))
+
+    !> pointers to aliased state variables
+    rhovs1=>fluidauxvars(:,:,:,1:lsp)
+    rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp)
 
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
     allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
@@ -151,10 +160,12 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
+  subroutine gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
                                       electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     real(wp), dimension(:,:,:), pointer, intent(inout) ::  E1,E2,E3,J1,J2,J3,Phi
@@ -162,15 +173,15 @@ contains
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
     real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
 
-    !deallocate(ns,vs1,vs2,vs3,Ts)
     deallocate(fluidvars)    
     nullify(ns,vs1,vs2,vs3,Ts)
+
+    deallocate(fluidauxvars)
+    nullify(rhovs1,rhoes)
 
     deallocate(rhov2,rhov3,B1,B2,B3)
     deallocate(v1,v2,v3,rhom)
     
-    !deallocate(E1,E2,E3,J1,J2,J3)
-    !deallocate(Phi)
     deallocate(electrovars)
     nullify(E1,E2,E3,J1,J2,J3,Phi)
 
