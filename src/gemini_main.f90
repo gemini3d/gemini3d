@@ -81,7 +81,9 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: fluidvars    ! large data block for holding gemini fluid variables
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     !! fluid state variables
-    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars   ! aux variables memory block for fluid parms
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
+    real(wp), dimension(:,:,:,:), pointer :: electrovars   ! large block of data for electrodynamic variables (excluding mag. fields)
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     !! electrodynamic state variables
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3
@@ -128,9 +130,9 @@ contains
     call read_grid_C()
     
     !> Allocate space for solutions
-    call gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+    call gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                         electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
- 
+
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all)
     
@@ -203,7 +205,7 @@ contains
     
       !> update fluid variables
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-      call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
+      call fluid_adv(ns,vs1,Ts,vs2,vs3,rhovs1,rhoes,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -231,7 +233,7 @@ contains
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
+    call gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                           electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
     if (mpi_cfg%myid==0) deallocate(Phiall)
     call clear_neuBG_C()
@@ -240,11 +242,12 @@ contains
   
   
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
+  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,rhovs1,rhoes,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
     real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  ns,vs1,Ts
     real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  vs2,vs3
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer, intent(in) :: J1
     !! needed for thermal conduction in electron population
     real(wp), dimension(:,:,:), pointer, intent(inout) :: E1
@@ -261,9 +264,6 @@ contains
     integer :: isp
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
-    real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
-    real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim
     real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
     real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
     real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
@@ -300,7 +300,7 @@ contains
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
     call VNRicht_artvisc_C(ns,vs1,Q)
-    call RK2_prep_mpi_allspec_C(vs1,vs2,vs3)
+    call RK2_prep_mpi_allspec_C(vs1,vs2,vs3)     ! halos velocity so we can take a divergence without artifacts
     call compression_C(dt,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep and then converts back to temperature
     call rhoe2T_C(ns,rhoes,Ts)
     call clean_param_C(3,Ts)
