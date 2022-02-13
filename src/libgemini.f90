@@ -46,7 +46,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             clear_neuBG_C, dateinc_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
-!!   alternatively be stored in their respective modules; not sure if there is really a preference one way vs. the other.  
+!!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
 type(gemini_cfg) :: cfg
 class(curvmesh), allocatable :: x
 character(*), parameter :: msis2_param_file = "msis20.parm"
@@ -96,7 +96,7 @@ contains
   end subroutine cli_config_gridsize
 
 
-  !> allocate space for gemini state variables
+  !> allocate space for gemini state variables, bind pointers to blocks of memory
   subroutine gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
                                     electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
@@ -113,20 +113,15 @@ contains
     !> one contiguous block for overall simulation data
     !allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp+9))
     allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
-
-    !> main state variables for gemini (lx1+4,lx2+4,lx3+4,lsp)
-    ns=>fluidvars(:,:,:,1:lsp)
-    vs1=>fluidvars(:,:,:,lsp+1:2*lsp)
-    vs2=>fluidvars(:,:,:,2*lsp+1:3*lsp)
-    vs3=>fluidvars(:,:,:,3*lsp+1:4*lsp)
-    Ts=>fluidvars(:,:,:,4*lsp+1:5*lsp)
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
     !> fluid momentum and energy density variables
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp))
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes)
 
-    !> pointers to aliased state variables
-    rhovs1=>fluidauxvars(:,:,:,1:lsp)
-    rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp)
+    !> electrodynamic state variables (lx1,lx2,lx3)
+    allocate(electrovars(lx1,lx2,lx3,7))
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
     allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
@@ -134,16 +129,6 @@ contains
     allocate(B2(-1:lx1+2,-1:lx2+2,-1:lx3+2),B3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
     allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
              v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-
-    !> electrodynamic state variables (lx1,lx2,lx3)
-    allocate(electrovars(lx1,lx2,lx3,7))
-    E1=>electrovars(:,:,:,1)
-    E2=>electrovars(:,:,:,2)
-    E3=>electrovars(:,:,:,3)
-    J1=>electrovars(:,:,:,4)
-    J2=>electrovars(:,:,:,5)
-    J3=>electrovars(:,:,:,6)
-    Phi=>electrovars(:,:,:,7)
 
     !> neutral variables (never need to be haloed, etc.)
     allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
@@ -156,7 +141,51 @@ contains
   end subroutine
 
 
-  !> take a block of memory and assign pointers to various pieces
+  !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
+  subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
+
+    if (.not. associated(fluidvars)) error stop ' Attempting to bind fluid state vars to unassociated memory!'
+
+    !> main state variables for gemini (lx1+4,lx2+4,lx3+4,lsp)
+    ns=>fluidvars(:,:,:,1:lsp)
+    vs1=>fluidvars(:,:,:,lsp+1:2*lsp)
+    vs2=>fluidvars(:,:,:,2*lsp+1:3*lsp)
+    vs3=>fluidvars(:,:,:,3*lsp+1:4*lsp)
+    Ts=>fluidvars(:,:,:,4*lsp+1:5*lsp) 
+  end subroutine
+
+
+  !> bind pointers for auxiliary fluid variables to a contiguous block of memory
+  subroutine fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
+
+    if (.not. associated(fluidauxvars)) error stop ' Attempting to bind aux fluid state vars to unassociated memory!'
+
+    !> pointers to aliased state variables
+    rhovs1=>fluidauxvars(:,:,:,1:lsp)
+    rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp) 
+  end subroutine fluidauxvar_pointers
+
+
+  !> bind pointers for electomagnetic state variables to a contiguous block of memory
+  subroutine electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi) bind(C)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3,Phi    
+    
+    if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
+
+    !> eledtric fields, potential, and current density
+    E1=>electrovars(:,:,:,1)
+    E2=>electrovars(:,:,:,2)
+    E3=>electrovars(:,:,:,3)
+    J1=>electrovars(:,:,:,4)
+    J2=>electrovars(:,:,:,5)
+    J3=>electrovars(:,:,:,6)
+    Phi=>electrovars(:,:,:,7)
+  end subroutine electrovar_pointers
 
 
   !> deallocate state variables
