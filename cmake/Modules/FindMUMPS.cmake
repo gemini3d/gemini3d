@@ -127,7 +127,7 @@ function(mumps_libs)
 # PATH_SUFFIXES ...
 # to allow MKL using user-built MUMPS with `cmake -DMUMPS_ROOT=~/lib_intel/mumps`
 
-if(DEFINED ENV{MKLROOT})
+if("$ENV{MKLROOT}")
   find_path(MUMPS_INCLUDE_DIR
   NAMES mumps_compat.h
   NO_DEFAULT_PATH
@@ -164,7 +164,7 @@ if(mumps_conf)
 endif()
 
 # --- Mumps Common ---
-if(DEFINED ENV{MKLROOT})
+if("$ENV{MKLROOT}")
   find_library(MUMPS_COMMON
   NAMES mumps_common
   NO_DEFAULT_PATH
@@ -193,7 +193,7 @@ endif()
 
 # --- Pord ---
 
-if(DEFINED ENV{MKLROOT})
+if("$ENV{MKLROOT}")
   find_library(PORD
   NAMES pord
   NO_DEFAULT_PATH
@@ -214,7 +214,7 @@ if(NOT PORD)
 endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
-  if(DEFINED ENV{MKLROOT})
+  if("$ENV{MKLROOT}")
     find_library(MUMPS_mpiseq_LIB
     NAMES mpiseq
     NO_DEFAULT_PATH
@@ -233,7 +233,7 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
     return()
   endif()
 
-  if(DEFINED ENV{MKLROOT})
+  if("$ENV{MKLROOT}")
     find_path(MUMPS_mpiseq_INC
     NAMES mpif.h
     NO_DEFAULT_PATH
@@ -263,7 +263,7 @@ foreach(comp ${MUMPS_FIND_COMPONENTS})
     continue()
   endif()
 
-  if(DEFINED ENV{MKLROOT})
+  if("$ENV{MKLROOT}")
     find_library(MUMPS_${comp}_lib
     NAMES ${comp}mumps
     NO_DEFAULT_PATH

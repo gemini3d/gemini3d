@@ -11,7 +11,7 @@ if(hdf5_parallel)
 endif()
 
 # pass MPI hints to HDF5
-if(NOT MPI_ROOT AND DEFINED ENV{MPI_ROOT})
+if(NOT MPI_ROOT AND "$ENV{MPI_ROOT}")
   set(MPI_ROOT $ENV{MPI_ROOT})
 endif()
 

@@ -7,11 +7,6 @@ set(opts)
 
 # --- boilerplate follows
 
-set(CI false)
-if(DEFINED ENV{CI})
-  set(CI $ENV{CI})
-endif()
-
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=${CTEST_PROJECT_NAME}")
 set(CTEST_USE_LAUNCHERS 1)
@@ -23,10 +18,10 @@ list(APPEND opts $ENV{CTEST_${CTEST_PROJECT_NAME}_ARGS})
 
 # --- Experimental, Nightly, Continuous
 # https://cmake.org/cmake/help/latest/manual/ctest.1.html#dashboard-client-modes
-if(NOT CTEST_MODEL AND DEFINED ENV{CTEST_MODEL})
+if(NOT CTEST_MODEL AND "$ENV{CTEST_MODEL}")
   set(CTEST_MODEL $ENV{CTEST_MODEL})
 endif()
-if(NOT CTEST_MODEL AND CI)
+if(NOT CTEST_MODEL AND "$ENV{CI}")
   set(CTEST_MODEL "Nightly")
 endif()
 if(NOT CTEST_MODEL)
@@ -55,7 +50,7 @@ endif()
 list(APPEND opts -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 
 if(NOT DEFINED CTEST_SITE)
-  if(DEFINED ENV{CTEST_SITE})
+  if("$ENV{CTEST_SITE}")
     set(CTEST_SITE $ENV{CTEST_SITE})
   else()
     cmake_host_system_information(RESULT sys_name QUERY OS_NAME OS_RELEASE OS_VERSION)
@@ -67,7 +62,7 @@ endif()
 find_program(GIT_EXECUTABLE NAMES git REQUIRED)
 
 if(NOT DEFINED CTEST_BUILD_NAME)
-  if(DEFINED ENV{CTEST_BUILD_NAME})
+  if("$ENV{CTEST_BUILD_NAME}")
     set(CTEST_BUILD_NAME $ENV{CTEST_BUILD_NAME})
   else()
     execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
@@ -99,9 +94,9 @@ set(CTEST_UPDATE_TYPE git)
 set(CTEST_UPDATE_COMMAND git)
 
 ctest_start(${CTEST_MODEL})
-if(CI)
+if("$ENV{CI}")
   ctest_submit(PARTS Start)
-endif(CI)
+endif()
 
 if(CTEST_MODEL STREQUAL Nightly OR CTEST_MODEL STREQUAL Continuous)
   # this erases local code changes i.e. anything not "git push" already is lost forever!

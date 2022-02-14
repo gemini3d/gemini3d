@@ -9,7 +9,7 @@ endif()
 
 # --- MUMPS
 
-if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)))
+if(NOT mumps_external AND (MUMPS_ROOT OR "$ENV{MUMPS_ROOT}" OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)))
   set(mumps_comp ${arith})
   if(NOT mpi)
     list(APPEND mumps_comp mpiseq)
