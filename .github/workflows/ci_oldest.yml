@@ -58,7 +58,7 @@ jobs:
     - name: Install CMake 3.20
       timeout-minutes: 2
       run: |
-        cmake -Dversion=${cmake_version} -P $GITHUB_WORKSPACE/gemext/install_cmake.cmake
+        cmake -Dversion=${cmake_version} -P $GITHUB_WORKSPACE/gemext/scripts/install_cmake.cmake
         echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Configure release
