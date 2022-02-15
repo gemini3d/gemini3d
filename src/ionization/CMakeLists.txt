@@ -4,12 +4,12 @@ add_library(fang OBJECT fang.f90)
 target_link_libraries(fang PRIVATE const)
 
 add_library(fang_run OBJECT fang_run.f90)
-target_link_libraries(fang_run PRIVATE fang msis_ifc const)
+target_link_libraries(fang_run PRIVATE fang msis::msis_ifc const)
 
 if(BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc msis00mod)
+target_link_libraries(test_fang PRIVATE fang fang_run assert const msis::msis_ifc)
 add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
 set_tests_properties(unit:fangIonize PROPERTIES
 TIMEOUT 10

@@ -42,8 +42,21 @@ jobs:
 
     - uses: actions/checkout@v2
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure multi
-      run: cmake -Dmpi=no --preset multi
+      run: cmake -Dmpi=no --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
 
     - name: Debug build

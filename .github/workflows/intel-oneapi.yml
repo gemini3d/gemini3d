@@ -54,8 +54,21 @@ jobs:
 #  file INSTALL cannot find
 #  "build/HDF5-prefix/src/HDF5-build/bin/static/Debug/h5fortran_types.mod":
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: CMake Configure Ninja Multi-config
-      run: cmake --preset multi
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
     - name: DEBUG build
       run: cmake --build --preset debug

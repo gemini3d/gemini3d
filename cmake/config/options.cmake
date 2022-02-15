@@ -39,7 +39,7 @@ option(cpp_frontend "also build Gemini3D C++ frontend prototype")
 
 option(mpi "Use MPI parallelization" on)
 
-option(autobuild "autobuild missing libraries" on)
+option(autobuild "autobuild missing libraries" off)
 option(glow "use NCAR GLOW airglow / aurora model" on)
 
 option(hwm14 "use HWM14 neutral winds model")

@@ -61,8 +61,15 @@ jobs:
         cmake -Dversion=${cmake_version} -P $GITHUB_WORKSPACE/gemext/scripts/install_cmake.cmake
         echo "${HOME}/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure release
-      run: cmake -B build
+      run: cmake -B build -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
     - name: Release build
       run: cmake --build build

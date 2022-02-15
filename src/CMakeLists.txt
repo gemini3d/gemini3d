@@ -1,7 +1,7 @@
 add_subdirectory(unit_tests)
 
 # --- MSISE00 or MSIS 2.0
-add_subdirectory(vendor/nrl_msis)
+find_package(msis CONFIG REQUIRED)
 
 # --- HWM14
 add_subdirectory(vendor/nrl_hwm)
@@ -45,6 +45,7 @@ $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
+msis::msis_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )
 # need to have this explicit include for use of Gemini3D from ExternalProject
@@ -73,13 +74,9 @@ grid io
 PDEelliptic potential mumps_interface
 mpimod
 autogrid
-msis_ifc msis00mod
 hwm_ifc
 hwloc_ifc hwloc_c
 )
-if(msis2)
-  list(APPEND gemini_internal_mods msis2mod)
-endif()
 
 foreach(l ${gemini_internal_mods})
 

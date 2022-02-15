@@ -63,10 +63,6 @@
   "git": "https://github.com/gemini3d/hwm14.git",
   "tag": "v1.0.2"
 },
-"msis2": {
-  "zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip",
-  "sha256": "bcaf1d0e233dd7a5547b2f0a00c7a83dffa4338475848f696a3a3de253c3c987"
-},
 
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",

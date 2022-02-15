@@ -35,8 +35,21 @@ jobs:
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake)
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure multi
-      run: cmake --preset multi -Dautobuild=off
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
     - name: Debug build
       run: cmake --build --preset debug
@@ -80,8 +93,21 @@ jobs:
         sudo apt update -yq
         sudo apt install libhwloc-dev libhdf5-dev liblapack-dev libopenmpi-dev openmpi-bin
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target mumps h5fortran msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure build
-      run: cmake -B build
+      run: cmake -B build -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
     - name: Build
       run: cmake --build build
@@ -106,8 +132,21 @@ jobs:
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake)
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure release
-      run: cmake -B build --preset release -Dmsis2:BOOL=true
+      run: cmake -B build --preset release -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dmsis2:BOOL=true
 
     - name: Build release
       run: cmake --build build
@@ -132,8 +171,21 @@ jobs:
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake)
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis hwm14
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure release
-      run: cmake -B build --preset release -Dhwm14:BOOL=true
+      run: cmake -B build --preset release -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dhwm14:BOOL=true
 
     - name: Build release
       run: cmake --build build
@@ -160,8 +212,21 @@ jobs:
       run: $(cmake -P scripts/requirements.cmake)
       timeout-minutes: 15
 
+    - name: Checkout Gemini3D-External
+      uses: actions/checkout@v2
+      with:
+        repository: gemini3d/external
+        path: gemext
+
+    - name: Install numeric libraries
+      timeout-minutes: 8
+      run: |
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --install $GITHUB_WORKSPACE/gemext/build
+
     - name: Configure multi
-      run: cmake --preset multi
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
 
     - name: Debug build
       run: cmake --build --preset debug
