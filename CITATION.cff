@@ -1,5 +1,4 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
 authors:
   - family-names: Zettergren
     given-names: Matthew
@@ -8,6 +7,5 @@ authors:
     given-names: Michael
     orcid: 0000-0002-1637-6526
 title: Gemini3D
-version: 1.2.0
 doi: 10.5281/zenodo.3813224
-date-released: 2021-11-23
+date-released: 2022-02-015
