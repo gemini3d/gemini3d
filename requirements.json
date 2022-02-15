@@ -1,18 +1,18 @@
 {
   "apt": {
-    "pkgs": ["ninja-build", "gfortran", "libhwloc-dev", "libopenmpi-dev", "openmpi-bin", "libhdf5-dev"],
+    "pkgs": ["ninja-build", "g++", "gfortran", "libhwloc-dev", "libopenmpi-dev", "openmpi-bin", "libhdf5-dev"],
     "cmd": "apt install --no-install-recommends"
   },
   "yum": {
-    "pkgs": ["epel-release", "gcc-gfortran", "hwloc-devel", "openmpi-devel", "hdf5-devel"],
+    "pkgs": ["epel-release", "gcc-c++", "gcc-gfortran", "hwloc-devel", "openmpi-devel", "hdf5-devel"],
     "cmd": "yum install"
   },
   "pacman": {
-    "pkgs": ["gcc-fortran", "ninja", "hwloc", "openmpi", "hdf5"],
+    "pkgs": ["gcc", "gcc-fortran", "ninja", "hwloc", "openmpi", "hdf5"],
     "cmd": "pacman -S --needed"
   },
   "zypper": {
-    "pkgs": ["gcc-fortran", "hdf5-devel"],
+    "pkgs": ["gcc-c++", "gcc-fortran", "hdf5-devel"],
     "cmd": "zypper install"
   },
   "brew": {
@@ -24,7 +24,7 @@
     "cmd": "port install"
   },
   "msys2": {
-    "pkgs": ["mingw-w64-x86_64-gcc-fortran", "mingw-w64-x86_64-ninja", "mingw-w64-x86_64-hwloc", "mingw-w64-x86_64-msmpi", "mingw-w64-x86_64-hdf5"],
+    "pkgs": ["mingw-w64-x86_64-gcc", "mingw-w64-x86_64-gcc-fortran", "mingw-w64-x86_64-ninja", "mingw-w64-x86_64-hwloc", "mingw-w64-x86_64-msmpi", "mingw-w64-x86_64-hdf5"],
     "cmd": "pacman -S --needed"
   }
 }
