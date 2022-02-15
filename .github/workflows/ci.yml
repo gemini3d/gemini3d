@@ -76,49 +76,6 @@ jobs:
       with:
         files: build/test-*.xml
 
-  linux-build-most:
-    # build critical libraries like scalapack and mumps, skipping others for time
-    needs: linux
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo apt install libhwloc-dev libhdf5-dev liblapack-dev libopenmpi-dev openmpi-bin
-
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
-      with:
-        repository: gemini3d/external
-        path: gemext
-
-    - name: Install numeric libraries
-      timeout-minutes: 8
-      run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target mumps h5fortran msis
-        cmake --install $GITHUB_WORKSPACE/gemext/build
-
-    - name: Configure build
-      run: cmake -B build -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
-
-    - name: Build
-      run: cmake --build build
-
-    - name: Unit tests
-      run: ctest --test-dir build -L unit
-
-    - name: core tests
-      run: ctest --test-dir build -LE unit -E 3d
-
-
   MSIS-20:
     needs: linux
     runs-on: ubuntu-latest
@@ -142,7 +99,7 @@ jobs:
       timeout-minutes: 8
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target mumps msis
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: Configure release
@@ -181,7 +138,7 @@ jobs:
       timeout-minutes: 8
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis hwm14
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target mumps msis hwm14
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: Configure release
@@ -222,7 +179,7 @@ jobs:
       timeout-minutes: 8
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target mumps msis
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: Configure multi
