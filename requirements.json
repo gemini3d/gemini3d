@@ -1,30 +1,30 @@
 {
   "apt": {
-    "pkgs": ["ninja-build", "gfortran", "libhwloc-dev", "libmumps-dev", "liblapack-dev", "libscalapack-mpi-dev", "libopenmpi-dev", "openmpi-bin", "libhdf5-dev"],
+    "pkgs": ["ninja-build", "gfortran", "libhwloc-dev", "libopenmpi-dev", "openmpi-bin", "libhdf5-dev"],
     "cmd": "apt install --no-install-recommends"
   },
   "yum": {
-    "pkgs": ["epel-release", "gcc-gfortran", "hwloc-devel", "MUMPS-openmpi-devel", "lapack-devel", "scalapack-openmpi-devel", "openmpi-devel", "hdf5-devel"],
+    "pkgs": ["epel-release", "gcc-gfortran", "hwloc-devel", "openmpi-devel", "hdf5-devel"],
     "cmd": "yum install"
   },
   "pacman": {
-    "pkgs": ["gcc-fortran", "ninja", "hwloc", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
+    "pkgs": ["gcc-fortran", "ninja", "hwloc", "openmpi", "hdf5"],
     "cmd": "pacman -S --needed"
   },
   "zypper": {
-    "pkgs": ["gcc-fortran", "hdf5-devel", "mumps-devel", "lapack-devel"],
+    "pkgs": ["gcc-fortran", "hdf5-devel"],
     "cmd": "zypper install"
   },
   "brew": {
-    "pkgs": ["gcc", "ninja", "hwloc", "lapack", "scalapack", "openmpi", "hdf5"],
+    "pkgs": ["gcc", "ninja", "hwloc", "openmpi", "hdf5"],
     "cmd": "brew install"
   },
   "port": {
-    "pkgs": ["gcc11", "ninja", "hwloc", "lapack", "scalapack", "openmpi", "hdf5", "mumps"],
+    "pkgs": ["gcc11", "ninja", "hwloc", "openmpi", "hdf5"],
     "cmd": "port install"
   },
   "msys2": {
-    "pkgs": ["mingw-w64-x86_64-gcc-fortran", "mingw-w64-x86_64-ninja", "mingw-w64-x86_64-hwloc", "mingw-w64-x86_64-msmpi", "mingw-w64-x86_64-hdf5", "mingw-w64-x86_64-lapack", "mingw-w64-x86_64-scalapack"],
+    "pkgs": ["mingw-w64-x86_64-gcc-fortran", "mingw-w64-x86_64-ninja", "mingw-w64-x86_64-hwloc", "mingw-w64-x86_64-msmpi", "mingw-w64-x86_64-hdf5"],
     "cmd": "pacman -S --needed"
   }
 }
