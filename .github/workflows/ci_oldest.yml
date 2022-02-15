@@ -64,7 +64,7 @@ jobs:
     - name: Install numeric libraries
       timeout-minutes: 8
       run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build -DCMAKE_INSTALL_PREFIX=${HOME}/gemlibs
         cmake --build $GITHUB_WORKSPACE/gemext/build --target msis
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
