@@ -68,7 +68,7 @@ jobs:
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: CMake Configure Ninja Multi-config
-      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs --debug-find
 
     - name: DEBUG build
       run: cmake --build --preset debug
