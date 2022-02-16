@@ -114,8 +114,6 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
 MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
@@ -174,8 +172,6 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>

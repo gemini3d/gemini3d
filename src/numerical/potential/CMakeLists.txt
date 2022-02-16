@@ -29,8 +29,6 @@ set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 add_executable(test_potential2d test_potential2D.f90 $<TARGET_OBJECTS:PDEelliptic>)
 set_target_properties(test_potential2d PROPERTIES LABELS "unit")
 target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
