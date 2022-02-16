@@ -683,20 +683,20 @@ endfunction(check_hdf5_link)
 
 set(CMAKE_REQUIRED_LIBRARIES)
 
-if(NOT HDF5MPI_ROOT AND "$ENV{HDF5MPI_ROOT}")
+if(NOT HDF5MPI_ROOT AND DEFINED ENV{HDF5MPI_ROOT})
   set(HDF5MPI_ROOT $ENV{HDF5MPI_ROOT})
 endif()
 
 if(NOT HDF5_ROOT)
   if(HDF5MPI_ROOT AND parallel IN_LIST HDF5_FIND_COMPONENTS)
     set(HDF5_ROOT ${HDF5MPI_ROOT})
-  elseif("$ENV{HDF5_ROOT}")
+  elseif(DEFINED ENV{HDF5_ROOT})
     set(HDF5_ROOT $ENV{HDF5_ROOT})
   endif()
 endif()
 
 # Conda causes numerous problems with finding HDF5, so exclude from search
-if("$ENV{CONDA_PREFIX}")
+if(DEFINED ENV{CONDA_PREFIX})
   set(h5_ignore_path
     $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include
     $ENV{CONDA_PREFIX}/Library/bin $ENV{CONDA_PREFIX}/Library/lib $ENV{CONDA_PREFIX}/Library/include

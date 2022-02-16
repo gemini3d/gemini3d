@@ -9,7 +9,7 @@ string(JSON PROJECT_VERSION GET ${_j} version)
 # if the user lets it default to Debug.
 # for single config generators, set build type to Release
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR "$ENV{CMAKE_BUILD_TYPE}"))
+if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
 endif()
 
