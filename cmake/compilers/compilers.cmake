@@ -29,6 +29,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "^Intel" AND CMAKE_SYSTEM_NAME STREQUAL Lin
   set(lib_filesystem stdc++)
 endif()
 
+# avoid MacOS unwind warnings
+if(CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+  add_link_options(-Wl,-no_compact_unwind)
+endif()
 
 # === check that the compiler has adequate Fortran 2008 support
 # this is to mitigate confusing syntax error messages for new users
