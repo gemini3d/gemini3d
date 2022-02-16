@@ -10,7 +10,6 @@ if(NOT hdf5_external)
   endif()
 endif()
 
-find_package(ZLIB REQUIRED)
 find_package(HDF5 COMPONENTS Fortran REQUIRED)
 
 set(h5fortran_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include)
