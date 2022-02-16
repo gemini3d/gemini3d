@@ -59,7 +59,11 @@ endif()
 
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
-find_package(MUMPS REQUIRED)
+if(mpi)
+  find_package(MUMPS REQUIRED)
+else()
+  find_package(MUMPS REQUIRED COMPONENTS mpiseq)
+endif()
 
 # --- climate models
 if(glow)
