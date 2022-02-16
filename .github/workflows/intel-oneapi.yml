@@ -64,7 +64,7 @@ jobs:
       timeout-minutes: 8
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target msis mumps
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target glow msis mumps
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: CMake Configure Ninja Multi-config

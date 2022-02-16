@@ -63,11 +63,11 @@ find_package(MUMPS REQUIRED)
 
 # --- climate models
 if(glow)
-  include(cmake/ext_libs/glow.cmake)
+  find_package(glow CONFIG REQUIRED)
 endif(glow)
 
 if(hwm14)
-  include(cmake/ext_libs/hwm14.cmake)
+  find_package(hwm14 CONFIG REQUIRED)
 endif()
 
 include(cmake/compilers/flags.cmake)

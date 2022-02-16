@@ -1,6 +1,5 @@
 set(_names
 iniparser
-glow hwm14
 hwloc openmpi
 matgemini
 nc4fortran h5fortran
