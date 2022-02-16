@@ -56,9 +56,12 @@ if(mpi)
   # here for HWLOC_FOUND directory scope
   find_package(HWLOC)
 endif()
-# first this to get libs
-include(cmake/ext_libs/mumps.cmake)
 
+# --- linear algebra libraries
+find_package(LAPACK REQUIRED)
+find_package(MUMPS REQUIRED)
+
+# --- climate models
 if(glow)
   include(cmake/ext_libs/glow.cmake)
 endif(glow)

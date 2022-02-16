@@ -45,6 +45,15 @@ $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
+MUMPS::MUMPS
+LAPACK::LAPACK
+nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
+MPI::MPI_Fortran
+$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
+$<$<BOOL:${glow}>:glow::glow>
+$<$<BOOL:${hwm14}>:HWM14::hwm14>
 msis::msis_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )

@@ -2,7 +2,6 @@ set(_names
 iniparser
 glow hwm14
 hwloc openmpi
-lapack mumps scalapack
 matgemini
 nc4fortran h5fortran
 ffilesystem
