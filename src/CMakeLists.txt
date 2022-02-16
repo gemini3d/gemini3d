@@ -132,6 +132,13 @@ else()
   set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 
+# WORKAROUND: MSIS shared Rpath fail
+# Rpath is defined in MSIS, but ld fails to use it
+get_target_property(msis_loc msis::msis_ifc LOCATION)
+cmake_path(GET msis_loc PARENT_PATH msis_dir)
+target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
+# END WORKAROUND
+
 # same link logic applied to src/unit_tests/test_mumps
 
 add_test(NAME unit:gemini_exe_ok COMMAND gemini.bin)
