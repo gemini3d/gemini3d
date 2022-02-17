@@ -10,7 +10,7 @@ endif()
 # --- build abstract HWM interface
 # default is HWM14
 target_sources(hwm_ifc PRIVATE hwm_interface.f90)
-target_link_libraries(hwm_ifc PUBLIC HWM14::hwm14)
+target_link_libraries(hwm_ifc PUBLIC hwm14::hwm14)
 
 if(BUILD_TESTING)
 
