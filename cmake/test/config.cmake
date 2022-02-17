@@ -35,7 +35,6 @@ FIXTURES_SETUP hdf5:${name}:dryrun
 REQUIRED_FILES ${out_dir}/inputs/config.nml
 LABELS core
 DISABLED $<NOT:$<BOOL:${hdf5}>>
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 
@@ -48,8 +47,12 @@ FIXTURES_REQUIRED hdf5:${name}:dryrun
 FIXTURES_SETUP hdf5:${name}:run_fxt
 LABELS core
 DISABLED $<NOT:$<BOOL:${hdf5}>>
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 
 if(netcdf)
@@ -104,8 +107,13 @@ RESOURCE_LOCK cpu_mpi
 FIXTURES_REQUIRED magcalc:${name}:setup
 LABELS core
 TIMEOUT 60
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
+
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(magcalc:${name} PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 endfunction(setup_magcalc_test)

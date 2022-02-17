@@ -38,10 +38,4 @@ if(NOT test_dll_path)
   return()
 endif()
 
-cmake_path(APPEND_STRING test_dll_path ";$ENV{PATH}")
 cmake_path(CONVERT "${test_dll_path}" TO_NATIVE_PATH_LIST test_dll_path NORMALIZE)
-
-# this is the vital line, without it CMake set_tests_properties mangles the ENVIRONMENT
-string(REPLACE ";" "\\;" test_dll_path "${test_dll_path}")
-
-message(DEBUG "test_dll_path: ${test_dll_path}")

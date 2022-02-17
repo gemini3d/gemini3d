@@ -75,9 +75,12 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 
 endforeach()
 
-set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
-)
+
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 
 if(host_ramGB LESS 8)

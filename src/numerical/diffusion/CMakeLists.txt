@@ -29,8 +29,12 @@ set_tests_properties(unit:diffusion1 PROPERTIES
 TIMEOUT 5
 LABELS unit
 FIXTURES_SETUP gemini_diffusion_fxt
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:diffusion1 PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 if(python)
   add_test(NAME unit:diffusion1:python

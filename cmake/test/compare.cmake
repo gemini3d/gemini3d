@@ -64,8 +64,12 @@ RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
 DISABLED $<OR:$<NOT:$<TARGET_EXISTS:gemini3d.compare>>,$<NOT:$<BOOL:${hdf5}>>>
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 
 # resource_lock compare for Windows, which can take 100x longer when run

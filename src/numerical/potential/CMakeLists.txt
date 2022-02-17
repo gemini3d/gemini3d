@@ -54,8 +54,13 @@ RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
 DISABLED $<NOT:$<BOOL:${hdf5}>>
-ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
+
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:potential2 PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
 
 if(python)
 
