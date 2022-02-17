@@ -60,9 +60,9 @@ endif()
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
 if(mpi)
-  find_package(MUMPS REQUIRED)
+  find_package(MUMPS REQUIRED COMPONENTS d)
 else()
-  find_package(MUMPS REQUIRED COMPONENTS mpiseq)
+  find_package(MUMPS REQUIRED COMPONENTS d mpiseq)
 endif()
 
 # --- climate models
