@@ -2,6 +2,7 @@
 module gemini3d_mpi
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use, intrinsic :: iso_c_binding, only : c_ptr
 use phys_consts, only: wp,debug
 use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown
 use meshobj, only: curvmesh
@@ -10,7 +11,6 @@ use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
 use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
-use gemini3d, only: cfg,x
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield
 use neutral_perturbations, only: init_neutralperturb
@@ -23,6 +23,8 @@ use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
+use gemini3d, only: cfg,x,Phiall,ns,vs1,Ts,Phi,E1,E2,E3,vs2,vs3,nn,Tn,vn1,vn2,vn3,iver, &
+                      B1,B2,B3,J1,J2,J3,rhovs1,rhoes,vs1i,vs2i,vs3i
 
 implicit none (type, external)
 private
@@ -37,8 +39,7 @@ real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allo
 
 contains
   !> create output directory and allocate full grid potential storage
-  subroutine outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all) bind(C)
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
+  subroutine outdir_fullgridvaralloc(lx1,lx2all,lx3all) bind(C)
     integer, intent(in) :: lx1,lx2all,lx3all
 
     !> create a place, if necessary, for output datafiles 
@@ -62,10 +63,7 @@ contains
 
 
   !> load initial conditions
-  subroutine get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,Ts
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phi
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
+  subroutine get_initial_state(UTsec,ymd,tdur) bind(C)
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: tdur
@@ -108,16 +106,12 @@ contains
 
 
   !> check whether file output should be done and complete it
-  subroutine check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver) bind(C)
+  subroutine check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec) bind(C)
     real(wp), intent(in) :: t
     real(wp), intent(inout) :: tout,tglowout,tmilestone
     integer, intent(inout) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3,ns,vs1,Ts
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-    real(wp), dimension(:,:,:), pointer, intent(in) :: J1,J2,J3
-    real(wp), dimension(:,:,:), pointer, intent(in) :: iver
     real(wp) :: tstart,tfin
 
     if (abs(t-tout) < 1d-5) then
@@ -180,9 +174,8 @@ contains
 
 
   !> prep simulation for use of Lagrangian grid, if needed
-  subroutine BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) bind(C)
+  subroutine BGfield_Lagrangian(v2grid,v3grid) bind(C)
     real(wp), intent(inout) :: v2grid,v3grid
-    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
     integer :: lx1,lx2,lx3
 
@@ -214,13 +207,7 @@ contains
 
 
   !> initial drifts at the start of the simulation
-  subroutine get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(in) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs2,vs3
-    real(wp), dimension(:,:,:), pointer, intent(in) :: B1
-    real(wp), dimension(:,:,:), pointer, intent(in) :: E2,E3
+  subroutine get_initial_drifts() bind(C)
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
@@ -238,6 +225,8 @@ contains
     end if
   end subroutine get_initial_drifts
 
+
+  !> initialize the process gridf for this simulation
   subroutine init_procgrid(lx2all,lx3all,lid2in,lid3in) bind(C)
     integer, intent(in) :: lx2all,lx3all,lid2in,lid3in
 
@@ -263,9 +252,7 @@ contains
 
 
   !> convert potential to electric field by differentiating
-  subroutine pot2perpfield_C(Phi,E1,E2,E3) bind(C)
-    real(wp), dimension(:,:,:), pointer :: Phi,E1,E2,E3
-
+  subroutine pot2perpfield_C() bind(C)
     E1 = 0
     call pot2perpfield(Phi,x,E2,E3)    
     if(mpi_cfg%myid==0) then
@@ -288,11 +275,9 @@ contains
 
 
   !> select time step and throttle if changing too rapidly
-  subroutine dt_select_C(it,t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt) bind(C)
+  subroutine dt_select_C(it,t,tout,tglowout,dt) bind(C)
     integer, intent(in) :: it
     real(wp), intent(in) :: t,tout,tglowout
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1,vs2,vs3
-    real(wp), dimension(:,:,:), pointer, intent(in) :: B1,B2,B3
     real(wp), intent(inout) :: dt
     real(wp) :: dtprev
 
@@ -316,11 +301,8 @@ contains
 
 
   !> apply neutral perturbations/background and assign to main code variables
-  subroutine neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
+  subroutine neutral_atmos_wind_update_C(v2grid,v3grid) bind(C)
     real(wp), intent(in) :: v2grid,v3grid
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: vn1,vn2,vn3
 
     call neutral_denstemp_update(nn,Tn)
     call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
@@ -328,13 +310,11 @@ contains
 
 
   !> compute neutral perturbations and apply to main code variables
-  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
+  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C)
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
 
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
@@ -342,17 +322,9 @@ contains
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_C(it,t,dt,nn,vn2,vn3,Tn,ns,Ts,vs1,B1, &
-                                 vs2,vs3,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec) bind(C)
+  subroutine electrodynamics_C(it,t,dt,ymd,UTsec) bind(C)
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(in) :: vn2,vn3,Tn
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts,vs1
-    real(wp), dimension(:,:,:), pointer, intent(in) :: B1
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
@@ -361,18 +333,15 @@ contains
 
 
   !> check main state variables for finiteness
-  subroutine check_finite_output_C(t,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3) bind(C)
-    real(wp), intent(in) :: T
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs2,vs3,ns,Ts,vs1
-    real(wp), dimension(:,:,:), pointer, intent(in) :: Phi,J1,J2,J3
+  subroutine check_finite_output_C(t) bind(C)
+    real(wp), intent(in) :: t
 
     call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
   end subroutine check_finite_output_C
 
 
   !> haloing for computing cell interface velocities
-  subroutine halo_interface_vels_allspec_C(vs2,vs3,lsp) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs2,vs3
+  subroutine halo_interface_vels_allspec_C(lsp) bind(C)
     integer, intent(in) :: lsp
 
     call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)   
@@ -380,12 +349,7 @@ contains
 
 
   !> enforce global boundary conditions
-  subroutine set_global_boundaries_allspec_C(ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1    ! convert to pointer?
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
-    real(wp), dimension(:,:,:,:), intent(inout) :: vs1i
+  subroutine set_global_boundaries_allspec_C(lsp) bind(C)
     integer, intent(in) :: lsp
 
     call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
@@ -393,18 +357,13 @@ contains
 
 
   !> halo all advected parameters
-  subroutine halo_allparams_C(ns,rhovs1,rhoes) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
-
+  subroutine halo_allparams_C() bind(C)
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)
   end subroutine halo_allparams_C
 
 
   !> prepare/halo data for compression substep
-  subroutine RK2_prep_mpi_allspec_C(vs1,vs2,vs3) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
-
+  subroutine RK2_prep_mpi_allspec_C() bind(C)
     call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
   end subroutine RK2_prep_mpi_allspec_C
 
