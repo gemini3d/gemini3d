@@ -14,7 +14,7 @@
 
 program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: lx1,lx2,lx3,lx2all,lx3all
@@ -78,26 +78,9 @@ contains
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
       !> STATE VARIABLES
     !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
-    real(wp), dimension(:,:,:,:), pointer :: fluidvars    ! large data block for holding gemini fluid variables
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    !! fluid state variables
-    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars   ! aux variables memory block for fluid parms
-    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
-    real(wp), dimension(:,:,:,:), pointer :: electrovars   ! large block of data for electrodynamic variables (excluding mag. fields)
-    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
-    !! electrodynamic state variables
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3
-    !! inductive state vars. (for future use - except for B1 which is used for the background field)
-    real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3
-    !! inductive auxiliary
-    real(wp), dimension(:,:,:,:), pointer :: nn
-    !! neutral density array
-    real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3
-    !! neutral temperature and velocities
-    real(wp), dimension(:,:,:), pointer :: Phiall
-    !! full-grid potential solution.  To store previous time step value
-    real(wp), dimension(:,:,:), pointer :: iver
-    !! integrated volume emission rate of aurora calculated by GLOW
+    type(c_ptr) :: fluidvarsC    ! large data block for holding gemini fluid variables
+    type(c_ptr) :: fluidauxvarsC   ! aux variables memory block for fluid parms
+    type(c_ptr) :: electrovarsC   ! large block of data for electrodynamic variables (excluding mag. fields)
     !TEMPORAL VARIABLES
     real(wp) :: t=0, dt=1e-6_wp
     !! time from beginning of simulation (s) and time step (s)
@@ -130,17 +113,16 @@ contains
     call read_grid_C()
     
     !> Allocate space for solutions
-    call gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-                        electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
+    call gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC)
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
-    call outdir_fullgridvaralloc(Phiall,lx1,lx2all,lx3all)
+    call outdir_fullgridvaralloc(lx1,lx2all,lx3all)
     
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(ns,vs1,Ts,Phi,Phiall,UTsec,ymd,tdur)
+    call get_initial_state(UTsec,ymd,tdur)
 
     !> initialize time stepping and some aux variables
-    call set_start_values(it,t,tout,tglowout,tneuBG,rhov2,rhov3,v2,v3,B2,B3,B1)
+    call set_start_values(it,t,tout,tglowout,tneuBG)
     
     !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
     if(mpi_cfg%myid==0) print*, 'Priming electric field input'
@@ -148,10 +130,10 @@ contains
     
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
-    call pot2perpfield_C(Phi,E1,E2,E3)
+    call pot2perpfield_C()
 
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(v2grid,v3grid,E1,E2,E3) 
+    call BGfield_Lagrangian(v2grid,v3grid) 
     
     !> Precipitation input setup
     if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
@@ -160,24 +142,24 @@ contains
     !> Neutral atmosphere setup
     if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call msisinit_C()
-    call init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid)
     call init_neutralperturb_C(dt,ymd,UTsec)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    call get_initial_drifts(nn,Tn,vn1,vn2,vn3,ns,Ts,vs1,vs2,vs3,B1,E2,E3)
+    call get_initial_drifts()
     
     !> control rate of console printing
     call set_update_cadence(iupdate)
     
     !> Main time loop
     main : do while (t < tdur)
-      call dt_select_C(it,t,tout,tglowout,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dt)
+      call dt_select_C(it,t,tout,tglowout,dt)
     
       !> get neutral background
       if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
         call neutral_atmos_winds_C(ymd,UTsec)   ! load background states into module variables
-        call neutral_atmos_wind_update_C(v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    ! apply to variables in this program unit
+        call neutral_atmos_wind_update_C(v2grid,v3grid)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
         if (mpi_cfg%myid==0) then
           call cpu_time(tfin)
@@ -188,7 +170,7 @@ contains
       !> get neutral perturbations
       if (cfg%flagdneu==1) then
         call cpu_time(tstart)
-        call neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+        call neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid)
         if (mpi_cfg%myid==0 .and. debug) then
           call cpu_time(tfin)
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
@@ -197,7 +179,7 @@ contains
     
       !> compute potential solution
       call cpu_time(tstart)
-      call electrodynamics_C(it,t,dt,nn,vn2,vn3,Tn,ns,Ts,vs1,B1,vs2,vs3,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+      call electrodynamics_C(it,t,dt,ymd,UTsec)
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -205,7 +187,7 @@ contains
     
       !> update fluid variables
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-      call fluid_adv(ns,vs1,Ts,vs2,vs3,rhovs1,rhoes,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
+      call fluid_adv(t,dt,ymd,UTsec, first=(it==1) )
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -213,7 +195,7 @@ contains
     
       !> Sanity check key variables before advancing
       ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
-      call check_finite_output_C(t,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+      call check_finite_output_C(t)
     
       !> update time variables
       it = it + 1
@@ -229,81 +211,63 @@ contains
       call check_dryrun()
     
       !> File output
-      call check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,iver)
+      call check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec)
     end do main
     
     !> deallocate variables and module data
-    call gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-                          electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver)
-    if (mpi_cfg%myid==0) deallocate(Phiall)
+    call gemini_dealloc(fluidvarsC,fluidauxvarsC,electrovarsC)
     call clear_neuBG_C()
     call clear_dneu_C()
   end subroutine gemini_main
   
   
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,rhovs1,rhoes,J1,E1,t,dt,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec,first)
+  subroutine fluid_adv(t,dt,ymd,UTsec,first)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  ns,vs1,Ts
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) ::  vs2,vs3
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer, intent(in) :: J1
-    !! needed for thermal conduction in electron population
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1
-    !! will have ambipolar field added into it in this procedure...
     real(wp), intent(in) :: t,dt
-    !! grid structure variable
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(in) :: vn1,vn2,vn3,Tn
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     logical, intent(in) :: first  !< first time step
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
-    !! intent(out)
     integer :: isp
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
-    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,size(ns,4)) :: vs1i
-    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,size(ns,4)) :: vs2i
-    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3,size(ns,4)) :: vs3i
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q    ! artificial viscosity
     real(wp) :: gavg,Tninf
     
     ! pull solar indices from module type
     call get_solar_indices_C(f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
-    call v12rhov1_C(ns,vs1,rhovs1)
-    call T2rhoe_C(ns,Ts,rhoes) 
+    call v12rhov1_C()
+    call T2rhoe_C() 
    
     ! advection substep for all species
     call cpu_time(tstart)
-    call halo_interface_vels_allspec_C(vs2,vs3,lsp)
-    call interface_vels_allspec_C(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-    call set_global_boundaries_allspec_C(ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-    call halo_allparams_C(ns,rhovs1,rhoes)
-    call sweep3_allparams_C(dt,vs3i,ns,rhovs1,rhoes)
-    call sweep1_allparams_C(dt,vs1i,ns,rhovs1,rhoes)
-    call halo_allparams_C(ns,rhovs1,rhoes)
-    call sweep2_allparams_C(dt,vs2i,ns,rhovs1,rhoes)
-    call rhov12v1_C(ns,rhovs1,vs1)
+    call halo_interface_vels_allspec_C(lsp)
+    call interface_vels_allspec_C(lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    call set_global_boundaries_allspec_C(lsp)
+    call halo_allparams_C()
+    call sweep3_allparams_C(dt)
+    call sweep1_allparams_C(dt)
+    call halo_allparams_C()
+    call sweep2_allparams_C(dt)
+    call rhov12v1_C()
     call cpu_time(tfin)
     if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
     
     ! post advection filling of null cells
-    call clean_param_C(1,ns)
-    call clean_param_C(2,vs1)
+    call clean_param_C(1)
+    call clean_param_C(2)
     
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
-    call VNRicht_artvisc_C(ns,vs1,Q)
-    call RK2_prep_mpi_allspec_C(vs1,vs2,vs3)     ! halos velocity so we can take a divergence without artifacts
-    call compression_C(dt,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep and then converts back to temperature
-    call rhoe2T_C(ns,rhoes,Ts)
-    call clean_param_C(3,Ts)
+    call VNRicht_artvisc_C()
+    call RK2_prep_mpi_allspec_C()     ! halos velocity so we can take a divergence without artifacts
+    call compression_C(dt)   ! this applies compression substep and then converts back to temperature
+    call rhoe2T_C()
+    call clean_param_C(3)
     call cpu_time(tfin)
     if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
@@ -311,27 +275,26 @@ contains
     
     ! Energy diffusion (thermal conduction) substep
     call cpu_time(tstart)
-    call energy_diffusion_C(dt,ns,Ts,J1,nn,Tn)
+    call energy_diffusion_C(dt)
     call cpu_time(tfin)
     if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
     
     ! cleanup and convert to specific internal energy density for sources substeps
-    call clean_param_C(3,Ts)
-    call T2rhoe_C(ns,Ts,rhoes)
+    call clean_param_C(3)
+    call T2rhoe_C()
 
     !> all workers need to "agree" on a gravity and exospheric temperature
     call get_gavg_Tinf_C(gavg,Tninf)
 
     !> solve all source/loss processes
-    call source_loss_allparams_C(dt,t,ymd,UTsec,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                     Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
+    call source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
   
     ! density to be cleaned after source/loss
-    call clean_param_C(3,Ts)
-    call clean_param_C(2,vs1)
-    call clean_param_C(1,ns)
+    call clean_param_C(3)
+    call clean_param_C(2)
+    call clean_param_C(1)
     
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv

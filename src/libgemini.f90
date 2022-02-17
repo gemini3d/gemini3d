@@ -18,7 +18,7 @@
 !!   the grid object
 module gemini3d
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp
@@ -43,12 +43,39 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
             v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
             rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C, &
-            clear_neuBG_C, dateinc_C
+            clear_neuBG_C, dateinc_C, &
+            ns,vs1,vs2,vs3,Ts,rhovs1,rhoes,E1,E2,E3,J1,J2,J3,Phi,Phiall,iver,rhov2,rhov3,B1,B2,B3,rhom,v1,v2,v3,Tn,nn,vn1, &
+            vn2,vn3,vs1i,vs2i,vs3i
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
 type(gemini_cfg) :: cfg
 class(curvmesh), allocatable :: x
+
+!! Pointers to blocks of memory containing state variables
+real(wp), dimension(:,:,:,:), pointer :: fluidvars
+real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+real(wp), dimension(:,:,:,:), pointer :: electrovars
+
+!! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C 
+!!   because mapping C-fortran pointers does not appear to work in most compilers???
+real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts !! fluid state variables
+real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
+real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynamic state variables
+real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3     !! inductive state vars. (for future use - except for B1 which is used for the background field)
+real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3   !! inductive auxiliary
+real(wp), dimension(:,:,:,:), pointer :: nn    !! neutral density array
+real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
+real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
+real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
+
+!> Other variables used by the fluid solvers
+real(wp), dimension(:,:,:,:), pointer :: vs1i
+real(wp), dimension(:,:,:,:), pointer :: vs2i
+real(wp), dimension(:,:,:,:), pointer :: vs3i
+real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
+
+!! temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
 
 !> type for passing C-like parameters between program units
@@ -97,31 +124,22 @@ contains
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_alloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom, &
-                                    electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3,Phi
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
+  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: electrovarsC
 
     !> one contiguous block for overall simulation data
-    !allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp+9))
     allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidvar_pointers(fluidvars)
 
     !> fluid momentum and energy density variables
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp))
-    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes)
+    call fluidauxvar_pointers(fluidauxvars)
 
     !> electrodynamic state variables (lx1,lx2,lx3)
     allocate(electrovars(lx1,lx2,lx3,7))
-    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call electrovar_pointers(electrovars)
 
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
     allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
@@ -138,13 +156,23 @@ contains
       allocate(iver(lx2,lx3,lwave))
       iver = 0
     end if 
+
+    !> allocate space for some arrays needed for fluid solves
+    allocate(vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
+    allocate(vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
+    allocate(vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
+    allocate(Q(1:lx1,1:lx2,1:lx3,1:lsp))
+
+    !> set the C pointers to the location for the memory blocks that we allocated
+    fluidvarsC=c_loc(fluidvars)
+    fluidauxvarsC=c_loc(fluidauxvars)
+    electrovarsC=c_loc(electrovars)
   end subroutine
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
-  subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts) bind(C)
+  subroutine fluidvar_pointers(fluidvars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
 
     if (.not. associated(fluidvars)) error stop ' Attempting to bind fluid state vars to unassociated memory!'
 
@@ -158,9 +186,8 @@ contains
 
 
   !> bind pointers for auxiliary fluid variables to a contiguous block of memory
-  subroutine fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes) bind(C)
+  subroutine fluidauxvar_pointers(fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
 
     if (.not. associated(fluidauxvars)) error stop ' Attempting to bind aux fluid state vars to unassociated memory!'
 
@@ -171,9 +198,8 @@ contains
 
 
   !> bind pointers for electomagnetic state variables to a contiguous block of memory
-  subroutine electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi) bind(C)
+  subroutine electrovar_pointers(electrovars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3,Phi    
     
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
@@ -189,18 +215,8 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc(fluidvars,ns,vs1,vs2,vs3,Ts,fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom,& 
-                                      electrovars,E1,E2,E3,J1,J2,J3,Phi,nn,Tn,vn1,vn2,vn3,iver) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
-    real(wp), dimension(:,:,:), pointer, intent(inout) ::  E1,E2,E3,J1,J2,J3,Phi
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
+  subroutine gemini_dealloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
+    type(c_ptr), intent(inout) :: fluidvarsC, fluidauxvarsC, electrovarsC
 
     deallocate(fluidvars)    
     nullify(ns,vs1,vs2,vs3,Ts)
@@ -220,15 +236,21 @@ contains
     if (cfg%flagglow /= 0) then
       deallocate(iver)
     end if 
+
+    deallocate(vs1i,vs2i,vs3i,Q)
+
+    if (associated(Phiall)) deallocate(Phiall)
+
+    fluidvarsC=c_null_ptr
+    fluidauxvarsC=c_null_ptr
+    electrovarsC=c_null_ptr
   end subroutine
 
 
   !> set start values for some variables
-  subroutine set_start_values(it,t,tout,tglowout,tneuBG, &
-                              rhov2,rhov3,v2,v3,B2,B3,B1) bind(C)
+  subroutine set_start_values(it,t,tout,tglowout,tneuBG) bind(C)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,v2,v3,B2,B3,B1
 
     !> Initialize some variables need for time stepping and output 
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
@@ -271,13 +293,11 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid,nn,Tn,vn1,vn2,vn3) bind(C)
+  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C)
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: Tn,vn1,vn2,vn3
 
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
   end subroutine init_neutralBG_C
@@ -320,27 +340,19 @@ contains
 
 
   !> convert velocity to momentum density
-  subroutine v12rhov1_C(ns,vs1,rhovs1) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,vs1
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1   ! possible issues with lbound here, may need to be pointer
-
+  subroutine v12rhov1_C() bind(C)
     call v12rhov1(ns,vs1,rhovs1)
   end subroutine v12rhov1_C
 
 
   !> convert temperature to specific internal energy density
-  subroutine T2rhoe_C(ns,Ts,rhoes) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,Ts
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes    ! possible issues with lbound here, maybe convert to pointer
-    
+  subroutine T2rhoe_C() bind(C)
     call T2rhoe(ns,Ts,rhoes)
   end subroutine T2rhoe_C
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_C(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
-    real(wp), dimension(:,:,:,:), intent(inout) :: vs1i,vs2i,vs3i
+  subroutine interface_vels_allspec_C(lsp) bind(C)
     integer, intent(in) :: lsp
 
     call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
@@ -348,110 +360,84 @@ contains
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams_C(dt,vs3i,ns,rhovs1,rhoes) bind(C)
+  subroutine sweep3_allparams_C(dt) bind(C)
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:,:), intent(in) :: vs3i
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
 
     call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   end subroutine sweep3_allparams_C
-  subroutine sweep1_allparams_C(dt,vs1i,ns,rhovs1,rhoes) bind(C)
+  subroutine sweep1_allparams_C(dt) bind(C)
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:,:), intent(in) :: vs1i
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
 
     call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
   end subroutine sweep1_allparams_C
-  subroutine sweep2_allparams_C(dt,vs2i,ns,rhovs1,rhoes) bind(C)
+  subroutine sweep2_allparams_C(dt) bind(C)
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:,:), intent(in) :: vs2i
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes
 
     call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
   end subroutine sweep2_allparams_C
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1_C(ns,rhovs1,vs1) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1
-
+  subroutine rhov12v1_C() bind(C)
     call rhov12v1(ns,rhovs1,vs1)
   end subroutine rhov12v1_C
 
 
   !> compute artifical viscosity
-  subroutine VNRicht_artvisc_C(ns,vs1,Q) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns,vs1
-    real(wp), dimension(:,:,:,:), intent(inout) :: Q
-
+  subroutine VNRicht_artvisc_C() bind(C)
     call VNRicht_artvisc(ns,vs1,Q)
   end subroutine VNRicht_artvisc_C
 
 
   !> compression substep for fluid solve
-  subroutine compression_C(dt,vs1,vs2,vs3,Q,rhoes) bind(C)
+  subroutine compression_C(dt) bind(C)
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: vs1,vs2,vs3
-    real(wp), dimension(:,:,:,:), intent(in) :: Q
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
 
     call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
   end subroutine compression_C
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T_C(ns,rhoes,Ts) bind(C)
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhoes
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: Ts
+  subroutine rhoe2T_C() bind(C)
 
     call rhoe2T(ns,rhoes,Ts)
   end subroutine rhoe2T_C
 
 
   !> deal with null cell solutions
-  subroutine clean_param_C(iparm,parm) bind(C)
+  subroutine clean_param_C(iparm) bind(C)
     integer, intent(in) :: iparm
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: parm
+    real(wp), dimension(:,:,:,:), pointer :: parm
     
+    select case (iparm)
+      case (1)
+        parm=>ns
+      case (2)
+        parm=>vs1
+      case (3)
+        parm=>Ts
+      case default
+        error stop '  libgemini:clean_params_C(); invalid parameter selected'
+    end select
     call clean_param(x,iparm,parm)
   end subroutine clean_param_C
 
 
   !> diffusion of energy
-  subroutine energy_diffusion_C(dt,ns,Ts,J1,nn,Tn) bind(C)
+  subroutine energy_diffusion_C(dt) bind(C)
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: ns
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: Ts
-    real(wp), dimension(:,:,:), pointer, intent(in) :: J1
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(in) :: Tn
 
     call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
   end subroutine energy_diffusion_C
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,E1,Q,f107a,f107,nn,vn1,vn2,vn3,Tn, &
-                                     first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf) bind(C)
+  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C)
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), pointer, intent(in) :: E1
-    real(wp), dimension(:,:,:,:), intent(in) :: Q
     real(wp), intent(in) :: f107a,f107
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: nn
-    real(wp), dimension(:,:,:), pointer, intent(in) :: vn1,vn2,vn3,Tn
     logical, intent(in) :: first
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
-    real(wp), dimension(:,:,:,:), intent(inout) :: rhovs1,rhoes    
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
     real(wp), intent(in) :: gavg,Tninf
 
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
