@@ -26,7 +26,7 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use pathlib, only : expanduser
-use grid, only: grid_size,lx1,lx2,lx3
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -45,7 +45,8 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C, &
             clear_neuBG_C, dateinc_C, &
             ns,vs1,vs2,vs3,Ts,rhovs1,rhoes,E1,E2,E3,J1,J2,J3,Phi,Phiall,iver,rhov2,rhov3,B1,B2,B3,rhom,v1,v2,v3,Tn,nn,vn1, &
-            vn2,vn3,vs1i,vs2i,vs3i
+            vn2,vn3,vs1i,vs2i,vs3i, &
+            get_subgrid_size_C,get_fullgrid_size_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
@@ -121,6 +122,22 @@ contains
     !> read the size out of the grid file, store in module variables
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
+
+
+  !> returns the subgrid sizes (assuming they are set to the calling procedure
+  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C)
+    integer, intent(inout) :: lx1out,lx2out,lx3out
+
+    lx1out=lx1; lx2out=lx2; lx3out=lx3;
+  end subroutine
+
+
+  !> return full grid extents
+  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C)
+    integer, intent(inout) :: lx1out,lx2allout,lx3allout
+
+    lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
+  end subroutine get_fullgrid_size_C
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
