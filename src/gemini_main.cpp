@@ -125,13 +125,16 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
   int it, iupdate;
   int flagoutput; 
   double v2grid,v3grid;
-  bool first;
+  bool first,flagneuBG
+  int flagdneu;
+  double dtneu,dtneuBG
 
   /* Basic setup */
   mpisetup();   // organize mpi workers
   cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
   get_fullgrid_size_C(&lx1,&lx2all,%lx3all)
   init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
+  get_config_vars_C(&flagneuBG,&flagdneu,&dtneuBG,&dtneu)
 
   /* Get input grid from file */
   read_grid_C();    // read the input grid from file, storage as fortran module object
@@ -152,10 +155,10 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
   BGfield_Lagrangian(&v2grid,&v3grid);
   fprintf(" Initialize precipitation input data...\n");
   init_precipinput(&dt,&t,&ymd[0],&UTsec);
-  fprintf(" Initialize neutral background and input files...\n")
+  fprintf(" Initialize neutral background and input files...\n");
   msisinit_C();
   init_neutralBG_C(&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
-  init_neutralperturb_C(&dt,&ymd[0],&UTsec);   // FIXME: why no time variable input???
+  init_neutralperturb_C(&dt,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
   get_initial_drifts();
@@ -191,7 +194,7 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
 
     check_finite_output(&t);
     it=+1; t+=dt; 
-    fprintf(" Time step finished:  %d %d %d %f",ymd[0],ymd[1],ymd[2],UTsec)
+    fprintf(" Time step finished:  %d %d %d %f",ymd[0],ymd[1],ymd[2],UTsec);
     check_dryrun();
     check_fileoutput(&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec); 
   }
@@ -200,6 +203,7 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
   gemini_dealloc(fluidvars,fluidauxvars,electrovars);
   clear_neutralBG_C();
   clear_dneu_C();
-return;
+
+  return;
 }
 

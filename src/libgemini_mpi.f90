@@ -13,9 +13,8 @@ use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield
-use neutral_perturbations, only: init_neutralperturb
+use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal, only : dt_comm
-use neutral_perturbations, only: neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use sanity_check, only : check_finite_pertub, check_finite_output
 use potential_comm,only : electrodynamics
 use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
