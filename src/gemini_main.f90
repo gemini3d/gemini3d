@@ -21,11 +21,11 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg,x,init_precipinput_C,msisinit_C, &
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_C,msisinit_C, &
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
                       rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C
+                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, get_config_vars_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -76,8 +76,6 @@ contains
     !! UT (s)
     integer, dimension(3) :: ymd
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
-      !> STATE VARIABLES
-    !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
     type(c_ptr) :: fluidvarsC    ! large data block for holding gemini fluid variables
     type(c_ptr) :: fluidauxvarsC   ! aux variables memory block for fluid parms
     type(c_ptr) :: electrovarsC   ! large block of data for electrodynamic variables (excluding mag. fields)
@@ -100,11 +98,15 @@ contains
     !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
     integer :: lx1,lx2,lx3,lx2all,lx3all
+    logical :: flagneuBG
+    integer :: flagdneu
+    real(wp) :: dtneu,dtneuBG
     
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
     call cli_config_gridsize(p,lid2in,lid3in)
     call get_fullgrid_size_C(lx1,lx2all,lx3all)
+    call get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu)
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
@@ -158,11 +160,11 @@ contains
       call dt_select_C(it,t,tout,tglowout,dt)
     
       !> get neutral background
-      if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
+      if ( it/=1 .and. flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
         call neutral_atmos_winds_C(ymd,UTsec)   ! load background states into module variables
         call neutral_atmos_wind_update_C(v2grid,v3grid)    ! apply to variables in this program unit
-        tneuBG=tneuBG+cfg%dtneuBG
+        tneuBG=tneuBG+dtneuBG
         if (mpi_cfg%myid==0) then
           call cpu_time(tfin)
           print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
@@ -170,7 +172,7 @@ contains
       end if
     
       !> get neutral perturbations
-      if (cfg%flagdneu==1) then
+      if (flagdneu==1) then
         call cpu_time(tstart)
         call neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid)
         if (mpi_cfg%myid==0 .and. debug) then
@@ -202,7 +204,7 @@ contains
       !> update time variables
       it = it + 1
       t = t + dt
-      if (mpi_cfg%myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
+      if (mpi_cfg%myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
       call dateinc_C(dt,ymd,UTsec)
       if (mpi_cfg%myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing

@@ -46,7 +46,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             clear_neuBG_C, dateinc_C, &
             ns,vs1,vs2,vs3,Ts,rhovs1,rhoes,E1,E2,E3,J1,J2,J3,Phi,Phiall,iver,rhov2,rhov3,B1,B2,B3,rhom,v1,v2,v3,Tn,nn,vn1, &
             vn2,vn3,vs1i,vs2i,vs3i, &
-            get_subgrid_size_C,get_fullgrid_size_C
+            get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
@@ -122,6 +122,17 @@ contains
     !> read the size out of the grid file, store in module variables
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
+
+
+  !> return some data from cfg that is needed in the main program
+  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C)
+    logical, intent(inout) :: flagneuBG
+    integer, intent(inout) :: flagdneu
+    real(wp), intent(inout) :: dtneuBG,dtneu
+
+    flagneuBG=cfg%flagneuBG; flagdneu=cfg%flagdneu; 
+    dtneuBG=cfg%dtneuBG; dtneu=cfg%dtneu
+  end subroutine get_config_vars_C
 
 
   !> returns the subgrid sizes (assuming they are set to the calling procedure
