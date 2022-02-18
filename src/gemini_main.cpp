@@ -109,3 +109,65 @@ if (ierr != 0) return EXIT_FAILURE;
 
 return EXIT_SUCCESS;
 }
+
+
+// top-level module calls for gemini simulation
+void gemini_main(struct param* ps, int* plid2in, int* plid3in){
+  int ierr;
+  int lx2all,lx3all
+  double UTsec;
+  int[3] ymd; 
+  double** fluidvars, fluidauxvars, electrovars;    // pointers modifiable by fortran
+  double t=0, dt=1e-6;
+  double tout, tneuBG, tglowout, tdur, tmilestone;
+  double tstart, tfin;
+  int it, iupdate;
+  int flagoutput; 
+  double v2grid,v3grid;
+
+  /* Basic setup */
+  mpisetup();   // organize mpi workers
+  cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
+  // FIXME: need to have this also return the size along x1
+  init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
+
+  /* Get input grid from file */
+  read_grid_C();    // read the input grid from file, storage as fortran module object
+
+  /* Allocate memory and get pointers to blocks of data */
+  gemini_alloc(fluidvars,fluidauxvars,electrovars);
+  outdir_fullgridvaralloc(lx1,lx2all,lx3all);
+
+  /* initialize state variables from input file */ 
+  get_initial_state(&UTsec,&ymd[0],&tdur);
+  set_start_values(&it,&y,&tout,&tglowout,&tneuBG);
+
+  /* initialize other file input data */
+  fprintf(" Initializing electric field input data...");
+  init_Efieldinput(&dt,&t,&ymd[0],&UTsec);
+  pot2perpfield();
+  BGfield_Lagrangian(&v2grid,&v3grid);
+  fprintf(" Initialize precipitation input data...");
+  init_precipinput(&dt,&t,&ymd[0],&UTsec);
+  fprintf(" Initialize neutral background and input files...")
+  msisinit_C();
+  init_neutralBG_C(&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
+  init_neutralperturb_C(&dt,&ymd[0],&UTsec);   // FIXME: why no time variable input???
+
+  /* Compute initial drift velocity */
+  get_initial_drifts();
+
+  /* Control console printing for */
+  set_update_cadence(&iupdate);
+
+  while(t<tdur){
+
+  }
+
+  /* Call deallocation procedures */
+  gemini_dealloc(fluidvars,fluidauxvars,electrovars);
+  clear_neutralBG_C();
+  clear_dneu_C();
+return;
+}
+

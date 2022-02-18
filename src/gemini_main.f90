@@ -88,7 +88,7 @@ contains
     !! time for next output and time between outputs
     real(wp) :: tstart,tfin
     !! temp. vars. for measuring performance of code blocks
-    integer :: it,isp,iupdate
+    integer :: it,iupdate
     !! time and species loop indices
     real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
       !> WORK ARRAYS
@@ -229,7 +229,6 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     logical, intent(in) :: first  !< first time step
-    integer :: isp
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
