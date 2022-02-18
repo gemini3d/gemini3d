@@ -366,20 +366,32 @@ contains
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
       do isp=1,lsp
-        pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
-        !! compute pressure from n,T
-    !      print*, myid,isp,minval(pressure(1:lx1,1:lx2,1:lx3)),maxval(pressure(1:lx1,1:lx2,1:lx3))
-        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-        !! boundary fill via haloing
-        gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-        !! compute gradient x2,x3 components
-        gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-                  +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+!        pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+!        !! compute pressure from n,T
+!    !      print*, myid,isp,minval(pressure(1:lx1,1:lx2,1:lx3)),maxval(pressure(1:lx1,1:lx2,1:lx3))
+!        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+!        !! boundary fill via haloing
+!        gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!        !! compute gradient x2,x3 components
+!        gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+!                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+!                  +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+!        vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
+!                  -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+!                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+
+         !> this behaves better when we take the gradient of log pressure
+         pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
+         call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+         gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+         gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+         vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                   +muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
         vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                  -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+                   -muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
       end do
     end if
   
