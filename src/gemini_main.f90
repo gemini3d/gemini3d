@@ -17,7 +17,7 @@ program Gemini3D_main
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: lx1,lx2,lx3,lx2all,lx3all
+!use grid, only: lx1,lx2,lx3,lx2all,lx3all
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 
 !> main gemini libraries
@@ -25,7 +25,7 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,cfg
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
                       rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C,clear_neuBG_C,dateinc_C
+                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -92,7 +92,6 @@ contains
     !! time and species loop indices
     real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
       !> WORK ARRAYS
-    real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
     real(wp) :: tglowout,tdur
     !! time for next GLOW output
     !> Temporary variable for toggling full vs. other output
@@ -100,10 +99,12 @@ contains
     real(wp) :: tmilestone = 0
     !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
+    integer :: lx1,lx2,lx3,lx2all,lx3all
     
     !> initialize message passing
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
     call cli_config_gridsize(p,lid2in,lid3in)
+    call get_fullgrid_size_C(lx1,lx2all,lx3all)
     
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
@@ -111,6 +112,7 @@ contains
     
     !> load the grid data from the input file and store in gemini module
     call read_grid_C()
+    call get_subgrid_size_C(lx1,lx2,lx3)
     
     !> Allocate space for solutions
     call gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC)
