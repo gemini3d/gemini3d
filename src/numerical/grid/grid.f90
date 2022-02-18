@@ -61,7 +61,6 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
     g1=>g1in; g2=>g2in; g3=>g3in
   end subroutine bind_grav_ptrs
 
-
   subroutine grid_size(indatsize)
   !! CHECK THE SIZE OF THE GRID TO BE LOADED AND SET SIZES IN THIS MODULE (NOT IN STRUCTURE THOUGH)
     character(*), intent(in) :: indatsize
