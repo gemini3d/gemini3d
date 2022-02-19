@@ -112,10 +112,11 @@ return EXIT_SUCCESS;
 
 
 // top-level module calls for gemini simulation
-void gemini_main(struct param* ps, int* plid2in, int* plid3in){
+void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   int ierr;
   int lx1,lx2,lx3;
   int lx2all,lx3all;
+  int lsp;
   double UTsec;
   int[3] ymd; 
   double** fluidvars, fluidauxvars, electrovars;    // pointers modifiable by fortran
@@ -138,20 +139,23 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
 
   /* Get input grid from file */
   read_grid_C();    // read the input grid from file, storage as fortran module object
-  get_subgrid_size(&lx1,&lx2,&lx3)   // once grid is input we need to know the sizes
+
+  /* Main needs to know the grid sizes and species numbers */
+  get_subgrid_size(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
+  get_species_size(&lsp);
 
   /* Allocate memory and get pointers to blocks of data */
   gemini_alloc(fluidvars,fluidauxvars,electrovars);
-  outdir_fullgridvaralloc(lx1,lx2all,lx3all);
+  outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);
 
   /* initialize state variables from input file */ 
   get_initial_state(&UTsec,&ymd[0],&tdur);
-  set_start_values(&it,&y,&tout,&tglowout,&tneuBG);
+  set_start_values(&it,&t,&tout,&tglowout,&tneuBG);
 
   /* initialize other file input data */
   fprintf(" Initializing electric field input data...\n");
   init_Efieldinput(&dt,&t,&ymd[0],&UTsec);
-  pot2perpfield();
+  pot2perpfield_C();
   BGfield_Lagrangian(&v2grid,&v3grid);
   fprintf(" Initialize precipitation input data...\n");
   init_precipinput(&dt,&t,&ymd[0],&UTsec);
@@ -163,33 +167,31 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
   /* Compute initial drift velocity */
   get_initial_drifts();
 
-  /* Control console printing for */
+  /* Control console printing for, actually superfluous FIXME */
   set_update_cadence(&iupdate);
 
   while(t<tdur){
     dt_select_C();
-    
-    // FIXME: need to make sure main program has access to flagneuBG,dtneuBG
+
+    // neutral data
     if (it~=1 .and. flagneuBG .and. t>tneuBG){
-      neutral_atmos_winds_C(&ymd[0],UTsec);
-      neutral_atmos_wind_update_C(v2grid,v3grid);
+      neutral_atmos_winds_C(&ymd[0],&UTsec);
+      neutral_atmos_wind_update_C(&v2grid,&v3grid);
       tneuBG+=dtneuBG;
       fprintf(" Computed neutral background...\n");
     }
-
-    // FIXME: need access to flagdneu
     if (flagdneu==1){
       neutral_perturb_C(&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
       fprintf(" Computed neutral perturbations...\n");
     }
 
     // call electrodynamics solution
-    electrodynamics_C(&it,&it,&dt,&ymd[0],&UTsec);
+    electrodynamics_C(&it,&t,&dt,&ymd[0],&UTsec);
     fprintf(" Computed electrodynamics solutions...\n");
 
     // advance the fluid state variables
     first=it==1;
-    fluid_adv(t,dt,ymd,UTsec,first);
+    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp);
     fprint(" Computed fluid update...\n");
 
     check_finite_output(&t);
@@ -207,3 +209,49 @@ void gemini_main(struct param* ps, int* plid2in, int* plid3in){
   return;
 }
 
+
+void fluid_adv(double* pt, double* pdt, int* ymd, double* pUTsec, bool* pfirst){
+  double f107,f107a;
+  double gavg,Tninf;
+  int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
+
+  /* Set up variables for the time step */ 
+  get_solar_indices_C(&f107,&f107a);   // FIXME: do we really need to return the indices???
+  v12rhov1();
+  T2rhoe();
+
+  /* Advection substep */
+  halo_interface_vels_allspec_C(plsp);
+  interface_vels_allspec(plsp);
+  set_global_boundaries_allspec_C(plsp);
+  halo_allparams_C();
+  sweep3_allparams_C(pdt);
+  sweep1_allparams_C(pdt);
+  halo_allparams_C();
+  sweep2_allparams_C(pdt);
+  rho12v1_C();
+  clean_param_C(&one);
+  claen_param_C(&two);
+
+  /* Compression substep */
+  VNRicht_artvisc_C();
+  RK2_prep_mpi_allspec_C();
+  compression(pdt);
+  rhoe2T();
+  clean_param(&three);
+
+  /* Energy diffusion substep */
+  energy_diffusion_C(pdt);
+  clean_param_C(&three);
+  T2rhoe_C();
+
+  /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
+  get_gavg_Tninf_C(&gavg,&Tninf);
+
+  /* Sources substep and finalize solution for this time step */
+  source_loss_allparams_C(pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
+  clean_param_C(&three); clean_param_C(&two); clean_param_C(&one);
+
+  // Fix electron veloc???
+  return;
+}
