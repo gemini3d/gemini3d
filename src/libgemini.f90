@@ -46,7 +46,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             clear_neuBG_C, dateinc_C, &
             ns,vs1,vs2,vs3,Ts,rhovs1,rhoes,E1,E2,E3,J1,J2,J3,Phi,Phiall,iver,rhov2,rhov3,B1,B2,B3,rhom,v1,v2,v3,Tn,nn,vn1, &
             vn2,vn3,vs1i,vs2i,vs3i, &
-            get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C
+            get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
 !!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
@@ -149,6 +149,14 @@ contains
 
     lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
   end subroutine get_fullgrid_size_C
+
+
+  !> return number of species from phys_consts module
+  subroutine get_species_size_C(lspout) bind(C)
+    integer, intent(inout) :: lspout
+
+    lspout=lsp
+  end subroutine get_species_size_C
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
