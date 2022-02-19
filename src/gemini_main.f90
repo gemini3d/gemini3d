@@ -16,7 +16,7 @@ program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use phys_consts, only : lnchem, lwave, lsp, wp, debug
+use phys_consts, only : lnchem, lwave, wp, debug
 !use grid, only: lx1,lx2,lx3,lx2all,lx3all
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 
@@ -25,7 +25,8 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,ini
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
                       rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, get_config_vars_C
+                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, get_config_vars_C, &
+                      get_species_size_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -97,7 +98,7 @@ contains
     real(wp) :: tmilestone = 0
     !> Describing Lagrangian grid (if used)
     real(wp) :: v2grid,v3grid
-    integer :: lx1,lx2,lx3,lx2all,lx3all
+    integer :: lx1,lx2,lx3,lx2all,lx3all,lsp
     logical :: flagneuBG
     integer :: flagdneu
     real(wp) :: dtneu,dtneuBG
@@ -114,8 +115,11 @@ contains
     
     !> load the grid data from the input file and store in gemini module
     call read_grid_C()
+
+    !> Sizes of state variable
     call get_subgrid_size_C(lx1,lx2,lx3)
-    
+    call get_species_size_C(lsp)
+
     !> Allocate space for solutions
     call gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC)
 
@@ -191,7 +195,7 @@ contains
     
       !> update fluid variables
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-      call fluid_adv(t,dt,ymd,UTsec, first=(it==1) )
+      call fluid_adv(t,dt,ymd,UTsec,(it==1),lsp)
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -226,13 +230,14 @@ contains
   
   
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(t,dt,ymd,UTsec,first)
+  subroutine fluid_adv(t,dt,ymd,UTsec,first,lsp)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     logical, intent(in) :: first  !< first time step
+    integer, intent(in) :: lsp
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
