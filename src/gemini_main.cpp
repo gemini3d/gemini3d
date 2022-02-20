@@ -121,9 +121,9 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   int lsp;
   double UTsec;
   int ymd[3]; 
-  double** fluidvars;
-  double** fluidauxvars;
-  double** electrovars;    // pointers modifiable by fortran
+  double* fluidvars;
+  double* fluidauxvars;
+  double* electrovars;    // pointers modifiable by fortran
   double t, dt=1e-6;
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
   double tstart, tfin;
@@ -159,7 +159,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Allocate memory and get pointers to blocks of data */
   printf(" C is about to call allocation procedure...\n");
   printf(" pointer sizes:  %d %d",sizeof(fluidvars),sizeof(fluidauxvars));
-  gemini_alloc(fluidvars,fluidauxvars,electrovars);
+  gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);
   outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);
   printf(" C later thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
 
@@ -224,7 +224,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
 
   /* Call deallocation procedures */
-  gemini_dealloc(fluidvars,fluidauxvars,electrovars);
+  gemini_dealloc(&fluidvars,&fluidauxvars,&electrovars);
   clear_neuBG_C();
   clear_dneu_C();
 
