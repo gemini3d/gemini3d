@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   // Prepare Gemini3D struct
   std::strncpy(s.out_dir, out_dir.c_str(), LMAX);
 */
-  std::strncpy(s.out_dir,"~/simulations/raid/GDI_MR_small_C/",LMAX);
+  std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C/",LMAX);
   s.fortran_cli = false;
   s.debug = false;
   s.dryrun = false;
@@ -124,8 +124,8 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   double** fluidvars;
   double** fluidauxvars;
   double** electrovars;    // pointers modifiable by fortran
-  double t=0, dt=1e-6;
-  double tout, tneuBG, tglowout, tdur, tmilestone;
+  double t, dt=1e-6;
+  double tout, tneuBG, tglowout, tdur, tmilestone=0;
   double tstart, tfin;
   int it, iupdate;
   int flagoutput; 
@@ -139,23 +139,27 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   mpisetup_C();   // organize mpi workers
   cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);
-  printf(" C initially thinks the full array sizes are:  %d %d %d",lx1,lx2all,lx3all); 
+  printf(" C initially thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
   init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
   get_config_vars_C(&flagneuBG,&flagdneu,&dtneuBG,&dtneu);
+  printf("C flags: %d %d %f %f\n ",flagneuBG,flagdneu,dtneuBG,dtneu);
+  printf("C process grid split: %d %d\n ",*plid2in,*plid3in);
 
   /* Get input grid from file */
+  printf(" C pregrid thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
   read_grid_C();    // read the input grid from file, storage as fortran module object
 
   /* Main needs to know the grid sizes and species numbers */
-  printf(" C now thinks the full array sizes are:  %d %d %d",lx1,lx2all,lx3all); 
+  printf(" C now thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
   printf(" C calls to get size info...");
   get_subgrid_size_C(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
   get_species_size_C(&lsp);
-  printf(" C initially thinks the subarray sizes are:  %d %d %d %d",lx1,lx2,lx3,lsp);
+  printf(" C initially thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
 
   /* Allocate memory and get pointers to blocks of data */
   gemini_alloc(fluidvars,fluidauxvars,electrovars);
   outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);
+  printf(" C later thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
 
   /* initialize state variables from input file */ 
   get_initial_state(&UTsec,&ymd[0],&tdur);
@@ -180,10 +184,11 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_update_cadence(&iupdate);
 
   printf(" #### starting main time iterations ### \n");
-  printf(" C thinks the subarray sizes are:  %d %d %d %d",lx1,lx2,lx3,lsp);
-  printf(" C thinks fullgrid array sizes are:  %d %d",lx2all,lx3all);
+  printf(" C thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
+  printf(" C thinks fullgrid array sizes are:  %d %d\n",lx2all,lx3all);
   while(t<tdur){
     dt_select_C(&it,&t,&tout,&tglowout,&dt);
+    printf(" ...Selected time step of:  %f \n",dt);
 
     // neutral data
     if (it!=1 && flagneuBG && t>tneuBG){
@@ -198,7 +203,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
     }
 
     // call electrodynamics solution
-    printf(" Start electro solution...");
+    printf(" Start electro solution...\n");
     electrodynamics_C(&it,&t,&dt,&ymd[0],&UTsec);
     printf(" Computed electrodynamics solutions...\n");
 
@@ -208,10 +213,12 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
     printf(" Computed fluid update...\n");
 
     check_finite_output_C(&t);
-    it=+1; t+=dt; 
-    printf(" Time step finished:  %d %d %d %f",ymd[0],ymd[1],ymd[2],UTsec);
+    it+=1; t+=dt; 
+    dateinc_C(&dt,&ymd[0],&UTsec);
+    printf(" Time step %d finished:  %d %d %d %f %f\n",it,ymd[0],ymd[1],ymd[2],UTsec,t);
     check_dryrun();
-    check_fileoutput(&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec); 
+    check_fileoutput(&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
+    printf(" Output cadence variables:  %f %f %f\n",tout,tglowout,tmilestone);
   }
 
   /* Call deallocation procedures */

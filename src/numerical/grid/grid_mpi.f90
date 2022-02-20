@@ -81,7 +81,8 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   islfin=islstart+lx3-1
   x3=x3all(islstart-2:islfin+2)
   
-  
+ 
+  print*, 'read_grid has size:  ',lx1,lx2,lx3,lx2all,lx3all 
   !! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
   !! right now we just have Cartesian and dipole so it's easy to detect based on x2
   if (maxval(abs(x2))<100) then
@@ -93,6 +94,8 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
     allocate(cartmesh::x)
     call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
   end if
+  print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all 
+  print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3
 end subroutine read_grid
 
 subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
