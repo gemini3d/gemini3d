@@ -131,7 +131,7 @@ contains
     real(wp), intent(inout) :: dtneuBG,dtneu
 
     flagneuBG=cfg%flagneuBG; flagdneu=cfg%flagdneu; 
-    dtneuBG=cfg%dtneuBG; dtneu=cfg%dtneu
+    dtneuBG=cfg%dtneuBG; dtneu=cfg%dtneu;
   end subroutine get_config_vars_C
 
 

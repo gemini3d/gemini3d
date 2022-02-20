@@ -265,6 +265,7 @@ DEBUG_POSTFIX .debug
 )
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
+gemini3d_mpi
 MUMPS::MUMPS
 nc4fortran::nc4fortran
 h5fortran::h5fortran
