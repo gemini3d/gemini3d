@@ -4,7 +4,7 @@ module gemini3d_mpi
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: iso_c_binding, only : c_ptr
 use phys_consts, only: wp,debug
-use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown
+use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown, mpisetup
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir,create_outdir_aur
@@ -37,6 +37,12 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
 contains
+  !> call the mpi setup from our module
+  subroutine mpisetup_C() bind(C, name="mpisetup_C")
+    call mpisetup()
+  end subroutine mpisetup_C
+
+
   !> create output directory and allocate full grid potential storage
   subroutine outdir_fullgridvaralloc(lx1,lx2all,lx3all) bind(C)
     integer, intent(in) :: lx1,lx2all,lx3all
@@ -55,7 +61,7 @@ contains
 
 
   !> read in the grid and distribute to workers
-  subroutine read_grid_C() bind(C)
+  subroutine read_grid_C() bind(C, name="read_grid_C")
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
   end subroutine read_grid_C
@@ -173,7 +179,7 @@ contains
 
 
   !> prep simulation for use of Lagrangian grid, if needed
-  subroutine BGfield_Lagrangian(v2grid,v3grid) bind(C)
+  subroutine BGfield_Lagrangian(v2grid,v3grid) bind(C, name="BGfield_Lagrangian")
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
     integer :: lx1,lx2,lx3
@@ -241,7 +247,7 @@ contains
 
 
   !> initialize electric field input data
-  subroutine init_Efieldinput_C(dt,t,ymd,UTsec) bind(C)
+  subroutine init_Efieldinput_C(dt,t,ymd,UTsec) bind(C, name="init_Efieldinput_C")
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -251,7 +257,7 @@ contains
 
 
   !> convert potential to electric field by differentiating
-  subroutine pot2perpfield_C() bind(C)
+  subroutine pot2perpfield_C() bind(C, name="pot2perpfield_C")
     E1 = 0
     call pot2perpfield(Phi,x,E2,E3)    
     if(mpi_cfg%myid==0) then
@@ -264,7 +270,7 @@ contains
 
 
   !> initialize neutral perturbations
-  subroutine init_neutralperturb_C(dt,ymd,UTsec) bind(C)
+  subroutine init_neutralperturb_C(dt,ymd,UTsec) bind(C, name="init_neutralperturb_C")
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -274,7 +280,7 @@ contains
 
 
   !> select time step and throttle if changing too rapidly
-  subroutine dt_select_C(it,t,tout,tglowout,dt) bind(C)
+  subroutine dt_select_C(it,t,tout,tglowout,dt) bind(C, name="dt_select_C")
     integer, intent(in) :: it
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
@@ -300,7 +306,7 @@ contains
 
 
   !> apply neutral perturbations/background and assign to main code variables
-  subroutine neutral_atmos_wind_update_C(v2grid,v3grid) bind(C)
+  subroutine neutral_atmos_wind_update_C(v2grid,v3grid) bind(C, name="neutral_atmos_wind_update_C")
     real(wp), intent(in) :: v2grid,v3grid
 
     call neutral_denstemp_update(nn,Tn)
@@ -309,7 +315,7 @@ contains
 
 
   !> compute neutral perturbations and apply to main code variables
-  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C)
+  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C, name="neutral_perturb_C")
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -321,7 +327,7 @@ contains
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_C(it,t,dt,ymd,UTsec) bind(C)
+  subroutine electrodynamics_C(it,t,dt,ymd,UTsec) bind(C, name="electrodynamics_C")
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
@@ -332,7 +338,7 @@ contains
 
 
   !> check main state variables for finiteness
-  subroutine check_finite_output_C(t) bind(C)
+  subroutine check_finite_output_C(t) bind(C, name="check_finite_output_C")
     real(wp), intent(in) :: t
 
     call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
@@ -340,7 +346,7 @@ contains
 
 
   !> haloing for computing cell interface velocities
-  subroutine halo_interface_vels_allspec_C(lsp) bind(C)
+  subroutine halo_interface_vels_allspec_C(lsp) bind(C, name="halo_interface_vels_allspec_C")
     integer, intent(in) :: lsp
 
     call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)   
@@ -348,7 +354,7 @@ contains
 
 
   !> enforce global boundary conditions
-  subroutine set_global_boundaries_allspec_C(lsp) bind(C)
+  subroutine set_global_boundaries_allspec_C(lsp) bind(C, name="set_global_boundaries_allspec_C")
     integer, intent(in) :: lsp
 
     call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
@@ -356,19 +362,19 @@ contains
 
 
   !> halo all advected parameters
-  subroutine halo_allparams_C() bind(C)
+  subroutine halo_allparams_C() bind(C, name="halo_allparams_C")
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)
   end subroutine halo_allparams_C
 
 
   !> prepare/halo data for compression substep
-  subroutine RK2_prep_mpi_allspec_C() bind(C)
+  subroutine RK2_prep_mpi_allspec_C() bind(C, name="RK2_prep_mpi_allspec_C")
     call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
   end subroutine RK2_prep_mpi_allspec_C
 
 
   !> agree on average value of gravity and exospheric temp
-  subroutine get_gavg_Tinf_C(gavg,Tninf) bind(C)
+  subroutine get_gavg_Tinf_C(gavg,Tninf) bind(C, name="get_gavg_Tninf_C")
     real(wp), intent(inout) :: gavg,Tninf
 
     call get_gavg_Tinf(gavg,Tninf)
@@ -376,7 +382,7 @@ contains
 
 
   !> deallocate module storage for neutral perturbations
-  subroutine clear_dneu_C() bind(C)
+  subroutine clear_dneu_C() bind(C, name="clear_dneu_C")
     call clear_dneu()
   end subroutine clear_dneu_C
 end module gemini3d_mpi

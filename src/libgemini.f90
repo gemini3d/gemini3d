@@ -125,7 +125,7 @@ contains
 
 
   !> return some data from cfg that is needed in the main program
-  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C)
+  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name="get_config_vars_C")
     logical, intent(inout) :: flagneuBG
     integer, intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
@@ -136,7 +136,7 @@ contains
 
 
   !> returns the subgrid sizes (assuming they are set to the calling procedure
-  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C)
+  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C, name="get_subgrid_size_C")
     integer, intent(inout) :: lx1out,lx2out,lx3out
 
     lx1out=lx1; lx2out=lx2; lx3out=lx3;
@@ -144,7 +144,7 @@ contains
 
 
   !> return full grid extents
-  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C)
+  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C, name="get_fullgrid_size_C")
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
 
     lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
@@ -152,7 +152,7 @@ contains
 
 
   !> return number of species from phys_consts module
-  subroutine get_species_size_C(lspout) bind(C)
+  subroutine get_species_size_C(lspout) bind(C, name="get_species_size_C")
     integer, intent(inout) :: lspout
 
     lspout=lsp
@@ -304,7 +304,7 @@ contains
 
 
   !> C binding wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(dt,t,ymd,UTsec) bind(C)
+  subroutine init_precipinput_C(dt,t,ymd,UTsec) bind(C, name="init_precipinput_C")
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
@@ -315,7 +315,7 @@ contains
 
 
   !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_C() bind(C)
+  subroutine msisinit_C() bind(C, name="msisinit_C")
     logical :: exists
 
     if(cfg%msis_version == 20) then
@@ -329,7 +329,7 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C)
+  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C, name="init_neutralBG_C")
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -357,7 +357,7 @@ contains
 
 
   !> compute background neutral density, temperature, and wind
-  subroutine neutral_atmos_winds_C(ymd,UTsec) bind(C)
+  subroutine neutral_atmos_winds_C(ymd,UTsec) bind(C, name="neutral_atmos_winds_C")
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
@@ -367,7 +367,7 @@ contains
 
 
   !> get solar indices from cfg struct
-  subroutine get_solar_indices_C(f107,f107a) bind(C)
+  subroutine get_solar_indices_C(f107,f107a) bind(C, name="get_solar_indices_C")
     real(wp), intent(inout) :: f107,f107a
 
     f107=cfg%activ(2)
@@ -376,19 +376,19 @@ contains
 
 
   !> convert velocity to momentum density
-  subroutine v12rhov1_C() bind(C)
+  subroutine v12rhov1_C() bind(C, name="v12rhov1_C")
     call v12rhov1(ns,vs1,rhovs1)
   end subroutine v12rhov1_C
 
 
   !> convert temperature to specific internal energy density
-  subroutine T2rhoe_C() bind(C)
+  subroutine T2rhoe_C() bind(C, name="T2rhoe_C")
     call T2rhoe(ns,Ts,rhoes)
   end subroutine T2rhoe_C
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_C(lsp) bind(C)
+  subroutine interface_vels_allspec_C(lsp) bind(C, name="interface_vels_allspec_C")
     integer, intent(in) :: lsp
 
     call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
@@ -396,17 +396,17 @@ contains
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams_C(dt) bind(C)
+  subroutine sweep3_allparams_C(dt) bind(C, name="sweep3_allparams_C")
     real(wp), intent(in) :: dt
 
     call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   end subroutine sweep3_allparams_C
-  subroutine sweep1_allparams_C(dt) bind(C)
+  subroutine sweep1_allparams_C(dt) bind(C, name="sweep1_allparams_C")
     real(wp), intent(in) :: dt
 
     call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
   end subroutine sweep1_allparams_C
-  subroutine sweep2_allparams_C(dt) bind(C)
+  subroutine sweep2_allparams_C(dt) bind(C, name="sweep2_allparams_C")
     real(wp), intent(in) :: dt
 
     call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
@@ -414,19 +414,19 @@ contains
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1_C() bind(C)
+  subroutine rhov12v1_C() bind(C, name="rhov12v1_C")
     call rhov12v1(ns,rhovs1,vs1)
   end subroutine rhov12v1_C
 
 
   !> compute artifical viscosity
-  subroutine VNRicht_artvisc_C() bind(C)
+  subroutine VNRicht_artvisc_C() bind(C, name="VNRicht_artvisc_C")
     call VNRicht_artvisc(ns,vs1,Q)
   end subroutine VNRicht_artvisc_C
 
 
   !> compression substep for fluid solve
-  subroutine compression_C(dt) bind(C)
+  subroutine compression_C(dt) bind(C, name="compression_C")
     real(wp), intent(in) :: dt
 
     call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
@@ -434,14 +434,14 @@ contains
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T_C() bind(C)
+  subroutine rhoe2T_C() bind(C, name="rhoe2T_C")
 
     call rhoe2T(ns,rhoes,Ts)
   end subroutine rhoe2T_C
 
 
   !> deal with null cell solutions
-  subroutine clean_param_C(iparm) bind(C)
+  subroutine clean_param_C(iparm) bind(C, name="clean_param_C")
     integer, intent(in) :: iparm
     real(wp), dimension(:,:,:,:), pointer :: parm
     
@@ -460,7 +460,7 @@ contains
 
 
   !> diffusion of energy
-  subroutine energy_diffusion_C(dt) bind(C)
+  subroutine energy_diffusion_C(dt) bind(C, name="energy_diffusion_C")
     real(wp), intent(in) :: dt
 
     call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
@@ -468,7 +468,7 @@ contains
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C)
+  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C, name="source_loss_allparams_C")
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -482,13 +482,13 @@ contains
 
 
   !> deallocate module storage for background neutral parameters
-  subroutine clear_neuBG_C() bind(C)
+  subroutine clear_neuBG_C() bind(C, name="clear_neuBG_C")
     call clear_neuBG()
   end subroutine clear_neuBG_C
 
 
   !> increment date and time arrays
-  subroutine dateinc_C(dt,ymd,UTsec) bind(C)
+  subroutine dateinc_C(dt,ymd,UTsec) bind(C, name="dateinc_C")
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec
