@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
     std::cerr << "Gemini3D: please give simulation output directory e.g. ~/data/my_sim" << std::endl;
     return EXIT_FAILURE;
   }
-  
+
+/*  
   // simulation directory
   std::string out_dir = expanduser(argv[1]);
   if(out_dir.size() > LMAX) {
@@ -71,13 +72,13 @@ int main(int argc, char **argv) {
   if(ymd.size() != 3) {
     std::cerr << "gemini3d_ini: base:ymd must have 3 elements: " << ini_str << std::endl;
     return EXIT_FAILURE;
-  }
-  
-  
+  } 
   iniparser_freedict(ini);  // close the file
   
   // Prepare Gemini3D struct
   std::strncpy(s.out_dir, out_dir.c_str(), LMAX);
+*/
+  std::strncpy(s.out_dir,"~/simulations/raid/GDI_MR_small_C/",LMAX);
   s.fortran_cli = false;
   s.debug = false;
   s.dryrun = false;
@@ -138,6 +139,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   mpisetup_C();   // organize mpi workers
   cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);
+  printf(" C initially thinks the full array sizes are:  %d %d %d",lx1,lx2all,lx3all); 
   init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
   get_config_vars_C(&flagneuBG,&flagdneu,&dtneuBG,&dtneu);
 
@@ -145,8 +147,11 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_grid_C();    // read the input grid from file, storage as fortran module object
 
   /* Main needs to know the grid sizes and species numbers */
+  printf(" C now thinks the full array sizes are:  %d %d %d",lx1,lx2all,lx3all); 
+  printf(" C calls to get size info...");
   get_subgrid_size_C(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
   get_species_size_C(&lsp);
+  printf(" C initially thinks the subarray sizes are:  %d %d %d %d",lx1,lx2,lx3,lsp);
 
   /* Allocate memory and get pointers to blocks of data */
   gemini_alloc(fluidvars,fluidauxvars,electrovars);
@@ -174,6 +179,9 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Control console printing for, actually superfluous FIXME */
   set_update_cadence(&iupdate);
 
+  printf(" #### starting main time iterations ### \n");
+  printf(" C thinks the subarray sizes are:  %d %d %d %d",lx1,lx2,lx3,lsp);
+  printf(" C thinks fullgrid array sizes are:  %d %d",lx2all,lx3all);
   while(t<tdur){
     dt_select_C(&it,&t,&tout,&tglowout,&dt);
 
@@ -190,6 +198,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
     }
 
     // call electrodynamics solution
+    printf(" Start electro solution...");
     electrodynamics_C(&it,&t,&dt,&ymd[0],&UTsec);
     printf(" Computed electrodynamics solutions...\n");
 
