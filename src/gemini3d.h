@@ -61,6 +61,7 @@ extern void rhoe2T_C();
 extern void energy_diffusion_C(double*);
 extern void source_loss_allparams_C(double*, double*, int*, double*, double*, double*, bool*, double*, double*);
 extern void check_dryrun();
+extern void dateinc_C(double*, int*, double*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw

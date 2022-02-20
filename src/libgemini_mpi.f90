@@ -64,6 +64,7 @@ contains
   subroutine read_grid_C() bind(C, name="read_grid_C")
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
+    print*, 'end read_grid_C:  ',x%lx1,x%lx2,x%lx3
   end subroutine read_grid_C
 
 
