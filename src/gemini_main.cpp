@@ -214,7 +214,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 }
 
 
-void fluid_adv(double* pt, double* pdt, int* ymd, double* pUTsec, bool* pfirst, int* plsp){
+void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp){
   double f107,f107a;
   double gavg,Tninf;
   int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
@@ -242,7 +242,7 @@ void fluid_adv(double* pt, double* pdt, int* ymd, double* pUTsec, bool* pfirst, 
   RK2_prep_mpi_allspec_C();
   compression(pdt);
   rhoe2T_C();
-  clean_param(&three);
+  clean_param_C(&three);
 
   /* Energy diffusion substep */
   energy_diffusion_C(pdt);
