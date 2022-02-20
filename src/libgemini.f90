@@ -200,9 +200,16 @@ contains
     allocate(Q(1:lx1,1:lx2,1:lx3,1:lsp))
 
     !> set the C pointers to the location for the memory blocks that we allocated
-    fluidvarsC=c_loc(fluidvars)
-    fluidauxvarsC=c_loc(fluidauxvars)
-    electrovarsC=c_loc(electrovars)
+    print*, " All allocations complete; now setting C pointers..."
+    print*, c_loc(fluidvars)
+    print*, c_loc(fluidauxvars)
+    print*, c_loc(electrovars)
+    !fluidvarsC=c_loc(fluidvars)
+    !print*, '1'
+    !fluidauxvarsC=c_loc(fluidauxvars)
+    !print*, '2'
+    !electrovarsC=c_loc(electrovars)
+    print*, " Done setting C pointers..."
   end subroutine
 
 

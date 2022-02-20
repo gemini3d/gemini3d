@@ -103,7 +103,7 @@ contains
     integer :: flagdneu
     real(wp) :: dtneu,dtneuBG
     
-    !> initialize message passing
+    !> initialize message passing.  FIXME: needs to be msissetup_C()
     call mpisetup(); if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
     call cli_config_gridsize(p,lid2in,lid3in)
     call get_fullgrid_size_C(lx1,lx2all,lx3all)
