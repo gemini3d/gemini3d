@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
   // Prepare Gemini3D struct
   std::strncpy(s.out_dir, out_dir.c_str(), LMAX);
 */
-  std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C/",LMAX);
+  std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C_optim/",LMAX);
   s.fortran_cli = false;
   s.debug = false;
   s.dryrun = false;
@@ -151,12 +151,13 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Main needs to know the grid sizes and species numbers */
   printf(" C now thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
-  printf(" C calls to get size info...");
+  printf(" C calls to get size info...\n");
   get_subgrid_size_C(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
   get_species_size_C(&lsp);
   printf(" C initially thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
 
   /* Allocate memory and get pointers to blocks of data */
+  printf(" C is about to call allocation procedure...\n");
   gemini_alloc(fluidvars,fluidauxvars,electrovars);
   outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);
   printf(" C later thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
