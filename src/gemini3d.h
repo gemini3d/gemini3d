@@ -35,8 +35,8 @@ extern void help_gemini_bin();
 extern void cli_config_gridsize(struct params*, int*, int*);
 extern void get_fullgrid_size_C(int*, int*, int*);
 extern void get_config_vars_C(bool*, int*, double*, double*);
-extern void get_subgrid_size(int*, int*, int*);
-extern void get_species_size(int*);
+extern void get_subgrid_size_C(int*, int*, int*);
+extern void get_species_size_C(int*);
 extern void gemini_alloc(double**, double**, double**);
 extern void set_start_values(int*, double*, double*, double*, double*);
 extern void msisinit_C();
@@ -45,7 +45,7 @@ extern void set_update_cadence(int*);
 extern void neutral_atmos_winds_C(int*, double*);
 extern void check_finite_output_C(double*);
 extern void gemini_dealloc(double**, double**, double**);
-extern void clear_neutralBG_C();
+extern void clear_neuBG_C();
 extern void get_solar_indices_C(double*, double*);
 extern void v12rhov1_C();
 extern void T2rhoe_C();
@@ -56,7 +56,7 @@ extern void sweep2_allparams_C(double*);
 extern void rhov12v1_C();
 extern void clean_param_C(int*);
 extern void VNRicht_artvisc_C();
-extern void compression(double*);
+extern void compression_C(double*);
 extern void rhoe2T_C();
 extern void energy_diffusion_C(double*);
 extern void source_loss_allparams_C(double*, double*, int*, double*, double*, double*, bool*, double*, double*);
@@ -64,7 +64,7 @@ extern void check_dryrun();
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
-extern void mpisetup();
+extern void mpisetup_C();
 extern void init_procgrid(int*, int*, int*, int*);
 extern void read_grid_C();
 extern void outdir_fullgridvaralloc(int*, int*, int*);

@@ -135,7 +135,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   void fluid_adv(double*, double*, int*, double*, bool*, int*);
 
   /* Basic setup */
-  mpisetup();   // organize mpi workers
+  mpisetup_C();   // organize mpi workers
   cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);
   init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
@@ -145,8 +145,8 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_grid_C();    // read the input grid from file, storage as fortran module object
 
   /* Main needs to know the grid sizes and species numbers */
-  get_subgrid_size(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
-  get_species_size(&lsp);
+  get_subgrid_size_C(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
+  get_species_size_C(&lsp);
 
   /* Allocate memory and get pointers to blocks of data */
   gemini_alloc(fluidvars,fluidauxvars,electrovars);
@@ -207,7 +207,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Call deallocation procedures */
   gemini_dealloc(fluidvars,fluidauxvars,electrovars);
-  clear_neutralBG_C();
+  clear_neuBG_C();
   clear_dneu_C();
 
   return;
@@ -240,7 +240,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   /* Compression substep */
   VNRicht_artvisc_C();
   RK2_prep_mpi_allspec_C();
-  compression(pdt);
+  compression_C(pdt);
   rhoe2T_C();
   clean_param_C(&three);
 
