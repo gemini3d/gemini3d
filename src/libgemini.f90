@@ -204,12 +204,12 @@ contains
     print*, c_loc(fluidvars)
     print*, c_loc(fluidauxvars)
     print*, c_loc(electrovars)
-    !fluidvarsC=c_loc(fluidvars)
-    !print*, '1'
+    fluidvarsC=c_loc(fluidvars)
+    print*, fluidvarsC 
     !fluidauxvarsC=c_loc(fluidauxvars)
-    !print*, '2'
+    !print*, fluidauxvarsC
     !electrovarsC=c_loc(electrovars)
-    print*, " Done setting C pointers..."
+    !print*, electrovarsC
   end subroutine
 
 
