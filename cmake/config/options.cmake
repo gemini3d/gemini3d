@@ -73,10 +73,7 @@ endif()
 if(dev)
 
 else()
-  set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
-  set(FETCHCONTENT_UPDATES_DISCONNECTED_INIPARSER true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_MATGEMINI true)
-  set(FETCHCONTENT_UPDATES_DISCONNECTED_MSIS2 true)
 endif()
 
 # --- External project generator

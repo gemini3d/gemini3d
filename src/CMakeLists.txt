@@ -168,7 +168,7 @@ EXPORT ${PROJECT_NAME}-targets
 
 if(cpp_frontend)
 
-include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/iniparser.cmake)
+find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
 add_executable(gemini_c.bin gemini_main.cpp pathlib.cpp)
@@ -188,7 +188,7 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-iniparser
+iniparser::iniparser
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)

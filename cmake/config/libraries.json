@@ -3,83 +3,8 @@
   "url": "https://www.dropbox.com/s/tzwho5199ede15v/ref_data.json?dl=1"
 },
 
-"iniparser": {
-  "git": "https://github.com/ndevilla/iniparser.git",
-  "tag": "0a38e85c9cde1e099ca3bf70083bd00f89c3e5b6"
-},
-
-"hwloc": {
-  "url": "https://download.open-mpi.org/release/hwloc/v2.7/hwloc-2.7.0.tar.bz2",
-  "sha256": "028cee53ebcfe048283a2b3e87f2fa742c83645fc3ae329134bf5bb8b90384e0"
-},
-"openmpi": {
-  "url": "https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.2.tar.bz2",
-  "sha256": "9b78c7cf7fc32131c5cf43dd2ab9740149d9d87cadb2e2189f02685749a6b527"
-},
-
-"glow": {
-  "git": "https://github.com/gemini3d/glow.git",
-  "tag": "v0.981.0.11"
-},
-
-"ffilesystem": {
-  "git": "https://github.com/scivision/fortran-filesystem.git",
-  "tag": "v3.2.3"
-},
-
-"h5fortran": {
-  "git": "https://github.com/geospace-code/h5fortran.git",
-  "tag": "v4.4.4"
-},
-"nc4fortran": {
-  "git": "https://github.com/geospace-code/nc4fortran.git",
-  "tag": "v1.4.7"
-},
-
-"zlib1": {
-  "url": "https://zlib.net/zlib1211.zip",
-  "sha256": "d7510a8ee1918b7d0cad197a089c0a2cd4d6df05fee22389f67f115e738b178d"
-},
-"zlib2": {
-  "url" : "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.0.6.tar.gz",
-  "sha256": "8258b75a72303b661a238047cb348203d88d9dddf85d480ed885f375916fcab6"
-},
-"hdf5": {
-  "1.12.1": {
-  "url": "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_1.tar.gz",
-  "sha256": "e6dde173c2d243551922d23a0387a79961205b018502e6a742acb30b61bc2d5f"
-  },
-  "1.10.8": {
-   "url": "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_10_8.tar.gz",
-   "sha256": "6fcaf2e5f10bb758d2d5fafa7bd0fd560d4047faf6b397fe1278c06e4e9f3564"
-   },
- "1.10.7": {
-  "url": "https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_10_7.tar.gz",
-  "sha256": "a1b7c2a477090508365d79bb1356d995a90d5c75e9e3ff0f2bd09d54d8a225d0"
-  }
-},
-
-"hwm14": {
-  "git": "https://github.com/gemini3d/hwm14.git",
-  "tag": "v1.0.2"
-},
-
-"mumps": {
-  "git": "https://github.com/scivision/mumps.git",
-  "tag": "v5.4.1.8",
-  "upstream_version": "5.3.5"
-},
-"scalapack": {
-  "git": "https://github.com/scivision/scalapack.git",
-  "tag": "v2.1.0.29"
-},
-"lapack": {
-  "git": "https://github.com/scivision/lapack.git",
-  "tag": "v3.10.0.3"
-},
-
 "matgemini": {
   "git": "https://github.com/gemini3d/mat_gemini.git",
-  "tag": "v5.1.1"
+  "tag": "v5.4.0"
 }
 }
