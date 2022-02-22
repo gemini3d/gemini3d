@@ -59,6 +59,8 @@ option(matlab "Matlab checks")
 
 set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
+cmake_path(SET CMAKE_MODULE_PATH NORMALIZE ${CMAKE_CURRENT_LIST_DIR}/../Modules/)
+
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)
 

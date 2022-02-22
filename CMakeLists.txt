@@ -36,8 +36,6 @@ include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
 include(cmake/config/libraries.cmake)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
-
 # Fortran filesystem library "ffilesystem"
 include(cmake/ext_libs/ffilesystem.cmake)
 
