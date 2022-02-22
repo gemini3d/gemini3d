@@ -1,8 +1,8 @@
 name: ci
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 3
   CTEST_PARALLEL_LEVEL: 2
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
   push:
@@ -20,9 +20,19 @@ on:
 
 jobs:
 
-  linux:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  linux_mac:
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        msis2: [true, false]
+        hwm14: [true, false]
+        image: [{os: ubuntu-latest, fc: gfortran}, {os: macos-latest, fc: gfortran-11}]
+
+    env:
+      FC: ${{ matrix.image.fc }}
+
+    runs-on: ${{ matrix.image.os }}
 
     steps:
     - uses: actions/checkout@v2
@@ -30,145 +40,17 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Install packages
+    - name: Install packages (Linux)
+      if: matrix.image.os == 'ubuntu-latest'
+      timeout-minutes: 15
       run: |
         sudo apt update -yq
         sudo $(cmake -P scripts/requirements.cmake)
 
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
-      with:
-        repository: gemini3d/external
-        path: gemext
-
-    - name: Install numeric libraries
-      timeout-minutes: 8
-      run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow msis mumps
-        cmake --install $GITHUB_WORKSPACE/gemext/build
-
-    - name: Configure multi
-      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
-
-    - name: Debug build
-      run: cmake --build --preset debug
-
-    - name: Debug unit test
-      run: ctest --preset debug -L unit --output-junit test-debug-unit.xml
-
-    - name: Debug core test
-      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)" --output-junit test-debug-core.xml
-
-
-    - name: Release build
-      run: cmake --build --preset release
-
-    - name: Release unit test
-      run: ctest --preset release -L unit --output-junit test-release-unit.xml
-
-    - name: Release core test
-      run: ctest --preset release -LE unit -E 3d --output-junit test-release-core.xml
-
-    - name: Publish Unit Test Results
-      uses: EnricoMi/publish-unit-test-result-action@v1
-      if: always()
-      with:
-        files: build/test-*.xml
-
-  MSIS-20:
-    needs: linux
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake)
-
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
-      with:
-        repository: gemini3d/external
-        path: gemext
-
-    - name: Install numeric libraries
-      timeout-minutes: 8
-      run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow mumps msis
-        cmake --install $GITHUB_WORKSPACE/gemext/build
-
-    - name: Configure release
-      run: cmake -B build --preset release -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dmsis2:BOOL=true
-
-    - name: Build release
-      run: cmake --build build
-
-    - name: Release unit test
-      run: ctest --test-dir build --preset default -L unit
-
-    - name: Release core test
-      run: ctest --test-dir build --preset default -LE unit -E 3d
-
-
-  HWM14:
-    needs: linux
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake)
-
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
-      with:
-        repository: gemini3d/external
-        path: gemext
-
-    - name: Install numeric libraries
-      timeout-minutes: 8
-      run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow mumps msis hwm14
-        cmake --install $GITHUB_WORKSPACE/gemext/build
-
-    - name: Configure release
-      run: cmake -B build --preset release -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dhwm14:BOOL=true
-
-    - name: Build release
-      run: cmake --build build
-
-    - name: Release unit test
-      run: ctest --test-dir build --preset default -L unit
-
-    - name: Release core test
-      run: ctest --test-dir build --preset default -LE unit -E 3d
-
-
-  macos:
-    runs-on: macos-latest
-    needs: linux
-    timeout-minutes: 30
-
-    env:
-      HOMEBREW_NO_INSTALL_CLEANUP: 1
-      FC: gfortran-11
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install packages
+    - name: Install packages (MacOS)
+      if: matrix.image.os == 'macos-latest'
+      timeout-minutes: 15
       run: $(cmake -P scripts/requirements.cmake)
-      timeout-minutes: 15
 
     - name: Checkout Gemini3D-External
       uses: actions/checkout@v2
@@ -179,12 +61,12 @@ jobs:
     - name: Install numeric libraries
       timeout-minutes: 15
       run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow mumps msis
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build -Dmsis2:BOOL=${{ matrix.msis2 }} --install-prefix=${HOME}/gemlibs
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow hwm14 msis mumps
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: Configure multi
-      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dmsis2:BOOL=${{ matrix.msis2 }} -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
     - name: Debug build
       run: cmake --build --preset debug
