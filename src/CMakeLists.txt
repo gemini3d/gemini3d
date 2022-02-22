@@ -142,6 +142,24 @@ cmake_path(GET msis_loc PARENT_PATH msis_dir)
 target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
 # END WORKAROUND
 
+if(hwm14)
+  # HWM14 data files
+  # due to legacy coding style, HWM14 files need to be in binary directory
+  get_target_property(_def hwm14::hwm14 INTERFACE_COMPILE_DEFINITIONS)
+  string(REGEX MATCH "^DATADIR\=(.+)$" _def "${_def}")
+  set(hwm14_data_dir "${CMAKE_MATCH_1}")
+  set(hwm14_RESOURCE_FILES
+  ${hwm14_data_dir}/hwm123114.bin
+  ${hwm14_data_dir}/dwm07b104i.dat
+  ${hwm14_data_dir}/gd2qd.dat
+  )
+
+  add_custom_command(TARGET gemini.bin POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_RESOURCE_FILES} $<TARGET_FILE_DIR:gemini.bin>
+  COMMAND_EXPAND_LISTS
+  )
+endif(hwm14)
+
 # same link logic applied to src/unit_tests/test_mumps
 
 add_test(NAME unit:gemini_exe_ok COMMAND gemini.bin)
