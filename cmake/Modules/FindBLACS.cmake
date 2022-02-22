@@ -226,11 +226,11 @@ endif(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
-  REQUIRED_VARS BLACS_LIBRARY
-  HANDLE_COMPONENTS)
+REQUIRED_VARS BLACS_LIBRARY
+HANDLE_COMPONENTS
+)
 
 if(BLACS_FOUND)
-# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
 set(BLACS_INCLUDE_DIRS ${BLACS_INCLUDE_DIR})
 set(BLACS_LIBRARIES ${BLACS_LIBRARY})
 

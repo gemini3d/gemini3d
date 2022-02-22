@@ -455,7 +455,7 @@ set(LAPACK_LIBRARIES ${LAPACK_LIBRARY})
 set(LAPACK_INCLUDE_DIRS ${LAPACK_INCLUDE_DIR})
 
 if(LAPACK_FOUND)
-# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
+# need if _FOUND guard as can't overwrite imported target even if bad
   if(NOT TARGET BLAS::BLAS)
     add_library(BLAS::BLAS INTERFACE IMPORTED)
     set_target_properties(BLAS::BLAS PROPERTIES
