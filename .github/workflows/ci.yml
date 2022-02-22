@@ -157,6 +157,7 @@ jobs:
   macos:
     runs-on: macos-latest
     needs: linux
+    timeout-minutes: 30
 
     env:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -176,7 +177,7 @@ jobs:
         path: gemext
 
     - name: Install numeric libraries
-      timeout-minutes: 8
+      timeout-minutes: 15
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
         cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow mumps msis
