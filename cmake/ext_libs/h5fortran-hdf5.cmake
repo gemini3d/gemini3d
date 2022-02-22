@@ -1,5 +1,5 @@
 if(hdf5)
-  include(${CMAKE_CURRENT_LIST_DIR}/h5fortran.cmake)
+  find_package(h5fortran CONFIG REQUIRED)
 else(hdf5)
   add_library(h5fortran ${PROJECT_SOURCE_DIR}/src/vendor/h5fortran_dummy.f90)
 

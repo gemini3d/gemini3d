@@ -1,5 +1,5 @@
 if(netcdf)
-  include(${CMAKE_CURRENT_LIST_DIR}/nc4fortran.cmake)
+  find_package(nc4fortran CONFIG REQUIRED)
 else(netcdf)
   add_library(nc4fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90)
 
