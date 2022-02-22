@@ -37,7 +37,7 @@ include(cmake/config/options.cmake)
 include(cmake/config/libraries.cmake)
 
 # Fortran filesystem library "ffilesystem"
-include(cmake/ext_libs/ffilesystem.cmake)
+find_package(ffilesystem CONFIG REQUIRED)
 
 if(mpi)
   find_package(MPI COMPONENTS C Fortran REQUIRED)
