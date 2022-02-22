@@ -4,7 +4,13 @@ add_subdirectory(unit_tests)
 find_package(msis CONFIG REQUIRED)
 
 # --- HWM14
-add_subdirectory(vendor/nrl_hwm)
+if(hwm14)
+  find_package(hwm14 CONFIG REQUIRED)
+else()
+  add_library(hwm_ifc vendor/hwm14_dummy.f90)
+  add_library(hwm14::hwm_ifc INTERFACE IMPORTED)
+  target_link_libraries(hwm14::hwm_ifc INTERFACE hwm_ifc)
+endif()
 
 # --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
@@ -53,7 +59,7 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm14>
+hwm14::hwm_ifc
 msis::msis_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )
@@ -83,7 +89,6 @@ grid io
 PDEelliptic potential mumps_interface
 mpimod
 autogrid
-hwm_ifc
 hwloc_ifc hwloc_c
 )
 
@@ -121,7 +126,7 @@ MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm14>
+hwm14::hwm_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
