@@ -25,6 +25,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    strategy:
+      matrix:
+        msis2: [true, false]
+        hwm14: [true, false]
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -63,12 +68,12 @@ jobs:
     - name: Install numeric libraries
       timeout-minutes: 8
       run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build --install-prefix=${HOME}/gemlibs
+        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build -Dmsis2:BOOL=${{ matrix.msis2 }} --install-prefix=${HOME}/gemlibs
         cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow msis mumps
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: CMake Configure Ninja Multi-config
-      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs --debug-find
+      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs -Dmsis2:BOOL=${{ matrix.msis2 }} -Dhwm14:BOOL=${{ matrix.hwm14 }} || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs --debug-find
 
     - name: DEBUG build
       run: cmake --build --preset debug
