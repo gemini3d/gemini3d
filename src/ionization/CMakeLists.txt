@@ -10,11 +10,18 @@ if(BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run assert const msis::msis_ifc)
+
 add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
 set_tests_properties(unit:fangIonize PROPERTIES
 TIMEOUT 10
 LABELS unit
 )
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:fangIonize PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
+
 
 if(python)
   add_test(NAME unit:fangIonize:python

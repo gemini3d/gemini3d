@@ -47,6 +47,12 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     LABELS unit
     TIMEOUT 10
     )
+
+    if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+      set_tests_properties(gemini:dump:${t} gemini:dump:check:${t} PROPERTIES
+      ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+      )
+    endif()
   endforeach()
 
 endif()
@@ -78,9 +84,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(test_compiler_vendor PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-add_test(NAME unit:compiler_vendor
-COMMAND $<TARGET_FILE:test_compiler_vendor>
-)
+
+add_test(NAME unit:compiler_vendor COMMAND test_compiler_vendor)
 set_tests_properties(unit:compiler_vendor PROPERTIES
 PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
 LABELS unit
@@ -96,14 +101,22 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
+
+add_test(NAME unit:expand_envvar COMMAND test_expand_envvar)
 set_tests_properties(unit:expand_envvar PROPERTIES
 ENVIRONMENT test__gem=hello
 LABELS unit
 TIMEOUT 10
 )
 
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:expand_envvar unit:compiler_vendor PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
 endif()
+
+endif()
+
 
 # --- io
 configure_file(output.in.f90 output.f90 @ONLY)
