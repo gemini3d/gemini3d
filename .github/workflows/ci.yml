@@ -75,7 +75,7 @@ jobs:
       run: ctest --preset debug -L unit
 
     - name: Debug core test
-      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
+      run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
 
 
     - name: Release build
