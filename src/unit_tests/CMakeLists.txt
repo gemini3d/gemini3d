@@ -34,7 +34,7 @@ configure_file(test_scalapack.in.f90 test_scalapack.f90 @ONLY)
 add_executable(gemini_scalapack ${CMAKE_CURRENT_BINARY_DIR}/test_scalapack.f90)
 target_link_libraries(gemini_scalapack PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
-add_test(NAME unit:scalapack COMMAND $<TARGET_FILE:gemini_scalapack>)
+add_test(NAME unit:scalapack COMMAND gemini_scalapack)
 set_tests_properties(unit:scalapack PROPERTIES
 TIMEOUT 15
 FIXTURES_REQUIRED mpi_fxt
@@ -62,3 +62,9 @@ REQUIRED_FILES ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml
 FIXTURES_REQUIRED scalapack_fxt
 FIXTURES_SETUP mumps_fxt
 )
+
+if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+  set_tests_properties(unit:scalapack unit:mumps_basic PROPERTIES
+  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
+  )
+endif()
