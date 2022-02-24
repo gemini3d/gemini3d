@@ -65,7 +65,7 @@ jobs:
       timeout-minutes: 15
       run: |
         cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build -Dfind:BOOL=true -Dmsis2:BOOL=${{ matrix.msis2 }} --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow hwm14 msis mumps
+        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow hwm14 msis mumps iniparser
         cmake --install $GITHUB_WORKSPACE/gemext/build
 
     - name: Configure multi

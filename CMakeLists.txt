@@ -40,7 +40,7 @@ include(cmake/config/libraries.cmake)
 find_package(ffilesystem CONFIG REQUIRED)
 
 if(mpi)
-  find_package(MPI COMPONENTS C Fortran REQUIRED)
+  find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 else()
   add_subdirectory(src/vendor/mpi_stubs)
 endif()
