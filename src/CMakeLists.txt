@@ -85,13 +85,15 @@ collision
 diffusion fang interp
 ionization
 inputdata precipdata efielddata
-#neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutral
+neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
 exe_frontend
 grid
+mpimod
 autogrid
 hwloc_ifc hwloc_c
 )
@@ -107,7 +109,8 @@ diffusion fang interp
 ionization
 ionization_mpi
 inputdata precipdata efielddata
-# neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutral
+neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 multifluid_mpi
