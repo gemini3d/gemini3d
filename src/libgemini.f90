@@ -201,16 +201,16 @@ contains
 
     !> set the C pointers to the location for the memory blocks that we allocated
     print*, " All allocations complete; now setting C pointers..."
-    print*, c_loc(fluidvars)
-    print*, c_loc(fluidvars(-1,-1,-1,1))
-    print*, c_loc(fluidauxvars)
-    print*, c_loc(electrovars)
+    ! print*, c_loc(fluidvars)
+    ! print*, c_loc(fluidvars(-1,-1,-1,1))
+    ! print*, c_loc(fluidauxvars)
+    ! print*, c_loc(electrovars)
     fluidvarsC=c_loc(fluidvars)
-    print*, fluidvarsC
+    ! print*, fluidvarsC
     fluidauxvarsC=c_loc(fluidauxvars)
-    print*, fluidauxvarsC
+    ! print*, fluidauxvarsC
     electrovarsC=c_loc(electrovars)
-    print*, electrovarsC
+    ! print*, electrovarsC
     !fluidvarsC=c_null_ptr
     !fluidauxvarsC=c_null_ptr
     !electrovarsC=c_null_ptr
