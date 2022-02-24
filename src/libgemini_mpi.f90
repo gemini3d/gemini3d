@@ -7,7 +7,7 @@ use phys_consts, only: wp,debug
 use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown, mpisetup
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
-use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir,create_outdir_aur
+use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
 use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
@@ -47,11 +47,10 @@ contains
   subroutine outdir_fullgridvaralloc(lx1,lx2all,lx3all) bind(C)
     integer, intent(in) :: lx1,lx2all,lx3all
 
-    !> create a place, if necessary, for output datafiles 
+    !> create a place, if necessary, for output datafiles
     if (mpi_cfg%myid==0) then
       call create_outdir(cfg)
-      if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
-    end if  
+    end if
 
     !> fullgrid variable allocations only needed for the potential variable
     if (mpi_cfg%myid==0) then
@@ -86,7 +85,7 @@ contains
         print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
         print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       end if
-    
+
       !! Set start variables accordingly and read in the milestone
       UTsec=UTsectmp
       ymd=ymdtmp
@@ -95,16 +94,16 @@ contains
         print*, 'Treating the following file as initial conditions:  ',filetmp
         print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
       end if
-    
+
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
-    
+
       cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
     else !! start at the beginning
       UTsec = cfg%UTsec0
       ymd = cfg%ymd0
       tdur = cfg%tdur
-    
+
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
     end if
@@ -128,7 +127,7 @@ contains
       endif
       !! close enough to warrant an output now...
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-  
+
       !! We may need to adjust flagoutput if we are hitting a milestone
       flagoutput=cfg%flagoutput
       if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
@@ -148,7 +147,7 @@ contains
         print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
       endif
     end if
-  
+
     !> GLOW file output
     if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
       call cpu_time(tstart)
@@ -203,7 +202,7 @@ contains
     end if
     deallocate(E01,E02,E03)
 
-    if (mpi_cfg%myid==0) then    
+    if (mpi_cfg%myid==0) then
       print*, 'Recomputed initial fields including background:'
       print*, '    ',minval(E1),maxval(E1)
       print*, '    ',minval(E2),maxval(E2)
@@ -217,7 +216,7 @@ contains
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
-    
+
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
@@ -253,14 +252,14 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)    
+    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
   end subroutine init_Efieldinput_C
 
 
   !> convert potential to electric field by differentiating
   subroutine pot2perpfield_C() bind(C, name="pot2perpfield_C")
     E1 = 0
-    call pot2perpfield(Phi,x,E2,E3)    
+    call pot2perpfield(Phi,x,E2,E3)
     if(mpi_cfg%myid==0) then
       print '(A)', 'Recomputed initial dist. fields:'
       print*, '    gemini ',minval(E1),maxval(E1)
@@ -350,7 +349,7 @@ contains
   subroutine halo_interface_vels_allspec_C(lsp) bind(C, name="halo_interface_vels_allspec_C")
     integer, intent(in) :: lsp
 
-    call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)   
+    call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)
   end subroutine halo_interface_vels_allspec_C
 
 

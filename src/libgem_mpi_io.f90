@@ -11,11 +11,10 @@ contains
   !  integer, intent(in) :: lx1,lx2all,lx3all
   !end subroutine outdir_fullgridvaralloc
   module procedure outdir_fullgridvaralloc
-    !> create a place, if necessary, for output datafiles 
+    !> create a place, if necessary, for output datafiles
     if (mpi_cfg%myid==0) then
       call create_outdir(cfg)
-      if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
-    end if  
+    end if
 
     !> fullgrid variable allocations only needed for the potential variable
     if (mpi_cfg%myid==0) then
@@ -48,7 +47,7 @@ contains
         print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
         print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
       end if
-    
+
       !! Set start variables accordingly and read in the milestone
       UTsec=UTsectmp
       ymd=ymdtmp
@@ -57,16 +56,16 @@ contains
         print*, 'Treating the following file as initial conditions:  ',filetmp
         print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
       end if
-    
+
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
-    
+
       cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
     else !! start at the beginning
       UTsec = cfg%UTsec0
       ymd = cfg%ymd0
       tdur = cfg%tdur
-    
+
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
     end if
@@ -98,7 +97,7 @@ contains
       endif
       !! close enough to warrant an output now...
       if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-  
+
       !! We may need to adjust flagoutput if we are hitting a milestone
       flagoutput=cfg%flagoutput
       if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
@@ -118,7 +117,7 @@ contains
         print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
       endif
     end if
-  
+
     !> GLOW file output
     if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
       call cpu_time(tstart)
@@ -146,5 +145,5 @@ contains
         // time(1:2) // ':' // time(3:4) // ':' // time(5:)
       stop "OK: Gemini dry run"
     endif
-  end procedure check_dryrun 
+  end procedure check_dryrun
 end submodule libgem_mpi_io
