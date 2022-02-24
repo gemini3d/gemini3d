@@ -95,9 +95,6 @@ grid
 autogrid
 hwloc_ifc hwloc_c
 )
-if(msis2)
-  list(APPEND gemini_internal_mods msis2mod)
-endif()
 
 set(gemini_mpi_internal_mods
 gemini3d
