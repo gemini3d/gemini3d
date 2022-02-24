@@ -32,7 +32,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
             get_initial_drifts, init_Efieldinput_C, pot2perpfield_C, init_neutralperturb_C, dt_select_C, &
             neutral_atmos_wind_update_C, neutral_perturb_C, electrodynamics_C, check_finite_output_C, &
             halo_interface_vels_allspec_C, set_global_boundaries_allspec_C, halo_allparams_C, &
-            RK2_prep_mpi_allspec_C,get_gavg_Tinf_C, clear_dneu_C
+            RK2_prep_mpi_allspec_C,get_gavg_Tinf_C, clear_dneu_C, mpisetup_C, mpiparms_C
 
 real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
 
@@ -41,6 +41,14 @@ contains
   subroutine mpisetup_C() bind(C, name="mpisetup_C")
     call mpisetup()
   end subroutine mpisetup_C
+
+
+  subroutine mpiparms_C(myid,lid) bind(C, name="mpiparms_C")
+    integer, intent(inout) :: myid,lid
+
+    myid=mpi_cfg%myid
+    lid=mpi_cfg%lid
+  end subroutine mpiparms_C
 
 
   !> create output directory and allocate full grid potential storage

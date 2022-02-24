@@ -87,6 +87,7 @@ extern void RK2_prep_mpi_allspec_C();
 extern void get_gavg_Tninf_C(double*, double*);
 extern void dt_select_C(int*, double*, double*, double*, double*);
 extern void check_fileoutput(double*, double*, double*, double*, int*, int*, double*);
+extern void mpiparms_C(int*, int*);
 
 #ifdef __cplusplus
 }
