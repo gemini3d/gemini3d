@@ -21,6 +21,7 @@ namespace fs = std::filesystem;
 int main(int argc, char **argv) {
   void gemini_main(struct params*, int*, int*);
   struct params s;
+  int myid;
   int ierr = MPI_Init(&argc, &argv);
   
   // CLI
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
   s.debug = false;
   s.dryrun = false;
   int lid2in = -1, lid3in = -1;
+  MPI_Comm_rank(MPI_COMM_WORLD,&myid);
   
   for (int i = 2; i < argc; i++) {
     if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "-debug") == 0) s.debug = true;
@@ -133,35 +135,27 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   bool first,flagneuBG;
   int flagdneu;
   double dtneu,dtneuBG;
-  void fluid_adv(double*, double*, int*, double*, bool*, int*);
+  int myid,lid;
+  void fluid_adv(double*, double*, int*, double*, bool*, int*, int*);
 
   /* Basic setup */
-  mpisetup_C();   // organize mpi workers
+  mpisetup_C();                               // organize mpi workers
+  mpiparms_C(&myid,&lid);                     // information about worker number, etc.
   cli_config_gridsize(ps,plid2in,plid3in);    // handling of input data, create internal fortran type with parameters for run
-  get_fullgrid_size_C(&lx1,&lx2all,&lx3all);
-  printf(" C initially thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
-  init_procgrid(&lx2all,&lx3all,plid2in,plid3in);    // compute process grid for this run
-  get_config_vars_C(&flagneuBG,&flagdneu,&dtneuBG,&dtneu);
-  printf("C flags: %d %d %f %f\n ",flagneuBG,flagdneu,dtneuBG,dtneu);
-  printf("C process grid split: %d %d\n ",*plid2in,*plid3in);
+  get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
+  init_procgrid(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
+  get_config_vars_C(&flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
 
   /* Get input grid from file */
-  printf(" C pregrid thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
-  read_grid_C();    // read the input grid from file, storage as fortran module object
+  read_grid_C();                              // read the input grid from file, storage as fortran module object
 
   /* Main needs to know the grid sizes and species numbers */
-  printf(" C now thinks the full array sizes are:  %d %d %d\n",lx1,lx2all,lx3all); 
-  printf(" C calls to get size info...\n");
-  get_subgrid_size_C(&lx1,&lx2,&lx3);   // once grid is input we need to know the sizes
-  get_species_size_C(&lsp);
-  printf(" C initially thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
+  get_subgrid_size_C(&lx1,&lx2,&lx3);     // once grid is input we need to know the subgrid sizes based on no of workers and overall size
+  get_species_size_C(&lsp);               // so main knows the number of species used
 
   /* Allocate memory and get pointers to blocks of data */
-  printf(" C is about to call allocation procedure...\n");
-  printf(" pointer sizes:  %d %d",sizeof(fluidvars),sizeof(fluidauxvars));
-  gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);
-  outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);
-  printf(" C later thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
+  gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
+  outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
 
   /* initialize state variables from input file */ 
   get_initial_state(&UTsec,&ymd[0],&tdur);
@@ -185,9 +179,6 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Control console printing for, actually superfluous FIXME */
   set_update_cadence(&iupdate);
 
-  printf(" #### starting main time iterations ### \n");
-  printf(" C thinks the subarray sizes are:  %d %d %d %d\n",lx1,lx2,lx3,lsp);
-  printf(" C thinks fullgrid array sizes are:  %d %d\n",lx2all,lx3all);
   while(t<tdur){
     dt_select_C(&it,&t,&tout,&tglowout,&dt);
     printf(" ...Selected time step of:  %f \n",dt);
@@ -211,7 +202,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // advance the fluid state variables
     first=it==1;
-    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp);
+    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid);
     printf(" Computed fluid update...\n");
 
     check_finite_output_C(&t);
@@ -232,7 +223,7 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 }
 
 
-void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp){
+void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid){
   double f107,f107a;
   double gavg,Tninf;
   int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
