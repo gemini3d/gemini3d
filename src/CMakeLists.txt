@@ -52,9 +52,6 @@ $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
-MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
@@ -182,9 +179,6 @@ sources_mpi
 temporal
 PDEparabolic gbsv
 PDEelliptic
-MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
