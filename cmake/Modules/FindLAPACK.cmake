@@ -101,6 +101,7 @@ NAMES ptf77blas f77blas blas
 NAMES_PER_DIR
 PATH_SUFFIXES atlas
 )
+
 # === C ===
 find_library(BLAS_C_ATLAS
 NAMES ptcblas cblas
@@ -148,8 +149,9 @@ if(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
 endif(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
 
 find_library(LAPACK_LIBRARY
-  NAMES lapack
-  PATH_SUFFIXES lapack lapack/lib)
+NAMES lapack
+PATH_SUFFIXES lapack lapack/lib
+)
 if(NOT LAPACK_LIBRARY)
   return()
 endif()
