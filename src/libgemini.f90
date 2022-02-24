@@ -25,7 +25,7 @@ use phys_consts, only: wp,debug,lnchem,lwave,lsp
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
-use pathlib, only : expanduser
+use filesystem, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
@@ -49,7 +49,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
 
 !> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
-!!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.  
+!!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.
 type(gemini_cfg) :: cfg
 class(curvmesh), allocatable :: x
 
@@ -58,7 +58,7 @@ real(wp), dimension(:,:,:,:), pointer :: fluidvars
 real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 real(wp), dimension(:,:,:,:), pointer :: electrovars
 
-!! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C 
+!! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C
 !!   because mapping C-fortran pointers does not appear to work in most compilers???
 real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts !! fluid state variables
 real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
@@ -98,27 +98,27 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-    !> command line interface    
+    !> command line interface
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
     else
       buf = "" !< ensure buf has no garbage characters
-  
+
       do i = 1, len(buf)
         if (p%out_dir(i) == c_null_char) exit
         buf(i:i) = p%out_dir(i)
       enddo
       cfg%outdir = expanduser(buf)
-  
+
       cfg%dryrun = p%dryrun
       debug = p%debug
     endif
 
-    !> read the config input file 
+    !> read the config input file
     call find_config(cfg)
     call read_configfile(cfg, verbose=.false.)
     call check_input_files(cfg)
-    
+
     !> read the size out of the grid file, store in module variables
     call grid_size(cfg%indatsize)
   end subroutine cli_config_gridsize
@@ -130,7 +130,7 @@ contains
     integer, intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
 
-    flagneuBG=cfg%flagneuBG; flagdneu=cfg%flagdneu; 
+    flagneuBG=cfg%flagneuBG; flagdneu=cfg%flagdneu;
     dtneuBG=cfg%dtneuBG; dtneu=cfg%dtneu;
   end subroutine get_config_vars_C
 
@@ -191,7 +191,7 @@ contains
     if (cfg%flagglow /= 0) then
       allocate(iver(lx2,lx3,lwave))
       iver = 0
-    end if 
+    end if
 
     !> allocate space for some arrays needed for fluid solves
     allocate(vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
@@ -206,7 +206,7 @@ contains
     print*, c_loc(fluidauxvars)
     print*, c_loc(electrovars)
     fluidvarsC=c_loc(fluidvars)
-    print*, fluidvarsC 
+    print*, fluidvarsC
     fluidauxvarsC=c_loc(fluidauxvars)
     print*, fluidauxvarsC
     electrovarsC=c_loc(electrovars)
@@ -228,7 +228,7 @@ contains
     vs1=>fluidvars(:,:,:,lsp+1:2*lsp)
     vs2=>fluidvars(:,:,:,2*lsp+1:3*lsp)
     vs3=>fluidvars(:,:,:,3*lsp+1:4*lsp)
-    Ts=>fluidvars(:,:,:,4*lsp+1:5*lsp) 
+    Ts=>fluidvars(:,:,:,4*lsp+1:5*lsp)
   end subroutine
 
 
@@ -240,14 +240,14 @@ contains
 
     !> pointers to aliased state variables
     rhovs1=>fluidauxvars(:,:,:,1:lsp)
-    rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp) 
+    rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp)
   end subroutine fluidauxvar_pointers
 
 
   !> bind pointers for electomagnetic state variables to a contiguous block of memory
   subroutine electrovar_pointers(electrovars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
-    
+
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
     !> eledtric fields, potential, and current density
@@ -265,7 +265,7 @@ contains
   subroutine gemini_dealloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC, fluidauxvarsC, electrovarsC
 
-    deallocate(fluidvars)    
+    deallocate(fluidvars)
     nullify(ns,vs1,vs2,vs3,Ts)
 
     deallocate(fluidauxvars)
@@ -273,7 +273,7 @@ contains
 
     deallocate(rhov2,rhov3,B1,B2,B3)
     deallocate(v1,v2,v3,rhom)
-    
+
     deallocate(electrovars)
     nullify(E1,E2,E3,J1,J2,J3,Phi)
 
@@ -282,7 +282,7 @@ contains
      !> space for integrated volume emission rates
     if (cfg%flagglow /= 0) then
       deallocate(iver)
-    end if 
+    end if
 
     deallocate(vs1i,vs2i,vs3i,Q)
 
@@ -299,9 +299,9 @@ contains
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
 
-    !> Initialize some variables need for time stepping and output 
+    !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
-    
+
     !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
     !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
     !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INERTIAL CAPACITANCE THERE
@@ -311,7 +311,7 @@ contains
     rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag(1:lx1,1:lx2,1:lx3)
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
-  end subroutine set_start_values 
+  end subroutine set_start_values
 
 
   !> C binding wrapper for initialization of electron precipitation data
@@ -382,7 +382,7 @@ contains
     real(wp), intent(inout) :: f107,f107a
 
     f107=cfg%activ(2)
-    f107a=cfg%activ(1)    
+    f107a=cfg%activ(1)
   end subroutine get_solar_indices_C
 
 
@@ -455,7 +455,7 @@ contains
   subroutine clean_param_C(iparm) bind(C, name="clean_param_C")
     integer, intent(in) :: iparm
     real(wp), dimension(:,:,:,:), pointer :: parm
-    
+
     select case (iparm)
       case (1)
         parm=>ns
