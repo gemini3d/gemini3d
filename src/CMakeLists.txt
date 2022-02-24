@@ -89,14 +89,11 @@ inputdata precipdata efielddata
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 neutral
-pathlib
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
 exe_frontend
 grid
 autogrid
-msis_ifc msis00mod
-hwm_ifc
 hwloc_ifc hwloc_c
 )
 if(msis2)
