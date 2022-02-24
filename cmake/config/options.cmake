@@ -35,7 +35,7 @@ endif()
 
 option(dev "Gemini developer mode")
 
-option(cpp_frontend "also build Gemini3D C++ frontend prototype")
+option(cpp_frontend "also build Gemini3D C++ frontend prototype" on)
 
 option(mpi "Use MPI parallelization" on)
 
