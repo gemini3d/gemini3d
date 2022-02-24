@@ -54,7 +54,7 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
 endif()
 
 if(mpi)
-  find_package(MPI COMPONENTS C Fortran REQUIRED)
+  find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 else()
   find_package(mpi_scalapack_stub CONFIG REQUIRED)
 endif()

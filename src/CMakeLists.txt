@@ -265,13 +265,11 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 gemini3d_mpi
-MUMPS::MUMPS
-$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
+MUMPS::MUMPS
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
-MPI::MPI_Fortran
+MPI::MPI_CXX
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
