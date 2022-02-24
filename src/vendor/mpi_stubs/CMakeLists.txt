@@ -11,6 +11,9 @@ add_library(mpi_f_stub mpi.f90 $<TARGET_OBJECTS:elapse>)
 add_library(MPI::MPI_C INTERFACE IMPORTED GLOBAL)
 target_link_libraries(MPI::MPI_C INTERFACE mpi_c_stub)
 
+add_library(MPI::MPI_CXX INTERFACE IMPORTED GLOBAL)
+target_link_libraries(MPI::MPI_CXX INTERFACE mpi_c_stub)
+
 add_library(MPI::MPI_Fortran INTERFACE IMPORTED GLOBAL)
 target_link_libraries(MPI::MPI_Fortran INTERFACE mpi_f_stub)
 
