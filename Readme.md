@@ -1,7 +1,7 @@
 # GEMINI
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
-[![gcc(https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml)
+[![ci](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml)
 [![oldest](https://github.com/gemini3d/gemini3d/actions/workflows/ci_oldest.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci_oldest.yml)
 [![intel-oneapi](https://github.com/gemini3d/gemini3d/actions/workflows/intel-oneapi.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/intel-oneapi.yml)
 
@@ -33,19 +33,8 @@ if you experience difficulty with GEMINI.  Try to provide as much detail as poss
 ## Platforms
 
 Gemini is intended to be OS / CPU arch / platform / compiler agnostic.
-Operating system support includes:
-
-  * Linux,
-  * MacOS, and
-  * Windows.
-
-CPU arch support includes:
-
-  * Intel
-  * AMD
-  * ARM
-  * IBM POWER
-
+Operating system support includes: Linux, MacOS, and Windows.
+CPU arch support includes: Intel, AMD, ARM, IBM POWER, Cray and more.
 GEMINI can run on hardware ranging from a Raspberry Pi to laptop to a high-performance computing (HPC) cluster.
 Generally speaking one can run large 2D or modest resolution 3D simulations (less than 10 million grid points) on a quad-core workstation, with some patience.
 
@@ -57,36 +46,41 @@ It has generally been found that acceptable performance requires > 1GB memory pe
 ## Quick start
 
 To build Gemini and run self-tests takes about 10 minutes on a laptop.
+Gemini3D uses several external libraries that are built as a required one-time procedure.
+Gemini3D works "offline" that is without internet once initially setup.
 
 Requirements:
 
-* Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) if needed.
-  * Gfortran / GCC &ge; 8 (GCC &ge; 9 recommended)
+* C++17 and Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) for optional further details.
+  * GCC 8 and newer
+  * Clang 7 and newer
   * Intel oneAPI HPC Toolkit (now free to use for all)
-* Python 3 and/or MATLAB for scripting front- and back-ends
-* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P scripts/install_cmake.cmake` or from Python `pip install cmake`
-* Git: the Gemini3D software stack uses Git to version lock reproducible builds.
-
-Recommended:
-
-* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, and given that any modern computer has multiple cores, this is not recommended.
-* [Ninja](https://ninja-build.org/) will build/rebuild much faster than GNU Make for any software project. `cmake -P scripts/install_ninja.cmake`
+* Python and/or MATLAB for scripting front- and back-ends
+* CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
+* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
 
 The prerequisite packages used by the CI and typically by devs/users are seen in [requirements.json](./requirements.json)
 
-1. get the Gemini code
+1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs):
+
+  ```sh
+  git clone https://github.com/gemini3d/external.git
+
+  cmake -B external/build -S external --install-prefix=$HOME/libgem
+  # the libgem name/location is arbitrary
+
+  cmake --build external/build --parallel
+  ```
+2. Build the Gemini3D code
 
   ```sh
   git clone https://github.com/gemini3d/gemini3d.git
 
   cd gemini3d
-  ```
-2. Build Gemini and run self-test
 
-  ```sh
-  cmake -B build
+  cmake -B build -DCMAKE_PREFIX_PATH=$HOME/libgem
 
-  cmake --build build
+  cmake --build build --parallel
   ```
 
 Non-default [build options](./docs/Readme_cmake.md) may be used.
@@ -111,17 +105,6 @@ For file input/output we also use:
 * hdf5
 * h5fortran
 * zlib
-
-Gemini uses CMake build system to automatically build the entire software library stack,
-checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
-
-Libraries are auto-built by Gemini when building gemini.bin.
-These will generally yield faster Gemini runtime, since they were optimized for the CPU on your hardware.
-If it's desired to use:
-
-* system libraries: [PyGemini scripts/install_prereqs.py](https://github.com/gemini3d/pygemini)
-* build/install libraries: `python -m gemini3d.prereqs`
-
 
 ## Running GEMINI from a Shell Environment
 
