@@ -67,10 +67,10 @@ end select
 
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
-  write(u)  Phiall(1,:,:)
+  write(u)  Phiall(1,1:lx2all,1:lx3all)
 else
   print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-  write(u)  Phiall(lx1,:,:)
+  write(u)  Phiall(lx1,1:lx2all,1:lx3all)
 end if
 
 close(u)

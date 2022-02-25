@@ -59,10 +59,10 @@ module procedure output_root_stream_mpi_nc4
 
   if (gridflag==1) then
     print *, 'Writing topside boundary conditions for inverted-type grid...'
-    call hout%write('Phiall', Phiall(1,:,:), dims23)
+    call hout%write('Phiall', Phiall(1,1:lx2all,1:lx3all), dims23)
   else
     print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-    call hout%write('Phiall', Phiall(lx1,:,:), dims23)
+    call hout%write('Phiall', Phiall(lx1,1:lx2all,1:lx3all), dims23)
   end if
 
   call hout%close()
