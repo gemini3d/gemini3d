@@ -27,19 +27,21 @@ module procedure input_root_currents_hdf5
 
   !> LOAD THE DATA
   !> PERMUTE THE ARRAYS IF NECESSARY
-  allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
+  allocate(J1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),J2all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2), &
+             J3all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
   !! no need to permute dimensions for 3D simulations
-  call hf%read('/J1all', J1all)
-  call hf%read('/J2all', J2all)
-  call hf%read('/J3all', J3all)
-  print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),maxval(J2all),minval(J3all),maxval(J3all)
-
+  call hf%read('/J1all', J1all(1:lx1,1:lx2all,1:lx3all))
+  call hf%read('/J2all', J2all(1:lx1,1:lx2all,1:lx3all))
+  call hf%read('/J3all', J3all(1:lx1,1:lx2all,1:lx3all))
+  print *, 'Min/max current data:  ',minval(J1all(1:lx1,1:lx2all,1:lx3all)),maxval(J1all(1:lx1,1:lx2all,1:lx3all)), & 
+                                     minval(J2all(1:lx1,1:lx2all,1:lx3all)),maxval(J2all(1:lx1,1:lx2all,1:lx3all)), &
+                                     minval(J3all(1:lx1,1:lx2all,1:lx3all)),maxval(J3all(1:lx1,1:lx2all,1:lx3all))
   call hf%close()
 
   !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
-  call bcast_send(J1all,tag%J1,J1)
-  call bcast_send(J2all,tag%J2,J2)
-  call bcast_send(J3all,tag%J3,J3)
+  call bcast_send3D_ghost(J1all,tag%J1,J1)
+  call bcast_send3D_ghost(J2all,tag%J2,J2)
+  call bcast_send3D_ghost(J3all,tag%J3,J3)
 end procedure input_root_currents_hdf5
 
 
@@ -133,7 +135,8 @@ module procedure input_root_mpi_hdf5
   call bcast_send(nsall,tag%ns,ns)
   call bcast_send(vs1all,tag%vs1,vs1)
   call bcast_send(Tsall,tag%Ts,Ts)
-  call bcast_send(Phiall,tag%Phi,Phi)
+  !call bcast_send(Phiall,tag%Phi,Phi)
+  call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
   call cpu_time(tfin)
   print '(A,ES12.3,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
 

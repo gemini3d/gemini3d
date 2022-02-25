@@ -11,64 +11,26 @@ module procedure potential_workers_mpi
   !! STATE VARIABLES VS2,3 INCLUDE GHOST CELLS.  FOR NOW THE
   !! POLARIZATION TERMS ARE PASSED BACK TO MAIN FN, EVEN THOUGH
   !! THEY ARE NOT USED (THEY MAY BE IN THE FUTURE)
-  
-  !integer :: flagdirich
-  
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
-  
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
-  
-  !real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03!,E02src,E03src   !distributed background fields
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm!,divJperp
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
-  
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
-  real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
-  
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
-  
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: paramtrim    !to hold trimmed magnetic field
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: J1pol,J2pol,J3pol
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: srcterm!,divJperp
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E1prev,E2prev,E3prev
+  real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: Phi    ! FIXME: why a local copy???
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: integrand,sigintegral    !general work array for doing integrals
+  real(wp), dimension(1:lx2,1:lx3) :: SigPint2,SigPint3,SigHint,incapint,srctermint
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0scaled,sigPscaled,sigHscaled
   logical :: perflag    !MUMPS stuff
-  
-  !real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
-  
-  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
-  real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
-  
-  integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all, ierr
+  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3
+  real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
+  integer :: ix1,ix2,ix3,ierr
   integer :: idleft,idright,iddown,idup
-  
   real(wp) :: tstart,tfin
-  
   integer :: flagsolve
-  
-  
-  !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
-  lx1=size(sig0,1)
-  lx2=size(sig0,2)
-  lx3=size(sig0,3)
-  
   
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
   perflag=.false.
-  
-  
-  !call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
-  
-  
-  !> Compute source terms, check Lagrangian flag
-  !if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
-  !  E02src=0._wp; E03src=0._wp
-  !else                             ! Eulerian grid, use background fields
-  !  E02src=E02; E03src=E03
-  !end if
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
-  
-  
-  !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
-  !    call gather_send(srcterm,tag%src)
-  
   
   !!!!!!!!
   !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
@@ -105,7 +67,6 @@ module procedure potential_workers_mpi
         !! workers don't have access to boundary conditions, unless root sends
         !-------
   
-  
         !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
         call gather_send(srctermint,tag%src)
         call gather_send(incapint,tag%incapint)
@@ -120,12 +81,10 @@ module procedure potential_workers_mpi
         !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes);
         !! but this is only valid for Cartesian, so it's okay for the foreseeable future
   
-  
         call elliptic_workers()    !workers do not need any specific info about the problem (that all resides with root who will redistribute)
       else
         !! Dirichlet conditions
         !! - since this is field integrated we just copy BCs specified by user to other locations along field line (root does this)
-  
       end if
   
   !
@@ -182,19 +141,16 @@ module procedure potential_workers_mpi
   !    print *, 'MUMPS time:  ',tfin-tstart
   !!!!!!!!!
   
-  
   !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
-  call bcast_recv(Phi,tag%Phi)
-  
+  call bcast_recv3D_ghost(Phi,tag%Phi)
   
   !-------
   !! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
   !! (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
-  E1prev=E1
-  E2prev=E2
-  E3prev=E3
+  E1prev=E1(1:lx1,1:lx2,1:lx3)
+  E2prev=E2(1:lx1,1:lx2,1:lx3)
+  E3prev=E3(1:lx1,1:lx2,1:lx3)
   !-------
-  
   
   !-------
   !CALCULATE PERP FIELDS FROM POTENTIAL
@@ -205,32 +161,10 @@ module procedure potential_workers_mpi
   call pot2perpfield(Phi,x,E2,E3)
   !--------
   
-  
-  !    !R-------
-  !    !JUST TO JUDGE THE IMPACT OF MI COUPLING
-  !    print *, 'Max integrated inertial capacitance:  ',maxval(incapint)
-  !    print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2)
-  !    print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHint), maxval(SigHint)
-  !!    print *, 'Max E2,3 BG and response values are:  ',maxval(abs(E02)), maxval(abs(E03)), maxval(abs(E2)),maxval(abs(E3))
-  !    print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
-  !    print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
-  !    !R-------
-  
-  
-  !--------
-  !ADD IN BACKGROUND FIELDS BEFORE HALOING
-  !if (.not. cfg%flaglagrangian) then
-  !  E2=E2+E02
-  !  E3=E3+E03
-  !end if
-  !--------
-  
-  
   call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
   
-  
   !--------
-  J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
+  J2(1:lx1,1:lx2,1:lx3)=0._wp; J3(1:lx1,1:lx2,1:lx3)=0._wp    ! must be zeroed out before we accumulate currents
   if (.not. cfg%flagnodivJ0) call acc_perpconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
@@ -261,9 +195,9 @@ module procedure potential_workers_mpi
   
   !-------
   !GRAND TOTAL FOR THE CURRENT DENSITY:  TOSS IN POLARIZATION CURRENT SO THAT OUTPUT FILES ARE CONSISTENT
-  J1=J1+J1pol
-  J2=J2+J2pol
-  J3=J3+J3pol
+  J1(1:lx1,1:lx2,1:lx3)=J1(1:lx1,1:lx2,1:lx3)+J1pol
+  J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+J2pol
+  J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+J3pol
   !-------
 end procedure potential_workers_mpi
 

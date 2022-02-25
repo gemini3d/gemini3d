@@ -11,17 +11,11 @@ module procedure output_root_stream_mpi_raw
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2all,lx3all,isp
+integer :: isp
 character(:), allocatable :: filenamefull
 integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
 real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output
-
-
-!! SYSTEM SIZES
-lx1=size(Phiall,1)
-lx2all=size(Phiall,2)
-lx3all=size(Phiall,3)
 
 
 !FIGURE OUT THE FILENAME

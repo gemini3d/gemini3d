@@ -64,17 +64,20 @@ module procedure input_root_currents_raw
   
     !> PERMUTE THE ARRAYS IF NECESSARY
     print *, '  File fast-forward done, now reading currents...'
-    allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
+    allocate(J1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),J2all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2), &
+               J3all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
     !! no need to permute dimensions for 3D simulations
-    read(u) J1all,J2all,J3all
+    read(u) J1all(1:lx1,1:lx2all,1:lx3all),J2all(1:lx1,1:lx2all,1:lx3all),J3all(1:lx1,1:lx2all,1:lx3all)
     close(u)
   end block
-  print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),maxval(J2all),minval(J3all),maxval(J3all)
-  
+  print *, 'Min/max current data:  ',minval(J1all(1:lx1,1:lx2all,1:lx3all)),maxval(J1all(1:lx1,1:lx2all,1:lx3all)), & 
+                                     minval(J2all(1:lx1,1:lx2all,1:lx3all)),maxval(J2all(1:lx1,1:lx2all,1:lx3all)), &
+                                     minval(J3all(1:lx1,1:lx2all,1:lx3all)),maxval(J3all(1:lx1,1:lx2all,1:lx3all))
+ 
   !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
-  call bcast_send(J1all,tag%J1,J1)
-  call bcast_send(J2all,tag%J2,J2)
-  call bcast_send(J3all,tag%J3,J3)
+  call bcast_send3D_ghost(J1all,tag%J1,J1)
+  call bcast_send3D_ghost(J2all,tag%J2,J2)
+  call bcast_send3D_ghost(J3all,tag%J3,J3)
   
   !> CLEAN UP MEMORY
   deallocate(J1all,J2all,J3all)
@@ -151,7 +154,7 @@ module procedure input_root_mpi_raw
   call bcast_send(nsall,tag%ns,ns)
   call bcast_send(vs1all,tag%vs1,vs1)
   call bcast_send(Tsall,tag%Ts,Ts)
-  call bcast_send(Phiall,tag%Phi,Phi)
+  call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
   call cpu_time(tfin)
   print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
   
