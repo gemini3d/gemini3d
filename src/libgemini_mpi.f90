@@ -9,6 +9,7 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
+use grid, only: lx1,lx2,lx3
 use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
@@ -62,7 +63,7 @@ contains
 
     !> fullgrid variable allocations only needed for the potential variable
     if (mpi_cfg%myid==0) then
-      allocate(Phiall(lx1,lx2all,lx3all))
+      allocate(Phiall(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
     end if
   end subroutine outdir_fullgridvaralloc
 
@@ -190,10 +191,8 @@ contains
   subroutine BGfield_Lagrangian(v2grid,v3grid) bind(C, name="BGfield_Lagrangian")
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
-    integer :: lx1,lx2,lx3
 
-    lx1=size(E2,1); lx2=size(E2,2); lx3=size(E3,3);
-    allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
+    allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))    ! allocate without ghost cells
     E01=0; E02=0; E03=0;
     if (cfg%flagE0file==1) then
       call get_BGEfields(x,E01,E02,E03)
@@ -204,9 +203,9 @@ contains
     else                            ! stationary grid
       v2grid = 0
       v3grid = 0
-      E1 = E1 + E01    ! FIXME: this is before dist fields are computed???
-      E2 = E2 + E02
-      E3 = E3 + E03
+      E1(1:lx1,1:lx2,1:lx3) = E1(1:lx1,1:lx2,1:lx3) + E01    ! FIXME: this is before dist fields are computed???
+      E2(1:lx1,1:lx2,1:lx3) = E2(1:lx1,1:lx2,1:lx3) + E02
+      E3(1:lx1,1:lx2,1:lx3) = E3(1:lx1,1:lx2,1:lx3) + E03
     end if
     deallocate(E01,E02,E03)
 

@@ -92,7 +92,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:), intent(in) :: E1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), intent(in) :: f107a,f107
   real(wp), dimension(:,:,:,:), intent(in) :: nn

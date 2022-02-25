@@ -153,9 +153,9 @@ subroutine input_workers_currents(J1,J2,J3)
   !! intent(out)
 
   !> ALL WE HAVE TO DO IS WAIT TO RECEIVE OUR PIECE OF DATA FROM ROOT
-  call bcast_recv(J1,tag%J1)
-  call bcast_recv(J2,tag%J2)
-  call bcast_recv(J3,tag%J3)
+  call bcast_recv3D_ghost(J1,tag%J1)
+  call bcast_recv3D_ghost(J2,tag%J2)
+  call bcast_recv3D_ghost(J3,tag%J3)
 end subroutine input_workers_currents
 
 
@@ -176,7 +176,7 @@ subroutine input_workers_mpi(ns,vs1,Ts,Phi)
   call bcast_recv(ns,tag%ns)
   call bcast_recv(vs1,tag%vs1)
   call bcast_recv(Ts,tag%Ts)
-  call bcast_recv(Phi,tag%Phi)
+  call bcast_recv3D_ghost(Phi,tag%Phi)
 
   ! print*, mpi_cfg%myid
   ! print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))

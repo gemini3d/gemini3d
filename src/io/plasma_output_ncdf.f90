@@ -10,22 +10,12 @@ contains
 module procedure output_root_stream_mpi_nc4
   !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
   !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
-
-  integer :: lx1,lx2all,lx3all,isp
+  integer :: isp
   character(:), allocatable :: filenamefull
-
   character(*), parameter :: dims4(4) = [character(7) :: 'x1', 'x2', 'x3', 'species'], &
     dims3(3) = [character(2) :: 'x1', 'x2', 'x3'], &
     dims23(2) = [character(2) :: 'x2', 'x3']
-
   type(netcdf_file) :: hout
-
-
-  !! SYSTEM SIZES
-  lx1=size(Phiall,1)
-  lx2all=size(Phiall,2)
-  lx3all=size(Phiall,3)
-
 
   !> FIGURE OUT THE FILENAME
   filenamefull = date_filename(outdir,ymd,UTsec) // '.nc'
