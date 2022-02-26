@@ -13,7 +13,7 @@ module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avga
   real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-  real(wp), dimension(:,:,:), intent(in) :: J1all,J2all,J3all
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1all,J2all,J3all
   real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
 end subroutine output_root_stream_mpi_hdf5
 
@@ -27,7 +27,7 @@ module subroutine output_root_stream_mpi_nc4(outdir,flagoutput,ymd,UTsec,v2avgal
   real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-  real(wp), dimension(:,:,:), intent(in) :: J1all,J2all,J3all
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1all,J2all,J3all
   real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
 end subroutine output_root_stream_mpi_nc4
 
@@ -41,7 +41,7 @@ module subroutine output_root_stream_mpi_raw(outdir,flagoutput,ymd,UTsec,v2avgal
   real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-  real(wp), dimension(:,:,:), intent(in) :: J1all,J2all,J3all
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1all,J2all,J3all
   real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
 end subroutine output_root_stream_mpi_raw
 

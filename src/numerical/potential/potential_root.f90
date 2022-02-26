@@ -20,7 +20,7 @@ module procedure potential_root_mpi_curv
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: J1pol,J2pol,J3pol
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: srcterm!,divJperp
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E1prev,E2prev,E3prev
-  real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: Phi    ! FIXME: why is this a local copy?
+  real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: Phi    ! FIXME: why is this a local copy? main program doesn't need?
   real(wp), dimension(1:lx2,1:lx3) :: SigPint2,SigPint3,SigHint,incapint,srctermint
   real(wp), dimension(1:lx2all,1:lx3all) :: SigPint2all,SigPint3all,SigHintall,incapintall,srctermintall
   real(wp), dimension(1:lx2all,1:lx3all) :: Phislab,Phislab0
@@ -28,10 +28,11 @@ module procedure potential_root_mpi_curv
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0scaled,sigPscaled,sigHscaled
   real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: sig0all
   logical :: perflag    !MUMPS stuff
-  real(wp), dimension(1:lx3) :: Vminx2slice,Vmaxx2slice
-  real(wp), dimension(1:lx2) :: Vminx3slice,Vmaxx3slice
+  real(wp), dimension(1:lx3all) :: Vminx2slice,Vmaxx2slice
+  real(wp), dimension(1:lx2all) :: Vminx3slice,Vmaxx3slice
   !real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
+  real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: Phitmp
   integer :: iid, ierr
   integer :: ix1,ix2,ix3
   integer :: idleft,idright,iddown,idup
@@ -194,17 +195,11 @@ module procedure potential_root_mpi_curv
     sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
     sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
     srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
-  !      srcterm= -srcterm
-    !! in a 2D solve negate this due to it being a cross produce and the fact that we've permuted the 2 and 3 dimensions.
-    !! ZZZ - NOT JUST THIS WORKS WITH BACKGROUND FIELDS???
     !-------
   
     !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
-    print*, 'get scaled conductivities 1', shape(sigPscaled),shape(sigPscaledall)
     call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
-    print*, 'get scaled conductivities 2'
     call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
-    print*, 'get source term'
     call gather_recv(srcterm,tag%src,srctermall)
   
     !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
@@ -223,24 +218,27 @@ module procedure potential_root_mpi_curv
     !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
     !! NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM
     !! - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
+    call cpu_time(tstart)
     if (lx3all==1) then
-      Phiall(1:lx1,1:lx2all,1:lx3all)=potential2D_fieldresolved(srctermall,sig0scaledall, &
+      Phitmp=potential2D_fieldresolved(srctermall,sig0scaledall, &
                         sigPscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2, &
                         x,flagdirich,perflag,it)
     else if (lx2all==1) then
-      Phiall(1:lx1,1:lx2all,1:lx3all)=potential2D_fieldresolved(srctermall,sig0scaledall, &
+      Phitmp=potential2D_fieldresolved(srctermall,sig0scaledall, &
                         sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
                         x,flagdirich,perflag,it)
     else
       error stop '  potential_mumps.f90:  incorrect gridswap value!!!'
     end if
+    Phiall(1:lx1,1:lx2all,1:lx3all)=Phitmp
+    call cpu_time(tfin)
   end if
   if (debug) print *, 'MUMPS time:  ',tfin-tstart
   !!!!!!!!!
-  
+ 
   !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
   call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
-  
+
   !-------
   !! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
   !! (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
@@ -266,8 +264,9 @@ module procedure potential_root_mpi_curv
     !print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHintall), maxval(SigHintall)
     print *, 'Max E2,3 BG and response values are:  ',maxval(E02src), maxval(E03src),maxval(E2),maxval(E3)
     print *, 'Min E2,3 BG and response values are:  ',minval(E02src), minval(E03src),minval(E2),minval(E3)
-    print *, 'Min/Max values of potential:  ',minval(Phi),maxval(Phi)
-    print *, 'Min/Max values of full grid potential:  ',minval(Phiall),maxval(Phiall)
+    print *, 'Min/Max values of potential:  ',minval(Phi(1:lx1,1:lx2,1:lx3)),maxval(Phi(1:lx1,1:lx2,1:lx3))
+    print *, 'Min/Max values of full grid potential:  ',minval(Phiall(1:lx1,1:lx2all,1:lx3all)), &
+               maxval(Phiall(1:lx1,1:lx2all,1:lx3all))
   endif
   !R-------
   
@@ -275,7 +274,7 @@ module procedure potential_root_mpi_curv
   
   !--------
   J2(1:lx1,1:lx2,1:lx3)=0._wp; J3(1:lx1,1:lx2,1:lx3)=0._wp    ! must be zeroed out before we accumulate currents
-  if (.not. cfg%flagnodivJ0) call acc_perpconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
+  if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
   call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
@@ -291,16 +290,16 @@ module procedure potential_root_mpi_curv
 
   !R-------
   if (debug) then
-    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
+    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,1:lx2,1:lx3)))    !ZZZ - this rey needsz to be current at the "top"
     print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)), &
                  maxval(abs(J3pol))
     !    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(abs(J2)), &
     !                 maxval(abs(J3))
-    print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), &
-                 maxval(J3)
-    print *, 'Min conduction J2,3  computed to be:  ',minval(J2), &
-                 minval(J3)
-    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
+    print *, 'Max conduction J2,3  computed to be:  ',maxval(J2(1:lx1,1:lx2,1:lx3)), &
+                 maxval(J3(1:lx1,1:lx2,1:lx3))
+    print *, 'Min conduction J2,3  computed to be:  ',minval(J2(1:lx1,1:lx2,1:lx3)), &
+                 minval(J3(1:lx1,1:lx2,1:lx3))
+    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1(1:lx1,1:lx2,1:lx3)))
   endif
   !R-------
   

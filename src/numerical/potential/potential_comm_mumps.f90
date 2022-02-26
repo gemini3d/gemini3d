@@ -29,7 +29,8 @@ implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
-            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker
+            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
+            acc_perpBGconductioncurrents
 external :: mpi_send, mpi_recv
 
 !! overloading to deal with vestigial cartesian->curvilinear code
@@ -95,7 +96,7 @@ interface !< potential_root.f90
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! not good form, but I'm lazy...  Forgot what I meant by this...
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -144,7 +145,8 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
     integer :: flagdirich
     real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
-  
+ 
+
     !> update conductivities and mobilities
     call cpu_time(tstart)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
@@ -324,7 +326,8 @@ contains
     !> compute steady state drifts resulting from a range of forces.  Can be used
     !   by both root and worker processes
     real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3
+    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     !! these must have ghost cells
     class(curvmesh), intent(in) :: x
@@ -421,7 +424,7 @@ contains
     J3 = 0
     !! zero everything out to initialize since *accumulating* sources
     if (.not. flagnodivJ0) then
-      call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
+      call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
     call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
@@ -445,7 +448,23 @@ contains
     !-------
   end subroutine potential_sourceterms
   
+ 
+  !> only to be used with electric field arrays that do not have ghost cells 
+  subroutine acc_perpBGconductioncurrents(sigP,sigH,E2,E3,J2,J3)
+    !> ***Accumulate*** conduction currents into the variables J2,J3.  This
+    !    routine will not independently add background fields unless they are
+    !    already included in E2,3.  The currents are inout meaning that they
+    !    must be initialized to zero if you want only the conduction currents,
+    !    otherwise this routine just adds to whatever is already in J2,3.
+    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+    real(wp), dimension(1:,1:,1:), intent(in) :: E2,E3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
+  end subroutine acc_perpBGconductioncurrents
+
+
   subroutine acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
     !> ***Accumulate*** conduction currents into the variables J2,J3.  This
     !    routine will not independently add background fields unless they are
@@ -453,9 +472,9 @@ contains
     !    must be initialized to zero if you want only the conduction currents,
     !    otherwise this routine just adds to whatever is already in J2,3.
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3    ! if used with background could have different lbound so don't assume -1
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3    ! if used with background could have different lbound so don't assume -1
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-  
+
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
     J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpconductioncurrents
@@ -467,7 +486,7 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
     real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
     !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
@@ -506,7 +525,7 @@ contains
     !    routine for additional caveats.
     real(wp), dimension(:,:,:), intent(in) :: sigPgrav,sigHgrav
     real(wp), dimension(:,:,:), intent(in) :: g2,g3
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigPgrav*g2-sigHgrav*g3
     J3(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigHgrav*g2+sigPgrav*g3
@@ -530,18 +549,15 @@ contains
     !! Left here as a 'lesson learned' (or is it a gfortran bug...)
     !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
   
-    !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
-    Phi=-1._wp*Phi
-
     call halo_pot(Phi,tag%J1,x%flagper,.true.)
     !call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
 
     gradtmp=grad3D2(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)   ! FIXME: don't need copy of array???
-    E2(1:lx1,1:lx2,1:lx3)=gradtmp(1:lx1,1:lx2,1:lx3)
+    print*, maxval(abs(gradtmp)),lx1,lx2,lx3
+    E2(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     gradtmp=grad3D3(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    E3(1:lx1,1:lx2,1:lx3)=gradtmp(1:lx1,1:lx2,1:lx3)
-
-    Phi=-1._wp*Phi
+    print*, maxval(abs(gradtmp)) 
+    E3(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield
   
@@ -552,7 +568,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2,J3
     real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
-    real(wp), dimension(:,:,:), intent(in) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phi
     real(wp), dimension(:,:,:), intent(in) :: sig0
     integer, intent(in) :: flagdirich
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,E1
