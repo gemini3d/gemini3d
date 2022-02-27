@@ -413,8 +413,6 @@ contains
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
     !! one extra grid point on either end to facilitate derivatives
     !! haloing assumes existence of two ghost cells
-    real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure
-    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradp2,gradp3
   
     !-------
     !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
@@ -553,10 +551,8 @@ contains
     !call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
 
     gradtmp=grad3D2(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)   ! FIXME: don't need copy of array???
-    print*, maxval(abs(gradtmp)),lx1,lx2,lx3
     E2(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     gradtmp=grad3D3(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    print*, maxval(abs(gradtmp)) 
     E3(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield

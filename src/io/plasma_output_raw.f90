@@ -15,9 +15,6 @@ integer :: isp
 character(:), allocatable :: filenamefull
 integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
-real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output
-
-
 !FIGURE OUT THE FILENAME
 filenamefull=date_filename(outdir,ymd,UTsec) // '.dat'
 print *, 'Output file name:  ',filenamefull
