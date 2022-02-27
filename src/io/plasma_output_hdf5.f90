@@ -13,10 +13,6 @@ module procedure output_root_stream_mpi_hdf5
   character(:), allocatable :: filenamefull
   integer :: isp
   type(hdf5_file) :: hout
-  ! single precision work arrays
-  real, dimension(:,:,:), allocatable :: permarray
-  real, dimension(:,:,:,:), allocatable :: permarray4D
-  real, dimension(:,:), allocatable :: permarray2D
 
   !> FIGURE OUT THE FILENAME
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'

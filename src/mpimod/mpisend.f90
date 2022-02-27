@@ -87,7 +87,8 @@ end do
 end procedure gather_send4D_23
 
 
-!> send our data to root, ***including*** ghost cells
+!> send our data to root, ***including*** ghost cells, note that the ghost cells
+!    need to be populated correctly or this will stripe the data.
 module procedure gather_send3D_ghost_23
 !! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
 !!ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
