@@ -57,7 +57,7 @@ endif()
 if(mpi)
   find_package(MPI COMPONENTS C Fortran REQUIRED)
 else()
-  add_subdirectory(src/vendor/mpi_stubs)
+  find_package(mpi_scalapack_stub CONFIG REQUIRED)
 endif()
 
 include(cmake/ext_libs/h5fortran-hdf5.cmake)
