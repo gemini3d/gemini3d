@@ -37,7 +37,22 @@ include(cmake/config/options.cmake)
 include(cmake/config/libraries.cmake)
 
 # Fortran filesystem library "ffilesystem"
-find_package(ffilesystem CONFIG REQUIRED)
+find_package(ffilesystem CONFIG)
+# this is the first package we find, so make a special error message for users
+if(NOT ffilesystem_FOUND)
+  message(FATAL_ERROR "
+Gemini3D requires several external libraries that are one-time installed via this procedure. Note: the 'gemini_libs' directory is arbitrary example.
+
+  git clone https://github.com/gemini3d/external
+  cmake -B external/build -S external --install-prefix=$HOME/gemini_libs
+  cmake --build external/build --parallel
+
+Now, configure and build Gemini3D (from gemini3d/ directory) like this:
+
+  cmake -B build -DCMAKE_PREFIX_PATH=$HOME/gemini_libs
+  cmake --build build --parallel
+")
+endif()
 
 if(mpi)
   find_package(MPI COMPONENTS C Fortran REQUIRED)
