@@ -56,7 +56,7 @@ LABELS "unit"
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" unit:potential2)
+dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" unit:potential2)
 
 if(python)
 

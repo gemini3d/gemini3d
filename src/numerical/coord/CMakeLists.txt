@@ -66,7 +66,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 
 foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipole_testdriver fullgrid_cartesian_testdriver fullgrid_dipole_testdriver_root)
 
-  add_test(NAME "unit:${t}" COMMAND $<TARGET_FILE:${t}>)
+  add_test(NAME "unit:${t}" COMMAND ${t})
 
   set_tests_properties(unit:${t} PROPERTIES
   TIMEOUT 30
@@ -76,7 +76,7 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 endforeach()
 
 
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:fullgrid_dipole_testdriver;unit:fullgrid_dipole_testdriver_root;unit:fullgrid_cartesian_testdriver;unit:grid_testdriver;unit:newton_testdriver")
+dll_test_path("h5fortran::h5fortran;LAPACK::LAPACK" "unit:fullgrid_dipole_testdriver;unit:fullgrid_dipole_testdriver_root;unit:fullgrid_cartesian_testdriver;unit:grid_testdriver;unit:newton_testdriver")
 
 if(host_ramGB LESS 8)
   set_tests_properties(unit:fullgrid_cartesian_testdriver unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
