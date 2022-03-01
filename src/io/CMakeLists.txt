@@ -48,11 +48,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     TIMEOUT 10
     )
 
-    if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-      set_tests_properties(gemini:dump:${t} gemini:dump:check:${t} PROPERTIES
-      ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-      )
-    endif()
+    dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "gemini:dump:${t};gemini:dump:check:${t}")
   endforeach()
 
 endif()
@@ -109,11 +105,7 @@ LABELS unit
 TIMEOUT 10
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:expand_envvar unit:compiler_vendor PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:expand_envvar;unit:compiler_vendor")
 
 endif()
 

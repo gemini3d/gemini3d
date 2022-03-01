@@ -56,11 +56,7 @@ LABELS "unit"
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:potential2 PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" unit:potential2)
 
 if(python)
 

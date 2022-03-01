@@ -104,11 +104,7 @@ TIMEOUT 10
 )
 
 # --- Windows needs DLLs on path
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:magcalc_exe_ok;unit:magcalc_run_ok;unit:gemini3d_run_ok")
 
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)

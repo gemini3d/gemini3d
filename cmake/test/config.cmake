@@ -48,11 +48,7 @@ LABELS core
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("gemini3d;h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
 
 set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
@@ -121,11 +117,6 @@ LABELS core
 TIMEOUT 60
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
-
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(magcalc:${name} PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" magcalc:${name})
 
 endfunction(setup_magcalc_test)

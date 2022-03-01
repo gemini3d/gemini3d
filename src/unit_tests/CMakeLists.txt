@@ -63,8 +63,4 @@ FIXTURES_REQUIRED scalapack_fxt
 FIXTURES_SETUP mumps_fxt
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:scalapack unit:mumps_basic PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:scalapack;unit:mumps_basic")

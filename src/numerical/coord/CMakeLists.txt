@@ -76,12 +76,7 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 endforeach()
 
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
-
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:fullgrid_dipole_testdriver;unit:fullgrid_dipole_testdriver_root;unit:fullgrid_cartesian_testdriver;unit:grid_testdriver;unit:newton_testdriver")
 
 if(host_ramGB LESS 8)
   set_tests_properties(unit:fullgrid_cartesian_testdriver unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
