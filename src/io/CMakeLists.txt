@@ -32,7 +32,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
   foreach(t root worker input)
     set(f ${CMAKE_CURRENT_BINARY_DIR}/dump_${t}.h5)
 
-    add_test(NAME gemini:dump:${t} COMMAND $<TARGET_FILE:test_dump_write> ${t} ${f})
+    add_test(NAME gemini:dump:${t} COMMAND test_dump_write ${t} ${f})
     set_tests_properties(gemini:dump:${t} PROPERTIES
     FIXTURES_SETUP gemini:dump_fxt
     WILL_FAIL true
@@ -40,7 +40,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     TIMEOUT 10
     )
 
-    add_test(NAME gemini:dump:check:${t} COMMAND $<TARGET_FILE:test_dump_read> testing:${t} ${f})
+    add_test(NAME gemini:dump:check:${t} COMMAND test_dump_read testing:${t} ${f})
     set_tests_properties(gemini:dump:check:${t} PROPERTIES
     FIXTURES_REQUIRED gemini:dump_fxt
     REQUIRED_FILES ${f}
@@ -48,7 +48,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     TIMEOUT 10
     )
 
-    dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "gemini:dump:${t};gemini:dump:check:${t}")
+    dll_test_path(h5fortran::h5fortran "gemini:dump:${t};gemini:dump:check:${t}")
   endforeach()
 
 endif()
@@ -64,7 +64,7 @@ set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.n
 if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_namelist test_nml.f90)
-add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
+add_test(NAME unit:namelist COMMAND test_namelist ${_test_file})
 set_tests_properties(unit:namelist PROPERTIES
 REQUIRED_FILES ${_test_file}
 LABELS unit
@@ -105,7 +105,7 @@ LABELS unit
 TIMEOUT 10
 )
 
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:expand_envvar;unit:compiler_vendor")
+dll_test_path(ffilesystem::filesystem "unit:expand_envvar;unit:compiler_vendor")
 
 endif()
 

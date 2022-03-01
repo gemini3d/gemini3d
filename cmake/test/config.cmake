@@ -48,7 +48,7 @@ LABELS core
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-dll_test_path("gemini3d;h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
+dll_test_path("gemini3d;h5fortran::h5fortran" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
 
 set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
@@ -109,7 +109,7 @@ TIMEOUT 30
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
 
-add_test(NAME magcalc:${name} COMMAND $<TARGET_FILE:magcalc.run> ${out_dir})
+add_test(NAME magcalc:${name} COMMAND magcalc.run ${out_dir})
 set_tests_properties(magcalc:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 FIXTURES_REQUIRED magcalc:${name}:setup
@@ -117,6 +117,6 @@ LABELS core
 TIMEOUT 60
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" magcalc:${name})
+dll_test_path(h5fortran::h5fortran magcalc:${name})
 
 endfunction(setup_magcalc_test)

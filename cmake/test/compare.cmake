@@ -65,7 +65,7 @@ REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
 DISABLED $<OR:$<NOT:$<TARGET_EXISTS:gemini3d.compare>>,$<NOT:$<BOOL:${hdf5}>>>
 )
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" gemini:compare:hdf5:${name})
+dll_test_path(h5fortran::h5fortran gemini:compare:hdf5:${name})
 
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.
@@ -75,7 +75,7 @@ dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" gemini:compare:hd
 if(netcdf)
 
 add_test(NAME gemini:compare:netcdf:${name}
-COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
+COMMAND gemini3d.compare ${outdir} ${refdir})
 
 set_tests_properties(gemini:compare:netcdf:${name} PROPERTIES
 TIMEOUT 60
