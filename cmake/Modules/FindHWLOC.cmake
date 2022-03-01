@@ -54,7 +54,8 @@ endif()
 if(HWLOC_TOPO_LOAD)
   find_file(hwloc_conf
   NAMES config.h
-  HINTS ${HWLOC_INCLUDE_DIR} ${pc_hwloc_INCLUDE_DIRS}
+  NO_DEFAULT_PATH
+  HINTS ${HWLOC_INCLUDE_DIR}
   PATH_SUFFIXES hwloc/autogen
   DOC "HWLOC configuration header"
   )
