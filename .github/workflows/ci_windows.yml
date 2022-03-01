@@ -24,16 +24,13 @@ jobs:
     timeout-minutes: 20
     runs-on: windows-latest
 
-    defaults:
-      run:
-        shell: msys2 {0}
-
     steps:
     - uses: msys2/setup-msys2@v2
       with:
         update: true
         install: >-
           git
+          patch
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-ninja
           mingw-w64-x86_64-gcc-fortran
@@ -48,15 +45,19 @@ jobs:
         repository: gemini3d/external
         path: gemext
 
+    - name: Put MSYS2_MinGW64 on PATH
+      # this is because GNU Patch doesn't work from MSYS2 shell
+      run: echo "D:/a/_temp/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
     - name: Install numeric libraries
       timeout-minutes: 8
       run: |
-        cmake -S $GITHUB_WORKSPACE/gemext -B $GITHUB_WORKSPACE/gemext/build -Dfind:BOOL=true -Dusempi:BOOL=no --install-prefix=${HOME}/gemlibs
-        cmake --build $GITHUB_WORKSPACE/gemext/build --target ffilesystem glow msis mumps
-        cmake --install $GITHUB_WORKSPACE/gemext/build
+        cmake -S gemext -B gemext/build -Dfind:BOOL=true -Dusempi:BOOL=no "-DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/.."
+        cmake --build gemext/build --target ffilesystem glow msis mumps mpi_scalapack_stub
+        cmake --install gemext/build
 
     - name: Configure multi
-      run: cmake -Dmpi=no --preset multi -DCMAKE_PREFIX_PATH:PATH=${HOME}/gemlibs
+      run: cmake -Dmpi=no --preset multi "-DCMAKE_PREFIX_PATH:PATH=${{ github.workspace }}/.."
 
 
     - name: Debug build
