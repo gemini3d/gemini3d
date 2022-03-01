@@ -30,11 +30,7 @@ TIMEOUT 5
 LABELS unit
 FIXTURES_SETUP gemini_diffusion_fxt
 )
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:diffusion1 PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" unit:diffusion1)
 
 if(python)
   add_test(NAME unit:diffusion1:python

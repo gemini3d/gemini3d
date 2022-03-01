@@ -90,7 +90,7 @@ endif()
 include(cmake/compilers/flags.cmake)
 
 # unit test DLL paths
-include(cmake/test/lib_path.cmake)
+include(cmake/DllTestPath.cmake)
 
 # all Gemini3D source code under this
 add_subdirectory(src)

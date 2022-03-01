@@ -169,11 +169,7 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
 LABELS unit
 )
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:gemini_exe_ok PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" unit:gemini_exe_ok)
 
 install(TARGETS gemini3d gemini.bin
 EXPORT ${PROJECT_NAME}-targets

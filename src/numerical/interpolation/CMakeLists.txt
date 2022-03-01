@@ -57,11 +57,7 @@ RESOURCE_LOCK cpu_ram
 FIXTURES_SETUP gemini_interp3_fxt
 )
 
-if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
-  set_tests_properties(unit:interp2 unit:interp3 PROPERTIES
-  ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${test_dll_path}"
-  )
-endif()
+dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "unit:interp2;unit:interp3")
 
 
 
