@@ -40,7 +40,7 @@ module procedure potential_root_mpi_curv
   integer :: u
   
   !> store a cached ordering for later use (improves performance substantially)
-  perflag=.false.
+  perflag=.true.
   
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
