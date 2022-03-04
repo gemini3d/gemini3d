@@ -72,7 +72,7 @@ module procedure potential_root_mpi_curv
   
   
   !> store a cached ordering for later use (improves performance substantially)
-  perflag=.false.
+  perflag=.true.
   
   
   !call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
