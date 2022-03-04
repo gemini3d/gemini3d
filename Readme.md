@@ -61,7 +61,7 @@ Requirements:
 
 The prerequisite packages used by the CI and typically by devs/users are seen in [requirements.json](./requirements.json)
 
-1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs):
+1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
 
   ```sh
   git clone https://github.com/gemini3d/external.git
@@ -71,7 +71,14 @@ The prerequisite packages used by the CI and typically by devs/users are seen in
 
   cmake --build external/build --parallel
   ```
-2. Build the Gemini3D code
+
+2. Set environment variable `CMAKE_PREFIX_PATH=$HOME/libgem` so Gemini3D uses these libraries. Add to PATH environment variable $HOME/libgem/bin. On Linux/MacOS this is done like:
+
+  ```sh
+  export CMAKE_PREFIX_PATH=$HOME/libgem
+  export PATH=$HOME/libgem/bin:$PATH
+  ```
+3. Build the Gemini3D code
 
   ```sh
   git clone https://github.com/gemini3d/gemini3d.git
