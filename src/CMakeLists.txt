@@ -146,18 +146,29 @@ if(hwm14)
   # HWM14 data files
   # due to legacy coding style, HWM14 files need to be in binary directory
   get_target_property(_def hwm14::hwm14 INTERFACE_COMPILE_DEFINITIONS)
-  string(REGEX MATCH "^DATADIR\=(.+)$" _def "${_def}")
+  string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
   set(hwm14_data_dir "${CMAKE_MATCH_1}")
+  if(NOT IS_DIRECTORY "${hwm14_data_dir}")
+    message(FATAL_ERROR "HWM14 data directory not found: ${_def}
+    ${hwm14_data_dir}")
+  endif()
+
   set(hwm14_RESOURCE_FILES
   ${hwm14_data_dir}/hwm123114.bin
   ${hwm14_data_dir}/dwm07b104i.dat
   ${hwm14_data_dir}/gd2qd.dat
   )
 
+  # this is to run from the live build directory
   add_custom_command(TARGET gemini.bin POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_RESOURCE_FILES} $<TARGET_FILE_DIR:gemini.bin>
   COMMAND_EXPAND_LISTS
   )
+
+  # this is for installed Gemini3D, which in general may be installed
+  # somewhere other than HWM14 directory tree
+  install(FILES ${hwm14_RESOURCE_FILES} TYPE BIN)
+
 endif(hwm14)
 
 # same link logic applied to src/unit_tests/test_mumps

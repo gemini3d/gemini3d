@@ -83,10 +83,6 @@ if(glow)
   find_package(glow CONFIG REQUIRED)
 endif(glow)
 
-if(hwm14)
-  find_package(hwm14 CONFIG REQUIRED)
-endif()
-
 include(cmake/compilers/flags.cmake)
 
 # unit test DLL paths
