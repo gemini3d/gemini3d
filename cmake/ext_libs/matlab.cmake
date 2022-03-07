@@ -1,6 +1,9 @@
 include(FetchContent)
 
-find_package(Matlab 9.9 COMPONENTS MAIN_PROGRAM REQUIRED)
+find_package(Matlab COMPONENTS MAIN_PROGRAM REQUIRED)
+if(Matlab_VERSION_STRING AND Matlab_VERSION_STRING VERSION_LESS 9.9)
+  message(STATUS "Matlab >= 9.9 required, found ${Matlab_VERSION_STRING}")
+endif()
 
 FetchContent_Declare(MATGEMINI
 GIT_REPOSITORY ${matgemini_git}
