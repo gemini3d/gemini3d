@@ -39,17 +39,12 @@ jobs:
       cmake_version: '3.20.6'
 
     steps:
-    - uses: actions/checkout@v2
 
     - name: Checkout Gemini3D-External scripts
       uses: actions/checkout@v2
       with:
         repository: gemini3d/external
         path: gemext
-
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
 
     - name: Install apt packages
       timeout-minutes: 3
@@ -73,6 +68,12 @@ jobs:
         cmake -Sgemext -Bgemext/build -Dfind:BOOL=true -Dmsis2:BOOL=${{ matrix.msis2 }} -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         cmake --build gemext/build --target ffilesystem glow hwm14 msis mumps
         cmake --install gemext/build
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - uses: actions/checkout@v2
 
     - name: Configure release
       run: cmake -B build -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} -Dmsis2:BOOL=${{ matrix.msis2 }} -Dhwm14:BOOL=${{ matrix.hwm14 }}

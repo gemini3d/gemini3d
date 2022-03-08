@@ -37,7 +37,6 @@ jobs:
     #     hwm14: [true, false]
 
     steps:
-    - uses: actions/checkout@v2
 
     - name: cache install oneAPI
       id: cache-install
@@ -62,10 +61,6 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-
 # HDF5 library doesn't install correctly with Ninja Multi-config
 # CMake Error at fortran/src/cmake_install.cmake:61 (file):
 #  file INSTALL cannot find
@@ -83,6 +78,12 @@ jobs:
         cmake -S gemext -B gemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         cmake --build gemext/build --target ffilesystem glow hwm14 msis mumps
         cmake --install gemext/build
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - uses: actions/checkout@v2
 
     - name: CMake Configure Ninja Multi-config
       run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} --debug-find

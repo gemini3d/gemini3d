@@ -35,7 +35,9 @@ jobs:
           mingw-w64-x86_64-hdf5
           mingw-w64-x86_64-lapack
 
-    - uses: actions/checkout@v2
+
+    - name: Put MSYS2_MinGW64 on PATH
+      run: echo "D:/a/_temp/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Checkout Gemini3D-External
       uses: actions/checkout@v2
@@ -43,15 +45,14 @@ jobs:
         repository: gemini3d/external
         path: gemext
 
-    - name: Put MSYS2_MinGW64 on PATH
-      run: echo "D:/a/_temp/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
     - name: Install numeric libraries
       timeout-minutes: 8
       run: |
         cmake -S gemext -B gemext/build -Dfind:BOOL=true -Dusempi:BOOL=no -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         cmake --build gemext/build --target ffilesystem glow msis mumps mpi_scalapack_stub
         cmake --install gemext/build
+
+    - uses: actions/checkout@v2
 
     - name: Configure multi
       run: cmake -Dmpi=no --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
