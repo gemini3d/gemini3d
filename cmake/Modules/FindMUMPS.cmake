@@ -137,7 +137,7 @@ foreach(c IN LISTS MUMPS_FIND_COMPONENTS)
   )
 
   if(NOT MUMPS_${c}_links)
-    return()
+    continue()
   endif()
 
   set(MUMPS_${c}_FOUND true PARENT_SCOPE)
@@ -312,7 +312,7 @@ foreach(c IN LISTS MUMPS_FIND_COMPONENTS)
   endif()
 
   if(NOT MUMPS_${c}_lib)
-    return()
+    continue()
   endif()
 
   list(APPEND MUMPS_LIBRARY ${MUMPS_${c}_lib})
