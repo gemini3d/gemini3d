@@ -54,8 +54,8 @@ jobs:
         .github/workflows/oneapi_setup_apt_repo_linux.sh
         sudo apt install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl intel-oneapi-mkl-devel
 
-    - name: install ninja
-      run: sudo apt install ninja-build
+    - name: install system tools
+      run: sudo apt install ninja-build autoconf automake libtool-bin
 
     - name: oneAPI env vars
       run: |
