@@ -45,14 +45,14 @@ jobs:
       timeout-minutes: 15
       run: |
         sudo apt update -yq
-        sudo $(cmake -P scripts/requirements.cmake)
+        sudo $(cmake -P gemext/scripts/requirements.cmake)
         sudo apt install libscalapack-mpi-dev
 
     - name: Install packages (MacOS)
       if: matrix.image.os == 'macos-latest'
       timeout-minutes: 15
       run: |
-        $(cmake -P scripts/requirements.cmake)
+        $(cmake -P gemext/scripts/requirements.cmake)
         brew install scalapack
 
     - name: Checkout Gemini3D-External

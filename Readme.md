@@ -59,8 +59,6 @@ Requirements:
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
 
-The prerequisite packages used by the CI and typically by devs/users are seen in [requirements.json](./requirements.json)
-
 1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
 
   ```sh
