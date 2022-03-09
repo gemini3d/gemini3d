@@ -14,7 +14,8 @@ Installing the latest MPI is simply:
 brew install open-mpi
 ```
 
-Intel oneAPI does not provide MPI on MacOS, so you would have to compile your own MPICH.
+[Intel oneAPI on MacOS](./MacOS_intel_oneapi.md)
+does not provide MPI, so this repo builds MPI for oneAPI.
 
 ## Linux
 
@@ -25,7 +26,7 @@ Currently supported versions of Debian, Ubuntu, CentOS, and Windows Subsystem fo
 
 HPC users can often switch to a recent GCC version with matching MPI library.
 
-Alternatively, [Intel oneAPI](https://www.scivision.dev/intel-oneapi-fortran-install/)
+Alternatively, [Intel oneAPI](./Linux_intel_oneapi.md)
 provides Intel MPI and Scalapack on Linux.
 
 ## Windows
@@ -43,7 +44,7 @@ Install
 [Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes),
 which gives `mpiexec`.
 
-Alternatively, [Intel oneAPI](https://www.scivision.dev/intel-oneapi-fortran-install/)
+Alternatively, [Intel oneAPI](./Windows_intel_oneapi.md)
 provides Intel MPI and Scalapack on Windows.
 We do not use MSYS2/GCC libraries with Windows oneAPI as they are ABI incompatible.
 Use the oneAPI Command Prompt on Windows.
