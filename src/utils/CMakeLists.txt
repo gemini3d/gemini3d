@@ -79,6 +79,7 @@ endif()
 add_test(NAME unit:gemini3d_run_ok COMMAND gemini3d.run)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
+FIXTURES_SETUP gemini_exe_fxt
 LABELS unit
 TIMEOUT 10
 )
@@ -104,7 +105,7 @@ TIMEOUT 10
 )
 
 # --- Windows needs DLLs on path
-dll_test_path(h5fortran::h5fortran "unit:magcalc_exe_ok;unit:magcalc_run_ok;unit:gemini3d_run_ok")
+dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" "unit:magcalc_exe_ok;unit:magcalc_run_ok;unit:gemini3d_run_ok")
 
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)

@@ -63,4 +63,4 @@ FIXTURES_REQUIRED scalapack_fxt
 FIXTURES_SETUP mumps_fxt
 )
 
-dll_test_path(MUMPS::MUMPS "unit:scalapack;unit:mumps_basic")
+dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "unit:scalapack;unit:mumps_basic")

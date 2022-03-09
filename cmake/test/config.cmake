@@ -54,7 +54,7 @@ LABELS core
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-dll_test_path("gemini3d;h5fortran::h5fortran" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
+dll_test_path("ffilesystem::filesystem;gemini3d;h5fortran::h5fortran;HDF5::HDF5" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
 
 set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
@@ -123,6 +123,6 @@ LABELS core
 TIMEOUT 60
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
-dll_test_path(h5fortran::h5fortran magcalc:${name})
+dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 
 endfunction(setup_magcalc_test)

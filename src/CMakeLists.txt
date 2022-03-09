@@ -180,7 +180,7 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
 LABELS unit
 )
-dll_test_path(h5fortran::h5fortran unit:gemini_exe_ok)
+dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" unit:gemini_exe_ok)
 
 install(TARGETS gemini3d gemini.bin
 EXPORT ${PROJECT_NAME}-targets

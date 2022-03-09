@@ -15,37 +15,55 @@ set(dll_mod)
 foreach(lib IN LISTS libs)
 
   get_target_property(ttype ${lib} TYPE)
-  if(NOT ttype STREQUAL SHARED_LIBRARY)
-    message(DEBUG "${lib} is not a shared library, no need for ENVIRONMENT_MODIFICATION for ${test_names}")
+  if(ttype STREQUAL STATIC_LIBRARY)
+    message(DEBUG "${lib} is ${ttype}. No need for ENVIRONMENT_MODIFICATION for ${test_names}")
     continue()
   endif()
 
-  get_target_property(conf ${lib} IMPORTED_CONFIGURATIONS)
-  if(conf)
-    list(GET conf 0 conf)
-    # assume first configuration is desired
-
-    get_target_property(loc ${lib} IMPORTED_LOCATION_${conf})
-    if(NOT loc)
-      message(VERBOSE "did not find imported location for ${lib}")
-      continue()
-    endif()
-
-    cmake_path(GET loc PARENT_PATH loc)
-
+  get_target_property(imploc ${lib} IMPORTED_LOCATION_RELEASE)
+  get_target_property(intloc ${lib} INTERFACE_LINK_LIBRARIES)
+  if(imploc)
+    foreach(l IN LISTS imploc)
+      cmake_path(GET l PARENT_PATH loc)
+      if(IS_DIRECTORY ${loc})
+        list(APPEND dll_mod "PATH=path_list_append:${loc}")
+        cmake_path(SET d NORMALIZE ${loc}/../bin)
+        # can't check bin/stem.dll as some libs add arbitrary stuff to stem
+        if(IS_DIRECTORY ${d})
+          list(APPEND dll_mod "PATH=path_list_append:${d}")
+        endif()
+      endif()
+    endforeach()
+  elseif(intloc)
+    foreach(l IN LISTS intloc)
+      cmake_path(GET l PARENT_PATH loc)
+      if(IS_DIRECTORY ${loc})
+        list(APPEND dll_mod "PATH=path_list_append:${loc}")
+        cmake_path(SET d NORMALIZE ${loc}/../bin)
+        if(IS_DIRECTORY ${d})
+          list(APPEND dll_mod "PATH=path_list_append:${d}")
+        endif()
+      endif()
+    endforeach()
+  elseif(EXISTS ${lib})
+    list(APPEND dll_mod "PATH=path_list_append:$<TARGET_FILE_DIR:${lib}>")
   else()
-
-    set(loc $<TARGET_FILE_DIR:${lib}>)
-
+    message(DEBUG "did not find library for ${lib} for ${test_names}")
   endif()
-
-  list(APPEND dll_mod "PATH=path_list_append:${loc}")
 
 endforeach()
 
-set_tests_properties(${test_names} PROPERTIES
-ENVIRONMENT_MODIFICATION "${dll_mod}"
-)
+list(REMOVE_DUPLICATES dll_mod)
+
+if(dll_mod)
+  message(VERBOSE "environment_modification ${dll_mod} for ${test_names}")
+
+  set_tests_properties(${test_names} PROPERTIES
+  ENVIRONMENT_MODIFICATION "${dll_mod}"
+  )
+else()
+  message(VERBOSE "no environment_modification for ${test_names}")
+endif()
 
 
 endfunction(dll_test_path)

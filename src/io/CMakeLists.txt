@@ -48,7 +48,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     TIMEOUT 10
     )
 
-    dll_test_path(h5fortran::h5fortran "gemini:dump:${t};gemini:dump:check:${t}")
+    dll_test_path("h5fortran::h5fortran;HDF5::HDF5" "gemini:dump:${t};gemini:dump:check:${t}")
   endforeach()
 
 endif()
