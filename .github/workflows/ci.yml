@@ -27,12 +27,16 @@ jobs:
       matrix:
         msis2: [true, false]
         hwm14: [true, false]
-        image: [{os: ubuntu-latest, fc: gfortran}, {os: macos-latest, fc: gfortran-11}]
+        img: [{os: ubuntu-latest, cc: gcc-8, cxx: g++-8, fc: gfortran-8},
+              {os: ubuntu-latest, cc: gcc-11, cxx: g++-11, fc: gfortran-11},
+              {os: macos-latest, cc: gcc, cxx: g++, fc: gfortran-11}]
 
     env:
-      FC: ${{ matrix.image.fc }}
+      CC: ${{ matrix.img.cc }}
+      CXX: ${{ matrix.img.cxx }}
+      FC: ${{ matrix.img.fc }}
 
-    runs-on: ${{ matrix.image.os }}
+    runs-on: ${{ matrix.img.os }}
 
     steps:
 
@@ -42,16 +46,23 @@ jobs:
         repository: gemini3d/external
         path: gemext
 
+    - name: Install CMake 3.20
+      timeout-minutes: 2
+      run: |
+        cmake -Dversion=${{ env.cmake_version }} -Dprefix=${{ runner.temp }} -P gemext/scripts/install_cmake.cmake
+        echo "${{ runner.temp }}/cmake-${{ env.cmake_version }}-linux-x86_64/bin" >> $GITHUB_PATH
+
     - name: Install packages (Linux)
-      if: matrix.image.os == 'ubuntu-latest'
+      if: matrix.img.os == 'ubuntu-latest'
       timeout-minutes: 15
       run: |
-        sudo apt update -yq
+        sudo apt update
         sudo $(cmake -P gemext/scripts/requirements.cmake)
-        sudo apt install libscalapack-mpi-dev
+        sudo apt install --no-install-recommends liblapack-dev libscalapack-mpi-dev
+        sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
-      if: matrix.image.os == 'macos-latest'
+      if: matrix.img.os == 'macos-latest'
       timeout-minutes: 15
       run: |
         $(cmake -P gemext/scripts/requirements.cmake)
