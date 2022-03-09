@@ -28,8 +28,8 @@ jobs:
         msis2: [true, false]
         hwm14: [true, false]
         img: [{os: ubuntu-latest, cc: gcc-8, cxx: g++-8, fc: gfortran-8},
-              {os: ubuntu-latest, cc: gcc-11, cxx: g++-11, fc: gfortran-11},
-              {os: macos-latest, cc: gcc, cxx: g++, fc: gfortran-11}]
+              {os: ubuntu-latest, cc: gcc, cxx: g++, fc: gfortran},
+              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-11}]
 
     env:
       CC: ${{ matrix.img.cc }}
@@ -57,9 +57,8 @@ jobs:
       timeout-minutes: 15
       run: |
         sudo apt update
-        sudo $(cmake -P gemext/scripts/requirements.cmake)
-        sudo apt install --no-install-recommends liblapack-dev libscalapack-mpi-dev
-        sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
+        sudo $(cmake -P gemext/scripts/requirements.cmake) liblapack-dev libscalapack-mpi-dev
+        [[ $CC != "gcc" ]] && sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
       if: matrix.img.os == 'macos-latest'
