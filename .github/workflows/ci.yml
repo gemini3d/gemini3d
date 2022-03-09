@@ -56,9 +56,8 @@ jobs:
       if: matrix.img.os == 'ubuntu-latest'
       timeout-minutes: 15
       run: |
-        sudo apt update
         sudo $(cmake -P gemext/scripts/requirements.cmake) liblapack-dev libscalapack-mpi-dev
-        [[ $CC != "gcc" ]] && sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
+        sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
       if: matrix.img.os == 'macos-latest'
