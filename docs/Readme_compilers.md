@@ -31,12 +31,5 @@ The Clang C and C++ compilers work fine with [MacOS GCC](./MacOS_gcc.md) in gene
 
 Windows users can choose between
 [Intel oneAPI](./Windows_intel_oneapi.md),
-MSYS2, Windows Subsystem for Linux, or Cygwin.
-
-[MSYS2](https://www.scivision.dev/install-msys2-windows)
-provides a comprehensive Windows development solution from the Windows terminal.
-From the MSYS2 terminal, install GCC C++ and Fortran compilers:
-
-```sh
-pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
-```
+[MSYS2](./Windows_gcc.md),
+[Windows Subsystem for Linux](./Linux_gcc.md), or Cygwin.
