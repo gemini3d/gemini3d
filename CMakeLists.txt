@@ -34,7 +34,6 @@ endif()
 
 include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
-include(cmake/config/libraries.cmake)
 
 # Fortran filesystem library "ffilesystem"
 find_package(ffilesystem CONFIG)

@@ -5,6 +5,9 @@ if(Matlab_VERSION_STRING AND Matlab_VERSION_STRING VERSION_LESS 9.9)
   message(STATUS "Matlab >= 9.9 required, found ${Matlab_VERSION_STRING}")
 endif()
 
+file(READ ${CMAKE_CURRENT_LIST_DIR}/../libraries.json _libj)
+string(JSON matgemini_git GET ${_libj} matgemini git)
+
 FetchContent_Declare(MATGEMINI
 GIT_REPOSITORY ${matgemini_git}
 GIT_TAG ${matgemini_tag}

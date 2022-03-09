@@ -1,14 +1,20 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 
-function(setup_gemini_test name TIMEOUT arc_json_file)
+function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
-cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
-cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data/compare)
-cmake_path(APPEND ref_dir ${ref_root} ${name})
+cmake_path(SET out_dir ${PROJECT_BINARY_DIR}/${name})
+cmake_path(SET ref_root ${PROJECT_SOURCE_DIR}/test_data/compare)
+cmake_path(SET ref_dir ${ref_root}/${name})
+cmake_path(SET arc_json_file ${PROJECT_BINARY_DIR}/ref_data.json)
 
 add_test(NAME ${name}:download
-  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -Darc_json_file:FILEPATH=${arc_json_file} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
+COMMAND ${CMAKE_COMMAND}
+  -Dname=${name}
+  -Doutdir:PATH=${out_dir}
+  -Drefroot:PATH=${ref_root}
+  -Darc_json_file:FILEPATH=${arc_json_file}
+  -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
 FIXTURES_SETUP ${name}:download_fxt
@@ -97,7 +103,7 @@ endfunction(setup_gemini_test)
 
 function(setup_magcalc_test name)
 
-cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
+cmake_path(SET out_dir ${PROJECT_BINARY_DIR}/${name})
 
 add_test(NAME magcalc:${name}:setup
 COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}

@@ -21,13 +21,19 @@ endfunction(download_archive)
 
 function(gemini_download_ref_data name refroot arc_json_file)
 
+# --- download reference data JSON file (for previously generated data)
+if(NOT EXISTS ${arc_json_file})
+  file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries.json _libj)
+  string(JSON url GET ${_libj} ref_data url)
+  file(DOWNLOAD ${url} ${arc_json_file} INACTIVITY_TIMEOUT 15)
+endif()
 file(READ ${arc_json_file} _refj)
 
 string(JSON url GET ${_refj} tests ${name} url)
 string(JSON archive_name GET ${_refj} tests ${name} archive)
 string(JSON hash GET ${_refj} tests ${name} sha256)
 
-cmake_path(APPEND archive ${refroot} ${archive_name})
+cmake_path(SET archive ${refroot}/${archive_name})
 
 # check if extracted data exists and is up to date
 if(EXISTS ${ref_dir}/sha256sum.txt)
@@ -61,7 +67,7 @@ endfunction(gemini_download_ref_data)
 
 # scripted part, needs to be in this order
 
-cmake_path(APPEND ref_dir ${refroot} ${name})
+cmake_path(SET ref_dir ${refroot}/${name})
 
 gemini_download_ref_data(${name} ${refroot} ${arc_json_file})
 
