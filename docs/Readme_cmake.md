@@ -65,7 +65,7 @@ If you want to default to GCC / Gfortran, add the line above in ~/.bashrc or ~/.
 
 ### GLOW
 
-NCAR GLOW is automatically installed, but optional in general.
+NCAR GLOW is optional.
 Auroral emissions use GLOW.
 
 Disable GLOW by:

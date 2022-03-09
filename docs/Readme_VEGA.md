@@ -1,6 +1,6 @@
 # Building GEMINI on the ERAU HPC system
 
-GEMINI must be built from a session on the login node as it requires git.  The build system will not work in an interactive or queue session.  
+GEMINI must be built from a session on the login node as it requires git.  The build system will not work in an interactive or queue session.
 
 Load the necessary modules (cmake, gcc8, and openmpi):
 
@@ -31,10 +31,9 @@ This script will take a few minutes to complete; it will note multiple missing p
 cmake --build build -j
 ```
 
-A full compile will take approximate 5-10 minutes depending on which packages need to be compiled; you will see lots of warnings but these can be safely ignored.  Executables are placed in the ```build``` directory and can be run from there.  
+A full compile will take approximate 5-10 minutes depending on which packages need to be compiled; you will see lots of warnings but these can be safely ignored.  Executables are placed in the ```build``` directory and can be run from there.
 
-
-# Running GEMINI on the ERAU HPC
+## Running GEMINI on the ERAU HPC
 
 For a simulation not needing more than 256 GB of memory, 36 cores, and less than 24 hours of runtime, one should use an interactive session.  This can be obtained by logging into VEGA and then doing:
 
@@ -51,7 +50,7 @@ For longer or more expensive simulations you will need to use the queueing syste
 #PBS -l walltime=120:00:00
 #PBS -l nodes=10:ppn=36
 #PBS -N GEMINI_mooreOK
-# Not necessary to set wall time, 
+# Not necessary to set wall time,
 # longq: 168 hours, 10 nodes (with 36proc for each), maximum 1 longq in queue per user
 # normalq: 24 hours, 10 nodes, maximum 4 normalq in queue per user
 
@@ -71,10 +70,9 @@ module load openmpi/gcc8/64/3.1.2
 mpirun -np $PBS_NP ./gemini.bin ../simulations/mooreOK3D_hemis_medres_corrected_control/ -manual_grid 36 10 -debug
 ```
 
-This simulation runs an example "mooreOK3D_hemis_medres" using 360 cores split in a process grid of 36x10 in the x2 and x3 directions.  
+This simulation runs an example "mooreOK3D_hemis_medres" using 360 cores split in a process grid of 36x10 in the x2 and x3 directions.
 
-
-# Data management on the ERAU HPC
+## Data management on the ERAU HPC
 
 Once simulations are completed they need to be moved into your home directory, which is for long-term storage and has a 10 TB quota.  Output data can also be downloaded for postprocessing and plotting as needed; "rsync" is probably the best utility for this (comes standard on unix-likes macOS and Linux).  E.g. if you navigate to the directory on your local computer where you want to store the data (~/simulations in this example) you can copy data from remote VEGA directory ~/vega_simulations/testdata to your computer via:
 
@@ -83,4 +81,4 @@ cd ~/simulations/
 rsync -av --progress username@vega.erau.edu:vega_simulations/testdata ./
 ```
 
-A benefit of using rsync is that if the data transfer is interrupted (bad connection) you can reissue the same command again and it will pick up where it left off and not unnecessarily transfer files it has already completed.  
+A benefit of using rsync is that if the data transfer is interrupted (bad connection) you can reissue the same command again and it will pick up where it left off and not unnecessarily transfer files it has already completed.

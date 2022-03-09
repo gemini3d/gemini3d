@@ -11,8 +11,10 @@ is a very popular development repository for MacOS.
 Installing the latest MPI is simply:
 
 ```sh
-brew install openmpi
+brew install open-mpi
 ```
+
+Intel oneAPI does not provide MPI on MacOS, so you would have to compile your own MPICH.
 
 ## Linux
 
@@ -21,15 +23,10 @@ Currently supported versions of Debian, Ubuntu, CentOS, and Windows Subsystem fo
 * Ubuntu / Debian / Windows Subsystem for Linux: `apt install libopenmpi-dev openmpi-bin`
 * CentOS: `yum install openmpi-devel`
 
-For CentOS, typical HPC will have the ability to switch to a recent GCC version with matching MPI library.
-If not, compile MPI--it will take about 20 minutes:
+HPC users can often switch to a recent GCC version with matching MPI library.
 
-```sh
-python -m gemini3d.prereqs gcc openmpi
-```
-
-The "python -m gemini3d.prereqs" command comes from
-[PyGemini](https://github.com/gemini3d/pygemini)
+Alternatively, [Intel oneAPI](https://www.scivision.dev/intel-oneapi-fortran-install/)
+provides Intel MPI and Scalapack on Linux.
 
 ## Windows
 
@@ -45,3 +42,8 @@ pacman -S mingw-w64-x86_64-msmpi
 Install
 [Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes),
 which gives `mpiexec`.
+
+Alternatively, [Intel oneAPI](https://www.scivision.dev/intel-oneapi-fortran-install/)
+provides Intel MPI and Scalapack on Windows.
+We do not use MSYS2/GCC libraries with Windows oneAPI as they are ABI incompatible.
+Use the oneAPI Command Prompt on Windows.

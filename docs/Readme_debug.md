@@ -35,11 +35,12 @@ cmake --build build
 
 ## Multi config (fast debug/release switching)
 
-In general, we recommend developers use the
+We use the
 [Ninja](https://github.com/ninja-build/ninja/releases)
-[CMake generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html).
+[CMake generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
+to speedily switch between debug and release builds under one build directory.
 Ninja is installed simply by "pip install ninja", or "brew install ninja", or by downloading, extracting, and adding the *ninja executable directory* to PATH environment variable.
-Ninja offers a significant build speedup, and allows switching rapidly between "debug" and "release" modes, where "release" is highly optimized for fastest run.
+Ninja speeds up the build, and allows switching rapidly between "debug" and "release" modes, where "release" is highly optimized for fastest run.
 
 ```sh
 cmake -B --preset multi
