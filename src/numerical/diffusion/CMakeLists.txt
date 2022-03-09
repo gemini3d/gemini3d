@@ -22,7 +22,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 
 # WORKING_DIRECTORY is needed to write output file to repeatable path.
 add_test(NAME unit:diffusion1
-COMMAND $<TARGET_FILE:test_diffusion1d> ${_tmpdifffn}
+COMMAND test_diffusion1d ${_tmpdifffn}
 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 set_tests_properties(unit:diffusion1 PROPERTIES
