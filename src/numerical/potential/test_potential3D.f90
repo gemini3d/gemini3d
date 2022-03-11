@@ -1,6 +1,7 @@
 program test_potential3D
 
 use mpi
+use mumps_interface, only : mumps_struc, mumps_exec
 
 implicit none (type, external)
 
@@ -8,7 +9,7 @@ type(mumps_struc) :: mumps_par
 
 integer :: ierr
 
-integer, parameter :: npts1=256,npts2=256,npts3=12
+integer, parameter :: npts1=32,npts2=64,npts3=64
 integer, parameter :: lk=npts1*npts2*npts3
 integer :: lent
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
@@ -178,7 +179,7 @@ block
   mumps_par%JOB = -1
   mumps_par%SYM = 0
   mumps_par%PAR = 1
-  call DMUMPS(mumps_par)
+  call mumps_exec(mumps_par)
 
 
   !Define problem on the host (processor 0)
@@ -203,7 +204,7 @@ block
   !Call package for solution
   mumps_par%JOB = 6
   call cpu_time(tstart)
-  call DMUMPS(mumps_par)
+  call mumps_exec(mumps_par)
   call cpu_time(tfin)
   write(*,*) 'Solve took ',tfin-tstart,' seconds...'
 
@@ -227,10 +228,10 @@ deallocate(ir,ic,M,b)
 
 !Destroy the instance (deallocate internal data structures)
 mumps_par%JOB = -2
-call DMUMPS(mumps_par)
+call mumps_exec(mumps_par)
 
 call MPI_FINALIZE(IERR)
-if (ierr /= 0) error stop 'mpi finalize
+if (ierr /= 0) error stop 'mpi finalize'
 
 
 
