@@ -35,7 +35,8 @@ use PDEelliptic, only: elliptic3D_cart
 
 implicit none (type, external)
 private
-public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved
+public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, & 
+            potential2D_fieldresolved, potential3D_fieldresolved
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
@@ -271,4 +272,74 @@ function potential3D_fieldresolved_decimate(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1
 end function potential3D_fieldresolved_decimate
 
 
+function potential3D_fieldresolved(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                  x,flagdirich,perflag,it)
+  !! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 3D USING MUMPS
+  !! ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
+  !! LINE.  THIS IS MOSTLY INEFFICIENT/UNWORKABLE FOR MORE THAN 1M
+  !! GRID POINTS.
+  
+  real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
+  real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+  real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+  real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+  class(curvmesh), intent(in) :: x
+  integer, intent(in) :: flagdirich
+  logical, intent(in) :: perflag
+  integer, intent(in) :: it
+  
+  real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
+  real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
+  real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
+  real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+  
+  integer :: lx1,lx2,lx3,ix1,ix2,ix3
+  integer, parameter :: ldec=11
+  real(wp), dimension(:), allocatable :: x1dec
+  real(wp), dimension(:), allocatable :: dx1dec
+  real(wp), dimension(:), allocatable :: x1idec
+  real(wp), dimension(:), allocatable :: dx1idec
+  real(wp), dimension(:,:,:), allocatable :: Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,srctermdec
+  real(wp), dimension(:,:), allocatable :: Vminx2dec,Vmaxx2dec
+  real(wp), dimension(:,:), allocatable :: Vminx3dec, Vmaxx3dec
+  real(wp), dimension(:,:,:), allocatable :: Phidec
+  
+  real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1pot,Vmaxx1pot
+  
+  real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: potential3D_fieldresolved
+  
+  
+  !SYSTEM SIZES
+  lx1=x%lx1    !These will be full grid sizes if called from root (only acceptable thing)
+  lx2=x%lx2all
+  lx3=x%lx3all
+  
+  
+  !COMPUTE AUXILIARY COEFFICIENTS TO PASS TO CART SOLVER
+  if (debug) print *, 'Prepping coefficients for elliptic equation...'
+  gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
+  gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
+  gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
+  gradsigH2=grad3D2(sigH,x,1,lx1,1,lx2,1,lx3)
+  gradsigH3=grad3D3(sigH,x,1,lx1,1,lx2,1,lx3)
+  
+  Ac=sigP
+  Bc=sigP
+  Cc=sig0
+  Dc=gradsigP2+gradsigH3
+  Ec=gradsigP3-gradsigH2
+  Fc=gradsig01
+  
+  
+  !ADJUST THE BOUNDARY CONDITION TO POTENTIAL DERIVATIVE INSTEAD OF CURRENT DENSITY
+  Vminx1pot=-1*Vminx1/sig0(1,:,:)
+  Vmaxx1pot=-1*Vmaxx1/sig0(lx1,:,:)
+  
+  
+  !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
+  if (debug) print*, 'Calling solve on decimated grid...'
+  potential3D_fieldresolved=elliptic3D_cart(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
+                  Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                  x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
+end function potential3D_fieldresolved
 end module potential_mumps
