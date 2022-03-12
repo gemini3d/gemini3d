@@ -9,7 +9,7 @@ type(mumps_struc) :: mumps_par
 
 integer :: ierr
 
-integer, parameter :: npts1=32,npts2=64,npts3=64
+integer, parameter :: npts1=34,npts2=144,npts3=96
 integer, parameter :: lk=npts1*npts2*npts3
 integer :: lent
 integer :: ix1,ix2,ix3,lx1,lx2,lx3

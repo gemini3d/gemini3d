@@ -224,20 +224,23 @@ module procedure potential_root_mpi_curv
       if (debug) print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
      ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
      !                   x,flagdirich,perflag,it)
-      if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
+      !if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
         do iid=1,mpi_cfg%lid-1
           call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
         end do
-        Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
+        !Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
+        !                           Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+        !                           x,flagdirich,perflag,it)
+        Phiall=potential3D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
                                    Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                    x,flagdirich,perflag,it)
-      else
-        do iid=1,mpi_cfg%lid-1
-          call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
-        end do
-          if (debug) print*, 'Boundary conditions too small to require solve, setting everything to zero...'
-        Phiall=0e0_wp
-      end if
+      !else
+      !  do iid=1,mpi_cfg%lid-1
+      !    call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+      !  end do
+      !    if (debug) print*, 'Boundary conditions too small to require solve, setting everything to zero...'
+      !  Phiall=0e0_wp
+      !end if
       !R------
     end if
   else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
