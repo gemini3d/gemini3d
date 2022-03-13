@@ -573,7 +573,7 @@ contains
   
   subroutine pot2perpfield(Phi,x,E2,E3)
     !> computes electric field (perp components only) from a worker potential pattern.  Can
-    !   be called by either root or worker processes
+    !   be called by either root or worker processes, should work on periodic or aperiodic grids
     real(wp), dimension(:,:,:), intent(in) :: Phi
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:), intent(inout) :: E2,E3

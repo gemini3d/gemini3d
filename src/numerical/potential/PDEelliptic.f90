@@ -10,7 +10,7 @@ use phys_consts, only: wp, debug
 implicit none (type, external)
 private
 public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,&
-  elliptic_workers, check_mumps_status, quiet_mumps
+  elliptic_workers, check_mumps_status, quiet_mumps, elliptic3D_cart_periodic
 
 interface ! elliptic2d.f90
   module function elliptic2D_polarization(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3,Cm,v2,v3,Vminx2,Vmaxx2, &
@@ -86,6 +86,24 @@ interface ! elliptic3d
     integer, intent(in) :: it
     real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
   end function elliptic3D_cart
+
+  module function elliptic3D_cart_periodic(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+    dx1,dx1i,dx2all,dx2iall,dx3all,dx3iall,flagdirich,perflag,it)
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,Ac,Bc,Cc,Dc,Ec,Fc
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(0:), intent(in) :: dx1         !backweard diffs start at index zero due to ghost cells
+    real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
+    real(wp), dimension(0:), intent(in) :: dx2all
+    real(wp), dimension(:), intent(in) :: dx2iall
+    real(wp), dimension(0:), intent(in) :: dx3all
+    real(wp), dimension(:), intent(in) :: dx3iall
+    integer, intent(in) :: flagdirich
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart_periodic
+  end function elliptic3D_cart_periodic
 end interface
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
