@@ -31,7 +31,7 @@ use phys_consts, only: wp, debug
 use calculus, only: grad3D1, grad3D2, grad3D3
 use meshobj, only: curvmesh
 use interpolation, only: interp1
-use PDEelliptic, only: elliptic3D_cart
+use PDEelliptic, only: elliptic3D_cart, elliptic3D_cart_periodic
 
 implicit none (type, external)
 private
@@ -322,7 +322,17 @@ function potential3D_fieldresolved(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,V
   gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
   gradsigH2=grad3D2(sigH,x,1,lx1,1,lx2,1,lx3)
   gradsigH3=grad3D3(sigH,x,1,lx1,1,lx2,1,lx3)
-  
+
+  ! Need to correct the derivatives if periodic in x3 chosen; FIXME: assume cartesian for now
+  !!  FIXME: ideally this needs to be a routine from within the gradent submodule of calculus
+  if (x%flagper) then
+    gradsigP3(:,:,1)=(sigP(:,:,2)-sigP(:,:,lx3))/(x%dx3all(2)+x%dx3all(1))
+    gradsigH3(:,:,1)=(sigH(:,:,2)-sigH(:,:,lx3))/(x%dx3all(2)+x%dx3all(1))
+    gradsigP3(:,:,lx3)=(sigP(:,:,1)-sigP(:,:,lx3-1))/(x%dx3all(1)+x%dx3all(lx3))
+    gradsigH3(:,:,lx3)=(sigH(:,:,1)-sigH(:,:,lx3-1))/(x%dx3all(1)+x%dx3all(lx3))
+  end if
+
+  ! coefficients for 3D solve 
   Ac=sigP
   Bc=sigP
   Cc=sig0
@@ -337,9 +347,15 @@ function potential3D_fieldresolved(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,V
   
   
   !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
-  if (debug) print*, 'Calling solve on decimated grid...'
-  potential3D_fieldresolved=elliptic3D_cart(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
-                  Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                  x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
+  if (debug) print*, 'Calling 3D solve on full grid'
+  if (x%flagper) then
+    potential3D_fieldresolved=elliptic3D_cart_periodic(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
+                    Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                    x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
+  else
+    potential3D_fieldresolved=elliptic3D_cart(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
+                    Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                    x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
+  end if
 end function potential3D_fieldresolved
 end module potential_mumps
