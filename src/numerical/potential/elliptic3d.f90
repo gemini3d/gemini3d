@@ -378,7 +378,7 @@ do ix3=1,lx3
         ir(ient)=iPhi
         ic(ient)=iPhi
         M(ient)=-Ac(ix1,ix2,ix3)*(1/dx2all(ix2+1)/dx2iall(ix2)+1/dx2all(ix2)/dx2iall(ix2))- &
-              Bc(ix1,ix2,ix3)*(1/dx3all(ix3+1)/dx3iall(ix3)+1/dx3all(ix3)/dx3iall(ix3))- &
+              Bc(ix1,ix2,ix3)*(1/dx3all(ix3next)/dx3iall(ix3)+1/dx3all(ix3)/dx3iall(ix3))- &
               Cc(ix1,ix2,ix3)*(1/dx1(ix1+1)/dx1i(ix1)+1/dx1(ix1)/dx1i(ix1))
         ient=ient+1
 
@@ -397,7 +397,7 @@ do ix3=1,lx3
         !> ix1,ix2,ix3+1
         ir(ient)=iPhi
         ic(ient)=iPhi+lx1*lx2
-        M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3+1)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3next)+dx3all(ix3))
+        M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3next)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3next)+dx3all(ix3))
         ient=ient+1
       end if
     end do
