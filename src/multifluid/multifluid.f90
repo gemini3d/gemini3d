@@ -267,7 +267,7 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   class(curvmesh), intent(in) :: x
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: Ts
-  real(wp), dimension(:,:,:), intent(in) :: J1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
   integer, intent(in) :: flagdiffsolve

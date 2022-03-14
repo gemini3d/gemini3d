@@ -102,7 +102,7 @@ module procedure potential_root_mpi_curv
         Vmaxx2slice=Vmaxx2(lx1,:)
         Vminx3slice=Vminx3(lx1,:)
         Vmaxx3slice=Vmaxx3(lx1,:)
-        Phislab0=Phiall(lx1,:,:)    !root already possess the fullgrid potential from prior solves...
+        Phislab0=Phiall(lx1,1:lx2all,1:lx3all)    !root already possess the fullgrid potential from prior solves...
         if (debug) print *, 'Root is calling MUMPS...'
         !R-------
   
