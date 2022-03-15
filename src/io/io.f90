@@ -5,7 +5,8 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave, comp_lvl
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  &
-  mpi_cfg, tag=>gemini_mpi
+  mpi_cfg, tag=>gemini_mpi, bcast_send3D_ghost, bcast_recv3D_ghost, gather_send3D_ghost, &
+  gather_recv3D_ghost
 use grid, only : gridflag,lx1,lx2,lx3,lx2all, lx3all
 
 implicit none (type, external)

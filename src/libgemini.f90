@@ -174,7 +174,7 @@ contains
     call fluidauxvar_pointers(fluidauxvars)
 
     !> electrodynamic state variables (lx1,lx2,lx3)
-    allocate(electrovars(lx1,lx2,lx3,7))
+    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))    ! include ghost cells in prep for integration with other codes
     call electrovar_pointers(electrovars)
 
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
@@ -193,27 +193,17 @@ contains
       iver = 0
     end if
 
-    !> allocate space for some arrays needed for fluid solves
+    !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
+    !    are computed from haloed vs1,2,3 arrays.
     allocate(vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
     allocate(vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
     allocate(vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
     allocate(Q(1:lx1,1:lx2,1:lx3,1:lsp))
 
     !> set the C pointers to the location for the memory blocks that we allocated
-    print*, " All allocations complete; now setting C pointers..."
-    ! print*, c_loc(fluidvars)
-    ! print*, c_loc(fluidvars(-1,-1,-1,1))
-    ! print*, c_loc(fluidauxvars)
-    ! print*, c_loc(electrovars)
     fluidvarsC=c_loc(fluidvars)
-    ! print*, fluidvarsC
     fluidauxvarsC=c_loc(fluidauxvars)
-    ! print*, fluidauxvarsC
     electrovarsC=c_loc(electrovars)
-    ! print*, electrovarsC
-    !fluidvarsC=c_null_ptr
-    !fluidauxvarsC=c_null_ptr
-    !electrovarsC=c_null_ptr
   end subroutine
 
 

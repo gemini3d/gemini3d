@@ -29,8 +29,7 @@ int main(int argc, char **argv) {
     std::cerr << "Gemini3D: please give simulation output directory e.g. ~/data/my_sim" << std::endl;
     return EXIT_FAILURE;
   }
-
-/*  
+  
   // simulation directory
   std::string out_dir = expanduser(argv[1]);
   if(out_dir.size() > LMAX) {
@@ -78,8 +77,8 @@ int main(int argc, char **argv) {
   
   // Prepare Gemini3D struct
   std::strncpy(s.out_dir, out_dir.c_str(), LMAX);
-*/
-  std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C_optim/",LMAX);
+
+  //std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C_optim/",LMAX);
   s.fortran_cli = false;
   s.debug = false;
   s.dryrun = false;

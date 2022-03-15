@@ -328,7 +328,7 @@ subroutine srcsMomentum_curv(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-real(wp), dimension(:,:,:), intent(in) :: E1
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
 real(wp), dimension(:,:,:,:), intent(in) :: Q
 class(curvmesh), intent(in) :: x
 
@@ -341,7 +341,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: pressure,gradlp1,
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
 real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1,geom
-real(wp), dimension(size(E1,1),size(E1,2),size(E1,3)) :: E1filt
+real(wp), dimension(size(E1,1)-4,size(E1,2)-4,size(E1,3)-4) :: E1filt
 
 integer :: ix1,ix2,ix3
 

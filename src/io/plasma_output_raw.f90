@@ -11,18 +11,9 @@ module procedure output_root_stream_mpi_raw
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2all,lx3all,isp
+integer :: isp
 character(:), allocatable :: filenamefull
 integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
-
-real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output
-
-
-!! SYSTEM SIZES
-lx1=size(Phiall,1)
-lx2all=size(Phiall,2)
-lx3all=size(Phiall,3)
-
 
 !FIGURE OUT THE FILENAME
 filenamefull=date_filename(outdir,ymd,UTsec) // '.dat'
@@ -73,10 +64,10 @@ end select
 
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
-  write(u)  Phiall(1,:,:)
+  write(u)  Phiall(1,1:lx2all,1:lx3all)
 else
   print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-  write(u)  Phiall(lx1,:,:)
+  write(u)  Phiall(lx1,1:lx2all,1:lx3all)
 end if
 
 close(u)

@@ -87,13 +87,8 @@ module procedure potential2D_fieldresolved
 !! IS ALWAYS ASSUMED TO BE DIRICHLET.
 
 
-integer :: lx1,lx2all,lx3all
 integer, dimension(4) :: flagsdirich
 
-
-lx1=size(sig0,1)
-lx2all=size(sig0,2)
-lx3all=size(sig0,3)
 
 ! This is now set in the parent procedure
 !if (flagdirich==0) then      !convert current into potential normal derivative

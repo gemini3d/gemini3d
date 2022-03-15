@@ -10,22 +10,9 @@ contains
 module procedure output_root_stream_mpi_hdf5
   !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
   !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
-
   character(:), allocatable :: filenamefull
-
-  integer :: lx1,lx2all,lx3all,isp
+  integer :: isp
   type(hdf5_file) :: hout
-
-  ! single precision work arrays
-  real, dimension(:,:,:), allocatable :: permarray
-  real, dimension(:,:,:,:), allocatable :: permarray4D
-  real, dimension(:,:), allocatable :: permarray2D
-
-  !! SYSTEM SIZES
-  lx1=size(Phiall,1)
-  lx2all=size(Phiall,2)
-  lx3all=size(Phiall,3)
-
 
   !> FIGURE OUT THE FILENAME
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
@@ -69,10 +56,10 @@ module procedure output_root_stream_mpi_hdf5
 
   if (gridflag==1) then
     print *, 'Writing topside boundary conditions for inverted-type grid...'
-    call hout%write('Phiall',       real(Phiall(1,:,:)))
+    call hout%write('Phiall',       real(Phiall(1,1:lx2all,1:lx3all)))
   else
     print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-    call hout%write('Phiall',       real(Phiall(lx1,:,:)))
+    call hout%write('Phiall',       real(Phiall(lx1,1:lx2all,1:lx3all)))
   end if
 
   call hout%close()

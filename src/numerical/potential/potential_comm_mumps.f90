@@ -9,7 +9,7 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
-use grid, only: gridflag, lx1,lx2all,lx3all,g1,g2,g3
+use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all,g1,g2,g3
 use meshobj, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
@@ -22,14 +22,15 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
 use PDEelliptic, only: elliptic_workers
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 mpi_cfg, tag=>gemini_mpi, &
-bcast_send, bcast_recv, gather_recv, gather_send, halo
+bcast_send, bcast_recv, gather_recv, gather_send, halo, bcast_send3D_ghost, bcast_recv3D_ghost
 use config, only: gemini_cfg
 
 implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
-            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker
+            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
+            acc_perpBGconductioncurrents
 external :: mpi_send, mpi_recv
 
 !! overloading to deal with vestigial cartesian->curvilinear code
@@ -64,7 +65,7 @@ interface ! potential_worker.f90
     !! viz. they need to be zeroed out if there is a lagrangian grid...
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! need to be able to convert into potential normal deriv.
-    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
   end subroutine potential_workers_mpi
 end interface
@@ -93,9 +94,9 @@ interface !< potential_root.f90
     real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
     real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
-    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! not good form, but I'm lazy...  Forgot what I meant by this...
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -123,17 +124,17 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH,sigPgrav,sigHgrav
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,nusn
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
     real(wp) :: tstart,tfin
-    integer :: lx1,lx2,lx3,isp
+    integer :: isp
     integer :: ix1,ix2,ix3,iinull
     real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
     ! background variables and boundary conditions, full grid sized variables
@@ -141,16 +142,11 @@ contains
     real(wp), dimension(1:x%lx1,1:x%lx3all) :: Vminx2,Vmaxx2
     real(wp), dimension(1:x%lx1,1:x%lx2all) :: Vminx3,Vmaxx3
     ! slab-sized background variables
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: E01,E02,E03,E02src,E03src
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
     integer :: flagdirich
-    real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4) :: Vminx1slab,Vmaxx1slab
-  
-  
-    !> recompute system sizes from density variable (subtract off ghost cells)
-    lx1=size(ns,1)-4
-    lx2=size(ns,2)-4
-    lx3=size(ns,3)-4
-  
+    real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
+ 
+
     !> update conductivities and mobilities
     call cpu_time(tstart)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
@@ -227,8 +223,8 @@ contains
     !end if
 
     !> E0?src has been already adjust to account for lagrangian; no need to check again just add
-    E2=E2+E02src
-    E3=E3+E03src  
+    E2(1:lx1,1:lx2,1:lx3)=E2(1:lx1,1:lx2,1:lx3)+E02src
+    E3(1:lx1,1:lx2,1:lx3)=E3(1:lx1,1:lx2,1:lx3)+E03src  
 
     !> velocities should be computed irrespective of whether a solve was done
     call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
@@ -313,7 +309,6 @@ contains
     ! local variables
     integer :: ierr
   
-  
     call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     if (ierr /= 0) error stop 'dirich'
   
@@ -331,7 +326,8 @@ contains
     !> compute steady state drifts resulting from a range of forces.  Can be used
     !   by both root and worker processes
     real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3
+    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     !! these must have ghost cells
     class(curvmesh), intent(in) :: x
@@ -340,17 +336,10 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
     !! intent(out)
     !! these have ghost cells
-    integer :: lx1,lx2,lx3,lsp,isp
-    real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
-    real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradp2,gradp3
+    integer :: isp
+    real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure    ! temp space for computing these
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradlp2,gradlp3
   
-    !> sizes from the mobility coefficients
-    lx1=size(muP,1)
-    lx2=size(muP,2)
-    lx3=size(muP,3)
-    lsp=size(muP,4)
-  
- 
     !! FIXME:  Do we really need separate wind mobility or
     !! can we just compute off electrical mobility as done with gravity.
     !! This is necessary because we are not storing the collision frequencies...
@@ -358,41 +347,26 @@ contains
     !! to avoid a bunch of slightly different mobility arrays.
     !> electric field and wind terms for ion drifts
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ &
+      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*E3(1:lx1,1:lx2,1:lx3)+ &
                         (muP(:,:,:,isp)*vn2-muH(:,:,:,isp)*vn3)*(ms(isp)*nusn(:,:,:,isp)/qs(isp))
-      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ &
+      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*E3(1:lx1,1:lx2,1:lx3)+ &
                         (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
     end do
   
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
       do isp=1,lsp
-!        pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
-!        !! compute pressure from n,T
-!    !      print*, myid,isp,minval(pressure(1:lx1,1:lx2,1:lx3)),maxval(pressure(1:lx1,1:lx2,1:lx3))
-!        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-!        !! boundary fill via haloing
-!        gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!        !! compute gradient x2,x3 components
-!        gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-!                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-!                  +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
-!        vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-!                  -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-!                  -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
-
          !> this behaves better when we take the gradient of log pressure
          pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
          call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-         gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-         gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+         gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+         gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
          vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-                   +muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp2(1:lx1,1:lx2,1:lx3) &
+                   +muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp3(1:lx1,1:lx2,1:lx3)
         vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                   -muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
-                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
+                   -muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp2(1:lx1,1:lx2,1:lx3) &
+                   -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp3(1:lx1,1:lx2,1:lx3)
       end do
     end if
   
@@ -435,21 +409,10 @@ contains
     logical, intent(in) :: flagnodivJ0
     real(wp), dimension(:,:,:), intent(inout) :: srcterm
     !! intent(out)
-    real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
-    real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: divtmp
+    real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: J1,J2,J3    ! why are these local?!
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
     !! one extra grid point on either end to facilitate derivatives
-    real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: J1halo,J2halo,J3halo
     !! haloing assumes existence of two ghost cells
-    integer :: lx1,lx2,lx3
-    real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: pressure
-    real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: gradp2,gradp3
-  
-  
-    !> sizes from the conductivity coefficients
-    lx1=size(sigP,1)
-    lx2=size(sigP,2)
-    lx3=size(sigP,3)
-  
   
     !-------
     !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
@@ -459,7 +422,7 @@ contains
     J3 = 0
     !! zero everything out to initialize since *accumulating* sources
     if (.not. flagnodivJ0) then
-      call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
+      call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
     call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
@@ -473,22 +436,33 @@ contains
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
   
-    J1halo(1:lx1,1:lx2,1:lx3)=J1
-    !! temporary extended arrays to be populated with boundary data
-    J2halo(1:lx1,1:lx2,1:lx3)=J2
-    J3halo(1:lx1,1:lx2,1:lx3)=J3
+    call halo_pot(J1,tag%J1,x%flagper,.false.)
+    call halo_pot(J2,tag%J2,x%flagper,.false.)
+    call halo_pot(J3,tag%J3,x%flagper,.false.)
   
-    call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-    call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-    call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-  
-    divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-                 J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
+                 J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)
     !-------
   end subroutine potential_sourceterms
   
+ 
+  !> only to be used with electric field arrays that do not have ghost cells 
+  subroutine acc_perpBGconductioncurrents(sigP,sigH,E2,E3,J2,J3)
+    !> ***Accumulate*** conduction currents into the variables J2,J3.  This
+    !    routine will not independently add background fields unless they are
+    !    already included in E2,3.  The currents are inout meaning that they
+    !    must be initialized to zero if you want only the conduction currents,
+    !    otherwise this routine just adds to whatever is already in J2,3.
+    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+    real(wp), dimension(1:,1:,1:), intent(in) :: E2,E3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
+  end subroutine acc_perpBGconductioncurrents
+
+
   subroutine acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
     !> ***Accumulate*** conduction currents into the variables J2,J3.  This
     !    routine will not independently add background fields unless they are
@@ -496,13 +470,11 @@ contains
     !    must be initialized to zero if you want only the conduction currents,
     !    otherwise this routine just adds to whatever is already in J2,3.
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
-    real(wp), dimension(:,:,:), intent(in) :: E2,E3
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
-  
-  
-    J2=J2+sigP*E2-sigH*E3
-    J3=J3+sigH*E2+sigP*E3
-  
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3    ! if used with background could have different lbound so don't assume -1
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpconductioncurrents
   
   
@@ -512,19 +484,13 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
     real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
-  
-    integer :: lx1,lx2,lx3
-    integer :: isp
-  
-    !> sizes from the conductivities
-    lx1=size(sigP,1)
-    lx2=size(sigP,2)
-    lx3=size(sigP,3)
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
     !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
-    J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-    J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
+                            sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
+                            sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpwindcurrents
   
   
@@ -534,26 +500,20 @@ contains
     real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
-  
-    real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: pressure
-    real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: gradp2,gradp3
-  
-    integer :: lx1,lx2,lx3,isp
-  
-  
-    !> sizes from the conductivities
-    lx1=size(J2,1)
-    lx2=size(J2,2)
-    lx3=size(J2,3)
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+    integer :: isp
+    real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradp2,gradp3
   
     do isp=1,lsp
       pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)
       gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-      J2=J2-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
-      J3=J3-muH(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
+      J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)+ &
+                               muH(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
+      J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)- &
+                               muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
     end do
   end subroutine acc_pressurecurrents
   
@@ -563,32 +523,23 @@ contains
     !    routine for additional caveats.
     real(wp), dimension(:,:,:), intent(in) :: sigPgrav,sigHgrav
     real(wp), dimension(:,:,:), intent(in) :: g2,g3
-    real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
   
-  
-    J2=J2+sigPgrav*g2-sigHgrav*g3
-    J3=J2+sigHgrav*g2+sigPgrav*g3
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigPgrav*g2-sigHgrav*g3
+    J3(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigHgrav*g2+sigPgrav*g3
   end subroutine acc_perpgravcurrents
   
   
   subroutine pot2perpfield(Phi,x,E2,E3)
     !> computes electric field (perp components only) from a worker potential pattern.  Can
-    !   be called by either root or worker processes, should work on periodic or aperiodic grids
-    real(wp), dimension(:,:,:), intent(in) :: Phi
+    !   be called by either root or worker processes
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(inout) :: E2,E3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E2,E3
     !! intent(out)
-    real(wp), dimension(0:size(Phi,1)+1,0:size(Phi,2)+1,0:size(Phi,3)+1) :: divtmp
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradtmp
     !! one extra grid point on either end to facilitate derivatives
-    real(wp), dimension(-1:size(Phi,1)+2,-1:size(Phi,2)+2,-1:size(Phi,3)+2) :: Phihalo
     !! haloing assumes existence of two ghost cells
-    integer :: lx1,lx2,lx3
-  
-  
-    !> sizes from the mobility coefficients
-    lx1=size(Phi,1)
-    lx2=size(Phi,2)
-    lx3=size(Phi,3)
   
     !CALCULATE PERP FIELDS FROM POTENTIAL
     !      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
@@ -596,21 +547,13 @@ contains
     !! Left here as a 'lesson learned' (or is it a gfortran bug...)
     !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
   
-    !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
-    Phihalo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
-
-    call halo_pot(Phihalo,tag%J1,x%flagper,.true.)
+    call halo_pot(Phi,tag%J1,x%flagper,.true.)
     !call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
 
-    divtmp=grad3D2(Phihalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    E2=divtmp(1:lx1,1:lx2,1:lx3)
-  
-    !COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
-    Phihalo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
-    call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
-  
-    divtmp=grad3D3(Phihalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    E3=divtmp(1:lx1,1:lx2,1:lx3)
+    gradtmp=grad3D2(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)   ! FIXME: don't need copy of array???
+    E2(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
+    gradtmp=grad3D3(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    E3(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield
   
@@ -619,27 +562,18 @@ contains
     !> Compute the parallel currents given a potential solution and calculation of perpendicular currents
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(in) :: J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2,J3
     real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
-    real(wp), dimension(:,:,:), intent(in) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phi
     real(wp), dimension(:,:,:), intent(in) :: sig0
     integer, intent(in) :: flagdirich
-    real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)), intent(inout) :: J1,E1
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,E1
     !! intent(out)
     !> local work arrays
-    integer :: lx1,lx2,lx3
     integer :: ix1
-    real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: J1halo,J2halo,J3halo
-    real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: divtmp
-    real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)) :: divJperp
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: divJperp
     !! haloing assumes existence of two ghost cells
-  
-  
-    !> sizes; should perhaps be imported from the grid module
-    lx1=size(J2,1)
-    lx2=size(J2,2)
-    lx3=size(J2,3)
-  
   
     !> inputs to this block of code:  cfg,x,J2,3,Vmaxx1slab,Vminx1slab,flagdirich,gridflag
     !> outputs to code:  J1
@@ -653,16 +587,12 @@ contains
     !      divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
   
       if (cfg%flagJpar) then   ! user can elect not to compute Jpar, which can be prone to artifacts particularly at low resolution
-        J1halo(1:lx1,1:lx2,1:lx3)=J1
-        J2halo(1:lx1,1:lx2,1:lx3)=J2
-        J3halo(1:lx1,1:lx2,1:lx3)=J3
+        call halo_pot(J1,tag%J1,x%flagper,.false.)
+        call halo_pot(J2,tag%J2,x%flagper,.false.)
+        call halo_pot(J3,tag%J3,x%flagper,.false.)
   
-        call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-        call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-        call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-  
-        divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-                     J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+        divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
+                     J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
         divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
         if (flagdirich /= 1) then
           !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
@@ -674,17 +604,17 @@ contains
     !                       maxval(Vmaxx1slab)
             if (cfg%sourcemlat >= 0) then    !integrate from northern hemisphere
     !          if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
-              J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
+              J1(1:lx1,1:lx2,1:lx3)=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
               do ix1=1,lx1
-                J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                                 (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
+                J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                                 (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,1:lx2,1:lx3))
               end do
             else
     !          if (debug) print *, 'Source in southern hemisphere...'
-              J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
+              J1(1:lx1,1:lx2,1:lx3)=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
               do ix1=1,lx1
-                J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                                 (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+                J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                                 (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,1:lx2,1:lx3))
               end do
             end if
           ! For open grids always integrate from the bottom (zero current)
@@ -692,19 +622,19 @@ contains
     !        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
     !                       minval(Vminx1slab), &
     !                       maxval(Vminx1slab)
-            J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+            J1(1:lx1,1:lx2,1:lx3)=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
             do ix1=1,lx1
-              J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                               (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+              J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                               (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,1:lx2,1:lx3))
             end do
   
           else        !minx1 is at the bottom of the grid to integrate from max x1
     !        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
-            J1=integral3D1_curv_alt(divJperp,x,1,lx1)
+            J1(1:lx1,1:lx2,1:lx3)=integral3D1_curv_alt(divJperp,x,1,lx1)
             !! int divperp of BG current, go from maxval(x1) to location of interest
             do ix1=1,lx1
-              J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                               (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
+              J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                               (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,1:lx2,1:lx3))
             end do
   
           end if
@@ -713,28 +643,28 @@ contains
           !! (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
           if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
             if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
-            J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
+            J1(1:lx1,1:lx2,1:lx3)=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
             do ix1=1,lx1
-              J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                               (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
+              J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                               (J1(ix1,1:lx2,1:lx3))    !FAC AT TOP ASSUMED TO BE ZERO
             end do
           else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
             if (debug) print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
-            J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+            J1(1:lx1,1:lx2,1:lx3)=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
             do ix1=1,lx1
-              J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                               (-J1(ix1,:,:))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
+              J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                               (-J1(ix1,1:lx2,1:lx3))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
             end do
           end if
         end if
-        E1=J1/sig0
+        E1(1:lx1,1:lx2,1:lx3)=J1(1:lx1,1:lx2,1:lx3)/sig0
         !-------
       end if ! flagJpar
     else   !we resolved the field line (either 2D solve or full 3D) so just differentiate normally
       !-------
-      E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
-      E1=-E1
-      J1=sig0*E1
+      E1(1:lx1,1:lx2,1:lx3)=grad3D1(Phi(1:lx1,1:lx2,1:lx3),x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
+      E1(1:lx1,1:lx2,1:lx3)=-E1(1:lx1,1:lx2,1:lx3)
+      J1(1:lx1,1:lx2,1:lx3)=sig0*E1(1:lx1,1:lx2,1:lx3)
       !print*, 'parallel fields:  ',maxval(abs(E1))
       !-------
     end if
@@ -746,51 +676,33 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
-    real(wp), dimension(:,:,:), intent(in) :: incap,E2,E3,E2prev,E3prev,v2,v3
-    real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)), intent(inout) :: J1pol,J2pol,J3pol
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E2,E3
+    real(wp), dimension(:,:,:), intent(in) :: incap,E2prev,E3prev,v2,v3
+    real(wp), dimension(1:lx1,1:lx2,1:lx3), intent(inout) :: J1pol,J2pol,J3pol
     !! intent(out)
     ! internal work arrays
-    integer :: lx1,lx2,lx3
-    real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: Ehalo
-    real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)) :: DE2Dt,DE3Dt,grad2E,grad3E
-    real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: divtmp
-  
-  
-    !> sizes; should perhaps be imported from the grid module
-    lx1=size(E2,1)
-    lx2=size(E2,2)
-    lx3=size(E2,3)
-  
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: DE2Dt,DE3Dt,grad2E,grad3E
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
   
     ! check whether electrodynamics is being used or not
     if (cfg%flagcap/=0) then
       !differentiate E2 in x2
-      Ehalo(1:lx1,1:lx2,1:lx3)=E2
-      call halo_pot(Ehalo,tag%J1,x%flagper,.false.)
-      divtmp=grad3D2(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      call halo_pot(E2,tag%J1,x%flagper,.false.)
+      divtmp=grad3D2(E2(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-  
       !differentiate E2 in x3
-      Ehalo(1:lx1,1:lx2,1:lx3)=E2
-      call halo_pot(Ehalo,tag%J1,x%flagper,.false.)    !likely doesn't need to be haloed again
-      divtmp=grad3D3(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      divtmp=grad3D3(E2(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-  
       !compute total derivative in x2
       DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
   
       !differentiate E3 in x2
-      Ehalo(1:lx1,1:lx2,1:lx3)=E3
-      call halo_pot(Ehalo,tag%J1,x%flagper,.false.)
-      divtmp=grad3D2(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      call halo_pot(E3,tag%J1,x%flagper,.false.)
+      divtmp=grad3D2(E3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-  
       !differentiate E3 in x3
-      Ehalo(1:lx1,1:lx2,1:lx3)=E3
-      call halo_pot(Ehalo,tag%J1,x%flagper,.false.)    !maybe don't need to halo again???
-      divtmp=grad3D3(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      divtmp=grad3D3(E3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-  
       !x3 total derivative
       DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
   
