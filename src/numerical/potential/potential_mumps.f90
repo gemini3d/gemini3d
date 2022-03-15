@@ -326,6 +326,7 @@ function potential3D_fieldresolved(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,V
   ! Need to correct the derivatives if periodic in x3 chosen; FIXME: assume cartesian for now
   !!  FIXME: ideally this needs to be a routine from within the gradent submodule of calculus
   if (x%flagper) then
+    if (debug) print*, 'Adjusting conductivity derivatives to account for periodic grid...'
     gradsigP3(:,:,1)=(sigP(:,:,2)-sigP(:,:,lx3))/(x%dx3all(2)+x%dx3all(1))
     gradsigH3(:,:,1)=(sigH(:,:,2)-sigH(:,:,lx3))/(x%dx3all(2)+x%dx3all(1))
     gradsigP3(:,:,lx3)=(sigP(:,:,1)-sigP(:,:,lx3-1))/(x%dx3all(1)+x%dx3all(lx3))
@@ -347,13 +348,13 @@ function potential3D_fieldresolved(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,V
   
   
   !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
-  if (.not. x%flagper) then
-    if (debug) print*, 'Calling 3D solve on full grid, non-periodic'
+  if (x%flagper) then
+    if (debug) print*, 'Calling 3D solve on full grid, periodic'
     potential3D_fieldresolved=elliptic3D_cart_periodic(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
                     Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                     x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
   else
-    if (debug) print*, 'Calling 3D solve on full grid, periodic'
+    if (debug) print*, 'Calling 3D solve on full grid, non-periodic'
     potential3D_fieldresolved=elliptic3D_cart(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1pot,Vmaxx1pot, &
                     Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                     x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)

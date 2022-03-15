@@ -267,7 +267,7 @@ integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
-integer :: ix3next
+integer :: ix3prev,ix3next
 
 type (MUMPS_STRUC) :: mumps_par
 
@@ -280,7 +280,7 @@ lPhi=lx1*lx2*lx3
 
 lent=7*(lx1-2)*(lx2-2)*(lx3)                                                   !interior entries include periodic x3 (so all x3 interior)
 lent=lent+2*(lx2-2)*(lx3)+2*(lx1-2)*(lx3)                                      !4 faces of periodic cube
-lent=lent+4*(lx3)                                        !4 edges
+lent=lent+4*(lx3)                                                              !4 edges
 lent=lent+lx2*lx3                                                              !entries to deal with Neumann conditions on bottom
 
 if (flagdirich==0) lent=lent+lx2*lx3
@@ -353,12 +353,21 @@ do ix3=1,lx3
         ient=ient+1
       else
         ! check if we are going to circulate off the grid
-        if (ix3==lx3) ix3next=1
+        if (ix3==lx3) then
+          ix3next=1
+        else
+          ix3next=ix3+1
+        end if
+        if (ix3==1) then
+          ix3prev=lx3
+        else
+          ix3prev=ix3-1
+        end if
 
         !! INTERIOR
         !> ix1,ix2,ix3-1 grid point in ix1,ix2,ix3 equation
         ir(ient)=iPhi
-        ic(ient)=iPhi-lx1*lx2
+        ic(ient)=lx1*lx2*(ix3prev-1)+lx1*(ix2-1)+ix1
         M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3)/dx3iall(ix3)-Ec(ix1,ix2,ix3)/(dx3all(ix3next)+dx3all(ix3))
         ient=ient+1
 
@@ -396,7 +405,7 @@ do ix3=1,lx3
 
         !> ix1,ix2,ix3+1
         ir(ient)=iPhi
-        ic(ient)=iPhi+lx1*lx2
+        ic(ient)=lx1*lx2*(ix3next-1)+lx1*(ix2-1)+ix1
         M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3next)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3next)+dx3all(ix3))
         ient=ient+1
       end if
