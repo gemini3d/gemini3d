@@ -18,7 +18,8 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_fieldresolved, &
                             potential2D_polarization, &
                             potential2D_polarization_periodic, &
-                            potential3D_fieldresolved
+                            potential3D_fieldresolved, &
+                            potential3D_fieldresolved_truncate
 use PDEelliptic, only: elliptic_workers
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 mpi_cfg, tag=>gemini_mpi, &
