@@ -414,10 +414,6 @@ contains
     Ec=gradsigP3-gradsigH2
     Fc=gradsig01
     
-    !ADJUST THE BOUNDARY CONDITION TO POTENTIAL DERIVATIVE INSTEAD OF CURRENT DENSITY
-    Vminx1pot=-1*Vminx1/sig0(1,:,:)
-    Vmaxx1pot=-1*Vmaxx1/sig0(lx1,:,:)
-
     ! Now truncate the problem at some appropriate altitude
     ix1=1
     alttrunc=300e3
@@ -431,6 +427,10 @@ contains
       print*, 'Unable to truncate field-resolved solve at sensible altitude...',ix1,alttrunc
       error stop 
     end if
+
+    !ADJUST THE BOUNDARY CONDITION TO POTENTIAL DERIVATIVE INSTEAD OF CURRENT DENSITY
+    Vminx1pot=-1*Vminx1/sig0(1,:,:)
+    Vmaxx1pot=-1*Vmaxx1/sig0(lx1trunc,:,:)
 
     ! allocate and assign truncated variables
     allocate(Actrunc(1:lx1trunc,1:lx2,1:lx3))

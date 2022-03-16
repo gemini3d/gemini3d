@@ -175,9 +175,10 @@ module procedure potential_root_mpi_curv
         !Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
         !                           Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
         !                           x,flagdirich,perflag,it)
-        Phiall=potential3D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
+        Phitmp=potential3D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
                                    Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                    x,flagdirich,perflag,it)
+        Phiall(1:lx1,1:lx2all,1:lx3all)=Phitmp
       !else
       !  do iid=1,mpi_cfg%lid-1
       !    call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
