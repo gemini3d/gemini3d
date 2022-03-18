@@ -83,7 +83,7 @@ jobs:
       run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} -Dmsis2:BOOL=${{ matrix.msis2 }} -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
     - name: Debug build
-      run: cmake --build --preset debug
+      run: cmake --build --parallel --preset debug
 
     - name: Debug unit test
       run: ctest --preset debug -L unit
@@ -93,7 +93,7 @@ jobs:
 
 
     - name: Release build
-      run: cmake --build --preset release
+      run: cmake --build --parallel --preset release
 
     - name: Release unit test
       run: ctest --preset release -L unit

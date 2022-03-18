@@ -1,7 +1,6 @@
 name: intel-oneapi
 
 env:
-  CMAKE_BUILD_PARALLEL_LEVEL: 3
   CTEST_PARALLEL_LEVEL: 2
   CC: icx
   FC: ifort
@@ -89,14 +88,14 @@ jobs:
       run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} --debug-find
 
     - name: DEBUG build
-      run: cmake --build --preset debug
+      run: cmake --build --parallel --preset debug
     - name: DEBUG unit test
       run: ctest --preset debug -L unit
     - name: DEBUG test core
       run: ctest --preset debug -LE unit -E 3d
 
     - name: RELEASE build
-      run: cmake --build --preset release
+      run: cmake --build --parallel --preset release
     - name: RELEASE unit test
       run: ctest --preset release -L unit
     - name: RELEASE test core

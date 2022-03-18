@@ -59,7 +59,7 @@ jobs:
 
 
     - name: Debug build
-      run: cmake --build --preset debug
+      run: cmake --build --parallel --preset debug
 
     - name: Debug unit test
       run: ctest --preset debug -L unit
@@ -69,7 +69,7 @@ jobs:
 
 
     - name: Release build
-      run: cmake --build --preset release
+      run: cmake --build --parallel --preset release
 
     - name: Release unit test
       run: ctest --preset release -L unit
