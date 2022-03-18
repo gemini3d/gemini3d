@@ -49,7 +49,7 @@ jobs:
       timeout-minutes: 8
       run: |
         cmake -S gemext -B gemext/build -Dfind:BOOL=true -Dusempi:BOOL=no -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        cmake --build gemext/build --target ffilesystem glow msis mumps mpi_scalapack_stub
+        cmake --build gemext/build --target ffilesystem glow iniparser msis mumps mpi_scalapack_stub
         cmake --install gemext/build
 
     - uses: actions/checkout@v2
