@@ -126,7 +126,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
   
   !ALL VELOCITY SOURCES
@@ -135,7 +135,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
   
   !ALL MASS SOURCES
@@ -144,7 +144,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
 end subroutine source_loss_allparams
 
@@ -364,17 +364,17 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   else
     !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
     !if (mpi_cfg%myid==0 .and. debug) then
-      print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
+    !  print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
     !end if
   end if
   
   !if (mpi_cfg%myid==0) then
-    if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
-      minval(Prprecip), maxval(Prprecip)
+  !  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
+  !    minval(Prprecip), maxval(Prprecip)
   !end if
   !if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
-    if (cfg%flagglow/=0 .and. debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
-      minval(iver(:,:,2)), maxval(iver(:,:,2))
+  !  if (cfg%flagglow/=0 .and. debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
+  !    minval(iver(:,:,2)), maxval(iver(:,:,2))
   !end if
 end subroutine impact_ionization
 
