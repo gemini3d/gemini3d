@@ -27,7 +27,7 @@ struct params {
 
 
 /* This is now housed in the main C program */
-// extern void gemini_main(struct params *, int*, int*);
+extern void gemini_main(struct params *, int*, int*);
 
 extern void help_gemini_bin();
 
