@@ -72,7 +72,7 @@ jobs:
         path: gemext
 
     - name: Install numeric libraries
-      timeout-minutes: 8
+      timeout-minutes: 15
       run: |
         cmake -S gemext -B gemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         cmake --build gemext/build --target ffilesystem glow hwm14 iniparser msis mumps
