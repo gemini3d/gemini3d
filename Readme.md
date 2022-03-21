@@ -58,23 +58,36 @@ Requirements:
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
 
+Gemini3D setup:
+
 1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
 
   ```sh
   git clone https://github.com/gemini3d/external.git
 
-  cmake -B external/build -S external --install-prefix=$HOME/libgem
+  cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/libgem
   # the libgem name/location is arbitrary
 
   cmake --build external/build --parallel
   ```
 
-2. Set environment variable `CMAKE_PREFIX_PATH=$HOME/libgem` so Gemini3D uses these libraries. Add to PATH environment variable $HOME/libgem/bin. On Linux/MacOS this is done like:
+2. Set environment variables `CMAKE_PREFIX_PATH` and edit PATH environment variable as follows.
+On **Linux** add to ~/.bashrc, or on **MacOS** add to ~/.zshrc:
 
   ```sh
-  export CMAKE_PREFIX_PATH=$HOME/libgem
+  export CMAKE_PREFIX_PATH=~/libgem
   export PATH=$HOME/libgem/bin:$PATH
   ```
+
+On **Windows** from Windows Terminal / Command Prompt:
+
+  ```pwsh
+  rundll32 sysdm.cpl,EditEnvironmentVariables
+  ```
+
+Then add "New" variable `CMAKE_PREFIX_PATH` with value `~/libgem`.
+"Edit" variable `Path` with New value `%USERPROFILE%\libgem\bin`.
+
 3. Build the Gemini3D code
 
   ```sh
@@ -82,7 +95,7 @@ Requirements:
 
   cd gemini3d
 
-  cmake -B build -DCMAKE_PREFIX_PATH=$HOME/libgem
+  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
 
   cmake --build build --parallel
   ```
