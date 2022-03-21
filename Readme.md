@@ -58,47 +58,54 @@ Requirements:
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
 
-Gemini3D setup:
+### Gemini3D setup
 
-1. Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
+Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
 
-  ```sh
-  git clone https://github.com/gemini3d/external.git
+```sh
+git clone https://github.com/gemini3d/external.git
 
-  cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/libgem
-  # the libgem name/location is arbitrary
+cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/libgem
+# the libgem name/location is arbitrary
 
-  cmake --build external/build --parallel
-  ```
+cmake --build external/build
+```
 
-2. Set environment variables `CMAKE_PREFIX_PATH` and edit PATH environment variable as follows.
+Note: if the external build fails and you don't see the error message, run the build command `cmake --build external/build` once or twice more see if you can scroll back to it.
+The build is massively in parallel and so sometimes the error is many screens back up.
+
+---
+
+Set environment variables `CMAKE_PREFIX_PATH` and edit PATH environment variable as follows.
 On **Linux** add to ~/.bashrc, or on **MacOS** add to ~/.zshrc:
 
-  ```sh
-  export CMAKE_PREFIX_PATH=~/libgem
-  export PATH=$HOME/libgem/bin:$PATH
-  ```
+```sh
+export CMAKE_PREFIX_PATH=~/libgem
+export PATH=$HOME/libgem/bin:$PATH
+```
 
 On **Windows** from Windows Terminal / Command Prompt:
 
-  ```pwsh
-  rundll32 sysdm.cpl,EditEnvironmentVariables
-  ```
+```pwsh
+rundll32 sysdm.cpl,EditEnvironmentVariables
+```
 
 Then add "New" variable `CMAKE_PREFIX_PATH` with value `~/libgem`.
 "Edit" variable `Path` with New value `%USERPROFILE%\libgem\bin`.
 
-3. Build the Gemini3D code
+---
 
-  ```sh
-  git clone https://github.com/gemini3d/gemini3d.git
+Build the Gemini3D code
 
-  cd gemini3d
+    ```sh
+    git clone https://github.com/gemini3d/gemini3d.git
 
-  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
+    cd gemini3d
 
-  cmake --build build --parallel
-  ```
+    cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
+
+    cmake --build build --parallel
+    ```
 
 Non-default [build options](./docs/Readme_cmake.md) may be used.
 
