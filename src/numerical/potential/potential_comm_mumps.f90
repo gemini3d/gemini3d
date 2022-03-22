@@ -695,7 +695,7 @@ contains
       divtmp=grad3D3(E2(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
       !compute total derivative in x2
-      DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+      DE2Dt=(E2(1:lx1,1:lx2,1:lx3)-E2prev)/dt+v2*grad2E+v3*grad3E
   
       !differentiate E3 in x2
       call halo_pot(E3,tag%J1,x%flagper,.false.)
@@ -705,7 +705,7 @@ contains
       divtmp=grad3D3(E3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
       !x3 total derivative
-      DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
+      DE3Dt=(E3(1:lx1,1:lx2,1:lx3)-E3prev)/dt+v2*grad2E+v3*grad3E
   
       !convert derivative into polarization current density
       J1pol= 0
