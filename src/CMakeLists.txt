@@ -246,44 +246,43 @@ EXPORT ${PROJECT_NAME}-targets
 )
 
 
-## --- Gemini_c.bin
-## This is an example of a C++ main program, instead of or in addition to the main Fortran gemini.bin
-## this could be used as a starting point for C++ programs that use the GEMINI3D API
-#
-#if(cpp_frontend)
-#
-#find_package(iniparser CONFIG REQUIRED)
-## for gemini_c C++ front end
-#
-#add_executable(gemini_c.bin gemini_main.cpp pathlib.cpp)
-#set_target_properties(gemini_c.bin PROPERTIES
-#RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-##LINKER_LANGUAGE CXX
-#RELWITHDEBINFO_POSTFIX .debug
-#DEBUG_POSTFIX .debug
-#)
-#target_link_libraries(gemini_c.bin PRIVATE
-#gemini3d
-#gemini3d_mpi
-#nc4fortran::nc4fortran
-#h5fortran::h5fortran
-#MUMPS::MUMPS
-#$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
-#MPI::MPI_CXX
-#$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
-#"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-#$<$<BOOL:${glow}>:glow::glow>
-#iniparser::iniparser
-#)
-#target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
-#target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
-#
-## NOTE: gemini_c.bin does not yet have unit testing, as we are deciding whether to make it a separate example
-## or even in a separate project. See https://github.com/gemini3d/libgemini
-#
-#install(TARGETS gemini_c.bin
-#EXPORT ${PROJECT_NAME}-targets
-#)
-#install(FILES gemini3d.h TYPE INCLUDE)
-#
-#endif(cpp_frontend)
+# need this header for external projects using Gemini3D
+install(FILES gemini3d.h TYPE INCLUDE)
+
+# --- Gemini_c.bin
+# This is an example of a C++ main program, instead of or in addition to the main Fortran gemini.bin
+# this could be used as a starting point for C++ programs that use the GEMINI3D API
+
+if(cpp)
+
+find_package(iniparser CONFIG REQUIRED)
+# for gemini_c C++ front end
+
+add_executable(gemini_c.bin gemini_main.cpp libgemini.cpp)
+set_target_properties(gemini_c.bin PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+#LINKER_LANGUAGE CXX
+RELWITHDEBINFO_POSTFIX .debug
+DEBUG_POSTFIX .debug
+)
+target_link_libraries(gemini_c.bin PRIVATE
+gemini3d
+gemini3d_mpi
+nc4fortran::nc4fortran
+h5fortran::h5fortran
+MUMPS::MUMPS
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
+MPI::MPI_CXX
+"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
+$<$<BOOL:${glow}>:glow::glow>
+iniparser::iniparser
+ffilesystem::filesystem
+)
+target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
+target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
+
+install(TARGETS gemini_c.bin
+EXPORT ${PROJECT_NAME}-targets
+)
+
+endif(cpp)

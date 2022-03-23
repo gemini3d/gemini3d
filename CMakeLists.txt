@@ -43,14 +43,17 @@ if(NOT ffilesystem_FOUND)
 Gemini3D requires several external libraries that are one-time installed via this procedure. Note: the 'gemini_libs' directory is arbitrary example.
 
   git clone https://github.com/gemini3d/external
-  cmake -B external/build -S external --install-prefix=$HOME/gemini_libs
-  cmake --build external/build --parallel
+  cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/gemini_libs
+  cmake --build external/build
 
 Now, configure and build Gemini3D (from gemini3d/ directory) like this:
 
-  cmake -B build -DCMAKE_PREFIX_PATH=$HOME/gemini_libs
+  cmake -B build -DCMAKE_PREFIX_PATH=~/gemini_libs
   cmake --build build --parallel
 ")
+endif()
+if(cpp AND ffilesystem_VERSION VERSION_LESS 3.3.0)
+  message(FATAL_ERROR "Gemini3d C++ frontend required ffilesystem >= 3.3.0")
 endif()
 
 if(mpi)
