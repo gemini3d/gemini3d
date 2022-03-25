@@ -5,12 +5,7 @@
 #include <vector>
 #include <sstream>
 
-#include <cstdlib>
-#include <cstring>
-
 #include <mpi.h>
-
-#include <stdio.h>
 
 #include "gemini3d.h"
 #include "iniparser.h"
@@ -33,12 +28,7 @@ int main(int argc, char **argv) {
   // simulation directory
   char odir[4096];
   expanduser(argv[1], odir);
-  std::string out_dir(odir);
-  if(out_dir.size() > LMAX) {
-    std::cerr << "Gemini3D simulation output directory: path length > " << LMAX << std::endl;
-    return EXIT_FAILURE;
-  }
-
+  fs::path out_dir(odir);
 
   if(! fs::is_directory(out_dir)) {
     std::cerr << "Gemini3D simulation output directory does not exist: " << out_dir << std::endl;
@@ -46,15 +36,18 @@ int main(int argc, char **argv) {
   }
 
   // Read gemini_config.ini
-  std::string ini_file = out_dir;
-  ini_file.append("/inputs/gemini_config.ini");
+  auto ini_file = out_dir / "inputs/gemini_config.ini";
+  if(! fs::is_regular_file(ini_file)) {
+    std::cerr << "Gemini3D: did not find gemini_config.ini: " << ini_file << std::endl;
+    return EXIT_FAILURE;
+  }
 
   dictionary  *ini;
   int b,i ;
   double d;
   const char *txt;
 
-  ini = iniparser_load(ini_file.c_str());
+  ini = iniparser_load(ini_file.string().c_str());
   if (ini==NULL) {
       std::cerr << "gemini3d_ini: cannot parse file: " << ini_file << std::endl;
       return EXIT_FAILURE;
@@ -78,9 +71,8 @@ int main(int argc, char **argv) {
   iniparser_freedict(ini);  // close the file
 
   // Prepare Gemini3D struct
-  std::strncpy(s.out_dir, out_dir.c_str(), LMAX);
+  strncpy(s.out_dir, out_dir.string().c_str(), LMAX);
 
-  //std::strncpy(s.out_dir,"~/simulations/raid/CI/GDI_periodic_lowres_C_optim/",LMAX);
   s.fortran_cli = false;
   s.debug = false;
   s.dryrun = false;
