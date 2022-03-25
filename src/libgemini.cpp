@@ -108,3 +108,49 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   clear_dneu_C();
 
 }
+
+void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid){
+  double f107,f107a;
+  double gavg,Tninf;
+  int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
+
+  /* Set up variables for the time step */
+  get_solar_indices_C(&f107,&f107a);   // FIXME: do we really need to return the indices???
+  v12rhov1_C();
+  T2rhoe_C();
+
+  /* Advection substep */
+  halo_interface_vels_allspec_C(plsp);
+  interface_vels_allspec_C(plsp);
+  set_global_boundaries_allspec_C(plsp);
+  halo_allparams_C();
+  sweep3_allparams_C(pdt);
+  sweep1_allparams_C(pdt);
+  halo_allparams_C();
+  sweep2_allparams_C(pdt);
+  rhov12v1_C();
+  clean_param_C(&one);
+  clean_param_C(&two);
+
+  /* Compression substep */
+  VNRicht_artvisc_C();
+  RK2_prep_mpi_allspec_C();
+  compression_C(pdt);
+  rhoe2T_C();
+  clean_param_C(&three);
+
+  /* Energy diffusion substep */
+  energy_diffusion_C(pdt);
+  clean_param_C(&three);
+  T2rhoe_C();
+
+  /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
+  get_gavg_Tninf_C(&gavg,&Tninf);
+
+  /* Sources substep and finalize solution for this time step */
+  source_loss_allparams_C(pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
+  clean_param_C(&three); clean_param_C(&two); clean_param_C(&one);
+
+  // Fix electron veloc???
+  return;
+}

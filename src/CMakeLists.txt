@@ -256,9 +256,9 @@ RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
 )
 target_link_libraries(gemini_c.bin PRIVATE
+gemini3d_c
 gemini3d
 gemini3d_mpi
-gemini3d_c
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
