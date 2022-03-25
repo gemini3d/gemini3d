@@ -125,33 +125,11 @@ hwloc_ifc hwloc_c
 
 
 foreach(l ${gemini_internal_mods})
-  install(TARGETS ${l}
-  EXPORT ${PROJECT_NAME}-targets
-  )
-
   target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
-
-  target_link_libraries(gemini3d PUBLIC
-  # PRIVATE $<TARGET_OBJECTS:${l}>
-  # $<BUILD_INTERFACE:${l}>
-  $<INSTALL_INTERFACE:${l}>
-  # ${l}
-  )
 endforeach()
 
 foreach(l ${gemini_mpi_internal_mods})
-  install(TARGETS ${l}
-  EXPORT ${PROJECT_NAME}-mpi-targets
-  )
-
   target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
-
-  target_link_libraries(gemini3d_mpi
-  # PRIVATE $<TARGET_OBJECTS:${l}>
-  # $<BUILD_INTERFACE:${l}>
-  $<INSTALL_INTERFACE:${l}>
-  # ${l}
-  )
 endforeach()
 
 # --- Gemini.bin minimal main Fortran program
@@ -258,17 +236,8 @@ if(cpp)
 find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
-add_executable(gemini_c.bin gemini_main.cpp libgemini.cpp)
-set_target_properties(gemini_c.bin PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-#LINKER_LANGUAGE CXX
-RELWITHDEBINFO_POSTFIX .debug
-DEBUG_POSTFIX .debug
-)
-target_link_libraries(gemini_c.bin PRIVATE
-gemini3d
-gemini3d_mpi
-nc4fortran::nc4fortran
+add_library(gemini3d_c libgemini.cpp)
+target_link_libraries(gemini3d_c PUBLIC nc4fortran::nc4fortran
 h5fortran::h5fortran
 MUMPS::MUMPS
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
@@ -278,10 +247,23 @@ $<$<BOOL:${glow}>:glow::glow>
 iniparser::iniparser
 ffilesystem::filesystem
 )
+
+add_executable(gemini_c.bin gemini_main.cpp)
+set_target_properties(gemini_c.bin PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+#LINKER_LANGUAGE CXX
+RELWITHDEBINFO_POSTFIX .debug
+DEBUG_POSTFIX .debug
+)
+target_link_libraries(gemini_c.bin PRIVATE
+gemini3d
+gemini3d_mpi
+gemini3d_c
+)
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
-install(TARGETS gemini_c.bin
+install(TARGETS gemini_c.bin gemini3d_c gemini3d_mpi
 EXPORT ${PROJECT_NAME}-targets
 )
 
