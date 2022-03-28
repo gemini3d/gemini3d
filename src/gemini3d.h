@@ -10,6 +10,7 @@ enum { LMAX = 1000 };
 struct params {
   // order and lengths must match in Fortran and C
   // see gemini_main.f90 "cparams"
+  bool fortran_nml;
   bool fortran_cli;
   bool debug;
   bool dryrun;

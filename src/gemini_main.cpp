@@ -35,40 +35,43 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  // Read gemini_config.ini
+  // Read gemini_config.ini, if it exists
   auto ini_file = out_dir / "inputs/gemini_config.ini";
-  if(! fs::is_regular_file(ini_file)) {
-    std::cerr << "Gemini3D: did not find gemini_config.ini: " << ini_file << std::endl;
-    return EXIT_FAILURE;
-  }
+  if(fs::is_regular_file(ini_file)) {
 
-  dictionary  *ini;
-  int b,i ;
-  double d;
-  const char *txt;
+    dictionary  *ini;
+    int b,i ;
+    double d;
+    const char *txt;
 
-  ini = iniparser_load(ini_file.string().c_str());
-  if (ini==NULL) {
-      std::cerr << "gemini3d_ini: cannot parse file: " << ini_file << std::endl;
+    ini = iniparser_load(ini_file.string().c_str());
+    if (ini==NULL) {
+        std::cerr << "gemini3d_ini: cannot parse file: " << ini_file << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    std::string ini_str, t_str;
+    std::vector<int> ymd;
+
+    ini_str = iniparser_getstring(ini, "base:ymd", "");
+    if(ini_str.empty()) {
+      std::cerr << "gemini3d_ini: base:ymd not found in " << ini_file << std::endl;
       return EXIT_FAILURE;
-  }
+    }
+    std::stringstream sini(ini_str);
 
-  std::string ini_str, t_str;
-  std::vector<int> ymd;
+    while(std::getline(sini, t_str, ',')) ymd.push_back(stoi(t_str));
+    if(ymd.size() != 3) {
+      std::cerr << "gemini3d_ini: base:ymd must have 3 elements: " << ini_str << std::endl;
+      return EXIT_FAILURE;
+    }
+    iniparser_freedict(ini);  // close the file
 
-  ini_str = iniparser_getstring(ini, "base:ymd", "");
-  if(ini_str.empty()) {
-    std::cerr << "gemini3d_ini: base:ymd not found in " << ini_file << std::endl;
-    return EXIT_FAILURE;
+    s.fortran_nml = false;
   }
-  std::stringstream sini(ini_str);
-
-  while(std::getline(sini, t_str, ',')) ymd.push_back(stoi(t_str));
-  if(ymd.size() != 3) {
-    std::cerr << "gemini3d_ini: base:ymd must have 3 elements: " << ini_str << std::endl;
-    return EXIT_FAILURE;
+  else {
+    s.fortran_nml = true;
   }
-  iniparser_freedict(ini);  // close the file
 
   // Prepare Gemini3D struct
   strncpy(s.out_dir, out_dir.string().c_str(), LMAX);

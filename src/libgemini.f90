@@ -82,7 +82,7 @@ character(*), parameter :: msis2_param_file = "msis20.parm"
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
   !! this MUST match gemini3d.h and libgemini.f90 exactly including order
-  logical(c_bool) :: fortran_cli, debug, dryrun
+  logical(c_bool) :: fortran_nml, fortran_cli, debug, dryrun
   character(kind=c_char) :: out_dir(1000)
   !! .ini [base]
   integer(c_int) :: ymd(3)
@@ -114,9 +114,12 @@ contains
       debug = p%debug
     endif
 
-    !> read the config input file
-    call find_config(cfg)
-    call read_configfile(cfg, verbose=.false.)
+    !> read the config input file, if not passed .ini info from C++ frontend
+    if(p%fortran_nml) then
+      call find_config(cfg)
+      call read_configfile(cfg, verbose=.false.)
+    endif
+
     call check_input_files(cfg)
 
     !> read the size out of the grid file, store in module variables

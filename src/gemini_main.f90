@@ -24,8 +24,8 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,ini
                       set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
                       v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
                       rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, get_config_vars_C, &
-                      get_species_size_C
+                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, &
+                      get_config_vars_C, get_species_size_C
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
                           init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
@@ -47,6 +47,7 @@ integer :: myid
 call mpi_init(ierr)
 if (ierr/=0) error stop 'gemini.bin: failed mpi_init'
 p%fortran_cli = .true.
+p%fortran_nml = .true.
 p%out_dir(1) = c_null_char
 lid2in = -1
 lid3in = -1
@@ -103,7 +104,7 @@ contains
     integer :: flagdneu
     real(wp) :: dtneu,dtneuBG
     integer :: myid,lid
-    
+
     !> initialize message passing.  FIXME: needs to be msissetup_C()
     call mpisetup_C()
     call mpiparms_C(myid,lid)
@@ -111,11 +112,11 @@ contains
     call cli_config_gridsize(p,lid2in,lid3in)
     call get_fullgrid_size_C(lx1,lx2all,lx3all)
     call get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu)
-    
+
     !> MPI gridding cannot be done until we know the grid size, and needs to be done before we distribute pieces of the grid
     !    to workers
     call init_procgrid(lx2all,lx3all,lid2in,lid3in)
-    
+
     !> load the grid data from the input file and store in gemini module
     call read_grid_C()
 
@@ -128,28 +129,28 @@ contains
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(lx1,lx2all,lx3all)
-    
+
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
     call get_initial_state(UTsec,ymd,tdur)
 
     !> initialize time stepping and some aux variables
     call set_start_values(it,t,tout,tglowout,tneuBG)
-    
+
     !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
     if(myid==0) print*, 'Priming electric field input'
     call init_Efieldinput_C(dt,t,ymd,UTsec)
-    
+
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
     call pot2perpfield_C()
 
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(v2grid,v3grid) 
-    
+    call BGfield_Lagrangian(v2grid,v3grid)
+
     !> Precipitation input setup
     if(myid==0) print*, 'Priming precipitation input'
     call init_precipinput_C(dt,t,ymd,UTsec)
-    
+
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call msisinit_C()
@@ -158,14 +159,14 @@ contains
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
     call get_initial_drifts()
-    
+
     !> control rate of console printing
     call set_update_cadence(iupdate)
-    
+
     !> Main time loop
     main : do while (t < tdur)
       call dt_select_C(it,t,tout,tglowout,dt)
-    
+
       !> get neutral background
       if ( it/=1 .and. flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
@@ -177,7 +178,7 @@ contains
           print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
         end if
       end if
-    
+
       !> get neutral perturbations
       if (flagdneu==1) then
         call cpu_time(tstart)
@@ -187,7 +188,7 @@ contains
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
         endif
       end if
-    
+
       !> compute potential solution
       call cpu_time(tstart)
       call electrodynamics_C(it,t,dt,ymd,UTsec)
@@ -195,7 +196,7 @@ contains
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
       endif
-    
+
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
       call fluid_adv(t,dt,ymd,UTsec,(it==1),lsp,myid)
@@ -203,11 +204,11 @@ contains
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
       endif
-    
+
       !> Sanity check key variables before advancing
       ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
       call check_finite_output_C(t)
-    
+
       !> update time variables
       it = it + 1
       t = t + dt
@@ -217,21 +218,21 @@ contains
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
       endif
-    
+
       !> see if we are doing a dry run and exit program if so
       call check_dryrun()
-    
+
       !> File output
       call check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec)
     end do main
-    
+
     !> deallocate variables and module data
     call gemini_dealloc(fluidvarsC,fluidauxvarsC,electrovarsC)
     call clear_neuBG_C()
     call clear_dneu_C()
   end subroutine gemini_main
-  
-  
+
+
   !> this advances the fluid soluation by time interval dt
   subroutine fluid_adv(t,dt,ymd,UTsec,first,lsp,myid)
     !! J1 needed for heat conduction; E1 for momentum equation
@@ -245,14 +246,14 @@ contains
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
-    
+
     ! pull solar indices from module type
     call get_solar_indices_C(f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1_C()
-    call T2rhoe_C() 
-   
+    call T2rhoe_C()
+
     ! advection substep for all species
     call cpu_time(tstart)
     call halo_interface_vels_allspec_C(lsp)
@@ -268,11 +269,11 @@ contains
     if (myid==0 .and. debug) then
       print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
-    
+
     ! post advection filling of null cells
     call clean_param_C(1)
     call clean_param_C(2)
-    
+
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
     call VNRicht_artvisc_C()
@@ -284,7 +285,7 @@ contains
     if (myid==0 .and. debug) then
       print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
-    
+
     ! Energy diffusion (thermal conduction) substep
     call cpu_time(tstart)
     call energy_diffusion_C(dt)
@@ -292,7 +293,7 @@ contains
     if (myid==0 .and. debug) then
       print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
-    
+
     ! cleanup and convert to specific internal energy density for sources substeps
     call clean_param_C(3)
     call T2rhoe_C()
@@ -302,12 +303,12 @@ contains
 
     !> solve all source/loss processes
     call source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
-  
+
     ! density to be cleaned after source/loss
     call clean_param_C(3)
     call clean_param_C(2)
     call clean_param_C(1)
-    
+
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv
 end program
