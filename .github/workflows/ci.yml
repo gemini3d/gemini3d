@@ -3,6 +3,7 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  cmake_version: "3.20.6"
 
 on:
   push:
@@ -20,7 +21,7 @@ on:
 
 jobs:
 
-  linux_mac:
+  core:
     timeout-minutes: 30
 
     strategy:
@@ -47,20 +48,21 @@ jobs:
         path: gemext
 
     - name: Install CMake 3.20
+      if: runner.os == 'Linux'
       timeout-minutes: 2
       run: |
         cmake -Dversion=${{ env.cmake_version }} -Dprefix=${{ runner.temp }} -P gemext/scripts/install_cmake.cmake
         echo "${{ runner.temp }}/cmake-${{ env.cmake_version }}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages (Linux)
-      if: matrix.img.os == 'ubuntu-latest'
+      if: runner.os == 'Linux'
       timeout-minutes: 15
       run: |
         sudo $(cmake -P gemext/scripts/requirements.cmake) liblapack-dev libscalapack-mpi-dev
         sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
-      if: matrix.img.os == 'macos-latest'
+      if: runner.os == 'macOS'
       timeout-minutes: 15
       run: |
         $(cmake -P gemext/scripts/requirements.cmake)
