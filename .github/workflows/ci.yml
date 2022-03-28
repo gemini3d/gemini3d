@@ -3,7 +3,7 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  cmake_version: "3.20.6"
+  cmake_version: "3.21.6"
 
 on:
   push:
