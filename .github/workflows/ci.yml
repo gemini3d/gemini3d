@@ -47,7 +47,7 @@ jobs:
         repository: gemini3d/external
         path: gemext
 
-    - name: Install CMake 3.20
+    - name: Install CMake ${{ env.cmake_version }}
       if: runner.os == 'Linux'
       timeout-minutes: 2
       run: |
