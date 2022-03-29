@@ -26,6 +26,8 @@ ffilesystem::filesystem ${lib_filesystem}
 )
 
 # self-tests
+if(${PROJECT_NAME}_BUILD_TESTING)
+
 add_executable(test_proj test_proj.f90)
 
 foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
@@ -49,3 +51,5 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
 endif()
+
+endif(${PROJECT_NAME}_BUILD_TESTING)
