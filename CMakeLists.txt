@@ -85,6 +85,9 @@ if(glow)
   find_package(glow CONFIG REQUIRED)
 endif(glow)
 
+# --- HWM14
+include(cmake/ext_libs/hwm14.cmake)
+
 include(cmake/compilers/flags.cmake)
 
 # unit test DLL paths

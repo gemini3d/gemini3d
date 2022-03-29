@@ -3,15 +3,6 @@ add_subdirectory(unit_tests)
 # --- MSISE00 or MSIS 2.0
 find_package(msis CONFIG REQUIRED)
 
-# --- HWM14
-if(hwm14)
-  find_package(hwm14 CONFIG REQUIRED)
-else()
-  add_library(hwm_ifc vendor/hwm14_dummy.f90)
-  add_library(hwm14::hwm_ifc INTERFACE IMPORTED)
-  target_link_libraries(hwm14::hwm_ifc INTERFACE hwm_ifc)
-endif()
-
 # --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
