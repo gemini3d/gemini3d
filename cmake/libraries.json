@@ -1,10 +1,5 @@
 {
 "ref_data": {
   "url": "https://www.dropbox.com/s/tzwho5199ede15v/ref_data.json?dl=1"
-},
-
-"matgemini": {
-  "git": "https://github.com/gemini3d/mat_gemini.git",
-  "tag": "v5.5.0"
 }
 }
