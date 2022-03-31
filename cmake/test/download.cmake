@@ -3,18 +3,16 @@ cmake_minimum_required(VERSION 3.20...3.23)
 function(download_archive url archive exp_hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
-file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
-file(SHA256 ${archive} hash)
-
-if(hash STREQUAL ${exp_hash})
-  return()
+file(DOWNLOAD ${url} ${archive}
+INACTIVITY_TIMEOUT 15
+STATUS ret
+EXPECTED_HASH SHA256=${exp_hash}
+)
+list(GET ret 0 stat)
+if(NOT stat EQUAL 0)
+  list(GET ret 1 err)
+  message(FATAL_ERROR "${url} download failed: ${err}")
 endif()
-
-if(hash STREQUAL "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-  message(FATAL_ERROR "${url} failed to download: ${archive} is an empty file.")
-endif()
-
-message(FATAL_ERROR "${url} failed to download ${archive}")
 
 endfunction(download_archive)
 
@@ -24,8 +22,18 @@ function(gemini_download_ref_data name refroot arc_json_file)
 # --- download reference data JSON file (for previously generated data)
 if(NOT EXISTS ${arc_json_file})
   file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries.json _libj)
+
   string(JSON url GET ${_libj} ref_data url)
-  file(DOWNLOAD ${url} ${arc_json_file} INACTIVITY_TIMEOUT 15)
+
+  file(DOWNLOAD ${url} ${arc_json_file}
+  INACTIVITY_TIMEOUT 15
+  STATUS ret
+  )
+  list(GET ret 0 stat)
+  if(NOT stat EQUAL 0)
+    list(GET ret 1 err)
+    message(FATAL_ERROR "${url} download failed: ${err}")
+  endif()
 endif()
 file(READ ${arc_json_file} _refj)
 
