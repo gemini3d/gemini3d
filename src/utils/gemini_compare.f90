@@ -7,6 +7,7 @@ program gemini_compare
 !! if the values are mismatched sufficiently, we print a message and optionally plot the difference to PNG file(s).
 
 use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_grid, params
+use filesystem, only : expanduser, same_file
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
@@ -25,11 +26,13 @@ if(argc < 2) error stop help
 
 call get_command_argument(1, buf, status=i)
 if (i/=0) error stop help
-new_path = trim(buf)
+new_path = expanduser(buf)
 
 call get_command_argument(2, buf, status=i)
 if (i/=0) error stop help
-ref_path = trim(buf)
+ref_path = expanduser(buf)
+
+if (same_file(new_path, ref_path)) error stop "paths must be different: " // new_path // " is equivalent to " // ref_path
 
 buf = ""
 which = "in,out"
