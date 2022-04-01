@@ -49,7 +49,7 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
-hwm14::hwm_ifc
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 msis::msis_ifc
 ffilesystem::filesystem ${lib_filesystem}
 )
@@ -154,7 +154,7 @@ $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-hwm14::hwm_ifc
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem ${lib_filesystem}
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")

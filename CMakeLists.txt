@@ -83,10 +83,11 @@ endif()
 # --- climate models
 if(glow)
   find_package(glow CONFIG REQUIRED)
-endif(glow)
+endif()
 
-# --- HWM14
-include(cmake/ext_libs/hwm14.cmake)
+if(hwm14)
+  find_package(hwm14 CONFIG REQUIRED)
+endif()
 
 include(cmake/compilers/flags.cmake)
 

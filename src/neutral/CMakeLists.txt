@@ -1,4 +1,6 @@
-add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90)
+add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90
+$<$<NOT:$<BOOL:${hwm14}>>:${PROJECT_SOURCE_DIR}/src/vendor/hwm14_dummy.f90>
+)
 target_compile_options(neutral PRIVATE ${gfortran_opts})
 target_link_libraries(neutral PRIVATE config const reader grid meshobj interp mpimod
 timeutils
@@ -7,7 +9,7 @@ neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis_ifc
-hwm14::hwm_ifc
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem ${lib_filesystem}
 )
 
@@ -21,7 +23,7 @@ neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis_ifc
-hwm14::hwm_ifc
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem ${lib_filesystem}
 )
 
@@ -43,7 +45,7 @@ target_link_libraries(test_proj PRIVATE config const reader inputdata
 timeutils mpimod const
 MPI::MPI_Fortran
 msis::msis_ifc
-hwm14::hwm_ifc
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem ${lib_filesystem}
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
