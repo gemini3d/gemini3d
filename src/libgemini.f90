@@ -57,6 +57,9 @@ class(curvmesh), allocatable :: x
 real(wp), dimension(:,:,:,:), pointer :: fluidvars
 real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 real(wp), dimension(:,:,:,:), pointer :: electrovars
+real(wp), dimension(:), pointer :: fluidvars_flat
+real(wp), dimension(:), pointer :: fluidauxvars_flat
+real(wp), dimension(:), pointer :: electrovars_flat
 
 !! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C
 !!   because mapping C-fortran pointers does not appear to work in most compilers???
@@ -195,9 +198,12 @@ contains
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: electrovarsC
 
-    call c_f_pointer(fluidvarsC,fluidvars,[lx1+4,lx2+4,lx3+4,5*lsp])
-    call c_f_pointer(fluidauxvarsC,fluidauxvars,[lx1+4,lx2+4,lx3+4,2*lsp])
-    call c_f_pointer(electrovarsC,electrovars,[lx1+4,lx2+4,lx3+4,7])
+    call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
+    fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
+    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp)])
+    fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
+    call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
+    electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
 
     call fluidvar_pointers(fluidvars)
     call fluidauxvar_pointers(fluidauxvars)
@@ -207,7 +213,7 @@ contains
   end subroutine memblock_from_C
 
 
-  !> allocation space for neutral data and MHD-like parameters
+  !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
   subroutine neuMHDalloc()
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
     allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
@@ -267,7 +273,9 @@ contains
 
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
-    !> eledtric fields, potential, and current density
+    print*, 'shape of electrovars:  ', shape(electrovars)
+
+    !> electric fields, potential, and current density
     E1=>electrovars(:,:,:,1)
     E2=>electrovars(:,:,:,2)
     E3=>electrovars(:,:,:,3)
@@ -275,6 +283,8 @@ contains
     J2=>electrovars(:,:,:,5)
     J3=>electrovars(:,:,:,6)
     Phi=>electrovars(:,:,:,7)
+
+    print*, 'shape E2,E3:  ', shape(E2), shape(E3), minval(E2), maxval(E2), minval(E3), maxval(E3)
   end subroutine electrovar_pointers
 
 

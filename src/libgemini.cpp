@@ -43,19 +43,19 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Allocate memory and get pointers to blocks of data */
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
   std::cout << "start C allocations\n";
-  fluidvars=(double*) malloc(lx1*lx2*lx3*5*lsp*sizeof(double));
-  fluidauxvars=(double*) malloc(lx1*lx2*lx3*2*lsp*sizeof(double));
-  electrovars=(double*) malloc(lx1*lx2*lx3*7*sizeof(double));
+  fluidvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*5*lsp*sizeof(double));
+  fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*2*lsp*sizeof(double));
+  electrovars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*7*sizeof(double));
   if (! fluidvars){
-    std::cerr << "fluidvars\n";
+    std::cerr << "fluidvars failed malloc\n";
     return;
   }
   if (! fluidauxvars){
-    std::cerr << "fluidvars\n";
+    std::cerr << "fluiduxvars failed malloc\n";
     return;
   }
   if (! electrovars){
-    std::cerr << "fluidvars\n";
+    std::cerr << "electrovars failed malloc\n";
     return;
   }
   std::cout << "end C allocations\n";

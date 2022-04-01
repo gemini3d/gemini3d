@@ -211,10 +211,10 @@ contains
     deallocate(E01,E02,E03)
 
     if (mpi_cfg%myid==0) then
-      print*, 'Recomputed initial fields including background:'
-      print*, '    ',minval(E1),maxval(E1)
-      print*, '    ',minval(E2),maxval(E2)
-      print*, '    ',minval(E3),maxval(E3)
+      print*, 'Recomputed initial fields including background (BGfieldLagrangian):'
+      print*, '    ',minval(E1(1:lx1,1:lx2,1:lx3)),maxval(E1(1:lx1,1:lx2,1:lx3))
+      print*, '    ',minval(E2(1:lx1,1:lx2,1:lx3)),maxval(E2(1:lx1,1:lx2,1:lx3))
+      print*, '    ',minval(E3(1:lx1,1:lx2,1:lx3)),maxval(E3(1:lx1,1:lx2,1:lx3))
     end if
   end subroutine BGfield_Lagrangian
 
@@ -270,9 +270,10 @@ contains
     call pot2perpfield(Phi,x,E2,E3)
     if(mpi_cfg%myid==0) then
       print '(A)', 'Recomputed initial dist. fields via pot2perpfield:'
-      print*, '    gemini ',minval(E1),maxval(E1)
-      print*, '    gemini ',minval(E2),maxval(E2)
-      print*, '    gemini ',minval(E3),maxval(E3)
+      print*, '    gemini ',minval(E1(1:lx1,1:lx2,1:lx3)),maxval(E1(1:lx1,1:lx2,1:lx3))
+      print*, '    gemini ',minval(E2(1:lx1,1:lx2,1:lx3)),maxval(E2(1:lx1,1:lx2,1:lx3))
+      print*, '    gemini ',minval(E3(1:lx1,1:lx2,1:lx3)),maxval(E3(1:lx1,1:lx2,1:lx3))
+      print*, '    gemini ',minval(Phi(1:lx1,1:lx2,1:lx3)),maxval(Phi(1:lx1,1:lx2,1:lx3))
     end if
   end subroutine pot2perpfield_C
 
