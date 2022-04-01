@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <cstdlib>
 #include "gemini3d.h"
 
 // top-level module calls for gemini simulation
@@ -41,7 +41,25 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   get_species_size_C(&lsp);               // so main knows the number of species used
 
   /* Allocate memory and get pointers to blocks of data */
-  gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
+  //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
+  std::cout << "start C allocations\n";
+  fluidvars=(double*) malloc(lx1*lx2*lx3*5*lsp*sizeof(double));
+  fluidauxvars=(double*) malloc(lx1*lx2*lx3*2*lsp*sizeof(double));
+  electrovars=(double*) malloc(lx1*lx2*lx3*7*sizeof(double));
+  if (! fluidvars){
+    std::cerr << "fluidvars\n";
+    return;
+  }
+  if (! fluidauxvars){
+    std::cerr << "fluidvars\n";
+    return;
+  }
+  if (! electrovars){
+    std::cerr << "fluidvars\n";
+    return;
+  }
+  std::cout << "end C allocations\n";
+  memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
   outdir_fullgridvaralloc(&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
 
   /* initialize state variables from input file */

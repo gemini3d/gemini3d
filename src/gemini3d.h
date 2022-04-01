@@ -39,6 +39,7 @@ extern void get_config_vars_C(bool*, int*, double*, double*);
 extern void get_subgrid_size_C(int*, int*, int*);
 extern void get_species_size_C(int*);
 extern void gemini_alloc(double**, double**, double**);
+extern void memblock_from_C(double**, double**, double**);
 extern void set_start_values(int*, double*, double*, double*, double*);
 extern void msisinit_C();
 extern void init_neutralBG_C(double*, double*, int*, double*, double*, double*);

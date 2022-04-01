@@ -18,7 +18,7 @@
 !!   the grid object
 module gemini3d
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp
@@ -180,6 +180,35 @@ contains
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))    ! include ghost cells in prep for integration with other codes
     call electrovar_pointers(electrovars)
 
+    !> set the C pointers to the location for the memory blocks that we allocated
+    fluidvarsC=c_loc(fluidvars)
+    fluidauxvarsC=c_loc(fluidauxvars)
+    electrovarsC=c_loc(electrovars)
+
+    call neuMHDalloc()
+  end subroutine gemini_alloc
+
+
+  !> as an alternative to gemini_alloc (fortran allocation) can have C allocate space and pass in pointers that fortran will bind to state vars
+  subroutine memblock_from_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="memblock_from_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: electrovarsC
+
+    call c_f_pointer(fluidvarsC,fluidvars,[lx1+4,lx2+4,lx3+4,5*lsp])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[lx1+4,lx2+4,lx3+4,2*lsp])
+    call c_f_pointer(electrovarsC,electrovars,[lx1+4,lx2+4,lx3+4,7])
+
+    call fluidvar_pointers(fluidvars)
+    call fluidauxvar_pointers(fluidauxvars)
+    call electrovar_pointers(electrovars)
+
+    call neuMHDalloc()
+  end subroutine memblock_from_C
+
+
+  !> allocation space for neutral data and MHD-like parameters
+  subroutine neuMHDalloc()
     !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
     allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
     allocate(B1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
@@ -202,12 +231,7 @@ contains
     allocate(vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
     allocate(vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
     allocate(Q(1:lx1,1:lx2,1:lx3,1:lsp))
-
-    !> set the C pointers to the location for the memory blocks that we allocated
-    fluidvarsC=c_loc(fluidvars)
-    fluidauxvarsC=c_loc(fluidauxvars)
-    electrovarsC=c_loc(electrovars)
-  end subroutine
+  end subroutine 
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
