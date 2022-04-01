@@ -57,7 +57,7 @@ real(sp), dimension(:), allocatable :: phitoptmp
 integer :: j
 character(len=1024) :: iri90_dir
 
-data_dir = DATADIR
+data_dir = "@glow_data_dir@"
 iri90_dir = trim(data_dir) // '/iri90/'
 
 

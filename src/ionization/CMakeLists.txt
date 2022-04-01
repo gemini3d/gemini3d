@@ -30,9 +30,25 @@ endif()
 
 endif(BUILD_TESTING)
 
-add_library(ionization OBJECT ionization.f90
-$<IF:$<BOOL:${glow}>,glow_run.F90,glow_dummy.f90>
-)
+
+add_library(ionization OBJECT ionization.f90)
+
+if(glow)
+  get_target_property(_def glow::glow INTERFACE_COMPILE_DEFINITIONS)
+  string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
+  set(glow_data_dir "${CMAKE_MATCH_1}")
+  if(NOT IS_DIRECTORY "${glow_data_dir}")
+    message(FATAL_ERROR "GLOW data directory not found: ${_def}
+    ${glow_data_dir}")
+  endif()
+
+  configure_file(glow_run.in.f90 glow_run.f90 @ONLY)
+
+  target_sources(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/glow_run.f90)
+else()
+  target_sources(ionization PRIVATE glow_dummy.f90)
+endif()
+
 target_link_libraries(ionization PRIVATE const grid meshobj timeutils fang
 $<$<BOOL:${glow}>:glow::glow>
 )
