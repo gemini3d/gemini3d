@@ -539,6 +539,7 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E2,E3
     !! intent(out)
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradtmp
+    real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: Phitmp
     !! one extra grid point on either end to facilitate derivatives
     !! haloing assumes existence of two ghost cells
   
@@ -547,13 +548,14 @@ contains
     !! causes major memory leak. maybe from arithmetic statement argument?
     !! Left here as a 'lesson learned' (or is it a gfortran bug...)
     !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
-  
+
     call halo_pot(Phi,tag%J1,x%flagper,.true.)
     !call halo_pot(Phihalo,tag%J1,x%flagper,.false.)
 
-    gradtmp=grad3D2(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)   ! FIXME: don't need copy of array???
+    Phitmp=Phi(0:lx1+1,0:lx2+1,0:lx3+1)
+    gradtmp=grad3D2(Phitmp,x,0,lx1+1,0,lx2+1,0,lx3+1)   ! FIXME: don't need copy of array???
     E2(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
-    gradtmp=grad3D3(Phi(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradtmp=grad3D3(Phitmp,x,0,lx1+1,0,lx2+1,0,lx3+1)
     E3(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield
