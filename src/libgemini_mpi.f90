@@ -114,6 +114,7 @@ contains
       tdur = cfg%tdur
 
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
+      print*, 'Starting from beginning of simulation...'
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
     end if
   end subroutine get_initial_state
@@ -268,7 +269,7 @@ contains
     E1 = 0
     call pot2perpfield(Phi,x,E2,E3)
     if(mpi_cfg%myid==0) then
-      print '(A)', 'Recomputed initial dist. fields:'
+      print '(A)', 'Recomputed initial dist. fields via pot2perpfield:'
       print*, '    gemini ',minval(E1),maxval(E1)
       print*, '    gemini ',minval(E2),maxval(E2)
       print*, '    gemini ',minval(E3),maxval(E3)
