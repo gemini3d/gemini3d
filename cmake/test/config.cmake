@@ -17,6 +17,7 @@ COMMAND ${CMAKE_COMMAND}
   -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
+FIXTURES_REQUIRED internet_fxt
 FIXTURES_SETUP ${name}:download_fxt
 RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
@@ -35,13 +36,9 @@ COMMAND ${test_cmd} -dryrun
 
 set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
 TIMEOUT 60
-FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 FIXTURES_SETUP hdf5:${name}:dryrun
-LABELS core
-DISABLED $<NOT:$<BOOL:${hdf5}>>
-WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 )
-# WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
 
 
 add_test(NAME gemini:hdf5:${name} COMMAND ${test_cmd})
@@ -50,8 +47,6 @@ set_tests_properties(gemini:hdf5:${name} PROPERTIES
 TIMEOUT ${TIMEOUT}
 FIXTURES_REQUIRED hdf5:${name}:dryrun
 FIXTURES_SETUP hdf5:${name}:run_fxt
-LABELS core
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 dll_test_path("ffilesystem::filesystem;gemini3d;h5fortran::h5fortran;HDF5::HDF5" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
@@ -126,3 +121,11 @@ DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 
 endfunction(setup_magcalc_test)
+
+
+add_test(NAME InternetConnectivity
+COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
+set_tests_properties(InternetConnectivity PROPERTIES
+TIMEOUT 3
+FIXTURES_SETUP internet_fxt
+)
