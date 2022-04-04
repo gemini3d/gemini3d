@@ -7,6 +7,7 @@ file(DOWNLOAD ${url} ${archive}
 INACTIVITY_TIMEOUT 15
 STATUS ret
 EXPECTED_HASH SHA256=${exp_hash}
+TLS_VERIFY ON
 )
 list(GET ret 0 stat)
 if(NOT stat EQUAL 0)
@@ -28,6 +29,7 @@ if(NOT EXISTS ${arc_json_file})
   file(DOWNLOAD ${url} ${arc_json_file}
   INACTIVITY_TIMEOUT 15
   STATUS ret
+  TLS_VERIFY ON
   )
   list(GET ret 0 stat)
   if(NOT stat EQUAL 0)
