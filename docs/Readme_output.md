@@ -1,28 +1,30 @@
 # Gemini load and plot data
 
-The default file format for Gemini is HDF5.
-NetCDF4 file IO is [optionally available](./Readme_cmake.md).
-Raw file output was the original Gemini format, but does not support all features, is not tested and not recommended.
+The default file format for Gemini is HDF5.  NetCDF4 file IO is [optionally available](./Readme_cmake.md).  Raw file output (flat binary) was the original Gemini format, but does not support all features, is no longer routinely tested and not recommended.
 
+All of the instrutions below
 
 ## Default plotting
 
 To produce the default style plots for simulation run (python):
 
-```sh
-gemini_plot /tmp/mysim
+```python
+import gemini3d.plot
+direc="~/simulations/mysim"
+gemini3d.plot.plot_all(direc,saveplot_fmt="png")
 ```
+The last argument is the format in which the plots will be saved, either "png" or "eps".  
 
 The MATLAB version of this script can be invoked by starting MATLAB and running:
 
 ```matlab
+run <location of matgemini>/setup.m
 direc='~/simulations/mysim'
-gemini3d.vis.plotall(direc,{'png','eps'})
+gemini3d.plot.plotall(direc,"png")
 ```
-where the latter argument specifies the file type to which matlab will print the plots.
+where the latter argument specifies the file type to which matlab will print the plots.  Either "png" or "eps" are currently supported. 
 
-The script reads a sequence of files from a simulation.
-This script saves a copy of the output plots into the simulation output directory.
+The Python/MATLAB ```plotall``` script reads a sequence of files from the simulation directory corresponding to the full sequence of outputs.  This script saves a copy of the output plots into the simulation output directory under "./plots/".
 
 
 ## Loading simulation data
@@ -32,52 +34,74 @@ To load output data from a GEMINI simulation, e.g. for purposes of custom plotti
 In python:
 
 ```sh
-MH - please add commands to load variables into python workspace or whatever it is called.
+import gemini3d.read
+direc="~/simulations/mysim"
+dat=gemini3d.read.frame(direc,time=<datetime_variable>)
 ```
+
+If you have already read in the simulation config info (see below) often this will take the form:
+
+```sh
+import gemini3d.read
+direc="~/simulations/mysim"
+cfg = gemini3d.read.config(direc)
+dat=gemini3d.read.frame(direc,time=cfg["time"][-1])
+```
+
+The output dictionary ```dat``` will have xarray entries corresponding to simulation variables corresponding to the output frame requested.  
 
 In MATLAB:
-
-```matlab
-dat = gemini3d.loadframe(direc, "time", time)
-```
-This will load into the structure dat all of the plasma information from the simulation frame corresponding to output directory `direc` on time=datetime().  The time variable must be a MATLAB datetime structure; one can be built out of a datevec as follows:
 
 ```matlab
 time=datetime([year,month,day,hour,minute,second])
+dat = gemini3d.loadframe(direc, "time", time)
+```
+This will load into the structure dat all of the plasma information from the simulation frame corresponding to output directory `direc` on time=datetime().  The time variable must be a MATLAB datetime structure as shown above.  The remaining arguments are optional and are mainly present to prevent the code from having to reloadn data if it is called repeatedly for different time frames in the same simulation.  The output dat contains fields `dat.ne,dat.Te,dat.Ti,dat.v1` etc. corresponding to different calculated variables of interest (see descriptions below).
+
+
+## Loading simulation metadata
+
+By default the `loadframe` API will not load the grid or simulation configuration information; these require separate calls:  To load the simulation configuration information in Python:
+
+```Python
+import gemini3d.read
+direc="~/simulations/mysim"
+cfg=gemini3d.read.config(direc)
 ```
 
-The remaining arguments are optional and are mainly present to prevent the code from having to reload, e.g. the grid, if it is called repeatedly for different time frames in the same simulation.  The output dat contains fields `dat.ne,dat.Te,dat.Ti,dat.v1` etc. corresponding to different calculated variables of interest (see descriptions below).
+The ```cfg``` dictionary will contain all of the information from the config.nml or config.ini file.  
 
-By default the `loadframe` API will not load the grid or simulation configuration information; these require separate calls to gemini3d.readgrid and gemini3d.read_config.  
-
-To load the simulation information:
-
-In Python:
-
-```sh
-MH - please add commands to load variables into python workspace or whatever it is called.
-```
-
-In MATLAB:
+In MATLAB the config file can be read via:
 
 ```matlab
-cfg = gemini3d.read_config(path)
+run <location of matgemini>/setup.m
+direc='~/simulations/mysim'
+cfg = gemini3d.read.config(direc)
 ```
+
+The returned ```cfg``` variable is a MATLAB struct and will contain input file information.  
+
+
+## Loading simulation grid
 
 To load the grid a `readgrid` function is provided:
 
 In Python:
 
 ```python
-MH - please add commands to load variables into python workspace or whatever it is called.
+import gemini3d.read
+direc="~/simulations/mysim"
+xg=gemini3d.read.grid(direc)
 ```
 
 In MATLAB
 
 ```matlab
-xg = gemini3d.readgrid(path);
+run <location of matgemini>/setup.m
+direc='~/simulations/mysim'
+xg = gemini3d.read.grid(direc)
 ```
-Here `path` is the path to the grid data file.
+Here ```direc``` is the path to the grid data file.  And the output object will be a dictionary or structure containing all of the grid information, list Readme_input.md for a full list.  
 
 
 ## Output file content
@@ -96,34 +120,22 @@ MKSA units are used throughout.
 `simdate` - a six element vector containing year, month, day, UT hour, UT minute, and UT seconds of the present frame
 
 
-## Grid variables
-
-<!--x1,x2,x3 - x1 is altitude (z in plots), x2 is east (x in plots), x3 north (y in plots); the sizes of these variables are stored in lxs.-->
-
-All three dimensional arrays have dimensions ordered as `x1,x2,x3`, i.e. the first dimension corresponds to the *field-line* coordinate.
-
-structure xg - members `xg.x1,2,3` are the position variables, `xg.h*` are the metric factors, `xg.dx*` are the finite differences.  For Cartesian coordinates x1 is altitude, x2 is eastward distance, x3 is northward distance (all meters).
-
-`xg.glat,glon` are the latitudes and longitudes (degrees geographic) of each grid point, `xg.alt` is the altitude of each grid point.
-
-`xg.r,theta,phi` - for each grid point:  radial distance (from ctr of Earth), magnetic colatitude (rads.), and magnetic longitude (rads.).  The magnetic pole and moment is hard coded into the grid generation scripts.
-
-### Temperature variable
+## Temperature variable
 
 `Ts` (first three dimensions have size lxs; 4th dimension is species index:  1=O+,2=NO+,3=N2+,4=O2+,5=N+, 6=H+,7=e-)
 
-### Density variable
+## Density variable
 
 `ns` (same indexing as temperature)
 
-### Parallel to **B** (x1) Drifts
+## Parallel to **B** (x1) Drifts
 
 `vs1` (same indexing as temperature)
 
 x2-drift component:  `v2` (same for all species, so this is just size lxs and is a 3D array)
 x3-drift component:  `v3`
 
-### Electromagnetic variables
+## Electromagnetic variables
 
 current density:  `J1, J2, J3`
 potential:  `Phitop` (EFL potential)
