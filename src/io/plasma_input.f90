@@ -12,7 +12,7 @@ interface ! plasma_input_*.f90
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
   end subroutine input_root_currents_raw
 
@@ -21,9 +21,9 @@ interface ! plasma_input_*.f90
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! intent(out)
   end subroutine input_root_mpi_raw
 
@@ -32,7 +32,7 @@ interface ! plasma_input_*.f90
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
   end subroutine input_root_currents_hdf5
 
@@ -41,9 +41,9 @@ interface ! plasma_input_*.f90
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! intent(out)
   end subroutine input_root_mpi_hdf5
 
@@ -52,7 +52,7 @@ interface ! plasma_input_*.f90
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
   end subroutine input_root_currents_nc4
 
@@ -61,9 +61,9 @@ interface ! plasma_input_*.f90
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! intent(out)
   end subroutine input_root_mpi_nc4
 end interface
@@ -114,11 +114,12 @@ module procedure input_plasma
     !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
     !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
     print '(/,A,/,A)', 'Initial conditions (root):','------------------------'
-    print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
-    print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
-    print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
-    print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(:,:,:)),  maxval(Phi(:,:,:))
-    print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(:,:,:)),  maxval(Phiall(:,:,:))
+    print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(1:lx1,1:lx2,1:lx3,7)),  maxval(ns(1:lx1,1:lx2,1:lx3,7))
+    print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(1:lx1,1:lx2,1:lx3,1:lsp)), maxval(vs1(1:lx1,1:lx2,1:lx3,1:lsp))
+    print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(1:lx1,1:lx2,1:lx3,1:lsp)),  maxval(Ts(1:lx1,1:lx2,1:lx3,1:lsp))
+    print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(1:lx1,1:lx2,1:lx3)),  maxval(Phi(1:lx1,1:lx2,1:lx3))
+    print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(1:lx1,1:lx2all,1:lx3all)),  &
+                         maxval(Phiall(1:lx1,1:lx2all,1:lx3all))
 
     call check_finite_plasma(out_dir, ns, vs1, Ts)
   else
@@ -149,7 +150,7 @@ end procedure input_plasma_currents
 subroutine input_workers_currents(J1,J2,J3)
   !! WORKER INPUT FUNCTIONS FOR GETTING CURRENT DENSITIES
 
-  real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+  real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
   !! intent(out)
 
   !> ALL WE HAVE TO DO IS WAIT TO RECEIVE OUR PIECE OF DATA FROM ROOT
@@ -167,7 +168,7 @@ subroutine input_workers_mpi(ns,vs1,Ts,Phi)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
   !! intent(out)
 
-  real(wp), dimension(:,:,:) :: Phi
+  real(wp), dimension(-1:,-1:,-1:) :: Phi
 
   ns=0
   vs1=0
