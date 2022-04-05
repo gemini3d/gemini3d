@@ -66,7 +66,7 @@ interface !< plasma.f90
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     !! intent(out)
@@ -77,7 +77,7 @@ interface !< plasma.f90
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
   end subroutine input_plasma_currents
 
@@ -88,7 +88,7 @@ interface !< plasma.f90
     real(wp), intent(in) :: UTsec
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
-    real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
   end subroutine output_plasma
 end interface
 
