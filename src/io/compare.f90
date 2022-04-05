@@ -157,17 +157,12 @@ if(lx3 /= R_lx3) error stop 'lx3 != ref: ' // new
 end subroutine check_simsize2
 
 
-subroutine check_time(new_file, ref_file)
+subroutine check_time(hnew, href)
 
-character(*), intent(in) :: new_file, ref_file
+type(hdf5_file), intent(in) :: hnew, href
 
 real(wp) :: UTsec1, UTsec2
 integer :: ymd1(3), ymd2(3)
-
-type(hdf5_file) :: hnew, href
-
-call hnew%open(new_file, action='r')
-call href%open(ref_file, action='r')
 
 call href%read('/time/ymd', ymd1)
 call hnew%read('/time/ymd', ymd2)
@@ -181,11 +176,8 @@ elseif (href%exist('/time/UThour')) then
   UTsec1 = UTsec1*3600
   UTsec2 = UTsec2*3600
 else
-  error stop "check_time: did not find UTsec or UThour in " // ref_file
+  error stop "check_time: did not find UTsec or UThour in " // href%filename
 endif
-
-call hnew%close()
-call href%close()
 
 !> compare file simulation time
 
@@ -195,8 +187,8 @@ call dateinc(0._wp, ymd2, UTsec2)
 !! due to non-integer timebase, can get hour-wrapping in Fortran code.
 !! This would be fixed someday by using integer microsecond timebase
 
-if (any(ymd1 /= ymd2)) error stop 'dates did not match: ' // new_file
-if (abs(UTsec1 - UTsec2) > 0.1) error stop "UThour not match: " // new_file
+if (any(ymd1 /= ymd2)) error stop 'dates did not match: ' // hnew%filename
+if (abs(UTsec1 - UTsec2) > 0.1) error stop "UThour not match: " // hnew%filename
 
 
 end subroutine check_time

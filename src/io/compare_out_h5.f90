@@ -76,58 +76,55 @@ else
   flagoutput = cfg%flagoutput
 endif
 
-call hnew%close()
-call href%close()
-
-call check_time(new_file, ref_file)
+call check_time(hnew, href)
 
 bad = 0
 
 select case (flagoutput)
 case (3)
   !! just electron density
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, P)
+  bad = bad + check_var('neall', hnew, href, rtolN, atolN, lx1, lx2all, lx3all, P)
 
 case (2)
 
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, P)
+  bad = bad + check_var('neall', hnew, href, rtolN, atolN, lx1, lx2all, lx3all, P)
 
   do i = 1,size(varsT)
-    bad = bad + check_var(varsT(i), new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, P)
+    bad = bad + check_var(varsT(i), hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P)
   enddo
 
   do i = 1,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, P)
+    bad = bad + check_var(varsV(i), hnew, href, rtolV, atolV, lx1, lx2all, lx3all, P)
   enddo
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all, P)
+    bad = bad + check_var(varsJ(i), hnew, href, rtolJ, atolJ, lx1, lx2all, lx3all, P)
   enddo
 
 case (1)
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all, P)
+    bad = bad + check_var(varsJ(i), hnew, href, rtolJ, atolJ, lx1, lx2all, lx3all, P)
   enddo
 
   do i = 2,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, P)
+    bad = bad + check_var(varsV(i), hnew, href, rtolV, atolV, lx1, lx2all, lx3all, P)
   enddo
 
   !> Ne
-  bad = bad + check_var('nsall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="ne")
+  bad = bad + check_var('nsall', hnew, href, rtolN, atolN, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="ne")
 
   !> Te
-  bad = bad + check_var('Tsall', new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="Te")
+  bad = bad + check_var('Tsall', hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="Te")
 
   !> Ti
-  bad = bad + check_derived('Tsall', "Ti", new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, P)
+  bad = bad + check_derived('Tsall', "Ti", hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P)
 
   !> v1
-  bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, P)
+  bad = bad + check_derived('vs1all', "v1", hnew, href, rtolV, atolV, lx1, lx2all, lx3all, P)
 
 case default
-  error stop 'unknown flagoutput: ' // file_name(ref_file)
+  error stop 'unknown flagoutput: ' // file_name(href%filename)
 end select
 
 check_out = bad == 0
@@ -135,9 +132,9 @@ check_out = bad == 0
 end function check_out
 
 
-integer function check_derived(name, derived_name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, P) result(bad)
+integer function check_derived(name, derived_name, hnew, href, rtol, atol, lx1, lx2all, lx3all, P) result(bad)
 
-character(*), intent(in) :: new_file, ref_file
+type(hdf5_file), intent(in) :: hnew, href
 character(*), intent(in) :: name, derived_name
 real(wp), intent(in) :: rtol, atol
 integer, intent(in) :: lx1, lx2all, lx3all
@@ -146,57 +143,47 @@ class(params), intent(in) :: P
 real, dimension(:,:,:), allocatable :: D_new, D_ref
 real, dimension(:,:,:,:), allocatable :: new, ref, ns_new, ns_ref
 
-type(hdf5_file) :: hnew, href
-
 bad = 0
 
 allocate(new(lx1, lx2all, lx3all, lsp), ref(lx1, lx2all, lx3all, lsp))
 allocate(ns_new(lx1, lx2all, lx3all, lsp), ns_ref(lx1, lx2all, lx3all, lsp))
 allocate(D_ref(lx1, lx2all, lx3all), D_new(lx1, lx2all, lx3all))
 
-call hnew%open(new_file, action='r')
-call href%open(ref_file, action='r')
-
 call href%read('nsall', ns_ref)
 call hnew%read('nsall', ns_new)
-if (.not.all(ieee_is_finite(ns_ref))) error stop "NON-FINITE: " // file_name(ref_file) // " ns"
-if (.not.all(ieee_is_finite(ns_new))) error stop "NON-FINITE: " // file_name(new_file) // " ns"
+if (.not.all(ieee_is_finite(ns_ref))) error stop "NON-FINITE: " // file_name(href%filename) // " ns"
+if (.not.all(ieee_is_finite(ns_new))) error stop "NON-FINITE: " // file_name(hnew%filename) // " ns"
 
 call hnew%read(name, new)
 call href%read(name, ref)
-if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
-if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
-
-call hnew%close()
-call href%close()
+if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(hnew%filename) // " " // name
+if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(href%filename) // " " // name
 
 D_ref = sum(ns_ref(:,:,:,1:6) * ref(:,:,:,1:6), dim=4) / ns_ref(:,:,:,LSP)
 D_new = sum(ns_new(:,:,:,1:6) * new(:,:,:,1:6), dim=4) / ns_new(:,:,:,LSP)
 
 if(all(isclose(D_ref, D_new, real(rtol), real(atol)))) then
-  if(P%debug) print '(A)', "OK: output: " // derived_name // " " // new_file
+  if(P%debug) print '(A)', "OK: output: " // derived_name // " " // hnew%filename
   return
 endif
 
 bad = 1
-write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval(abs(D_ref - D_new))
+write(stderr,*) "MISMATCH: " // file_name(hnew%filename) // " ", derived_name, maxval(abs(D_ref - D_new))
 
-call plot_diff(new_file, ref_file, derived_name, "out", P)
+call plot_diff(hnew%filename, href%filename, derived_name, "out", P)
 
 end function check_derived
 
 
-integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, P, ionly, derived_name) result(bad)
+integer function check_var(name, hnew, href, rtol, atol, lx1, lx2all, lx3all, P, ionly, derived_name) result(bad)
 
-character(*), intent(in) :: new_file, ref_file
+type(hdf5_file), intent(in) :: hnew, href
 character(*), intent(in) :: name
 real(wp), intent(in) :: rtol, atol
 integer, intent(in) :: lx1, lx2all, lx3all
 class(params), intent(in) :: P
 integer, intent(in), optional :: ionly
 character(*), intent(in), optional :: derived_name
-
-type(hdf5_file) :: hnew, href
 
 real, dimension(:,:,:), allocatable :: new, ref
 real, dimension(:,:,:,:), allocatable :: new4, ref4
@@ -210,9 +197,6 @@ allocate(new(lx1, lx2all, lx3all), ref(lx1, lx2all, lx3all))
 
 bad = 0
 
-call hnew%open(new_file, action='r')
-call href%open(ref_file, action='r')
-
 if(present(ionly)) then
   call hnew%read(name, new4)
   call href%read(name, ref4)
@@ -224,11 +208,8 @@ else
   call href%read(name, ref)
 endif
 
-call hnew%close()
-call href%close()
-
-if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
-if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
+if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(href%filename) // " " // name
+if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(hnew%filename) // " " // name
 
 if(all(isclose(ref, new, real(rtol), real(atol)))) then
   if(P%debug) then
@@ -244,15 +225,15 @@ endif
 !> mismatch message
 bad = 1
 if(present(derived_name)) then
-  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // derived_name, &
+  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(hnew%filename) // " " // derived_name, &
     ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
 else
-  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // name, &
+  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(hnew%filename) // " " // name, &
     ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
 endif
 
 !> optional plotting
-call plot_diff(new_file, ref_file, name, "out", P)
+call plot_diff(hnew%filename, href%filename, name, "out", P)
 
 
 end function check_var
