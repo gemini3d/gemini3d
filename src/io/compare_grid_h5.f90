@@ -41,6 +41,9 @@ integer :: i, bad
 new_file = new_path // "/inputs/simgrid.h5"
 ref_file = ref_path // "/inputs/simgrid.h5"
 
+if(.not. is_file(new_file)) error stop "compare:check_grid: new grid file not found: " // new_file
+if(.not. is_file(ref_file)) error stop "compare:check_grid: ref grid file not found: " // ref_file
+
 bad = 0
 
 call hnew%open(new_file, action='r')
