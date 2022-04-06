@@ -123,9 +123,9 @@ dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 endfunction(setup_magcalc_test)
 
 
-add_test(NAME InternetConnectivity
+add_test(NAME internetConnectivity
 COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
-set_tests_properties(InternetConnectivity PROPERTIES
+set_tests_properties(internetConnectivity PROPERTIES
 TIMEOUT 3
 FIXTURES_SETUP internet_fxt
 )

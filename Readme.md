@@ -124,13 +124,13 @@ Batch sessions, including interactive, may be offline.
 To run CTest in such an environment, download the data once from the login node:
 
 ```sh
-ctest --test-dir build -R download
+ctest --test-dir build --preset download
 ```
 
 then from an interactive batch session, run the tests:
 
 ```sh
-ctest --test-dir build -FA internet
+ctest --test-dir build --preset offline
 ```
 
 ## GEMINI Numerical Library Dependencies

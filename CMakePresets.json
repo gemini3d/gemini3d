@@ -81,17 +81,35 @@
   }
 },
 {
+  "name": "download", "inherits": "default",
+  "displayName": "download reference data for subsequent offline tests",
+  "description": "download with login HPC node for batch / interactive HPC offline tests",
+  "filter": {
+    "include": {"name": "download"}
+  }
+},
+{
+  "name": "offline", "inherits": "default",
+  "displayName": "Run tests without network access",
+  "filter": {
+    "exclude": {"name": "internetConnectivity", "fixtures": {"setup": "internet_fxt"}}
+  }
+},
+{
   "name": "release", "inherits": "default",
+  "displayName": "Ninja MultiConfig: Release",
   "configurePreset": "multi",
   "configuration": "Release"
 },
 {
   "name": "reldebug", "inherits": "default",
+  "displayName": "Ninja MultiConfig: RelWithDebInfo",
   "configurePreset": "multi",
   "configuration": "RelWithDebInfo"
 },
 {
   "name": "debug", "inherits": "default",
+  "displayName": "Ninja MultiConfig: Debug",
   "configurePreset": "multi",
   "configuration": "Debug"
 }
