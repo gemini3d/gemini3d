@@ -87,11 +87,6 @@ add_feature_info(PyGemini python "simulation generation, HPC script generator an
 add_feature_info(MatGemini matlab "checks not as extensive as Python, and slow")
 
 add_feature_info(HDF5 hdf5 "file read / write")
-add_feature_info(AutoHDF5 hdf5_external "build HDF5")
-
-add_feature_info(AutoMumps mumps_external "build Mumps")
-add_feature_info(AutoScalapack scalapack_external "build Scalapack")
-add_feature_info(AutoLapack lapack_external "build Lapack")
 
 # print to screen
 feature_summary(WHAT ENABLED_FEATURES)
