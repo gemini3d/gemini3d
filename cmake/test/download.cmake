@@ -50,6 +50,7 @@ if(EXISTS ${ref_dir}/sha256sum.txt)
   file(STRINGS ${ref_dir}/sha256sum.txt _hash REGEX "[a-f0-9]" LIMIT_INPUT 64 LENGTH_MAXIMUM 64 LIMIT_COUNT 1)
 
   if(_hash STREQUAL ${hash})
+    message(VERBOSE "${name}: data up to date")
     return()
   else()
     message(STATUS "${name}: hash mismatch: expected ${hash} != ${_hash}")
@@ -59,14 +60,16 @@ else()
 endif()
 
 # check if archive up to date
-if(NOT EXISTS ${archive})
-  download_archive(${url} ${archive} ${hash})
-endif()
-file(SHA256 ${archive} _hash)
-if(NOT _hash STREQUAL ${hash})
+if(EXISTS ${archive})
+  file(SHA256 ${archive} _hash)
+  if(NOT _hash STREQUAL ${hash})
+    download_archive(${url} ${archive} ${hash})
+  endif()
+else()
   download_archive(${url} ${archive} ${hash})
 endif()
 
+# extract archive
 message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
 file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
 
