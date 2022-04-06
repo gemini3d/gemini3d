@@ -2,12 +2,6 @@ include(FeatureSummary)
 
 # --- recommendations
 
-# if(NOT CMAKE_GENERATOR MATCHES Ninja)
-#   message(VERBOSE "Recommendation: Install Ninja build system:
-#       cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake
-#   Then, set environment variable CMAKE_GENERATOR=Ninja")
-# endif()
-
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 3.22)
   message(STATUS "For Windows, CMake >= 3.22 is recommended (currently using CMake ${CMAKE_VERSION}).")
 endif()
@@ -90,4 +84,3 @@ add_feature_info(HDF5 hdf5 "file read / write")
 
 # print to screen
 feature_summary(WHAT ENABLED_FEATURES)
-# PACKAGES_FOUND)
