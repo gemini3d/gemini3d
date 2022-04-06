@@ -53,7 +53,8 @@ Requirements:
 * C++17 and Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) for optional further details.
   * GCC 8 and newer
   * Clang 7 and newer
-  * Intel oneAPI HPC Toolkit (now free to use for all)
+  * Intel oneAPI
+  * Cray with GCC backend
 * Python and/or MATLAB for scripting front- and back-ends
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
@@ -114,6 +115,22 @@ To verify your GEMINI build, run the self-tests:
 
 ```sh
 ctest --test-dir build
+```
+
+### Offline HPC batch CTest
+
+Note: some HPC systems only have internet when on a login node, but cannot run MPI simulations on the login node.
+Batch sessions, including interactive, may be offline.
+To run CTest in such an environment, download the data once from the login node:
+
+```sh
+ctest --test-dir build -R download
+```
+
+then from an interactive batch session, run the tests:
+
+```sh
+ctest --test-dir build -FA internet
 ```
 
 ## GEMINI Numerical Library Dependencies
