@@ -7,6 +7,7 @@ These compilers are known to work with GEMINI3D on Linux, MacOS, and Windows:
 
 * Gfortran (GCC): 7.5, 8.5, 9.3, 10.3, 11.1, 11.2
 * Intel oneAPI 2021.x, 2022.x core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
+* Cray with GCC backend
 
 Intel Parallel Studio XE (PSXE) 2020 (Intel Fortran 19.1) is replaced by no-cost oneAPI.
 
