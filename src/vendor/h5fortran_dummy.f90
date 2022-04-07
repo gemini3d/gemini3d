@@ -6,6 +6,7 @@ use, intrinsic :: iso_fortran_env, only: hsize_t => int64
 implicit none (type, external)
 
 type hdf5_file
+character(:), allocatable  :: filename
 contains
 procedure, public :: open, read, write, exist, ndims, shape, close
 end type hdf5_file
