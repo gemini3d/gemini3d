@@ -69,7 +69,6 @@ module procedure read_grid_dipole
 
   !> Create the grid object
   call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
-
   call x%init()                              ! allocate space for subgrid variables
   call x%make()                              ! fill auxiliary arrays
 
@@ -104,13 +103,9 @@ module procedure read_grid_dipole
   call enforce_gridmpi_periodic(flagperiodic,x)
 
   !> Set flags for module scope vars.
-  !gridflag=x%gridflag
   call set_gridflag(x%gridflag)
-
   !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-  !g1=>x%g1; g2=>x%g2; g3=>x%g3
   call bind_grav_ptrs(x%g1,x%g2,x%g3)
-
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
   if(mpi_cfg%myid == 0) call grid_check(x)

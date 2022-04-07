@@ -25,6 +25,8 @@ public
 !   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any
 !   operation that needs more input should be defined as a type-bound procedure in any extensions to this abstract type.  This also means that
 !   error checking needs to be done in the extended type to insure that the data needed for a given calculation exist.
+!
+!  The absolute minimum requirement to use this object is to allocate it and then call setcoords, init, and make
 type, abstract :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic
@@ -170,7 +172,8 @@ type, abstract :: curvmesh
     procedure :: dissociate_pointers    ! clear out memory and reset allocation flags
     procedure :: calc_geographic        ! convert to geographic coordinates
     procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
-    procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic
+    procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic and set geographic coords.  
+    procedure :: set_periodic_norefloc  ! set periodic flag but do not alter geographic coords. 
     procedure :: set_center             ! set the center of the grid (only needed for "floating" coordinate systems)
     procedure :: calc_unitvec_geo       ! compute geographic unit vectors over the grid
     !final :: destructor
@@ -223,9 +226,9 @@ abstract interface
   end function calc_metric
 end interface
 
-
 contains
-  subroutine set_coords(self,x1,x2,x3,x2all,x3all)
+  !> Assign just the local grid coordinates
+  subroutine set_local_coords(self,x1,x2,x3,x2all,x3all)
   !! assign coordinates to internal variables given some set of input arrays.
   !!  Assume that the data passed in include ghost cells
     class(curvmesh), intent(inout) :: self
@@ -261,8 +264,13 @@ contains
     self%x3all=x3all
 
     self%xi_alloc_status=.true.
-  end subroutine set_coords
+  end subroutine set_local_coords
 
+
+  !> Assign global coordinates, as needed
+  subroutine set_global_coords(x2all,x3all)
+
+  end subroutine set_global_coords
 
   subroutine set_root(self,h1all,h2all,h3all, &
                       h1x1iall,h2x1iall,h3x1iall, &
@@ -333,6 +341,20 @@ contains
       end do
     end if
   end subroutine set_periodic
+
+
+  !> assign a reference meridian alt,lat,lon across periodic grid; do not attempt to set reference geographic parameters
+  subroutine set_periodic_norefloc(self,flagperiodic)
+    class(curvmesh), intent(inout) :: self
+    integer, intent(in) :: flagperiodic
+
+    ! flag appropriately
+    if (flagperiodic/=0) then
+      self%flagper=.true.
+    else
+      self%flagper=.false.
+    end if
+  end subroutine set_periodic_norefloc
 
 
   !> compute diffs from given grid spacing.  Note that no one except for root needs full grid diffs.

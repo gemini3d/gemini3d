@@ -94,7 +94,7 @@ type, bind(C) :: c_params
 end type c_params
 
 contains
-  !> basic command line and grid size determination
+  !> basic command line and grid size determination; although this takes in the split parameters it doesn't actually do any mpi
   subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
