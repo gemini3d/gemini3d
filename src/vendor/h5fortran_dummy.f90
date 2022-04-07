@@ -15,30 +15,28 @@ end type hdf5_file
 
 contains
 
-subroutine open(self,filename,ierr, action,comp_lvl,chunk_size,verbose)
+subroutine open(self,filename,action,comp_lvl, verbose, debug)
 class(hdf5_file), intent(inout)    :: self
 character(*), intent(in)           :: filename
-integer, intent(out), optional     :: ierr
 character(*), intent(in), optional :: action
 integer, intent(in), optional      :: comp_lvl
-class(*), intent(in), optional     :: chunk_size(7)
-logical, intent(in), optional      :: verbose
+logical, intent(in), optional      :: verbose, debug
 error stop 'HDF5 / h5fortran not available'
 end subroutine open
 
-subroutine read(self, dname, value, ierr)
+subroutine read(self, dname, value, istart, iend, stride)
 class(hdf5_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(inout)      :: value(..)
-integer, intent(out), optional :: ierr
+integer, intent(in), dimension(..), optional :: istart, iend, stride
 error stop 'HDF5 / h5fortran not available'
 end subroutine read
 
-subroutine write(self, dname, value, ierr)
+subroutine write(self, dname, value, chunk_size, istart, iend, stride)
 class(hdf5_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(in)      :: value(..)
-integer, intent(out), optional :: ierr
+integer, intent(in), dimension(..), optional :: chunk_size, istart, iend, stride
 error stop 'HDF5 / h5fortran not available'
 end subroutine write
 
@@ -64,9 +62,9 @@ allocate(dims(0))
 error stop 'HDF5 / h5fortran not available'
 end subroutine shape
 
-subroutine close(self, ierr)
+subroutine close(self, close_hdf5_interface)
 class(hdf5_file), intent(in) :: self
-integer, intent(out), optional :: ierr
+logical, intent(in), optional :: close_hdf5_interface
 error stop 'HDF5 / h5fortran not available'
 end subroutine close
 
