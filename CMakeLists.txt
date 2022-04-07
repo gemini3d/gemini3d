@@ -62,9 +62,13 @@ else()
   find_package(mpi_scalapack_stub CONFIG REQUIRED)
 endif()
 
-include(cmake/ext_libs/h5fortran-hdf5.cmake)
+if(hdf5)
+  find_package(h5fortran CONFIG REQUIRED)
+endif()
+if(netcdf)
+  find_package(nc4fortran CONFIG REQUIRED)
+endif()
 
-# do these after h5fortran to avoid threads test failure
 include(cmake/compilers/compilers.cmake)
 if(mpi)
   # here for HWLOC_FOUND directory scope

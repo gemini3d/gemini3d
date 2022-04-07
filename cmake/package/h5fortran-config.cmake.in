@@ -1,5 +1,0 @@
-@PACKAGE_INIT@
-
-include(${CMAKE_CURRENT_LIST_DIR}/h5fortran-targets.cmake)
-
-check_required_components(h5fortran)
