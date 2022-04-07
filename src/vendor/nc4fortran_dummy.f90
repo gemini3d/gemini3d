@@ -4,6 +4,7 @@ module nc4fortran
 implicit none (type, external)
 
 type netcdf_file
+character(:), allocatable  :: filename
 contains
 procedure, public :: open, read, write, exist, close
 end type netcdf_file
