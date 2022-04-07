@@ -35,7 +35,7 @@ endif()
 
 option(dev "Gemini developer mode")
 
-option(cpp "also build Gemini3D C++ frontend prototype")
+option(cpp "also build Gemini3D C++ frontend prototype" on)
 
 option(mpi "Use MPI parallelization" on)
 
@@ -46,11 +46,6 @@ option(msis2 "use MSIS 2.x neutral atmosphere model")
 
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O")
-option(zlib_legacy "use unmaintained ZLIB 1.x")
-
-# MUMPS build options (only used if auto-building MUMPS)
-option(scotch "MUMPS: use Scotch" off)
-option(openmp "MUMPS: use OpenMP" off)
 
 option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more

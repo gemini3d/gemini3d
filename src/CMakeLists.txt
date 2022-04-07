@@ -36,15 +36,17 @@ add_subdirectory(inputdata)
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
-add_library(gemini3d libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+add_library(gemini3d libgemini.f90 gemini_init.f90
+${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_include_directories(gemini3d PUBLIC
 $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
-nc4fortran::nc4fortran
 h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
@@ -148,8 +150,8 @@ sources_mpi
 temporal
 PDEparabolic gbsv
 PDEelliptic
-nc4fortran::nc4fortran
 h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
@@ -219,8 +221,7 @@ EXPORT ${PROJECT_NAME}-targets
 install(FILES gemini3d.h TYPE INCLUDE)
 
 # --- Gemini_c.bin
-# This is an example of a C++ main program, instead of or in addition to the main Fortran gemini.bin
-# this could be used as a starting point for C++ programs that use the GEMINI3D API
+# C++ main program just like Fortran gemini.bin
 
 if(cpp)
 
@@ -228,8 +229,9 @@ find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
 add_library(gemini3d_c libgemini.cpp)
-target_link_libraries(gemini3d_c PUBLIC nc4fortran::nc4fortran
+target_link_libraries(gemini3d_c PUBLIC
 h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 MUMPS::MUMPS
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_CXX

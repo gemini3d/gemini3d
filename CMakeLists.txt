@@ -53,7 +53,7 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
 ")
 endif()
 if(cpp AND ffilesystem_VERSION VERSION_LESS 3.3.0)
-  message(FATAL_ERROR "Gemini3d C++ frontend required ffilesystem >= 3.3.0")
+  message(FATAL_ERROR "Gemini3d C++ frontend requires ffilesystem >= 3.3.0")
 endif()
 
 if(mpi)
@@ -63,7 +63,6 @@ else()
 endif()
 
 include(cmake/ext_libs/h5fortran-hdf5.cmake)
-include(cmake/ext_libs/nc4fortran-ncdf.cmake)
 
 # do these after h5fortran to avoid threads test failure
 include(cmake/compilers/compilers.cmake)

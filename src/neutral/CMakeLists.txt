@@ -30,7 +30,9 @@ ffilesystem::filesystem ${lib_filesystem}
 # self-tests
 if(${PROJECT_NAME}_BUILD_TESTING)
 
-add_executable(test_proj test_proj.f90)
+add_executable(test_proj test_proj.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
 
 foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
 neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
