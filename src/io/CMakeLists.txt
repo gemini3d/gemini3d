@@ -124,6 +124,7 @@ mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
 plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
 plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
 milestone.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 
 target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
@@ -134,6 +135,7 @@ ffilesystem::filesystem ${lib_filesystem}
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(reader PRIVATE const
 h5fortran::h5fortran

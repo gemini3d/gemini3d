@@ -1,4 +1,6 @@
-add_library(grid OBJECT grid.f90 readgrid_hdf5.f90 readgrid_nc4.f90 readgrid_raw.f90)
+add_library(grid OBJECT grid.f90 readgrid_hdf5.f90 readgrid_nc4.f90 readgrid_raw.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
 target_link_libraries(grid PRIVATE const reader
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
