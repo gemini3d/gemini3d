@@ -11,30 +11,28 @@ end type netcdf_file
 
 contains
 
-subroutine open(self,filename,ierr, action,comp_lvl)
+subroutine open(self,filename, action,comp_lvl, verbose, debug)
 class(netcdf_file), intent(inout)  :: self
 character(*), intent(in)           :: filename
-integer, intent(out), optional     :: ierr
 character(*), intent(in), optional :: action
 integer, intent(in), optional      :: comp_lvl
+logical, intent(in), optional :: verbose, debug
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine open
 
 
-subroutine read(self, dname, value, ierr)
+subroutine read(self, dname, value)
 class(netcdf_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(inout)      :: value(..)
-integer, intent(out), optional :: ierr
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine read
 
-subroutine write(self, dname, value, dims, ierr)
+subroutine write(self, dname, value, dims)
 class(netcdf_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(in)      :: value(..)
 character(*), intent(in), optional :: dims(:)
-integer, intent(out), optional :: ierr
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine
 
@@ -45,9 +43,8 @@ exist = .false.
 error stop 'nc4fortran not available'
 end function exist
 
-subroutine close(self, ierr)
+subroutine close(self)
 class(netcdf_file), intent(in) :: self
-integer, intent(out), optional :: ierr
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine close
 
