@@ -14,11 +14,13 @@ $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid_mpi>  $<TARGET_OBJECTS:grid>
 $<TARGET_OBJECTS:mpimod>
 $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:geomagnetic>
 $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
 sanity_check errors config timeutils const
 hwloc_ifc hwloc_c
-nc4fortran::nc4fortran h5fortran::h5fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 ffilesystem::filesystem ${lib_filesystem}
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
@@ -63,9 +65,13 @@ ffilesystem::filesystem
 )
 
 # --- gemini3d.run
-add_executable(gemini3d.run gemini3d_run.f90 $<TARGET_OBJECTS:exe_frontend>)
+add_executable(gemini3d.run gemini3d_run.f90
+$<TARGET_OBJECTS:exe_frontend>
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
 target_link_libraries(gemini3d.run PRIVATE const config timeutils autogrid reader
-h5fortran::h5fortran nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 hwloc_ifc hwloc_c
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
@@ -85,9 +91,12 @@ TIMEOUT 10
 )
 
 # --- magcalc.run
-add_executable(magcalc.run magcalc_run.f90)
+add_executable(magcalc.run magcalc_run.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
 target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config timeutils const hwloc_ifc hwloc_c
-h5fortran::h5fortran nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
@@ -117,9 +126,11 @@ ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90
 ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_grid_h5.f90
 ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_out_h5.f90
 ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(gemini3d.compare PRIVATE assert config reader timeutils const
-nc4fortran::nc4fortran h5fortran::h5fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )

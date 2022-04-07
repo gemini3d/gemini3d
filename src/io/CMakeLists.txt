@@ -111,6 +111,11 @@ endif()
 
 
 # --- io
+if(NOT netcdf)
+  add_library(nc4fortran_dummy OBJECT $<$<NOT:$<BOOL:${netcdf}>>:${PROJECT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90>)
+  install(FILES ${PROJECT_BINARY_DIR}/include/nc4fortran.mod TYPE INCLUDE)
+endif()
+
 configure_file(output.in.f90 output.f90 @ONLY)
 add_library(io OBJECT io.f90 ${CMAKE_CURRENT_BINARY_DIR}/output.f90
 aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
@@ -122,14 +127,17 @@ milestone.f90
 )
 
 target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
-h5fortran::h5fortran nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 ffilesystem::filesystem ${lib_filesystem}
 )
 
 # --- reader
-add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
+add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90
+)
 target_link_libraries(reader PRIVATE const
-h5fortran::h5fortran nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 ffilesystem::filesystem ${lib_filesystem}
 )
 
