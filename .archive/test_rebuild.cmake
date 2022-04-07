@@ -29,10 +29,6 @@ list(APPEND opts -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 include(${CTEST_SOURCE_DIRECTORY}/cmake/find_generator.cmake)
 include(${CTEST_SOURCE_DIRECTORY}/cmake/cpu_count.cmake)
 
-# -- blank env var to test autobuild
-set(ENV{HDF5_ROOT})
-set(ENV{h5fortran_ROOT})
-
 # -- run main test
 
 ctest_start(Experimental)
