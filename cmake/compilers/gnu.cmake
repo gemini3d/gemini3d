@@ -9,7 +9,7 @@ add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithD
 
 
 if(dev)
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-Wextra>")
+  add_compile_options(-Wall -Wextra)
   # -Wpedantic makes too many false positives
 else(dev)
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-function>")
@@ -28,12 +28,10 @@ endif()
 
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
 
-# makes a lot of spurious warnngs on alloctable scalar character
+# lot of spurious warnings on allocatable scalar character
 add_compile_options($<$<Fortran_COMPILER_VERSION:9.3.0>:-Wno-maybe-uninitialized>)
 
 check_compiler_flag(Fortran -fallow-argument-mismatch allow_mismatch_args)
 if(allow_mismatch_args)
   set(gfortran_opts -fallow-argument-mismatch)
 endif()
-
-# Fortran 2018 standard flag is buggy at least through GCC 9, causing fake "Common block" warnings
