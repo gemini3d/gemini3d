@@ -36,7 +36,7 @@ include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
 
 # Fortran filesystem library "ffilesystem"
-find_package(ffilesystem CONFIG)
+find_package(ffilesystem 3.3.0 CONFIG)
 # this is the first package we find, so make a special error message for users
 if(NOT ffilesystem_FOUND)
   message(FATAL_ERROR "
@@ -51,9 +51,6 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake -B build -DCMAKE_PREFIX_PATH=~/gemini_libs
   cmake --build build --parallel
 ")
-endif()
-if(cpp AND ffilesystem_VERSION VERSION_LESS 3.3.0)
-  message(FATAL_ERROR "Gemini3d C++ frontend requires ffilesystem >= 3.3.0")
 endif()
 
 if(mpi)
