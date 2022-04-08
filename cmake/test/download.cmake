@@ -39,9 +39,18 @@ if(NOT EXISTS ${arc_json_file})
 endif()
 file(READ ${arc_json_file} _refj)
 
-string(JSON url GET ${_refj} tests ${name} url)
-string(JSON archive_name GET ${_refj} tests ${name} archive)
-string(JSON hash GET ${_refj} tests ${name} sha256)
+# a priori test_name strips trailing _cpp
+if(name MATCHES "_cpp$")
+  string(LENGTH ${name} L)
+  math(EXPR M "${L}-4")
+  string(SUBSTRING ${name} 0 ${M} url_name)
+else()
+  set(url_name ${name})
+endif()
+
+string(JSON url GET ${_refj} tests ${url_name} url)
+string(JSON archive_name GET ${_refj} tests ${url_name} archive)
+string(JSON hash GET ${_refj} tests ${url_name} sha256)
 
 cmake_path(SET archive ${refroot}/${archive_name})
 
