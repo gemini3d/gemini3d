@@ -106,7 +106,7 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
     end do
 
     ! call the creation procedure
-    call create_grid(x1,x2,x3,flagperiodic,x)
+    call create_local_grid(x1,x2,x3,flagperiodic,x)
     deallocate(x1,x2,x3)
   end subroutine setup_grid_uniform
 
@@ -122,6 +122,7 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
 
     ! force existing grid structure to be deallocated and reallocated
     if (allocated(x)) then
+      print*, ' Deallocating grid...'
       deallocate(x)
     end if
     
@@ -136,12 +137,12 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
 
     ! generate grid, 
     ! FIXME: need to overload for subgrid v. root
-    call x%set_coords(x1,x2,x3)    ! set primitive coordinates
+    call x%set_local_coords(x1,x2,x3)    ! set primitive coordinates
     call x%init()                  ! allocate object arrays
     call x%make()                  ! compute metric factors etc.
 
     ! set module scope variables pointing to grid contents for ease of use
-    call x%set_periodic(flagperiodic,x)
+    call x%set_periodic_norefloc(flagperiodic)
     call set_gridflag(x%gridflag)
     call bind_grav_ptrs(x%g1,x%g2,x%g3)
 

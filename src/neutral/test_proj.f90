@@ -36,7 +36,7 @@ logical :: debug=.false.
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/(lp-1)*(ip-1),ip=1,lp)]
 phi=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,lphi)]
-call x%set_coords(q,p,phi,p,phi)
+call x%set_local_coords(q,p,phi)
 call x%init()
 call x%make()
 

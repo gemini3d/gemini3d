@@ -15,7 +15,8 @@ module procedure read_grid_cart
   call x%set_center(glonctr,glatctr)
 
   !> Create the grid object
-  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+  call x%set_local_coords(x1,x2,x3)         ! store coordinate arrays for subgrid
+  call x%set_global_coords(x2all,x3all)     ! store coordinate arrays for full grid
 
   call x%init()                              ! allocate space for subgrid variables
   call x%make()                              ! fill auxiliary arrays
@@ -68,7 +69,8 @@ module procedure read_grid_dipole
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
 
   !> Create the grid object
-  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+  call x%set_local_coords(x1,x2,x3)    ! store coordinate arrays
+  call x%set_global_coords(x2all,x3all)
   call x%init()                              ! allocate space for subgrid variables
   call x%make()                              ! fill auxiliary arrays
 

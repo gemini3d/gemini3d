@@ -39,7 +39,7 @@ type(cartmesh) :: x
 !!!! grid setup and init
 ! grid spec.
 print*, 'fullgrid_testdriver:  Defining curvilinear coordinates...'
-call x%set_coords(z,xcart,y,xcart,y)
+call x%set_local_coords(z,xcart,y)
 
 print*, 'fullgrid_testdriver:  Setting geographic center of grid...'
 call x%set_center(glonctr,glatctr)

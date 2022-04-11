@@ -32,6 +32,7 @@ type, abstract :: curvmesh
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic
   !  "allocatable" only work on allocatables (not pointers)...
   logical :: xi_alloc_status=.false.
+  logical :: xi_alloc_status_glob=.false.
   logical :: dxi_alloc_status=.false.
   logical :: dxi_alloc_status_root=.false.
   logical :: difflen_alloc_status=.false.
@@ -158,7 +159,8 @@ type, abstract :: curvmesh
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   contains
-    procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
+    procedure :: set_local_coords        ! initialize general curvilinear coordinates and mesh sizes for local grid
+    procedure :: set_global_coords        ! initialize general curvilinear coordinates and mesh sizes for global grid
     procedure :: calc_coord_diffs       ! compute bwd and midpoint diffs from coordinates
     procedure :: calc_coord_diffs_root  ! coordinate diffs for root fullgrid
     procedure :: calc_difflengths       ! compute differential lengths
@@ -228,50 +230,60 @@ end interface
 
 contains
   !> Assign just the local grid coordinates
-  subroutine set_local_coords(self,x1,x2,x3,x2all,x3all)
+  subroutine set_local_coords(self,x1,x2,x3)
   !! assign coordinates to internal variables given some set of input arrays.
   !!  Assume that the data passed in include ghost cells
     class(curvmesh), intent(inout) :: self
     real(wp), dimension(:), intent(in) :: x1,x2,x3
-    real(wp), dimension(:), intent(in) :: x2all,x3all
-
-    integer :: lx1,lx2,lx3,lx2all,lx3all
+    integer :: lx1,lx2,lx3
 
     lx1=size(x1,1)-4
     lx2=size(x2,1)-4
     lx3=size(x3,1)-4
-    lx2all=size(x2all,1)-4
-    lx3all=size(x3all,1)-4
 
     if(lx1 < 1) error stop 'meshobj:set_coords: lx1 must be strictly positive'
     if(lx2 < 1) error stop 'meshobj:set_coords: lx2 must be strictly positive'
     if(lx3 < 1) error stop 'meshobj:set_coords: lx3 must be strictly positive'
-    if(lx2all < lx2) error stop 'meshobj:set_coords: lx2all must be > lx2'
-    if(lx3all < lx3) error stop 'meshobj:set_coords: lx3all must be > lx3'
+    !if(lx2all < lx2) error stop 'meshobj:set_coords: lx2all must be > lx2'
+    !if(lx3all < lx3) error stop 'meshobj:set_coords: lx3all must be > lx3'
 
     self%lx1=lx1
     self%lx2=lx2
     self%lx3=lx3
-    self%lx2all=lx2all
-    self%lx3all=lx3all
 
     allocate(self%x1(-1:lx1+2), self%x2(-1:lx2+2), self%x3(-1:lx3+2))
     self%x1=x1
     self%x2=x2
     self%x3=x3
-    allocate(self%x2all(-1:lx2all+2), self%x3all(-1:lx3all+2))
-    self%x2all=x2all
-    self%x3all=x3all
 
     self%xi_alloc_status=.true.
   end subroutine set_local_coords
 
 
   !> Assign global coordinates, as needed
-  subroutine set_global_coords(x2all,x3all)
+  subroutine set_global_coords(self,x2all,x3all)
+    class(curvmesh), intent(inout) :: self
+    real(wp), dimension(:), intent(in) :: x2all,x3all
+    integer :: lx2all,lx3all
 
+    lx2all=size(x2all,1)-4
+    lx3all=size(x3all,1)-4
+
+    if(lx2all < 1) error stop 'meshobj:set_coords: lx2all must be positive definite'
+    if(lx3all < 1) error stop 'meshobj:set_coords: lx3all must be positive definite'
+
+    self%lx2all=lx2all
+    self%lx3all=lx3all
+
+    allocate(self%x2all(-1:lx2all+2), self%x3all(-1:lx3all+2))
+    self%x2all=x2all
+    self%x3all=x3all
+
+    self%xi_alloc_status_glob=.true.
   end subroutine set_global_coords
 
+
+  !> Assign values to root-only arrays
   subroutine set_root(self,h1all,h2all,h3all, &
                       h1x1iall,h2x1iall,h3x1iall, &
                       h1x2iall,h2x2iall,h3x2iall, &
@@ -774,9 +786,13 @@ contains
 
     ! deallocation statements here; always check allocation status flags first...
     if (self%xi_alloc_status) then
-      deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
+      deallocate(self%x1,self%x2,self%x3)    ! these are from set_coords
       self%xi_alloc_status=.false.
     end if
+    if (self%xi_alloc_status_glob) then
+      deallocate(self%x2all,self%x3all)
+      self%xi_alloc_status_glob=.false.
+    end if 
     if (self%dxi_alloc_status) then                                  ! from calc_coord_diffs
       deallocate(self%dx1,self%x1i,self%dx1i)
       deallocate(self%dx2,self%x2i,self%dx2i)

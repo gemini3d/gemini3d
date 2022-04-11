@@ -43,7 +43,7 @@ type(dipolemesh) :: x
 !!!! grid setup and init
 ! grid spec.
 print*, 'fullgrid_testdriver:  Defining curvilinear coordinates...'
-call x%set_coords(q,p,phi,p,phi)
+call x%set_local_coords(q,p,phi)
 
 ! allocations
 print*, 'fullgrid_testdriver:  Allocating space for coordinate-specific arrays...'

@@ -23,7 +23,7 @@ p=[(plims(1) + (plims(2)-plims(1))/lp*(i-1), i=1,lp)]
 phi = [(philim(1) + (philim(2)-philim(1))/lphi*(i-1), i=1,lphi)]
 
 ! initialize object so we can call its type-bound procedures
-call x%set_coords(q,p,phi,p,phi)
+call x%set_local_coords(q,p,phi)
 call x%init()
 
 ! test the conversion of a set of grid points
