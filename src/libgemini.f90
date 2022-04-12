@@ -176,7 +176,7 @@ contains
     call fluidvar_pointers(fluidvars)
 
     !> fluid momentum and energy density variables
-    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp))
+    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
     call fluidauxvar_pointers(fluidauxvars)
 
     !> electrodynamic state variables (lx1,lx2,lx3)
@@ -200,7 +200,7 @@ contains
 
     call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
     fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
-    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)])
     fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
     call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
     electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
@@ -215,13 +215,6 @@ contains
 
   !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
   subroutine neuMHDalloc()
-    !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
-    allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-    allocate(B1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-    allocate(B2(-1:lx1+2,-1:lx2+2,-1:lx3+2),B3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-    allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
-             v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-
     !> neutral variables (never need to be haloed, etc.)
     allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
 
@@ -264,6 +257,19 @@ contains
     !> pointers to aliased state variables
     rhovs1=>fluidauxvars(:,:,:,1:lsp)
     rhoes=>fluidauxvars(:,:,:,lsp+1:2*lsp)
+
+    !> MHD-like state variables used in some calculations (lx1+4,lx2+4,lx3+4,lsp)
+    rhov2=>fluidauxvars(:,:,:,2*lsp+1)
+    rhov3=>fluidauxvars(:,:,:,2*lsp+2)
+    B1=>fluidauxvars(:,:,:,2*lsp+3)
+    B2=>fluidauxvars(:,:,:,2*lsp+4)
+    B3=>fluidauxvars(:,:,:,2*lsp+5)
+    v1=>fluidauxvars(:,:,:,2*lsp+6)
+    v2=>fluidauxvars(:,:,:,2*lsp+7)
+    v3=>fluidauxvars(:,:,:,2*lsp+8)
+    rhom=>fluidauxvars(:,:,:,2*lsp+9)
+
+    print*, 'B1:  info', shape(B1), lbound(B1), ubound(B1)
   end subroutine fluidauxvar_pointers
 
 
@@ -273,8 +279,6 @@ contains
 
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
-    print*, 'shape of electrovars:  ', shape(electrovars)
-
     !> electric fields, potential, and current density
     E1=>electrovars(:,:,:,1)
     E2=>electrovars(:,:,:,2)
@@ -283,8 +287,6 @@ contains
     J2=>electrovars(:,:,:,5)
     J3=>electrovars(:,:,:,6)
     Phi=>electrovars(:,:,:,7)
-
-    print*, 'shape E2,E3:  ', shape(E2), shape(E3), minval(E2), maxval(E2), minval(E3), maxval(E3)
   end subroutine electrovar_pointers
 
 
@@ -298,8 +300,8 @@ contains
     deallocate(fluidauxvars)
     nullify(rhovs1,rhoes)
 
-    deallocate(rhov2,rhov3,B1,B2,B3)
-    deallocate(v1,v2,v3,rhom)
+    nullify(rhov2,rhov3,B1,B2,B3)
+    nullify(v1,v2,v3,rhom)
 
     deallocate(electrovars)
     nullify(E1,E2,E3,J1,J2,J3,Phi)
@@ -321,10 +323,13 @@ contains
   end subroutine
 
 
-  !> set start values for some variables
+  !> set start values for some variables.  some case is required here because the state variable pointers are mapped; 
+  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args 
+  !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
   subroutine set_start_values(it,t,tout,tglowout,tneuBG) bind(C)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+    integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
 
     !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
@@ -335,7 +340,15 @@ contains
     !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
     !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
     !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; B1(1:lx1,1:lx2,1:lx3) = x%Bmag(1:lx1,1:lx2,1:lx3)
+    print*, 'B1 checking before init:  ', shape(B1), lbound(B1), ubound(B1)
+    ix1min=lbound(B1,1)+2
+    ix1max=ubound(B1,1)-2
+    ix2min=lbound(B1,2)+2
+    ix2max=ubound(B1,2)-2
+    ix3min=lbound(B1,3)+2
+    ix3max=ubound(B1,3)-2
+    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; 
+    B1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max) = x%Bmag(1:lx1,1:lx2,1:lx3)
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
   end subroutine set_start_values
