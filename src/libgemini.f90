@@ -133,35 +133,25 @@ contains
   end subroutine cli_config_gridsize
 
 
-  ! FIXME:  this should be in a common library, i.e. used by both fortran ane C
-  !> return some data from cfg that is needed in the main program
-  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name="get_config_vars_C")
-    logical, intent(inout) :: flagneuBG
-    integer, intent(inout) :: flagdneu
-    real(wp), intent(inout) :: dtneuBG,dtneu
-
-    flagneuBG=cfg%flagneuBG
-    flagdneu=cfg%flagdneu
-    dtneuBG=cfg%dtneuBG
-    dtneu=cfg%dtneu
-  end subroutine get_config_vars_C
-
-
   !> returns the subgrid sizes (assuming they are set to the calling procedure
-  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C, name="get_subgrid_size_C")
+  subroutine get_subgrid_size(x,lx1out,lx2out,lx3out)
+    class(curvmesh), intent(in) :: x
     integer, intent(inout) :: lx1out,lx2out,lx3out
 
     lx1out=lx1
     lx2out=lx2
-    lx3out=lx3;
+    lx3out=lx3
   end subroutine
 
 
   !> return full grid extents
-  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C, name="get_fullgrid_size_C")
+  subroutine get_fullgrid_size(x,lx1out,lx2allout,lx3allout)
+    class(curvmesh), intent(in) :: x
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
 
-    lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
+    lx1out=lx1
+    lx2allout=lx2all
+    lx3allout=lx3all
   end subroutine get_fullgrid_size_C
 
 
@@ -198,27 +188,6 @@ contains
 
     call neuMHDalloc()
   end subroutine gemini_alloc
-
-
-  !> as an alternative to gemini_alloc (fortran allocation) can have C allocate space and pass in pointers that fortran will bind to state vars
-  subroutine memblock_from_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="memblock_from_C")
-    type(c_ptr), intent(inout) :: fluidvarsC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    type(c_ptr), intent(inout) :: electrovarsC
-
-    call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
-    fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
-    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp)])
-    fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
-    call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
-    electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
-
-    call fluidvar_pointers(fluidvars)
-    call fluidauxvar_pointers(fluidauxvars)
-    call electrovar_pointers(electrovars)
-
-    call neuMHDalloc()
-  end subroutine memblock_from_C
 
 
   !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
