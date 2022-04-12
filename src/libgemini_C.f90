@@ -16,8 +16,6 @@
 !!   that does not involve mpi or mpi-dependent modules.  Note also that c bindings need to
 !!   be passing only "simple" data, i.e. no structures or objects like the config struct or
 !!   the grid object
-!!
-!! These procedures are used directory from fortran or indirectly through the C interfaces in libgemini_C.f90
 module gemini3d
 
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
@@ -50,39 +48,6 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             vn2,vn3,vs1i,vs2i,vs3i, &
             get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
 
-!> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
-!!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.
-type(gemini_cfg) :: cfg
-class(curvmesh), allocatable :: x
-
-!! Pointers to blocks of memory containing state variables
-real(wp), dimension(:,:,:,:), pointer :: fluidvars
-real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
-real(wp), dimension(:,:,:,:), pointer :: electrovars
-real(wp), dimension(:), pointer :: fluidvars_flat
-real(wp), dimension(:), pointer :: fluidauxvars_flat
-real(wp), dimension(:), pointer :: electrovars_flat
-
-!! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C
-!!   because mapping C-fortran pointers does not appear to work in most compilers???
-real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts !! fluid state variables
-real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
-real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynamic state variables
-real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3     !! inductive state vars. (for future use - except for B1 which is used for the background field)
-real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3   !! inductive auxiliary
-real(wp), dimension(:,:,:,:), pointer :: nn    !! neutral density array
-real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
-real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
-real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
-
-!> Other variables used by the fluid solvers
-real(wp), dimension(:,:,:,:), pointer :: vs1i
-real(wp), dimension(:,:,:,:), pointer :: vs2i
-real(wp), dimension(:,:,:,:), pointer :: vs3i
-real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
-
-!! temp file used by MSIS 2.0
-character(*), parameter :: msis2_param_file = "msis20.parm"
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -96,76 +61,59 @@ type, bind(C) :: c_params
 end type c_params
 
 contains
+  !> FIXME: need to add procedures to deallocate space associated with any variables that have been allocated
+  !    and passed back to C to invoke patch operations but are otherwise opaque handles to the main code
+  subroutine release_memory_C(cfgC,xC,gridtype) bind(C, name="release_memory_C")
+    type(c_ptr), intent(inout) :: cfgC,xC
+    type(gemini_cfg), pointer :: cfg
+    class(curvmesh), pointer :: x
+
+    c_f_pointer(cfgC,cfg)
+    deallocate(cfg)
+    cfgC=c_null_ptr
+
+    ! FIXME:  select case on gridtype??? how to make a pointer to an abstract class!!!???
+    c_f_pointer(xC,x)
+    deallocate(x)
+    xC=c_null_ptr
+  end subroutine release_memory_C
+
+
   !> basic command line and grid size determination; although this takes in the split parameters it doesn't actually do any mpi
-  subroutine cli_config_gridsize(p,lid2in,lid3in,cfg)
+  subroutine cli_config_gridsize_C(p,lid2in,lid3in,cfgC) bind(C, name="cli_config_grid_size_C")
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
-    type(gemini_cfg), intent(inout) :: cfg
-    character(size(p%out_dir)) :: buf
-    integer :: i
+    type(c_ptr), intent(inout) :: cfgC
 
-    !> command line interface
-    if(p%fortran_cli) then
-      call cli(cfg, lid2in, lid3in, debug)
-    else
-      buf = "" !< ensure buf has no garbage characters
-
-      do i = 1, len(buf)
-        if (p%out_dir(i) == c_null_char) exit
-        buf(i:i) = p%out_dir(i)
-      enddo
-      cfg%outdir = expanduser(buf)
-
-      cfg%dryrun = p%dryrun
-      debug = p%debug
-    endif
-
-    !> read the config input file, if not passed .ini info from C++ frontend
-    if(p%fortran_nml) then
-      call find_config(cfg)
-      call read_configfile(cfg, verbose=.false.)
-    endif
-
-    call check_input_files(cfg)
-
-    !> read the size out of the grid file, store in module variables
-    call grid_size(cfg%indatsize)
+    call cli_config_gridsize(p,lid2in,lid3in,cfg)
+    cfgC=c_loc(cfg)    ! return an opaque handle (void*) to config struct in case the main program needs to pass it to other procedures
   end subroutine cli_config_gridsize
 
 
-  ! FIXME:  this should be in a common library, i.e. used by both fortran ane C
-  !> return some data from cfg that is needed in the main program
-  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name="get_config_vars_C")
-    logical, intent(inout) :: flagneuBG
-    integer, intent(inout) :: flagdneu
-    real(wp), intent(inout) :: dtneuBG,dtneu
-
-    flagneuBG=cfg%flagneuBG
-    flagdneu=cfg%flagdneu
-    dtneuBG=cfg%dtneuBG
-    dtneu=cfg%dtneu
-  end subroutine get_config_vars_C
-
-
   !> returns the subgrid sizes (assuming they are set to the calling procedure
-  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C, name="get_subgrid_size_C")
+  subroutine get_subgrid_size_C(xC,lx1out,lx2out,lx3out) bind(C, name="get_subgrid_size_C")
+    type(c_ptr), intent(in) :: xC
     integer, intent(inout) :: lx1out,lx2out,lx3out
-
-    lx1out=lx1
-    lx2out=lx2
-    lx3out=lx3;
+    class(curvmesh), pointer :: x
+    
+    c_f_pointer(xC,x)
+    call get_subgrid_size(x,lx1out,lx2out,lx3out)
   end subroutine
 
 
   !> return full grid extents
-  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C, name="get_fullgrid_size_C")
+  subroutine get_fullgrid_size_C(xC,lx1out,lx2allout,lx3allout) bind(C, name="get_fullgrid_size_C")
+    type(c_ptr), intent(in) :: xC
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
-
-    lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
+    class(curvmesh), pointer :: x
+    
+    c_f_pointer(xC,x)
+    call get_fullgrid_size(x,lx1out,lx2allout,lx3allout)
   end subroutine get_fullgrid_size_C
 
 
-  !> return number of species from phys_consts module
+  !> return number of species from phys_consts module; this is a global variable across the entire
+  !   simulation so even if multiple patches are used this will still be valid.  
   subroutine get_species_size_C(lspout) bind(C, name="get_species_size_C")
     integer, intent(inout) :: lspout
 
@@ -174,7 +122,7 @@ contains
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
+  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="gemini_alloc")
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: electrovarsC

@@ -1,3 +1,7 @@
+/* 
+This has top-level calls to libgemini in order to run a simulation from C
+*/
+
 #include <iostream>
 #include <cstdlib>
 #include "gemini3d.h"
