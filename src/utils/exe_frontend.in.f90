@@ -21,7 +21,7 @@ integer, intent(out) :: Ncpu
 character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
 
 character(1000) :: buf
-integer :: argc, i, j, ierr
+integer :: argc, i, j, ierr, L
 
 argc = command_argument_count()
 
@@ -66,14 +66,16 @@ do i = 2, argc
   select case (buf)
 
   case ('-n')
-    call get_command_argument(i+1, buf)
+    call get_command_argument(i+1, buf, length=L, status=ierr)
+    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -n missing parameter"
     read(buf, '(I6)') Ncpu
-  case ('-exe', '-gemexe')
-    !! FIXME: -gemexe is deprecated
-    call get_command_argument(i+1, buf)
+  case ('-exe')
+    call get_command_argument(i+1, buf, length=L, status=ierr)
+    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -exe missing parameter"
     exe = find_exe(trim(buf))
   case ('-mpiexec')
-    call get_command_argument(i+1, buf)
+    call get_command_argument(i+1, buf, length=L, status=ierr)
+    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop "-mpiexec was specified without an executable path"
     mpiexec = find_mpiexec(trim(buf))
   case ('-plan')
     plan = .true.
@@ -84,27 +86,27 @@ do i = 2, argc
   case ('-out_format')
     !! flags with one parameter
     extra = extra // ' ' // trim(buf)
-    call get_command_argument(i+1, buf, status=ierr)
-    if(ierr /= 0) error stop trim(buf) // " missing parameter"
+    call get_command_argument(i+1, buf, length=L, status=ierr)
+    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -out_format missing parameter"
     extra = extra // ' ' // trim(buf)
   case ('-manual_grid')
     !! flags with two parameters
     extra = extra // ' ' // trim(buf)
     do j = 1,2
-      call get_command_argument(i+j, buf, status=ierr)
-      if(ierr /= 0) error stop trim(buf) // " expected two parameters"
+      call get_command_argument(i+j, buf, length=L, status=ierr)
+      if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -manual_grid expected two parameters"
       extra = extra // ' ' // trim(buf)
     enddo
   case ('-start_time', '-end_time')
     !! flags with four parameters
     extra = extra // ' ' // trim(buf)
     do j = 1,4
-      call get_command_argument(i+j, buf, status=ierr)
-      if(ierr /= 0) error stop trim(buf) // " expected four parameters"
+      call get_command_argument(i+j, buf, length=L, status=ierr)
+      if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -start_time expected four parameters"
       extra = extra // ' ' // trim(buf)
     enddo
   case default
-    write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
+    error stop "Gemini3D: unknown option: " // trim(buf)
   end select
 end do
 
@@ -220,7 +222,7 @@ character(1000) :: buf
 integer :: i, L
 
 if(len_trim(exe) > 0) then
-  if(check_mpiexec(expanduser(exe))) mpiexec = exe
+  if(check_mpiexec(expanduser(exe))) mpiexec = expanduser(exe)
 else
   call get_environment_variable("MPI_ROOT", buf, length=L, status=i)
   if (i==0 .and. L>0) then
@@ -237,12 +239,14 @@ logical function check_mpiexec(exe) result(ok)
 
 character(*), intent(in) :: exe
 
+if(exe(1:1) == "-") error stop "gemini3d.run: -mpiexec was missing an executable, got: " // exe
+
 inquire(file=exe, exist=ok)
 
 if(ok) return
 
-write(stderr,"(A)") "MPIexec file not found " // exe
-write(stderr,"(A)") "If simulation hangs or operates incorrectly, specify -mpiexec option or set MPI_ROOT environment variable."
+write(stderr,"(A,/,A)") "gemini3d.run: MPIexec file not found " // exe, &
+"If simulation hangs or operates incorrectly, specify -mpiexec option or set MPI_ROOT environment variable."
 
 end function check_mpiexec
 
