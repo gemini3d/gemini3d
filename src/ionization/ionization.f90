@@ -10,23 +10,20 @@ use timeutils, only: ymd2doy
 implicit none (type, external)
 private
 public :: ionrate_fang, ionrate_glow98, eheating, photoionization
-
 external :: mpi_send, mpi_recv
 
 interface
-module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
-  ionrate,eheating,iver)
-
-real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
-real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
-real(wp), dimension(:,:), intent(inout) :: ionrate
-!! intent(out)
-real(wp), dimension(:), intent(inout) :: eheating, iver
-!! intent(out)
-real(wp), intent(in) :: UTsec, xlat, xlon, xf107, xf107a
-integer, intent(in) :: date_doy
-
-end subroutine glow_run
+  module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
+    ionrate,eheating,iver)
+    real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
+    real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
+    real(wp), dimension(:,:), intent(inout) :: ionrate
+    !! intent(out)
+    real(wp), dimension(:), intent(inout) :: eheating, iver
+    !! intent(out)
+    real(wp), intent(in) :: UTsec, xlat, xlon, xf107, xf107a
+    integer, intent(in) :: date_doy
+  end subroutine glow_run
 end interface
 
 contains

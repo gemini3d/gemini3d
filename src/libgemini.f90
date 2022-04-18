@@ -13,9 +13,9 @@
 ! limitations under the License.
 
 !> This module is intended to have various interfaces/wrappers for main gemini functionality
-!!   that does not involve mpi or mpi-dependent modules.  Note also that c bindings need to
-!!   be passing only "simple" data, i.e. no structures or objects like the config struct or
-!!   the grid object
+!!   that does not involve mpi or mpi-dependent modules.  There will be a separate module with the
+!!   C bindings and pointer conversions that can be called from C (i.e. wrappers for these routines).  
+!!   For the most part this is a bunch of "getter" routines. 
 module gemini3d
 
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
@@ -48,39 +48,44 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             vn2,vn3,vs1i,vs2i,vs3i, &
             get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
 
-!> these are module scope variables to avoid needing to pass as arguments in top-level main program.  In principle these could
-!!   alternatively be stored in their respective modules if there is really a preference one way vs. the other.
-type(gemini_cfg) :: cfg
-class(curvmesh), allocatable :: x
-
 !! Pointers to blocks of memory containing state variables
 real(wp), dimension(:,:,:,:), pointer :: fluidvars
 real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 real(wp), dimension(:,:,:,:), pointer :: electrovars
-real(wp), dimension(:), pointer :: fluidvars_flat
-real(wp), dimension(:), pointer :: fluidauxvars_flat
-real(wp), dimension(:), pointer :: electrovars_flat
+!real(wp), dimension(:), pointer :: fluidvars_flat
+!real(wp), dimension(:), pointer :: fluidauxvars_flat
+!real(wp), dimension(:), pointer :: electrovars_flat
 
 !! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C
 !!   because mapping C-fortran pointers does not appear to work in most compilers???
 real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts !! fluid state variables
 real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
-real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynamic state variables
 real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3     !! inductive state vars. (for future use - except for B1 which is used for the background field)
 real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3   !! inductive auxiliary
-real(wp), dimension(:,:,:,:), pointer :: nn    !! neutral density array
-real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
-real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
-real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
-
-!> Other variables used by the fluid solvers
-real(wp), dimension(:,:,:,:), pointer :: vs1i
-real(wp), dimension(:,:,:,:), pointer :: vs2i
-real(wp), dimension(:,:,:,:), pointer :: vs3i
-real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
+real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynamic state variables
 
 !! temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
+
+!! FIXME: need to include pointers for any inputdata objects used
+!> type encapsulating internal arrays and parameters needed by gemini
+type gemini_work
+  real(wp), dimension(:,:,:,:), pointer :: nn    !! neutral density array
+  real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
+  real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
+  real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
+  
+  !> Other variables used by the fluid solvers
+  real(wp), dimension(:,:,:,:), pointer :: vs1i
+  real(wp), dimension(:,:,:,:), pointer :: vs2i
+  real(wp), dimension(:,:,:,:), pointer :: vs3i
+  real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
+
+  !> Inputdata objects that are needed for each subgrid
+  type(precipdata), pointer :: eprecip
+  type(efielddata), pointer :: efield
+  class(neutraldata), pointer :: atmosperturb
+end type gemini_work
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -95,7 +100,7 @@ end type c_params
 
 contains
   !> basic command line and grid size determination
-  subroutine cli_config_gridsize(p,lid2in,lid3in) bind(C)
+  subroutine cli_config_gridsize(p,lid2in,lid3in)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
     character(size(p%out_dir)) :: buf
@@ -131,111 +136,140 @@ contains
 
 
   !> return some data from cfg that is needed in the main program
-  subroutine get_config_vars_C(flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name="get_config_vars_C")
+  subroutine get_config_vars(cfg,flagneuBG,flagdneu,dtneuBG,dtneu)
+    type(gemini_cfg), intent(in) :: cfg
     logical, intent(inout) :: flagneuBG
     integer, intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
 
     flagneuBG=cfg%flagneuBG; flagdneu=cfg%flagdneu;
     dtneuBG=cfg%dtneuBG; dtneu=cfg%dtneu;
-  end subroutine get_config_vars_C
+  end subroutine get_config_vars
 
 
   !> returns the subgrid sizes (assuming they are set to the calling procedure
-  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C, name="get_subgrid_size_C")
+  subroutine get_subgrid_size(x,lx1out,lx2out,lx3out)
+    class(curvmesh), intent(in) :: x
     integer, intent(inout) :: lx1out,lx2out,lx3out
 
-    lx1out=lx1; lx2out=lx2; lx3out=lx3;
-  end subroutine
+    lx1out=x%lx1; lx2out=x%lx2; lx3out=x%lx3;
+  end subroutine get_subgrid_size
 
 
   !> return full grid extents
-  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C, name="get_fullgrid_size_C")
+  subroutine get_fullgrid_size(x,lx1out,lx2allout,lx3allout)
+    class(curvmesh), intent(in) :: x
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
 
-    lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
-  end subroutine get_fullgrid_size_C
+    lx1out=x%lx1; lx2allout=x%lx2all; lx3allout=x%lx3all;
+  end subroutine get_fullgrid_size
 
 
   !> return number of species from phys_consts module
-  subroutine get_species_size_C(lspout) bind(C, name="get_species_size_C")
+  subroutine get_species_size(lspout)
     integer, intent(inout) :: lspout
 
     lspout=lsp
-  end subroutine get_species_size_C
+  end subroutine get_species_size
+
+
+!  !> allocate space for gemini state variables, bind pointers to blocks of memory
+!  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC)
+!    type(c_ptr), intent(inout) :: fluidvarsC
+!    type(c_ptr), intent(inout) :: fluidauxvarsC
+!    type(c_ptr), intent(inout) :: electrovarsC
+!
+!    !> one contiguous block for overall simulation data
+!    allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
+!    call fluidvar_pointers(fluidvars)
+!
+!    !> fluid momentum and energy density variables
+!    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
+!    call fluidauxvar_pointers(fluidauxvars)
+!
+!    !> electrodynamic state variables (lx1,lx2,lx3)
+!    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))    ! include ghost cells in prep for integration with other codes
+!    call electrovar_pointers(electrovars)
+!
+!    !> set the C pointers to the location for the memory blocks that we allocated
+!    fluidvarsC=c_loc(fluidvars)
+!    fluidauxvarsC=c_loc(fluidauxvars)
+!    electrovarsC=c_loc(electrovars)
+!
+!    call neuMHDalloc()
+!  end subroutine gemini_alloc
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
-    type(c_ptr), intent(inout) :: fluidvarsC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    type(c_ptr), intent(inout) :: electrovarsC
+  subroutine gemini_data_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), intent(inout) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
 
     !> one contiguous block for overall simulation data
     allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
-    call fluidvar_pointers(fluidvars)
-
     !> fluid momentum and energy density variables
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
-    call fluidauxvar_pointers(fluidauxvars)
-
     !> electrodynamic state variables (lx1,lx2,lx3)
-    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))    ! include ghost cells in prep for integration with other codes
-    call electrovar_pointers(electrovars)
+    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
 
-    !> set the C pointers to the location for the memory blocks that we allocated
-    fluidvarsC=c_loc(fluidvars)
-    fluidauxvarsC=c_loc(fluidauxvars)
-    electrovarsC=c_loc(electrovars)
-
-    call neuMHDalloc()
+    call gemini_work_alloc(cfg,intvars)
   end subroutine gemini_alloc
 
-
-  !> as an alternative to gemini_alloc (fortran allocation) can have C allocate space and pass in pointers that fortran will bind to state vars
-  subroutine memblock_from_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="memblock_from_C")
-    type(c_ptr), intent(inout) :: fluidvarsC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    type(c_ptr), intent(inout) :: electrovarsC
-
-    call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
-    fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
-    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)])
-    fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
-    call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
-    electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
-
-    call fluidvar_pointers(fluidvars)
-    call fluidauxvar_pointers(fluidauxvars)
-    call electrovar_pointers(electrovars)
-
-    call neuMHDalloc()
-  end subroutine memblock_from_C
+!  !> as an alternative to gemini_alloc (fortran allocation) can have C allocate space and pass in pointers that fortran will bind to state vars
+!  subroutine memblock_from_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="memblock_from_C")
+!    type(c_ptr), intent(inout) :: fluidvarsC
+!    type(c_ptr), intent(inout) :: fluidauxvarsC
+!    type(c_ptr), intent(inout) :: electrovarsC
+!
+!    call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
+!    fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
+!    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)])
+!    fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
+!    call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
+!    electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
+!
+!    call fluidvar_pointers(fluidvars)
+!    call fluidauxvar_pointers(fluidauxvars)
+!    call electrovar_pointers(electrovars)
+!
+!    call neuMHDalloc()
+!  end subroutine memblock_from_C
 
 
   !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
-  subroutine neuMHDalloc()
+  subroutine gemini_work_alloc(cfg,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+
     !> neutral variables (never need to be haloed, etc.)
-    allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
+    allocate(intvars%nn(lx1,lx2,lx3,lnchem),intvars%Tn(lx1,lx2,lx3),intvars%vn1(lx1,lx2,lx3), &
+               intvars%vn2(lx1,lx2,lx3),intvars%vn3(lx1,lx2,lx3))
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
-      allocate(iver(lx2,lx3,lwave))
+      allocate(intvars%iver(lx2,lx3,lwave))
       iver = 0
     end if
 
     !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
-    !    are computed from haloed vs1,2,3 arrays.
-    allocate(vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
-    allocate(vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
-    allocate(vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
-    allocate(Q(1:lx1,1:lx2,1:lx3,1:lsp))
-  end subroutine 
+    !    are computed from haloed vs1,2,3 arrays
+    allocate(intvars%vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
+    allocate(intvars%vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
+    allocate(intvars%vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
+    allocate(intvars%Q(1:lx1,1:lx2,1:lx3,1:lsp))
+  end subroutine gemini_work_alloc 
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
-  subroutine fluidvar_pointers(fluidvars)
+  !!   This will be called any time a gemini library procedures needs to access individual state variables.  
+  subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: vs1,vs2,vs3
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: Ts
 
     if (.not. associated(fluidvars)) error stop ' Attempting to bind fluid state vars to unassociated memory!'
 
@@ -249,8 +283,10 @@ contains
 
 
   !> bind pointers for auxiliary fluid variables to a contiguous block of memory
-  subroutine fluidauxvar_pointers(fluidauxvars)
+  subroutine fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
 
     if (.not. associated(fluidauxvars)) error stop ' Attempting to bind aux fluid state vars to unassociated memory!'
 
@@ -268,14 +304,13 @@ contains
     v2=>fluidauxvars(:,:,:,2*lsp+7)
     v3=>fluidauxvars(:,:,:,2*lsp+8)
     rhom=>fluidauxvars(:,:,:,2*lsp+9)
-
-    print*, 'B1:  info', shape(B1), lbound(B1), ubound(B1)
   end subroutine fluidauxvar_pointers
 
 
   !> bind pointers for electomagnetic state variables to a contiguous block of memory
-  subroutine electrovar_pointers(electrovars)
+  subroutine electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    real(wp), dimension(:,:,:), pointer intent(inout) :: E1,E2,E3,J1,J2,J3,Phi
 
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
@@ -291,8 +326,8 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C)
-    type(c_ptr), intent(inout) :: fluidvarsC, fluidauxvarsC, electrovarsC
+  subroutine gemini_dealloc(fluidvars,fluidauxvars,electrovars)
+    real(wp), intent(inout) :: fluidvars, fluidauxvars, electrovars
 
     deallocate(fluidvars)
     nullify(ns,vs1,vs2,vs3,Ts)
@@ -306,29 +341,42 @@ contains
     deallocate(electrovars)
     nullify(E1,E2,E3,J1,J2,J3,Phi)
 
-    deallocate(nn,Tn,vn1,vn2,vn3)
-
-     !> space for integrated volume emission rates
-    if (cfg%flagglow /= 0) then
-      deallocate(iver)
-    end if
-
-    deallocate(vs1i,vs2i,vs3i,Q)
+    call gemini_work_dealloc(intvars)
 
     if (associated(Phiall)) deallocate(Phiall)
-
-    fluidvarsC=c_null_ptr
-    fluidauxvarsC=c_null_ptr
-    electrovarsC=c_null_ptr
   end subroutine
+
+
+  !> deallocate work arrays used by gemini instances
+  subroutine gemini_work_dealloc(cfg,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+
+    !> neutral variables (never need to be haloed, etc.)
+    deallocate(intvars%nn,intvars%Tn,intvars%vn1,intvars%vn2,intvars%vn3)
+
+     !> space for integrated volume emission rates (lx2,lx3,lwave)
+    if (cfg%flagglow /= 0) then
+      deallocate(intvars%iver)
+    end if
+
+    !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
+    !    are computed from haloed vs1,2,3 arrays
+    deallocate(intvars%vs1i)
+    deallocate(intvars%vs2i)
+    deallocate(intvars%vs3i)
+    deallocate(intvars%Q)
+  end subroutine gemini_work_dealloc 
 
 
   !> set start values for some variables.  some case is required here because the state variable pointers are mapped; 
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args 
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
-  subroutine set_start_values(it,t,tout,tglowout,tneuBG) bind(C)
+  subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,rhov2,rhov3,v2,v3,B1,B2,B3)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:), intent(inout) :: rhov2,rhov3,v2,v3,B1,B2,B3
     integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
 
     !> Initialize some variables need for time stepping and output
@@ -354,14 +402,16 @@ contains
   end subroutine set_start_values
 
 
-  !> C binding wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(dt,t,ymd,UTsec) bind(C, name="init_precipinput_C")
+  !> Wrapper for initialization of electron precipitation data
+  subroutine init_precipinput_C(dt,t,ymd,UTsec,x,intvars)
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(in) :: x
+    type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%precip)
   end subroutine init_precipinput_C
 
 

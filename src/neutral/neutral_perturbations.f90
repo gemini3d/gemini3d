@@ -17,20 +17,18 @@ implicit none (type, external)
 ! flag to check whether to apply neutral perturbations
 logical :: flagneuperturb=.false.
 
-!! new module variables for OO refactor, polymorphic perturbation object
-class(neutraldata), allocatable :: atmosperturb
-
 private
 public :: init_neutralperturb,neutral_update,neutral_perturb,neutral_denstemp_update,neutral_wind_update,clear_dneu
 
 contains
   !> initialize/allocate neutral perturbation data object
-  subroutine init_neutralperturb(cfg,x,dt,ymd,UTsec)
+  subroutine init_neutralperturb(cfg,x,dt,ymd,UTsec,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
 
         !! perform an initialization for the perturbation quantities
     if (cfg%flagdneu==1) then
@@ -58,14 +56,13 @@ contains
 
 
  !> update neutral perturbations and add to main neutral arrays
-  subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dt,dtneu
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     !! date for which we wish to calculate perturbations
     real(wp), intent(in) :: UTsec
-
     class(curvmesh), intent(inout) :: x
     !! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
     real(wp), intent(in) :: v2grid,v3grid
@@ -74,6 +71,7 @@ contains
     !! neutral params interpolated to plasma grid at requested time
     real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
     !! intent(out)
+    class(neutraldata), intent(inout) :: atmosperturb
 
     ! advance object state
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
@@ -84,7 +82,7 @@ contains
 
 
   !> update density, temperature, and winds
-  subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
+  subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
     !! adds stored base and perturbation neutral atmospheric parameters
     !!  these are module-scope parameters so not needed as input
     real(wp), dimension(:,:,:,:), intent(inout) :: nn
@@ -94,9 +92,10 @@ contains
     real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
     !! intent(out)
     real(wp) :: v2grid,v3grid
+    class(neutraldata), intent(inout) :: atmosperturb
 
-    call neutral_denstemp_update(nn,Tn)
-    call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+    call neutral_denstemp_update(nn,Tn,atmosperturb)
+    call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
   end subroutine neutral_update
 
 
@@ -104,9 +103,10 @@ contains
   !   This does not use any of the existing data in arrays, but is declared inout to avoid potential
   !   issues with deallocation/reallocation.  This procedure should be used when you have both neutral
   !   background and perturbations and an update needs to be done. 
-  subroutine neutral_denstemp_update(nn,Tn)
+  subroutine neutral_denstemp_update(nn,Tn,atmosperturb)
     real(wp), dimension(:,:,:,:), intent(inout) :: nn
     real(wp), dimension(:,:,:), intent(inout) :: Tn
+    class(neutraldata), intent(in) :: atmosperturb
 
     !> background neutral parameters
     nn=nnmsis
@@ -132,9 +132,10 @@ contains
   !> update wind variables with background and perturbation quantities, note that this does not use any of the
   !    existing data in vn; but we still use intent(inout) to avoid weirdness with allocatable arrays.  This procedure
   !    should only be used when one has both a background and perturbation.  
-  subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+  subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
     real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
     real(wp), intent(in) :: v2grid,v3grid
+    class(neutraldata), intent(in) :: atmosperturb
 
     !> background neutral parameters
     vn1=vn1base
@@ -155,7 +156,9 @@ contains
 
 
   !> deallocate neutral data object
-  subroutine clear_dneu() 
-    if (allocated(atmosperturb)) deallocate(atmosperturb)
+  subroutine clear_dneu(atmosperturb)
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
+ 
+    if (associated(atmosperturb)) deallocate(atmosperturb)
   end subroutine clear_dneu
 end module neutral_perturbations
