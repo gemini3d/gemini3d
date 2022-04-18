@@ -48,27 +48,13 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, i
             vn2,vn3,vs1i,vs2i,vs3i, &
             get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
 
-!! Pointers to blocks of memory containing state variables
-real(wp), dimension(:,:,:,:), pointer :: fluidvars
-real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
-real(wp), dimension(:,:,:,:), pointer :: electrovars
-!real(wp), dimension(:), pointer :: fluidvars_flat
-!real(wp), dimension(:), pointer :: fluidauxvars_flat
-!real(wp), dimension(:), pointer :: electrovars_flat
-
-!! Pointers to named state variables used internally in GEMINI; these cannot be easily used in the top level program if C
-!!   because mapping C-fortran pointers does not appear to work in most compilers???
-real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts !! fluid state variables
-real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes    ! auxiliary fluid variables for transport calculations
-real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3     !! inductive state vars. (for future use - except for B1 which is used for the background field)
-real(wp), dimension(:,:,:), pointer :: rhom,v1,v2,v3   !! inductive auxiliary
-real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynamic state variables
 
 !! temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
 
 
-!> type encapsulating internal arrays and parameters needed by gemini
+!> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
+!    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures
 type gemini_work
   real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
@@ -425,7 +411,7 @@ contains
 
 
   !> set update cadence for printing out diagnostic information during simulation
-  subroutine set_update_cadence(iupdate) bind(C)
+  subroutine set_update_cadence(iupdate)
     integer, intent(inout) :: iupdate
 
     !> control update rate from excessive console printing
@@ -442,94 +428,162 @@ contains
 
 
   !> compute background neutral density, temperature, and wind
-  subroutine neutral_atmos_winds_C(ymd,UTsec) bind(C, name="neutral_atmos_winds_C")
+  subroutine neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    type(gemini_work), intent(inout) :: intvars
 
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
-    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x)
-  end subroutine neutral_atmos_winds_C
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version, intvars%atmos)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, intvars%atmos)
+  end subroutine neutral_atmos_winds
 
 
   !> get solar indices from cfg struct
-  subroutine get_solar_indices_C(f107,f107a) bind(C, name="get_solar_indices_C")
+  subroutine get_solar_indices(cfg,f107,f107a)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(inout) :: f107,f107a
 
     f107=cfg%activ(2)
     f107a=cfg%activ(1)
-  end subroutine get_solar_indices_C
+  end subroutine get_solar_indices
 
 
   !> convert velocity to momentum density
-  subroutine v12rhov1_C() bind(C, name="v12rhov1_C")
+  subroutine v12rhov1(fluidvars,fluidauxvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call v12rhov1(ns,vs1,rhovs1)
-  end subroutine v12rhov1_C
+  end subroutine v12rhov1
 
 
   !> convert temperature to specific internal energy density
-  subroutine T2rhoe_C() bind(C, name="T2rhoe_C")
+  subroutine T2rhoe(fluidvars,fluidauxvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call T2rhoe(ns,Ts,rhoes)
-  end subroutine T2rhoe_C
+  end subroutine T2rhoe
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_C(lsp) bind(C, name="interface_vels_allspec_C")
+  subroutine interface_vels_allspec(fluidvars,intvars,lsp)
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
-    call interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-  end subroutine interface_vels_allspec_C
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call interface_vels_allspec(vs1,vs2,vs3,intvars%vs1i,intvars%vs2i,intvars%vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+  end subroutine interface_vels_allspec
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams_C(dt) bind(C, name="sweep3_allparams_C")
+  subroutine sweep3_allparams(fluidvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
-    call sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
-  end subroutine sweep3_allparams_C
-  subroutine sweep1_allparams_C(dt) bind(C, name="sweep1_allparams_C")
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
+  end subroutine sweep3_allparams
+  subroutine sweep1_allparams(fluidbars,intbars,x,dt)
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
-    call sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
-  end subroutine sweep1_allparams_C
-  subroutine sweep2_allparams_C(dt) bind(C, name="sweep2_allparams_C")
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
+  end subroutine sweep1_allparams
+  subroutine sweep2_allparams(fluidvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
-    call sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
-  end subroutine sweep2_allparams_C
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
+  end subroutine sweep2_allparams
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1_C() bind(C, name="rhov12v1_C")
+  subroutine rhov12v1(fluidvars,fluidauxvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call rhov12v1(ns,rhovs1,vs1)
-  end subroutine rhov12v1_C
+  end subroutine rhov12v1
 
 
   !> compute artifical viscosity
-  subroutine VNRicht_artvisc_C() bind(C, name="VNRicht_artvisc_C")
-    call VNRicht_artvisc(ns,vs1,Q)
-  end subroutine VNRicht_artvisc_C
+  subroutine VNRicht_artvisc(fluidvars,intvars)
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call VNRicht_artvisc(ns,vs1,intvars%Q)
+  end subroutine VNRicht_artvisc
 
 
   !> compression substep for fluid solve
-  subroutine compression_C(dt) bind(C, name="compression_C")
+  subroutine compression(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    type(gemini_work), intent(in) :: intvars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
-  end subroutine compression_C
+  end subroutine compression
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T_C() bind(C, name="rhoe2T_C")
+  subroutine rhoe2T()
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
 
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call rhoe2T(ns,rhoes,Ts)
-  end subroutine rhoe2T_C
+  end subroutine rhoe2T
 
 
   !> deal with null cell solutions
-  subroutine clean_param_C(iparm) bind(C, name="clean_param_C")
+  subroutine clean_param_C(iparm,x,fluidvars) bind(C, name="clean_param_C")
     integer, intent(in) :: iparm
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: parm
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     select case (iparm)
       case (1)
         parm=>ns
@@ -545,39 +599,55 @@ contains
 
 
   !> diffusion of energy
-  subroutine energy_diffusion_C(dt) bind(C, name="energy_diffusion_C")
+  subroutine energy_diffusion_C(cfg,x,fluidvars,electrovars,intvars,dt) bind(C, name="energy_diffusion_C")
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
     real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:) :: E1,E2,E3,J1,J2,J3,Phi
 
-    call energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,cfg%diffsolvetype,cfg%Teinf)
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call energy_diffusion(dt,x,ns,Ts,J1,intvars%nn,intvars%Tn,cfg%diffsolvetype,cfg%Teinf)
   end subroutine energy_diffusion_C
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C, name="source_loss_allparams_C")
+  subroutine source_loss_allparams_C(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C, name="source_loss_allparams_C")
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: f107a,f107
     logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:) :: E1,E2,E3,J1,J2,J3,Phi
 
-    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                     Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%nn,intvars%, &
+                                     intvars%vn1,intvars%vn2,intvars%vn3, &
+                                     intvars%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
   end subroutine source_loss_allparams_C
 
 
-  !> deallocate module storage for background neutral parameters
-  subroutine clear_neuBG_C() bind(C, name="clear_neuBG_C")
-    call clear_neuBG()
-  end subroutine clear_neuBG_C
-
-
-  !> increment date and time arrays
-  subroutine dateinc_C(dt,ymd,UTsec) bind(C, name="dateinc_C")
+  !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.  
+  subroutine dateinc_main(dt,ymd,UTsec)
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec
 
-    call dateinc(dt,ymd,UTsec)
-  end subroutine dateinc_C
+    call dateinc_main(dt,ymd,UTsec)
+  end subroutine dateinc
 end module gemini3d
