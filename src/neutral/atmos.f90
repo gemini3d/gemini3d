@@ -60,14 +60,14 @@ module procedure neutral_atmos
           error stop
         end if
 
-        nnmsis(ix1,ix2,ix3,1)= d(2)
-        nnmsis(ix1,ix2,ix3,2)= d(3)
-        nnmsis(ix1,ix2,ix3,3)= d(4)
-        nnmsis(ix1,ix2,ix3,4)= d(7)
-        nnmsis(ix1,ix2,ix3,5)= d(8)
+        atmos%nnmsis(ix1,ix2,ix3,1)= d(2)
+        atmos%nnmsis(ix1,ix2,ix3,2)= d(3)
+        atmos%nnmsis(ix1,ix2,ix3,3)= d(4)
+        atmos%nnmsis(ix1,ix2,ix3,4)= d(7)
+        atmos%nnmsis(ix1,ix2,ix3,5)= d(8)
 
-        Tnmsis(ix1,ix2,ix3)= t(2)
-        nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
+        atmos%Tnmsis(ix1,ix2,ix3)= t(2)
+        atmos%nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
                             5e-7_wp*nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
       end do
     end do

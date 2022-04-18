@@ -44,18 +44,18 @@ module procedure neutral_winds
   !v1=Walt; v2=Wmeridional; v3=Wzonal;
 
   !! update module background winds 
-  vn1base = v1
-  vn2base = v2
-  vn3base = v3
+  atmos%vn1base = v1
+  atmos%vn2base = v2
+  atmos%vn3base = v3
 
   !! zero out background winds at null points
   do iinull=1,x%lnull
     i1=x%inull(iinull,1)
     i2=x%inull(iinull,2)
     i3=x%inull(iinull,3)
-    vn1base(i1,i2,i3)=0.0
-    vn2base(i1,i2,i3)=0.0
-    vn3base(i1,i2,i3)=0.0
+    atmos%vn1base(i1,i2,i3)=0.0
+    atmos%vn2base(i1,i2,i3)=0.0
+    atmos%vn3base(i1,i2,i3)=0.0
   end do
 
   !! taper winds according to altitude.  If this is not done there seems to be an issue where poorly resolved
@@ -65,7 +65,7 @@ module procedure neutral_winds
   !!  be revisited in the future.  
   do i2=1,lx2
     do i3=1,lx3
-      vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
+      atmos%vn1base(1:lx1,i2,i3)=atmos%vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
     end do
   end do  
 

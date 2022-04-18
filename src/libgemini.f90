@@ -26,11 +26,11 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
-use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
-use neutral, only: init_neutralBG,neutral_atmos,neutral_winds,clear_neuBG
+use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,clear_neuBG,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1
@@ -67,11 +67,9 @@ real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi    !! electrodynami
 !! temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
 
-!! FIXME: need to include pointers for any inputdata objects used
+
 !> type encapsulating internal arrays and parameters needed by gemini
 type gemini_work
-  real(wp), dimension(:,:,:,:), pointer :: nn    !! neutral density array
-  real(wp), dimension(:,:,:), pointer :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
   real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
   
@@ -81,11 +79,15 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: vs3i
   real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
 
+  !> Neutral information for top-level gemini program
+  type(neutral_info), pointer :: atmos
+
   !> Inputdata objects that are needed for each subgrid
   type(precipdata), pointer :: eprecip
   type(efielddata), pointer :: efield
   class(neutraldata), pointer :: atmosperturb
 end type gemini_work
+
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
@@ -97,6 +99,7 @@ type, bind(C) :: c_params
   real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
   !! .ini
 end type c_params
+
 
 contains
   !> basic command line and grid size determination
@@ -173,33 +176,6 @@ contains
   end subroutine get_species_size
 
 
-!  !> allocate space for gemini state variables, bind pointers to blocks of memory
-!  subroutine gemini_alloc(fluidvarsC,fluidauxvarsC,electrovarsC)
-!    type(c_ptr), intent(inout) :: fluidvarsC
-!    type(c_ptr), intent(inout) :: fluidauxvarsC
-!    type(c_ptr), intent(inout) :: electrovarsC
-!
-!    !> one contiguous block for overall simulation data
-!    allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
-!    call fluidvar_pointers(fluidvars)
-!
-!    !> fluid momentum and energy density variables
-!    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
-!    call fluidauxvar_pointers(fluidauxvars)
-!
-!    !> electrodynamic state variables (lx1,lx2,lx3)
-!    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))    ! include ghost cells in prep for integration with other codes
-!    call electrovar_pointers(electrovars)
-!
-!    !> set the C pointers to the location for the memory blocks that we allocated
-!    fluidvarsC=c_loc(fluidvars)
-!    fluidauxvarsC=c_loc(fluidauxvars)
-!    electrovarsC=c_loc(electrovars)
-!
-!    call neuMHDalloc()
-!  end subroutine gemini_alloc
-
-
   !> allocate space for gemini state variables, bind pointers to blocks of memory
   subroutine gemini_data_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
@@ -245,8 +221,8 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     !> neutral variables (never need to be haloed, etc.)
-    allocate(intvars%nn(lx1,lx2,lx3,lnchem),intvars%Tn(lx1,lx2,lx3),intvars%vn1(lx1,lx2,lx3), &
-               intvars%vn2(lx1,lx2,lx3),intvars%vn3(lx1,lx2,lx3))
+    allocate(intvars%atmos)
+    call neutral_info_alloc(intvars%atmos)
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
@@ -260,6 +236,9 @@ contains
     allocate(intvars%vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
     allocate(intvars%vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
     allocate(intvars%Q(1:lx1,1:lx2,1:lx3,1:lsp))
+
+    allocate(invars%eprecip)
+    allocate(invars%efield)
   end subroutine gemini_work_alloc 
 
 
@@ -353,7 +332,8 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     !> neutral variables (never need to be haloed, etc.)
-    deallocate(intvars%nn,intvars%Tn,intvars%vn1,intvars%vn2,intvars%vn3)
+    call neutral_info_dealloc(intvars%atmos)
+    deallocate(intvars%atmos)
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
@@ -366,6 +346,9 @@ contains
     deallocate(intvars%vs2i)
     deallocate(intvars%vs3i)
     deallocate(intvars%Q)
+
+    deallocate(intvars%eprecip)
+    deallocate(intvars%eprecip)
   end subroutine gemini_work_dealloc 
 
 
@@ -416,7 +399,7 @@ contains
 
 
   !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_C() bind(C, name="msisinit_C")
+  subroutine msisinit()
     logical :: exists
 
     if(cfg%msis_version == 20) then
@@ -426,18 +409,19 @@ contains
         'This limitation comes from how MSIS 2.x is coded internally.'
       call msisinit(parmfile=msis2_param_file)
     end if
-  end subroutine msisinit_C
+  end subroutine msisinit
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C, name="init_neutralBG_C")
+  subroutine init_neutralBG(dt,t,ymd,UTsec,v2grid,v3grid,intvars)
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
+    type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-  end subroutine init_neutralBG_C
+    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+  end subroutine init_neutralBG
 
 
   !> set update cadence for printing out diagnostic information during simulation

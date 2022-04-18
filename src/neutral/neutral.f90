@@ -14,51 +14,57 @@ public :: nnmsis,Tnmsis, neutral_atmos, make_neuBG, clear_neuBG, init_neutralBG,
   neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, &
   vn1base,vn2base,vn3base
 
+
+!> type encapsulating information needed by neutral module; FIXME: arguably this should be a class with type-bound procedures.
+type neutral_info
+  !! total//overall atmospheric state (BG + perturbations)
+  real(wp), dimension(:,:,:,:), allocatable :: nn    !! neutral density array
+  real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
+
+  !! base msis state
+  real(wp), dimension(:,:,:,:), allocatable :: nnmsis
+  real(wp), dimension(:,:,:), allocatable :: Tnmsis
+  real(wp), dimension(:,:,:), allocatable :: vn1base,vn2base,vn3base
+  
+  !! projection factors for converting vectors mag->geo; e.g. defining rotation matrix from geographic coords into
+  logical :: flagprojections=.false.
+  real(wp), dimension(:,:,:), allocatable :: proj_ealt_e1,proj_ealt_e2,proj_ealt_e3
+  real(wp), dimension(:,:,:), allocatable :: proj_eglat_e1,proj_eglat_e2,proj_eglat_e3
+  real(wp), dimension(:,:,:), allocatable :: proj_eglon_e1,proj_eglon_e2,proj_eglon_e3
+end type neutral_info
+
+
 interface !< atmos.f90
-  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,msis_version)
+  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,msis_version,atmos)
     integer, intent(in) :: ymd(3), msis_version
     real(wp), intent(in) :: UTsecd
     real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
     real(wp), intent(in) :: activ(3)
+    type(neutral_info), intent(inout) :: atmos
   end subroutine neutral_atmos
 end interface
 interface !< wind.f90
-  module subroutine neutral_winds(ymd, UTsec, Ap, x)
+  module subroutine neutral_winds(ymd, UTsec, Ap, x, atmos)
     integer, intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec, Ap
     class(curvmesh), intent(in) :: x
+    type(neutral_info), intent(inout) :: atmos
   end subroutine neutral_winds
 end interface
-
-!! BASE MSIS ATMOSPHERIC STATE ON WHICH TO APPLY PERTURBATIONS
-real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
-real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
-real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
-
-!! projection factors for converting vectors mag->geo; e.g. defining rotation matrix from geographic coords into
-real(wp), dimension(:,:,:), allocatable :: proj_ealt_e1,proj_ealt_e2,proj_ealt_e3
-real(wp), dimension(:,:,:), allocatable :: proj_eglat_e1,proj_eglat_e2,proj_eglat_e3
-real(wp), dimension(:,:,:), allocatable :: proj_eglon_e1,proj_eglon_e2,proj_eglon_e3
 
 contains
   !> initializes neutral atmosphere by:
   !    1)  allocating storage space
   !    2)  establishing initial background for density, temperature, and winds
   !! Arguably this should be called for init and for neutral updates, except for the allocation part...
-  subroutine init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  subroutine init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
     real(wp), intent(in) :: dt,t
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
     real(wp), intent(in) :: v2grid,v3grid
-    real(wp), dimension(:,:,:,:), intent(inout) :: nn
-    !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Tn
-    !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
-    !! intent(out)
-
+    type(neutral_info), intent(inout) atmos
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp
     real(wp) :: tstart,tfin
@@ -69,8 +75,8 @@ contains
     !! call msis to get an initial neutral background atmosphere
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version)
-    call neutralBG_denstemp(nn,Tn)
+    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version,atmos)
+    call neutralBG_denstemp(atmos)
     !if (mpi_cfg%myid == 0) then
       call cpu_time(tfin)
       print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
@@ -79,8 +85,8 @@ contains
     !> Horizontal wind model initialization/background
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     call cpu_time(tstart)
-    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x)
-    call neutralBG_wind(vn1,vn2,vn3,v2grid,v3grid)
+    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, atmos)
+    call neutralBG_wind(atmos,v2grid,v3grid)
     !! we sum the horizontal wind with the background state vector
     !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
     !if (mpi_cfg%myid == 0) then
@@ -92,77 +98,75 @@ contains
 
   !>  Sets the neutral density and temperature variables to background values (usually from MSIS).  Do not use this procedure
   !     when using neutral perturbations; there is a sister procedure in that module for doing updates in that case.
-  subroutine neutralBG_denstemp(nn,Tn)
-    real(wp), dimension(:,:,:,:), intent(inout) :: nn
-    real(wp), dimension(:,:,:), intent(inout) :: Tn
+  subroutine neutralBG_denstemp(atmos)
+    type(neutral_info), intent(inout) :: atmos
 
     !> background neutral parameters
-    nn=nnmsis
-    Tn=Tnmsis
+    atmos%nn=atmos%nnmsis
+    atmos%Tn=atmos%Tnmsis
   end subroutine neutralBG_denstemp
 
 
   !>  Sets neutral winds to background values (usually from MSIS).  If running with neutral perturbations use the sister
   !     procedure in neutral_perturb instead of this one.  
-  subroutine neutralBG_wind(vn1,vn2,vn3,v2grid,v3grid)
-    real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+  subroutine neutralBG_wind(atmos,v2grid,v3grid)
+    type(neutral_info), intent(inout) :: atmos
     real(wp), intent(in) :: v2grid,v3grid
 
     !> background neutral parameters
-    vn1=vn1base
-    vn2=vn2base
-    vn3=vn3base
+    atmos%vn1=atmos%vn1base
+    atmos%vn2=atmos%vn2base
+    atmos%vn3=atmos%vn3base
 
     !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
-    vn2=vn2-v2grid
-    vn3=vn3-v3grid
+    atmos%vn2=atmos%vn2-v2grid
+    atmos%vn3=atmos%vn3-v3grid
   end subroutine neutralBG_wind
  
 
   !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
-  subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
+  subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,atmos)
     real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+    type(neutral_info), intent(inout) :: atmos
     real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
     integer :: lx1,lx2,lx3
 
     !> if first time called then allocate space for projections and compute
-    if (.not. allocated(proj_ealt_e1)) then
+    if (.not. atmos%flagprojections) then
       call x%calc_unitvec_geo(ealt,eglon,eglat)
-      call store_geo2native_projections(x,ealt,eglon,eglat)
+      call store_geo2native_projections(x,ealt,eglon,eglat,atmos)
+      flagprojections=.true.
     end if
 
     !> rotate vectors into model native coordinate system
-    vn1=vnalt*proj_ealt_e1+vnglat*proj_eglat_e1+vnglon*proj_eglon_e1
-    vn2=vnalt*proj_ealt_e2+vnglat*proj_eglat_e2+vnglon*proj_eglon_e2
-    vn3=vnalt*proj_ealt_e3+vnglat*proj_eglat_e3+vnglon*proj_eglon_e3
+    atmos%vn1=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
+    atmos%vn2=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
+    atmos%vn3=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
   end subroutine rotate_geo2native
 
 
   !> compute projections for rotating winds geographic to native coordinate system
-  subroutine store_geo2native_projections(x,ealt,eglon,eglat,rotmat)
+  subroutine store_geo2native_projections(x,ealt,eglon,eglat,atmos,rotmat)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglon,eglat
+    type(neutral_info), intent(inout) :: atmos
     real(wp), dimension(:,:,:,:,:), intent(out), optional :: rotmat    ! for debugging purposes
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
     !! allocate module-scope space for the projection factors
     lx1=size(ealt,1); lx2=size(ealt,2); lx3=size(ealt,3);
-    allocate(proj_ealt_e1(lx1,lx2,lx3),proj_eglat_e1(lx1,lx2,lx3),proj_eglon_e1(lx1,lx2,lx3))
-    allocate(proj_ealt_e2(lx1,lx2,lx3),proj_eglat_e2(lx1,lx2,lx3),proj_eglon_e2(lx1,lx2,lx3))
-    allocate(proj_ealt_e3(lx1,lx2,lx3),proj_eglat_e3(lx1,lx2,lx3),proj_eglon_e3(lx1,lx2,lx3))
 
     !! compute projections (dot products of unit vectors)
-    proj_ealt_e1=sum(ealt*x%e1,4)
-    proj_eglat_e1=sum(eglat*x%e1,4)
-    proj_eglon_e1=sum(eglon*x%e1,4)
-    proj_ealt_e2=sum(ealt*x%e2,4)
-    proj_eglat_e2=sum(eglat*x%e2,4)
-    proj_eglon_e2=sum(eglon*x%e2,4)
-    proj_ealt_e3=sum(ealt*x%e3,4)
-    proj_eglat_e3=sum(eglat*x%e3,4)
-    proj_eglon_e3=sum(eglon*x%e3,4)
+    atmos%proj_ealt_e1=sum(ealt*x%e1,4)
+    atmos%proj_eglat_e1=sum(eglat*x%e1,4)
+    atmos%proj_eglon_e1=sum(eglon*x%e1,4)
+    atmos%proj_ealt_e2=sum(ealt*x%e2,4)
+    atmos%proj_eglat_e2=sum(eglat*x%e2,4)
+    atmos%proj_eglon_e2=sum(eglon*x%e2,4)
+    atmos%proj_ealt_e3=sum(ealt*x%e3,4)
+    atmos%proj_eglat_e3=sum(eglat*x%e3,4)
+    atmos%proj_eglon_e3=sum(eglon*x%e3,4)
 
     !! store the rotation matrix to convert geo to native if the user wants it
     if (present(rotmat)) then
@@ -179,28 +183,47 @@ contains
   end subroutine store_geo2native_projections
 
 
-  subroutine make_neuBG()
-    !allocate and compute plasma grid z,rho locations and space to save neutral perturbation variables and projection factors
-    allocate(nnmsis(lx1,lx2,lx3,lnchem),Tnmsis(lx1,lx2,lx3),vn1base(lx1,lx2,lx3),vn2base(lx1,lx2,lx3),vn3base(lx1,lx2,lx3))
+  !> allocate space for data used in neutral module
+  subroutine neutral_info_alloc(atmos)
+    type(neutral_info), intent(inout) :: atmos
 
-    !start everyone out at zero
-    nnmsis = 0
-    Tnmsis = 0
-    vn1base = 0
-    vn2base = 0
-    vn3base = 0
-  end subroutine make_neuBG
+    ! allocate space for overall neutral state
+    allocate(atmos%nn(lx1,lx2,lx3,lnchem),atmos%Tn(lx1,lx2,lx3),atmos%vn1(lx1,lx2,lx3), &
+               atmos%vn2(lx1,lx2,lx3),atmos%vn3(lx1,lx2,lx3))
+
+    ! allocate and compute plasma grid z,rho locations and space to save neutral perturbation variables and projection factors
+    allocate(atmos%nnmsis(lx1,lx2,lx3,lnchem),atmos%Tnmsis(lx1,lx2,lx3), &
+               atmos%vn1base(lx1,lx2,lx3),atmos%vn2base(lx1,lx2,lx3),atmos%vn3base(lx1,lx2,lx3))
+
+    ! start everyone out at zero
+    atmos%nnmsis = 0
+    atmos%Tnmsis = 0
+    atmos%vn1base = 0
+    atmos%vn2base = 0
+    atmos%vn3base = 0
+
+    allocate(atmos%proj_ealt_e1(lx1,lx2,lx3),atmos%proj_eglat_e1(lx1,lx2,lx3),atmos%proj_eglon_e1(lx1,lx2,lx3))
+    allocate(atmos%proj_ealt_e2(lx1,lx2,lx3),atmos%proj_eglat_e2(lx1,lx2,lx3),atmos%proj_eglon_e2(lx1,lx2,lx3))
+    allocate(atmos%proj_ealt_e3(lx1,lx2,lx3),atmos%proj_eglat_e3(lx1,lx2,lx3),atmos%proj_eglon_e3(lx1,lx2,lx3))
+  end subroutine atmos_alloc
 
 
-  subroutine clear_neuBG
-    ! stuff allocated at beginning of program
-    deallocate(nnmsis,Tnmsis,vn1base,vn2base,vn3base)
+  !> deallocate arrays in neutral_info type
+  subroutine neutral_info_dealloc(atmos)
+    type(neutral_info), intent(inout) :: atmos
+
+    ! overall neutral data
+    deallocate(atmos%nn,atmos%Tn,atmos%vn1,atmos%vn2,atmos%vn3)
+
+    ! msis data
+    deallocate(atmos%nnmsis,atmos%Tnmsis,atmos%vn1base,atmos%vn2base,atmos%vn3base)
 
     ! rotations of neutral winds
-    if (allocated(proj_ealt_e1)) then
-      deallocate(proj_ealt_e1,proj_eglat_e1,proj_eglon_e1)
-      deallocate(proj_ealt_e2,proj_eglat_e2,proj_eglon_e2)
-      deallocate(proj_ealt_e3,proj_eglat_e3,proj_eglon_e3)
+    if (atmos%flagprojections) then
+      deallocate(atmos%proj_ealt_e1,atmos%proj_eglat_e1,atmos%proj_eglon_e1)
+      deallocate(atmos%proj_ealt_e2,atmos%proj_eglat_e2,atmos%proj_eglon_e2)
+      deallocate(atmos%proj_ealt_e3,atmos%proj_eglat_e3,atmos%proj_eglon_e3)
+      atmos%flagprojections=.false.
     end if
-  end subroutine clear_neuBG
+  end subroutine atmos_dealloc
 end module neutral
