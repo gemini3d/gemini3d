@@ -631,7 +631,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
-    real(wp), dimension(:,:,:) :: E1,E2,E3,J1,J2,J3,Phi
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -643,11 +643,11 @@ contains
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.  
-  subroutine dateinc_main(dt,ymd,UTsec)
+  subroutine dateinc_in(dt,ymd,UTsec)
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec
 
     call dateinc_main(dt,ymd,UTsec)
-  end subroutine dateinc
+  end subroutine dateinc_in
 end module gemini3d

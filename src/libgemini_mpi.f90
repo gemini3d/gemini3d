@@ -9,7 +9,6 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
-use grid, only: lx1,lx2,lx3
 use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
@@ -23,8 +22,7 @@ use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
-use gemini3d, only: cfg,x,Phiall,ns,vs1,Ts,Phi,E1,E2,E3,vs2,vs3,nn,Tn,vn1,vn2,vn3,iver, &
-                      B1,B2,B3,J1,J2,J3,rhovs1,rhoes,vs1i,vs2i,vs3i
+use gemini3d, only: fluidvar_pointers,electrovar_pointers,intvars
 
 implicit none (type, external)
 private
@@ -35,25 +33,28 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
             halo_interface_vels_allspec_C, set_global_boundaries_allspec_C, halo_allparams_C, &
             RK2_prep_mpi_allspec_C,get_gavg_Tinf_C, clear_dneu_C, mpisetup_C, mpiparms_C
 
-real(wp), parameter :: dtscale=2    ! controls how rapidly the time step is allowed to change
+real(wp), dimension(:,:,:), allocatable :: Phiall    ! full grid potential
+real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
 contains
   !> call the mpi setup from our module
-  subroutine mpisetup_C() bind(C, name="mpisetup_C")
+  subroutine mpisetup_in
     call mpisetup()
-  end subroutine mpisetup_C
+  end subroutine mpisetup_in
 
 
-  subroutine mpiparms_C(myid,lid) bind(C, name="mpiparms_C")
+  !> my id and the total number of processes for this run
+  subroutine mpiparms(myid,lid)
     integer, intent(inout) :: myid,lid
 
     myid=mpi_cfg%myid
     lid=mpi_cfg%lid
-  end subroutine mpiparms_C
+  end subroutine mpiparms
 
 
   !> create output directory and allocate full grid potential storage
-  subroutine outdir_fullgridvaralloc(lx1,lx2all,lx3all) bind(C)
+  subroutine outdir_fullgridvaralloc(cfg,lx1,lx2all,lx3all)
+    type(gemini_cfg), intent(in) :: cfg
     integer, intent(in) :: lx1,lx2all,lx3all
 
     !> create a place, if necessary, for output datafiles
@@ -69,23 +70,29 @@ contains
 
 
   !> read in the grid and distribute to workers
-  subroutine read_grid_C() bind(C, name="read_grid_C")
+  subroutine read_grid_C(cfg,x)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(inout) :: x
+
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
-    print*, 'end read_grid_C:  ',x%lx1,x%lx2,x%lx3
-  end subroutine read_grid_C
+  end subroutine read_grid
 
 
   !> load initial conditions
-  subroutine get_initial_state(UTsec,ymd,tdur) bind(C)
+  subroutine get_initial_state(cfg,fluidvars,x,UTsec,ymd,tdur)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: tdur
-
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp,ttmp
     character(:), allocatable :: filetmp
 
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
     if ( ttmp > 0 ) then
       !! restart scenario
@@ -121,14 +128,22 @@ contains
 
 
   !> check whether file output should be done and complete it
-  subroutine check_fileoutput(t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec) bind(C)
+  subroutine check_fileoutput(cfg,fluidvars,electrovars,intvars,t,tout,tglowout,tmilestone,flagoutput,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
     real(wp), intent(in) :: t
     real(wp), intent(inout) :: tout,tglowout,tmilestone
     integer, intent(inout) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp) :: tstart,tfin
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     if (abs(t-tout) < 1d-5) then
       tout = tout + cfg%dtout
       if (cfg%nooutput ) then
@@ -161,7 +176,7 @@ contains
     !> GLOW file output
     if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
       call cpu_time(tstart)
-      call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, iver, cfg%out_format)
+      call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, intvars%iver, cfg%out_format)
       if (mpi_cfg%myid==0) then
         call cpu_time(tfin)
         print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
@@ -172,7 +187,8 @@ contains
 
 
   !> check whether a dryrun simulation was done
-  subroutine check_dryrun() bind(C)
+  subroutine check_dryrun(cfg)
+    type(gemini_cfg), intent(in) :: cfg
     character(8) :: date
     character(10) :: time
     integer :: ierr
@@ -189,7 +205,8 @@ contains
 
 
   !> prep simulation for use of Lagrangian grid, if needed
-  subroutine BGfield_Lagrangian(v2grid,v3grid) bind(C, name="BGfield_Lagrangian")
+  subroutine BGfield_Lagrangian(x,v2grid,v3grid)
+    class(curvmesh), intent(in) :: x
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 
@@ -220,11 +237,26 @@ contains
 
 
   !> initial drifts at the start of the simulation
-  subroutine get_initial_drifts() bind(C)
+  subroutine get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    ! calculate drifts
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
@@ -240,7 +272,7 @@ contains
 
 
   !> initialize the process gridf for this simulation
-  subroutine init_procgrid(lx2all,lx3all,lid2in,lid3in) bind(C)
+  subroutine init_procgrid(lx2all,lx3all,lid2in,lid3in)
     integer, intent(in) :: lx2all,lx3all,lid2in,lid3in
 
     if (lid2in==-1) then
@@ -255,17 +287,21 @@ contains
 
 
   !> initialize electric field input data
-  subroutine init_Efieldinput_C(dt,t,ymd,UTsec) bind(C, name="init_Efieldinput_C")
+  subroutine init_Efieldinput(dt,t,intvars,ymd,UTsec)
     real(wp), intent(in) :: dt,t
+    type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
-  end subroutine init_Efieldinput_C
+    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x,intvars%efield)
+  end subroutine init_Efieldinput
 
 
   !> convert potential to electric field by differentiating
-  subroutine pot2perpfield_C() bind(C, name="pot2perpfield_C")
+  subroutine pot2perpfield_in(electrovars)
+    real(wp), dimension(:,:,:,:), intent(inout) :: electrovars
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+
     E1 = 0
     call pot2perpfield(Phi,x,E2,E3)
     if(mpi_cfg%myid==0) then
@@ -275,17 +311,18 @@ contains
       print*, '    gemini ',minval(E3(1:lx1,1:lx2,1:lx3)),maxval(E3(1:lx1,1:lx2,1:lx3))
       print*, '    gemini ',minval(Phi(1:lx1,1:lx2,1:lx3)),maxval(Phi(1:lx1,1:lx2,1:lx3))
     end if
-  end subroutine pot2perpfield_C
+  end subroutine pot2perpfield_in
 
 
   !> initialize neutral perturbations
-  subroutine init_neutralperturb_C(dt,ymd,UTsec) bind(C, name="init_neutralperturb_C")
+  subroutine init_neutralperturb(dt,intvars,ymd,UTsec)
     real(wp), intent(in) :: dt
+    type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_neutralperturb(cfg,x,dt,ymd,UTsec)
-  end subroutine init_neutralperturb_C
+    call init_neutralperturb(cfg,x,dt,ymd,UTsec,intvars%atmosperturb)
+  end subroutine init_neutralperturb
 
 
   !> select time step and throttle if changing too rapidly
