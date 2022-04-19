@@ -54,7 +54,8 @@ character(*), parameter :: msis2_param_file = "msis20.parm"
 
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
-!    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures
+!    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
+!    doesn't conform to simple array shapes.
 type gemini_work
   real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
@@ -334,7 +335,8 @@ contains
     deallocate(intvars%Q)
 
     deallocate(intvars%eprecip)
-    deallocate(intvars%eprecip)
+    deallocate(intvars%efield)
+    !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
   end subroutine gemini_work_dealloc 
 
 

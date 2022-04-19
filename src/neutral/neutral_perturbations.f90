@@ -56,7 +56,7 @@ contains
 
 
  !> update neutral perturbations and add to main neutral arrays
-  subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3,atmosperturb)
+  subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,atmos,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dt,dtneu
     real(wp), intent(in) :: t
@@ -66,18 +66,14 @@ contains
     class(curvmesh), intent(inout) :: x
     !! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
     real(wp), intent(in) :: v2grid,v3grid
-    real(wp), dimension(:,:,:,:), intent(inout) :: nn
-    !! intent(out)
-    !! neutral params interpolated to plasma grid at requested time
-    real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
-    !! intent(out)
+    type(neutral_info), intent(inout) :: atmos
     class(neutraldata), intent(inout) :: atmosperturb
 
     ! advance object state
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
 
     !Add interpolated perturbations to module reference atmosphere arrays
-    call neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
+    call neutral_update(atmos%nn,atmos%Tn,atmos%vn1,atmos%vn2,atmost%vn3,v2grid,v3grid)
   end subroutine neutral_perturb
 
 

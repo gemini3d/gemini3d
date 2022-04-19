@@ -1,4 +1,4 @@
-!> mpi-related gemini functionality; all procedures must be bind(C) to allow C/C++ main programs
+!> mpi-related gemini functionality
 module gemini3d_mpi
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
@@ -33,7 +33,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_C, get_initial_state
             halo_interface_vels_allspec_C, set_global_boundaries_allspec_C, halo_allparams_C, &
             RK2_prep_mpi_allspec_C,get_gavg_Tinf_C, clear_dneu_C, mpisetup_C, mpiparms_C
 
-real(wp), dimension(:,:,:), allocatable :: Phiall    ! full grid potential
+real(wp), dimension(:,:,:), allocatable :: Phiall    ! full grid potential, only root allocates
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
 contains
@@ -240,7 +240,7 @@ contains
   subroutine get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), intent(in) :: electrovars
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
@@ -287,14 +287,15 @@ contains
 
 
   !> initialize electric field input data
-  subroutine init_Efieldinput(dt,t,intvars,ymd,UTsec)
+  subroutine init_Efieldinput_in(x,dt,t,intvars,ymd,UTsec)
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
     type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
     call init_Efieldinput(dt,t,cfg,ymd,UTsec,x,intvars%efield)
-  end subroutine init_Efieldinput
+  end subroutine init_Efieldinput_in
 
 
   !> convert potential to electric field by differentiating
@@ -302,6 +303,7 @@ contains
     real(wp), dimension(:,:,:,:), intent(inout) :: electrovars
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     E1 = 0
     call pot2perpfield(Phi,x,E2,E3)
     if(mpi_cfg%myid==0) then
@@ -315,22 +317,29 @@ contains
 
 
   !> initialize neutral perturbations
-  subroutine init_neutralperturb(dt,intvars,ymd,UTsec)
+  subroutine init_neutralperturb_in(dt,intvars,ymd,UTsec)
     real(wp), intent(in) :: dt
     type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
     call init_neutralperturb(cfg,x,dt,ymd,UTsec,intvars%atmosperturb)
-  end subroutine init_neutralperturb
+  end subroutine init_neutralperturb_in
 
 
   !> select time step and throttle if changing too rapidly
-  subroutine dt_select_C(it,t,tout,tglowout,dt) bind(C, name="dt_select_C")
+  subroutine dt_select(fluidvars,fluidauxvars,it,t,tout,tglowout,dt)
     integer, intent(in) :: it
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
     real(wp) :: dtprev
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
     !> save prior time step
     dtprev = dt
@@ -348,87 +357,142 @@ contains
         end if
       end if
     end if
-  end subroutine dt_select_C
+  end subroutine dt_select
 
 
   !> apply neutral perturbations/background and assign to main code variables
-  subroutine neutral_atmos_wind_update_C(v2grid,v3grid) bind(C, name="neutral_atmos_wind_update_C")
+  subroutine neutral_atmos_wind_update(intvars,v2grid,v3grid)
+    type(gemini_work), intent(inout) :: intvars
     real(wp), intent(in) :: v2grid,v3grid
 
-    call neutral_denstemp_update(nn,Tn)
-    call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
-  end subroutine neutral_atmos_wind_update_C
+    call neutral_denstemp_update(intvars%atmos%nn,intvars%atmos%Tn)
+    call neutral_wind_update(intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,v2grid,v3grid)
+  end subroutine neutral_atmos_wind_update
 
 
   !> compute neutral perturbations and apply to main code variables
-  subroutine neutral_perturb_C(dt,t,ymd,UTsec,v2grid,v3grid) bind(C, name="neutral_perturb_C")
+  subroutine neutral_perturb_in(intvars,dt,t,ymd,UTsec,v2grid,v3grid)
+    type(gemini_work), intent(inout) :: intvars
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
 
-    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
     call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
-  end subroutine neutral_perturb_C
+  end subroutine neutral_perturb_in
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_C(it,t,dt,ymd,UTsec) bind(C, name="electrodynamics_C")
+  subroutine electrodynamics_in(fluidvars,fluidauxvars,electrovars,it,t,dt,ymd,UTsec)
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    ! E&M solves
     call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
-  end subroutine electrodynamics_C
+  end subroutine electrodynamics_in
 
 
   !> check main state variables for finiteness
-  subroutine check_finite_output_C(t) bind(C, name="check_finite_output_C")
+  subroutine check_finite_output_in(cfg,fluidvars,electrovars,t)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
     real(wp), intent(in) :: t
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
-    call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
-  end subroutine check_finite_output_C
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call check_finite_output(cfg%outdir,t,mpi_cfg%myid,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  end subroutine check_finite_output_in
 
 
   !> haloing for computing cell interface velocities
-  subroutine halo_interface_vels_allspec_C(lsp) bind(C, name="halo_interface_vels_allspec_C")
+  subroutine halo_interface_vels_allspec_in(x,fluidvars,lsp)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
     integer, intent(in) :: lsp
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)
-  end subroutine halo_interface_vels_allspec_C
+  end subroutine halo_interface_vels_allspec_in
 
 
   !> enforce global boundary conditions
-  subroutine set_global_boundaries_allspec_C(lsp) bind(C, name="set_global_boundaries_allspec_C")
+  subroutine set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
     integer, intent(in) :: lsp
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
 
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+
+    ! fix global boundaries, as needed
     call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
-  end subroutine set_global_boundaries_allspec_C
+  end subroutine set_global_boundaries_allspec_in
 
 
   !> halo all advected parameters
-  subroutine halo_allparams_C() bind(C, name="halo_allparams_C")
+  subroutine halo_allparams_in(x,fluidvars,fluidauxvars)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+
+    ! halo all fluid parameters
     call halo_allparams(ns,rhovs1,rhoes,x%flagper)
-  end subroutine halo_allparams_C
+  end subroutine halo_allparams_in
 
 
   !> prepare/halo data for compression substep
-  subroutine RK2_prep_mpi_allspec_C() bind(C, name="RK2_prep_mpi_allspec_C")
+  subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-  end subroutine RK2_prep_mpi_allspec_C
+  end subroutine RK2_prep_mpi_allspec_in
 
 
   !> agree on average value of gravity and exospheric temp
-  subroutine get_gavg_Tinf_C(gavg,Tninf) bind(C, name="get_gavg_Tninf_C")
+  subroutine get_gavg_Tinf_in(gavg,Tninf)
     real(wp), intent(inout) :: gavg,Tninf
 
     call get_gavg_Tinf(gavg,Tninf)
-  end subroutine get_gavg_Tinf_C
+  end subroutine get_gavg_Tinf_in
 
 
   !> deallocate module storage for neutral perturbations
-  subroutine clear_dneu_C() bind(C, name="clear_dneu_C")
+  subroutine clear_dneu_in(intvars)
     call clear_dneu()
-  end subroutine clear_dneu_C
+  end subroutine clear_dneu_in
 end module gemini3d_mpi

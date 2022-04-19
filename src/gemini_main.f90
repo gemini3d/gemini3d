@@ -20,18 +20,18 @@ use phys_consts, only : wp, debug
 use mpi, only: MPI_COMM_WORLD
 
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_C,msisinit_C, &
-                      set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-                      v12rhov1_C,T2rhoe_C,interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-                      rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, &
-                      source_loss_allparams_C,clear_neuBG_C,dateinc_C,get_subgrid_size_C, get_fullgrid_size_C, &
-                      get_config_vars_C, get_species_size_C
-use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_C,get_initial_state,BGfield_Lagrangian, &
-                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_C,pot2perpfield_C, &
-                          init_neutralperturb_C, dt_select_C, neutral_atmos_wind_update_C, neutral_perturb_C, &
-                          electrodynamics_C, check_finite_output_C, halo_interface_vels_allspec_C, &
-                          set_global_boundaries_allspec_C, halo_allparams_C, RK2_prep_mpi_allspec_C, get_gavg_Tinf_C, &
-                          clear_dneu_C,mpisetup_C,mpiparms_C
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput,msisinit, &
+                      set_start_values, init_neutralBG, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+                      v12rhov1,T2rhoe,interface_vels_allspec, sweep3_allparams, sweep1_allparams, sweep2_allparams, &
+                      rhov12v1, VNRicht_artvisc, compression, rhoe2T, clean_param, energy_diffusion, &
+                      source_loss_allparams,clear_neuBG,dateinc,get_subgrid_size, get_fullgrid_size, &
+                      get_config_vars, get_species_size
+use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid,get_initial_state,BGfield_Lagrangian, &
+                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput,pot2perpfield, &
+                          init_neutralperturb, dt_select, neutral_atmos_wind_update, neutral_perturb, &
+                          electrodynamics, check_finite_output, halo_interface_vels_allspec, &
+                          set_global_boundaries_allspec, halo_allparams, RK2_prep_mpi_allspec, get_gavg_Tinf, &
+                          clear_dneu,mpisetup,mpiparms
 
 implicit none (type, external)
 external :: mpi_init,mpi_finalize,mpi_comm_rank
