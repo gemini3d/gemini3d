@@ -225,5 +225,5 @@ contains
       deallocate(atmos%proj_ealt_e3,atmos%proj_eglat_e3,atmos%proj_eglon_e3)
       atmos%flagprojections=.false.
     end if
-  end subroutine atmos_dealloc
+  end subroutine neutral_info_dealloc
 end module neutral

@@ -26,11 +26,11 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
-use grid, only: grid_size
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    ! these are fixed for a given worker (even with multiple patches)
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
-use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,clear_neuBG,neutral_info_alloc,neutral_info_dealloc
+use neutral, only: neutral_info,init_neutralBG_in,neutral_atmos,neutral_winds,clear_neuBG,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1
@@ -39,14 +39,11 @@ use timeutils, only: dateinc
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, cfg, x, init_precipinput_C, msisinit_C, &
-            set_start_values, init_neutralBG_C, set_update_cadence, neutral_atmos_winds_C, get_solar_indices_C, &
-            v12rhov1_C, T2rhoe_C, interface_vels_allspec_C, sweep3_allparams_C, sweep1_allparams_C, sweep2_allparams_C, &
-            rhov12v1_C, VNRicht_artvisc_C, compression_C, rhoe2T_C, clean_param_C, energy_diffusion_C, source_loss_allparams_C, &
-            clear_neuBG_C, dateinc_C, &
-            ns,vs1,vs2,vs3,Ts,rhovs1,rhoes,E1,E2,E3,J1,J2,J3,Phi,Phiall,iver,rhov2,rhov3,B1,B2,B3,rhom,v1,v2,v3,Tn,nn,vn1, &
-            vn2,vn3,vs1i,vs2i,vs3i, &
-            get_subgrid_size_C,get_fullgrid_size_C,get_config_vars_C, get_species_size_C
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit, &
+            set_start_values, init_neutralBG, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec, sweep3_allparams, sweep1_allparams, sweep2_allparams, &
+            rhov12v1_in, VNRicht_artvisc, compression, rhoe2T_in, clean_param, energy_diffusion, source_loss_allparams, &
+            clear_neuBG_in, dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size
 
 
 !! temp file used by MSIS 2.0
@@ -137,25 +134,23 @@ contains
   end subroutine get_config_vars
 
 
-  !> returns the subgrid sizes (assuming they are set to the calling procedure
-  subroutine get_subgrid_size(x,lx1out,lx2out,lx3out)
-    class(curvmesh), intent(in) :: x
+  !> returns the subgrid sizes *** stored in the grid module ***
+  subroutine get_subgrid_size(lx1out,lx2out,lx3out)
     integer, intent(inout) :: lx1out,lx2out,lx3out
 
-    lx1out=x%lx1; lx2out=x%lx2; lx3out=x%lx3;
+    lx1out=lx1; lx2out=lx2; lx3out=lx3;
   end subroutine get_subgrid_size
 
 
-  !> return full grid extents
-  subroutine get_fullgrid_size(x,lx1out,lx2allout,lx3allout)
-    class(curvmesh), intent(in) :: x
+  !> return full grid extents *** stored in the grid module ***
+  subroutine get_fullgrid_size(lx1out,lx2allout,lx3allout)
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
 
-    lx1out=x%lx1; lx2allout=x%lx2all; lx3allout=x%lx3all;
+    lx1out=lx1; lx2allout=lx2all; lx3allout=lx3all;
   end subroutine get_fullgrid_size
 
 
-  !> return number of species from phys_consts module
+  !> return number of species *** from phys_consts module ***
   subroutine get_species_size(lspout)
     integer, intent(inout) :: lspout
 
@@ -164,7 +159,7 @@ contains
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_data_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+  subroutine gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
@@ -226,6 +221,7 @@ contains
 
     allocate(invars%eprecip)
     allocate(invars%efield)
+    ! neutral stuff allocated elsewhere...
   end subroutine gemini_work_alloc 
 
 
@@ -321,6 +317,7 @@ contains
     !> neutral variables (never need to be haloed, etc.)
     call neutral_info_dealloc(intvars%atmos)
     deallocate(intvars%atmos)
+    call clear_dneu(intvars,atmosperturb)
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
@@ -343,12 +340,14 @@ contains
   !> set start values for some variables.  some case is required here because the state variable pointers are mapped; 
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args 
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
-  subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,rhov2,rhov3,v2,v3,B1,B2,B3)
+  subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:), intent(inout) :: rhov2,rhov3,v2,v3,B1,B2,B3
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
 
     !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
@@ -374,7 +373,7 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(dt,t,ymd,UTsec,x,intvars)
+  subroutine init_precipinput_in(dt,t,ymd,UTsec,x,intvars)
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
@@ -383,7 +382,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%precip)
-  end subroutine init_precipinput_C
+  end subroutine init_precipinput_in
 
 
   !> initialization procedure needed for MSIS 2.0
@@ -401,7 +400,7 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG(dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(dt,t,ymd,UTsec,v2grid,v3grid,intvars)
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -409,7 +408,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
-  end subroutine init_neutralBG
+  end subroutine init_neutralBG_in
 
 
   !> set update cadence for printing out diagnostic information during simulation
@@ -453,7 +452,7 @@ contains
 
 
   !> convert velocity to momentum density
-  subroutine v12rhov1(fluidvars,fluidauxvars)
+  subroutine v12rhov1_in(fluidvars,fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -463,11 +462,11 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call v12rhov1(ns,vs1,rhovs1)
-  end subroutine v12rhov1
+  end subroutine v12rhov1_in
 
 
   !> convert temperature to specific internal energy density
-  subroutine T2rhoe(fluidvars,fluidauxvars)
+  subroutine T2rhoe_in(fluidvars,fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -477,7 +476,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call T2rhoe(ns,Ts,rhoes)
-  end subroutine T2rhoe
+  end subroutine T2rhoe_in
 
 
   !> compute interface velocities once haloing has been done
@@ -526,7 +525,7 @@ contains
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1(fluidvars,fluidauxvars)
+  subroutine rhov12v1_in(fluidvars,fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -536,7 +535,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call rhov12v1(ns,rhovs1,vs1)
-  end subroutine rhov12v1
+  end subroutine rhov12v1_in
 
 
   !> compute artifical viscosity
@@ -551,7 +550,7 @@ contains
 
 
   !> compression substep for fluid solve
-  subroutine compression(fluidvars,fluidauxvars,intvars,x,dt)
+  subroutine compression_in(fluidvars,fluidauxvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
     type(gemini_work), intent(in) :: intvars
@@ -560,11 +559,11 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
-  end subroutine compression
+  end subroutine compression_in
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T()
+  subroutine rhoe2T_in()
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -574,7 +573,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call rhoe2T(ns,rhoes,Ts)
-  end subroutine rhoe2T
+  end subroutine rhoe2T_in
 
 
   !> deal with null cell solutions
