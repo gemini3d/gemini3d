@@ -41,8 +41,10 @@ implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit, &
             set_start_values, init_neutralBG, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-            v12rhov1_in, T2rhoe_in, interface_vels_allspec, sweep3_allparams, sweep1_allparams, sweep2_allparams, &
-            rhov12v1_in, VNRicht_artvisc, compression, rhoe2T_in, clean_param, energy_diffusion, source_loss_allparams, &
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, & 
+            sweep1_allparams_in, sweep2_allparams_in, &
+            rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
+            energy_diffusion_in, source_loss_allparams_in, &
             clear_neuBG_in, dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size
 
 
@@ -480,20 +482,20 @@ contains
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec(fluidvars,intvars,lsp)
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+  subroutine interface_vels_allspec_in(fluidvars,intvars,lsp)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call interface_vels_allspec(vs1,vs2,vs3,intvars%vs1i,intvars%vs2i,intvars%vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-  end subroutine interface_vels_allspec
+  end subroutine interface_vels_allspec_in
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams(fluidvars,intvars,x,dt)
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+  subroutine sweep3_allparams_in(fluidvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
@@ -501,9 +503,9 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
-  end subroutine sweep3_allparams
-  subroutine sweep1_allparams(fluidbars,intbars,x,dt)
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+  end subroutine sweep3_allparams_in
+  subroutine sweep1_allparams_in(fluidbars,intbars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
@@ -511,8 +513,8 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
-  end subroutine sweep1_allparams
-  subroutine sweep2_allparams(fluidvars,intvars,x,dt)
+  end subroutine sweep1_allparams_in
+  subroutine sweep2_allparams_in(fluidvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
@@ -521,7 +523,7 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
-  end subroutine sweep2_allparams
+  end subroutine sweep2_allparams_in
 
 
   !> conversion of momentum density to velocity
@@ -539,14 +541,14 @@ contains
 
 
   !> compute artifical viscosity
-  subroutine VNRicht_artvisc(fluidvars,intvars)
+  subroutine VNRicht_artvisc_in(fluidvars,intvars)
     real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call VNRicht_artvisc(ns,vs1,intvars%Q)
-  end subroutine VNRicht_artvisc
+  end subroutine VNRicht_artvisc_in
 
 
   !> compression substep for fluid solve
@@ -563,7 +565,7 @@ contains
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T_in()
+  subroutine rhoe2T_in(fluidvars,fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -577,7 +579,7 @@ contains
 
 
   !> deal with null cell solutions
-  subroutine clean_param_C(iparm,x,fluidvars) bind(C, name="clean_param_C")
+  subroutine clean_param_in(iparm,x,fluidvars)
     integer, intent(in) :: iparm
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
@@ -596,11 +598,11 @@ contains
         error stop '  libgemini:clean_params_C(); invalid parameter selected'
     end select
     call clean_param(x,iparm,parm)
-  end subroutine clean_param_C
+  end subroutine clean_param_in
 
 
   !> diffusion of energy
-  subroutine energy_diffusion_C(cfg,x,fluidvars,electrovars,intvars,dt) bind(C, name="energy_diffusion_C")
+  subroutine energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
@@ -613,11 +615,11 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call energy_diffusion(dt,x,ns,Ts,J1,intvars%nn,intvars%Tn,cfg%diffsolvetype,cfg%Teinf)
-  end subroutine energy_diffusion_C
+  end subroutine energy_diffusion_in
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf) bind(C, name="source_loss_allparams_C")
+  subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
@@ -640,7 +642,7 @@ contains
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%nn,intvars%, &
                                      intvars%vn1,intvars%vn2,intvars%vn3, &
                                      intvars%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
-  end subroutine source_loss_allparams_C
+  end subroutine source_loss_allparams_in
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.  

@@ -22,16 +22,17 @@ use mpi, only: MPI_COMM_WORLD
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit, &
                       set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-                      v12rhov1_in,T2rhoe_in,interface_vels_allspec, sweep3_allparams, sweep1_allparams, sweep2_allparams, &
-                      rhov12v1_in, VNRicht_artvisc, compression, rhoe2T_in, clean_param, energy_diffusion, &
+                      v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, sweep3_allparams_in, &
+                      sweep1_allparams_in, sweep2_allparams_in, &
+                      rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
                       source_loss_allparams,clear_neuBG,dateinc,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput,pot2perpfield_in, &
-                          init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb, &
+                          init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
-                          set_global_boundaries_allspec, halo_allparams, RK2_prep_mpi_allspec, get_gavg_Tinf, &
-                          clear_dneu,mpisetup_in,mpiparms
+                          set_global_boundaries_allspec_in, halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
+                          clear_dneu_in,mpisetup_in,mpiparms
 
 implicit none (type, external)
 external :: mpi_init,mpi_finalize,mpi_comm_rank
@@ -247,6 +248,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -267,30 +269,30 @@ contains
     ! advection substep for all species
     call cpu_time(tstart)
     call halo_interface_vels_allspec_in(x,fluidvars,lsp)
-    call interface_vels_allspec_C(lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-    call set_global_boundaries_allspec_C(lsp)
-    call halo_allparams_C()
-    call sweep3_allparams_C(dt)
-    call sweep1_allparams_C(dt)
-    call halo_allparams_C()
-    call sweep2_allparams_C(dt)
-    call rhov12v1_C()
+    call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    call halo_allparams_in(x,fluidvars,fluidauxvars)
+    call sweep3_allparams_in(fluidvars,intvars,x,dt)
+    call sweep1_allparams_in(fluidvars,intvars,x,dt)
+    call halo_allparams_in(x,fluidvars,fluidauxvars)
+    call sweep2_allparams_in(fluidvars,intvars,x,dt)
+    call rhov12v1_in(fluidvars,fluidauxvars)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
       print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
 
     ! post advection filling of null cells
-    call clean_param_C(1)
-    call clean_param_C(2)
+    call clean_param_in(1,x.fluidvars)
+    call clean_param_in(2,x,fluidvars)
 
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
-    call VNRicht_artvisc_C()
-    call RK2_prep_mpi_allspec_C()     ! halos velocity so we can take a divergence without artifacts
-    call compression_C(dt)   ! this applies compression substep and then converts back to temperature
-    call rhoe2T_C()
-    call clean_param_C(3)
+    call VNRicht_artvisc_in(fluidvars,intvars)
+    call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
+    call compression_in(fluidvars,fluidauxvars,intvars,x,dt)   ! this applies compression substep and then converts back to temperature
+    call rhoe2T_in(fluidvars,fluidauxvars)
+    call clean_param_in(3,x,fluidvars)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
       print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
@@ -298,26 +300,26 @@ contains
 
     ! Energy diffusion (thermal conduction) substep
     call cpu_time(tstart)
-    call energy_diffusion_C(dt)
+    call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
       print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
 
     ! cleanup and convert to specific internal energy density for sources substeps
-    call clean_param_C(3)
-    call T2rhoe_C()
+    call clean_param_in(3,x,fluidvars)
+    call T2rhoe_in(fluidvars,fluidauxvars)
 
     !> all workers need to "agree" on a gravity and exospheric temperature
-    call get_gavg_Tinf_C(gavg,Tninf)
+    call get_gavg_Tinf_in(gavg,Tninf)
 
     !> solve all source/loss processes
-    call source_loss_allparams_C(dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
 
     ! density to be cleaned after source/loss
-    call clean_param_C(3)
-    call clean_param_C(2)
-    call clean_param_C(1)
+    call clean_param_in(3,x,fluidvars)
+    call clean_param_in(2,x,fluidvars)
+    call clean_param_in(1,x,fluidvars)
 
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv
