@@ -33,7 +33,6 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup, mpiparms
 
-real(wp), dimension(:,:,:), allocatable :: Phiall    ! full grid potential, only root allocates
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
 contains
@@ -53,14 +52,15 @@ contains
 
 
   !> create output directory and allocate full grid potential storage
-  subroutine outdir_fullgridvaralloc(cfg,lx1,lx2all,lx3all)
+  subroutine outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
     type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lx1,lx2all,lx3all
 
     !> create a place, if necessary, for output datafiles
     if (mpi_cfg%myid==0) then
       call create_outdir(cfg)
-      allocate(Phiall(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
+      allocate(intvars%Phiall(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
     end if
   end subroutine outdir_fullgridvaralloc
 
@@ -386,10 +386,11 @@ contains
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_in(fluidvars,fluidauxvars,electrovars,x,it,t,dt,ymd,UTsec)
+  subroutine electrodynamics_in(fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
@@ -406,7 +407,7 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
     ! E&M solves
-    call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+    call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,intvars%Phiall,ymd,UTsec)
   end subroutine electrodynamics_in
 
 

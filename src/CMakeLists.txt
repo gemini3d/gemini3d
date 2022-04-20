@@ -27,7 +27,7 @@ add_subdirectory(sources)
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
 target_link_libraries(multifluid_mpi PRIVATE const mpimod grid_mpi advec_mpi)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj ionization precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj precipdata ionization precipBCs sources timeutils config)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)

@@ -29,7 +29,7 @@ use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
 use config, only: gemini_cfg
-
+use precipdataobj, only: precipdata
 
 implicit none (type, external)
 private
@@ -86,7 +86,8 @@ end subroutine sweep2_allparams
 
 !> execute diffusion of energy and then source/loss terms for all equations
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
+                                   eprecip)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -101,6 +102,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:), intent(inout) :: iver
   real(wp), intent(in) :: gavg,Tninf
+  type(precipdata), intent(inout) :: eprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
@@ -110,7 +112,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
 
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
-    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
   else
     !! no file input specified, so just call 'regular' function
     call precipBCs(t,x,cfg,W0,PhiWmWm2)

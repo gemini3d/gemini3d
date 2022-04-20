@@ -10,9 +10,8 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: nnmsis,Tnmsis, neutral_atmos, make_neuBG, clear_neuBG, init_neutralBG, &
-  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, &
-  vn1base,vn2base,vn3base
+public :: neutral_atmos, init_neutralBG, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
+  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind
 
 
 !> type encapsulating information needed by neutral module; FIXME: arguably this should be a class with type-bound procedures.
@@ -64,13 +63,13 @@ contains
     real(wp), intent(in) :: UTsec
     class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
     real(wp), intent(in) :: v2grid,v3grid
-    type(neutral_info), intent(inout) atmos
+    type(neutral_info), intent(inout) :: atmos
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp
     real(wp) :: tstart,tfin
 
     !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
-    call make_neuBG()
+    !call make_neuBG()
 
     !! call msis to get an initial neutral background atmosphere
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
@@ -85,7 +84,7 @@ contains
     !> Horizontal wind model initialization/background
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     call cpu_time(tstart)
-    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, atmos)
+    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, atmos=atmos)
     call neutralBG_wind(atmos,v2grid,v3grid)
     !! we sum the horizontal wind with the background state vector
     !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
@@ -136,7 +135,7 @@ contains
     if (.not. atmos%flagprojections) then
       call x%calc_unitvec_geo(ealt,eglon,eglat)
       call store_geo2native_projections(x,ealt,eglon,eglat,atmos)
-      flagprojections=.true.
+      atmos%flagprojections=.true.
     end if
 
     !> rotate vectors into model native coordinate system
@@ -173,9 +172,12 @@ contains
       do ix3=1,lx3
         do ix2=1,lx2
           do ix1=1,lx1
-            rotmat(1,1:3,ix1,ix2,ix3)=[proj_ealt_e1(ix1,ix2,ix3),proj_eglat_e1(ix1,ix2,ix3),proj_eglon_e1(ix1,ix2,ix3)]
-            rotmat(2,1:3,ix1,ix2,ix3)=[proj_ealt_e2(ix1,ix2,ix3),proj_eglat_e2(ix1,ix2,ix3),proj_eglon_e2(ix1,ix2,ix3)]
-            rotmat(3,1:3,ix1,ix2,ix3)=[proj_ealt_e3(ix1,ix2,ix3),proj_eglat_e3(ix1,ix2,ix3),proj_eglon_e3(ix1,ix2,ix3)]
+            rotmat(1,1:3,ix1,ix2,ix3)=[atmos%proj_ealt_e1(ix1,ix2,ix3),atmos%proj_eglat_e1(ix1,ix2,ix3), &
+                                         atmos%proj_eglon_e1(ix1,ix2,ix3)]
+            rotmat(2,1:3,ix1,ix2,ix3)=[atmos%proj_ealt_e2(ix1,ix2,ix3),atmos%proj_eglat_e2(ix1,ix2,ix3), &
+                                         atmos%proj_eglon_e2(ix1,ix2,ix3)]
+            rotmat(3,1:3,ix1,ix2,ix3)=[atmos%proj_ealt_e3(ix1,ix2,ix3),atmos%proj_eglat_e3(ix1,ix2,ix3), &
+                                         atmos%proj_eglon_e3(ix1,ix2,ix3)]
           end do
         end do
       end do
@@ -205,7 +207,7 @@ contains
     allocate(atmos%proj_ealt_e1(lx1,lx2,lx3),atmos%proj_eglat_e1(lx1,lx2,lx3),atmos%proj_eglon_e1(lx1,lx2,lx3))
     allocate(atmos%proj_ealt_e2(lx1,lx2,lx3),atmos%proj_eglat_e2(lx1,lx2,lx3),atmos%proj_eglon_e2(lx1,lx2,lx3))
     allocate(atmos%proj_ealt_e3(lx1,lx2,lx3),atmos%proj_eglat_e3(lx1,lx2,lx3),atmos%proj_eglon_e3(lx1,lx2,lx3))
-  end subroutine atmos_alloc
+  end subroutine neutral_info_alloc
 
 
   !> deallocate arrays in neutral_info type

@@ -67,8 +67,8 @@ module procedure neutral_atmos
         atmos%nnmsis(ix1,ix2,ix3,5)= d(8)
 
         atmos%Tnmsis(ix1,ix2,ix3)= t(2)
-        atmos%nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
-                            5e-7_wp*nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
+        atmos%nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/atmos%Tnmsis(ix1,ix2,ix3))*atmos%nnmsis(ix1,ix2,ix3,3)+ &
+                            5e-7_wp*atmos%nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
       end do
     end do
   end do

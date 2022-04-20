@@ -23,6 +23,9 @@ use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp
 use meshobj, only: curvmesh
+use precipdataobj, only: precipdata
+use efielddataobj, only: efielddata
+use neutraldataobj, only: neutraldata
 use config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
@@ -30,7 +33,7 @@ use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    ! these are fixed for a g
 use config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
-use neutral, only: neutral_info,init_neutralBG_in,neutral_atmos,neutral_winds,clear_neuBG,neutral_info_alloc,neutral_info_dealloc
+use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1
@@ -39,13 +42,13 @@ use timeutils, only: dateinc
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit, &
-            set_start_values, init_neutralBG, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
+            set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, & 
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
-            clear_neuBG_in, dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size
+            dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size
 
 
 !! temp file used by MSIS 2.0
@@ -89,9 +92,10 @@ end type c_params
 
 contains
   !> basic command line and grid size determination
-  subroutine cli_config_gridsize(p,lid2in,lid3in)
+  subroutine cli_config_gridsize(p,lid2in,lid3in,cfg)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
+    type(gemini_cfg), intent(inout) :: cfg
     character(size(p%out_dir)) :: buf
     integer :: i
 
@@ -221,8 +225,8 @@ contains
     allocate(intvars%vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
     allocate(intvars%Q(1:lx1,1:lx2,1:lx3,1:lsp))
 
-    allocate(invars%eprecip)
-    allocate(invars%efield)
+    allocate(intvars%eprecip)
+    allocate(intvars%efield)
     ! neutral stuff allocated elsewhere...
   end subroutine gemini_work_alloc 
 
@@ -250,7 +254,7 @@ contains
   subroutine fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     if (.not. associated(fluidauxvars)) error stop ' Attempting to bind aux fluid state vars to unassociated memory!'
 
@@ -274,7 +278,7 @@ contains
   !> bind pointers for electomagnetic state variables to a contiguous block of memory
   subroutine electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
-    real(wp), dimension(:,:,:), pointer intent(inout) :: E1,E2,E3,J1,J2,J3,Phi
+    real(wp), dimension(:,:,:), pointer, intent(inout) :: E1,E2,E3,J1,J2,J3,Phi
 
     if (.not. associated(electrovars)) error stop ' Attempting to bind electro state vars to unassociated memory!'
 
@@ -290,8 +294,9 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc(fluidvars,fluidauxvars,electrovars)
-    real(wp), intent(inout) :: fluidvars, fluidauxvars, electrovars
+  subroutine gemini_dealloc(fluidvars,fluidauxvars,electrovars,intvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars, fluidauxvars, electrovars
+    type(gemini_work), intent(inout) :: intvars
 
     deallocate(fluidvars)
     nullify(ns,vs1,vs2,vs3,Ts)
@@ -307,7 +312,7 @@ contains
 
     call gemini_work_dealloc(intvars)
 
-    if (associated(Phiall)) deallocate(Phiall)
+    if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
   end subroutine
 
 
@@ -383,12 +388,13 @@ contains
     class(curvmesh), intent(in) :: x
     type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%precip)
+    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
 
 
   !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit()
+  subroutine msisinit_in(cfg)
+    type(gemini_cfg), intent(in) :: cfg
     logical :: exists
 
     if(cfg%msis_version == 20) then
@@ -398,7 +404,7 @@ contains
         'This limitation comes from how MSIS 2.x is coded internally.'
       call msisinit(parmfile=msis2_param_file)
     end if
-  end subroutine msisinit
+  end subroutine msisinit_in
 
 
   !> call to initialize the neutral background information
@@ -438,8 +444,8 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version, intvars%atmos)
-    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, intvars%atmos)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version, atmos=intvars%atmos)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, atmos=intvars%atmos)
   end subroutine neutral_atmos_winds
 
 
@@ -504,7 +510,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
   end subroutine sweep3_allparams_in
-  subroutine sweep1_allparams_in(fluidbars,intbars,x,dt)
+  subroutine sweep1_allparams_in(fluidvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
@@ -532,7 +538,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -553,14 +559,18 @@ contains
 
   !> compression substep for fluid solve
   subroutine compression_in(fluidvars,fluidauxvars,intvars,x,dt)
-    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(in) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
-    call compression(dt,x,vs1,vs2,vs3,Q,rhoes)   ! this applies compression substep
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call compression(dt,x,vs1,vs2,vs3,intvars%Q,rhoes)   ! this applies compression substep
   end subroutine compression_in
 
 
@@ -570,7 +580,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -610,20 +620,22 @@ contains
     type(gemini_work), intent(in) :: intvars
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:) :: E1,E2,E3,J1,J2,J3,Phi
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
-    call energy_diffusion(dt,x,ns,Ts,J1,intvars%nn,intvars%Tn,cfg%diffsolvetype,cfg%Teinf)
+    call energy_diffusion(dt,x,ns,Ts,J1,intvars%atmos%nn,intvars%atmos%Tn,cfg%diffsolvetype,cfg%Teinf)
   end subroutine energy_diffusion_in
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+  subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
@@ -633,15 +645,15 @@ contains
     real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
-    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%nn,intvars%, &
-                                     intvars%vn1,intvars%vn2,intvars%vn3, &
-                                     intvars%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf)
+    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
+                                     intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
+                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver,gavg,Tninf)
   end subroutine source_loss_allparams_in
 
 

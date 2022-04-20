@@ -40,7 +40,7 @@ module procedure neutral_winds
   
   Walt = 0.0     ! HWM does not provide vertical winds so zero them out
   
-  call rotate_geo2native(vnalt=Walt, vnglat=Wmeridional, vnglon=Wzonal,x=x, vn1=v1, vn2=v2, vn3=v3)
+  call rotate_geo2native(vnalt=Walt, vnglat=Wmeridional, vnglon=Wzonal,x=x, atmos=atmos)
   !v1=Walt; v2=Wmeridional; v3=Wzonal;
 
   !! update module background winds 
