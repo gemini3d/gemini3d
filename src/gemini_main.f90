@@ -138,7 +138,9 @@ contains
     call get_species_size(lsp)
 
     !> Allocate space for solutions, sizes will be pulled from internal modules
+    print*, 'Pointer 1:  ',associated(intvars%atmosperturb)
     call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    print*, 'Pointer 2:  ',associated(intvars%atmosperturb)
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)

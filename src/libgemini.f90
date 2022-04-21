@@ -60,7 +60,7 @@ character(*), parameter :: msis2_param_file = "msis20.parm"
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
 !    doesn't conform to simple array shapes.
 type gemini_work
-  real(wp), dimension(:,:,:), pointer :: Phiall    !! full-grid potential solution.  To store previous time step value
+  real(wp), dimension(:,:,:), pointer :: Phiall=>null()    !! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
   
   !> Other variables used by the fluid solvers
@@ -73,9 +73,9 @@ type gemini_work
   type(neutral_info), pointer :: atmos
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip
-  type(efielddata), pointer :: efield
-  class(neutraldata), pointer :: atmosperturb
+  type(precipdata), pointer :: eprecip=>null()
+  type(efielddata), pointer :: efield=>null()
+  class(neutraldata), pointer :: atmosperturb=>null()   ! not associated by default and may never be associated
 end type gemini_work
 
 
@@ -329,8 +329,8 @@ contains
     deallocate(intvars%vs3i)
     deallocate(intvars%Q)
 
-    deallocate(intvars%eprecip)
-    deallocate(intvars%efield)
+    if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
+    if (associated(intvars%efield)) deallocate(intvars%efield)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
   end subroutine gemini_work_dealloc 
 

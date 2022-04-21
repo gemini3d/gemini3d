@@ -30,7 +30,7 @@ contains
     real(wp), intent(in) :: UTsec
     class(neutraldata), pointer, intent(inout) :: atmosperturb
 
-        !! perform an initialization for the perturbation quantities
+    !! perform an initialization for the perturbation quantities
     if (cfg%flagdneu==1) then
       ! set flag denoted neutral perturbations
       flagneuperturb=.true.
