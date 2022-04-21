@@ -28,10 +28,10 @@ implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
-            get_initial_drifts, init_Efieldinput, pot2perpfield_in, init_neutralperturb_in, dt_select, &
-            neutral_atmos_wind_update, neutral_perturb, electrodynamics_in, check_finite_output_in, &
+            get_initial_drifts, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
+            neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
             halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, halo_allparams_in, &
-            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup, mpiparms
+            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms
 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 

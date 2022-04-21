@@ -19,16 +19,20 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
 use mpi, only: MPI_COMM_WORLD
 
+!> type definitions
+use meshobj, only: curvmesh
+use config, only: gemini_cfg
+
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit, &
+use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
                       set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, sweep3_allparams_in, &
                       sweep1_allparams_in, sweep2_allparams_in, &
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
-                      source_loss_allparams,clear_neuBG,dateinc,get_subgrid_size, get_fullgrid_size, &
-                      get_config_vars, get_species_size
+                      source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
+                      get_config_vars, get_species_size, gemini_work
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
-                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput,pot2perpfield_in, &
+                          check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_in,pot2perpfield_in, &
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
                           set_global_boundaries_allspec_in, halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
@@ -110,7 +114,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
-    class(curvmesh), pointer :: x
+    class(curvmesh), allocatable :: x
     type(gemini_cfg) :: cfg
     type(gemini_work) :: intvars
 
@@ -118,7 +122,7 @@ contains
     call mpisetup_in()
     call mpiparms(myid,lid)
     if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-    call cli_config_gridsize(p,lid2in,lid3in)
+    call cli_config_gridsize(p,lid2in,lid3in,cfg)
     call get_fullgrid_size(lx1,lx2all,lx3all)
     call get_config_vars(cfg,flagneuBG,flagdneu,dtneuBG,dtneu)
 
@@ -137,37 +141,37 @@ contains
     call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
-    call outdir_fullgridvaralloc(lx1,lx2all,lx3all)
+    call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
 
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(cfg,fluidvars,x,UTsec,ymd,tdur)
+    call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
 
     !> initialize time stepping and some aux variables
     call set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
 
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput_in(x,dt,t,intvars,ymd,UTsec)
+    call init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
 
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
     call pot2perpfield_in(x,electrovars)
 
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(x,v2grid,v3grid)
+    call BGfield_Lagrangian(cfg,x,electrovars,intvars,v2grid,v3grid)
 
     !> Precipitation input setup
     if(myid==0) print*, 'Priming precipitation input'
-    call init_precipinput_in(dt,t,ymd,UTsec,x,intvars)
+    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
-    call msisinit()
-    call init_neutralBG_in(dt,t,ymd,UTsec,v2grid,v3grid,intvars)
-    call init_neutralperturb_in(x,dt,intvars,ymd,UTsec)
+    call msisinit_in(cfg)
+    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
-    call get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars)
+    call get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
 
     !> control rate of console printing
     call set_update_cadence(iupdate)
@@ -200,7 +204,7 @@ contains
 
       !> compute potential solution
       call cpu_time(tstart)
-      call electrodynamics_in(fluidvars,fluidauxvars,electrovars,x,it,t,dt,ymd,UTsec)
+      call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -208,7 +212,7 @@ contains
 
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
-      call fluid_adv(t,dt,ymd,UTsec,(it==1),lsp,myid)
+      call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,(it==1),lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -222,7 +226,7 @@ contains
       it = it + 1
       t = t + dt
       if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
-      call dateinc_C(dt,ymd,UTsec)
+      call dateinc_in(dt,ymd,UTsec)
       if (myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
@@ -236,19 +240,20 @@ contains
     end do main
 
     !> deallocate variables and module data
-    call clear_dneu_in(ntvars)
-    call gemini_dealloc(fluidvars,fluidauxvars,electrovars,intvars)
+    call clear_dneu_in(intvars)
+    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
   end subroutine gemini_main
 
 
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(cfg,fluidvars,fluidauxvars,intvars,x,t,dt,ymd,UTsec,first,lsp,myid)
+  subroutine fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,first,lsp,myid)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
@@ -273,10 +278,10 @@ contains
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
-    call sweep3_allparams_in(fluidvars,intvars,x,dt)
-    call sweep1_allparams_in(fluidvars,intvars,x,dt)
+    call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
-    call sweep2_allparams_in(fluidvars,intvars,x,dt)
+    call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call rhov12v1_in(fluidvars,fluidauxvars)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
@@ -284,7 +289,7 @@ contains
     end if
 
     ! post advection filling of null cells
-    call clean_param_in(1,x.fluidvars)
+    call clean_param_in(1,x,fluidvars)
     call clean_param_in(2,x,fluidvars)
 
     ! Compute artifical viscosity and then execute compression calculation
@@ -312,10 +317,11 @@ contains
     call T2rhoe_in(fluidvars,fluidauxvars)
 
     !> all workers need to "agree" on a gravity and exospheric temperature
-    call get_gavg_Tinf_in(gavg,Tninf)
+    call get_gavg_Tinf_in(intvars,gavg,Tninf)
 
     !> solve all source/loss processes
-    call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
+                                    x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
 
     ! density to be cleaned after source/loss
     call clean_param_in(3,x,fluidvars)

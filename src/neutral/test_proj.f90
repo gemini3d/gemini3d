@@ -4,7 +4,7 @@ program test_proj
 use filesystem, only : mkdir
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
-use neutral, only : store_geo2native_projections
+use neutral, only : store_geo2native_projections,neutral_info
 
 implicit none (type, external)
 
@@ -29,6 +29,7 @@ real(wp), dimension(3,3) :: matnow,eyetest,eye
 real(wp), parameter :: errthresh=1e-6
 real(wp) :: eyeerr
 logical :: debug=.false.
+type(neutral_info) :: atmos
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -42,7 +43,7 @@ call x%make()
 
 !! compute the geographic projections
 call x%calc_unitvec_geo(ealt,eglon,eglat)
-call store_geo2native_projections(x,ealt,eglon,eglat,rotmat=rotmats)
+call store_geo2native_projections(x,ealt,eglon,eglat,atmos,rotmat=rotmats)
 
 !! verify that the transformation is approximately unitary at all non-ghost grid points
 print*, 'Begin testing transformation...'
