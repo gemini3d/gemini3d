@@ -10,7 +10,7 @@ use neutraldata3Dobj_mpi, only: neutraldata3D
 !!!
 use neutraldata2Daxisymmobj, only: neutraldata2Daxisymm
 use neutraldata2Dcartobj, only: neutraldata2Dcart
-use neutral, only: nnmsis,Tnmsis,vn1base,vn2base,vn3base
+use neutral, only: neutral_info
 
 implicit none (type, external)
 
@@ -73,25 +73,20 @@ contains
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
 
     !Add interpolated perturbations to module reference atmosphere arrays
-    call neutral_update(atmos%nn,atmos%Tn,atmos%vn1,atmos%vn2,atmost%vn3,v2grid,v3grid)
+    call neutral_update(v2grid,v3grid,atmos,atmosperturb)
   end subroutine neutral_perturb
 
 
   !> update density, temperature, and winds
-  subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
+  subroutine neutral_update(v2grid,v3grid,atmos,atmosperturb)
     !! adds stored base and perturbation neutral atmospheric parameters
     !!  these are module-scope parameters so not needed as input
-    real(wp), dimension(:,:,:,:), intent(inout) :: nn
-    !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: Tn
-    !! intent(out)
-    real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
-    !! intent(out)
     real(wp) :: v2grid,v3grid
+    type(neutral_info), intent(inout) :: atmos
     class(neutraldata), intent(inout) :: atmosperturb
 
-    call neutral_denstemp_update(nn,Tn,atmosperturb)
-    call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
+    call neutral_denstemp_update(atmos,atmosperturb)
+    call neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
   end subroutine neutral_update
 
 
@@ -99,28 +94,27 @@ contains
   !   This does not use any of the existing data in arrays, but is declared inout to avoid potential
   !   issues with deallocation/reallocation.  This procedure should be used when you have both neutral
   !   background and perturbations and an update needs to be done. 
-  subroutine neutral_denstemp_update(nn,Tn,atmosperturb)
-    real(wp), dimension(:,:,:,:), intent(inout) :: nn
-    real(wp), dimension(:,:,:), intent(inout) :: Tn
-    class(neutraldata), intent(in) :: atmosperturb
+  subroutine neutral_denstemp_update(atmos,atmosperturb)
+    type(neutral_info), intent(inout) :: atmos
+    class(neutraldata), intent(inout) :: atmosperturb
 
     !> background neutral parameters
-    nn=nnmsis
-    Tn=Tnmsis
+    atmos%nn=atmos%nnmsis
+    atmos%Tn=atmos%Tnmsis
 
     !> add perturbations, if used
     if (flagneuperturb) then
-      nn(:,:,:,1)=nn(:,:,:,1)+atmosperturb%dnOinow
-      nn(:,:,:,2)=nn(:,:,:,2)+atmosperturb%dnN2inow
-      nn(:,:,:,3)=nn(:,:,:,3)+atmosperturb%dnO2inow
-      nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-      nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-      nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
+      atmos%nn(:,:,:,1)=atmos%nn(:,:,:,1)+atmosperturb%dnOinow
+      atmos%nn(:,:,:,2)=atmos%nn(:,:,:,2)+atmosperturb%dnN2inow
+      atmos%nn(:,:,:,3)=atmos%nn(:,:,:,3)+atmosperturb%dnO2inow
+      atmos%nn(:,:,:,1)=max(atmos%nn(:,:,:,1),1._wp)
+      atmos%nn(:,:,:,2)=max(atmos%nn(:,:,:,2),1._wp)
+      atmos%nn(:,:,:,3)=max(atmos%nn(:,:,:,3),1._wp)
       !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
       !! species perturbations.
 
-      Tn=Tn+atmosperturb%dTninow
-      Tn=max(Tn,50._wp)
+      atmos%Tn=atmos%Tn+atmosperturb%dTninow
+      atmos%Tn=max(atmos%Tn,50._wp)
     end if
   end subroutine neutral_denstemp_update
 
@@ -128,26 +122,26 @@ contains
   !> update wind variables with background and perturbation quantities, note that this does not use any of the
   !    existing data in vn; but we still use intent(inout) to avoid weirdness with allocatable arrays.  This procedure
   !    should only be used when one has both a background and perturbation.  
-  subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid,atmosperturb)
-    real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+  subroutine neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
     real(wp), intent(in) :: v2grid,v3grid
-    class(neutraldata), intent(in) :: atmosperturb
+    type(neutral_info), intent(inout) :: atmos
+    class(neutraldata), intent(inout) :: atmosperturb
 
     !> background neutral parameters
-    vn1=vn1base
-    vn2=vn2base
-    vn3=vn3base
+    atmos%vn1=atmos%vn1base
+    atmos%vn2=atmos%vn2base
+    atmos%vn3=atmos%vn3base
 
     !> perturbations, if used
     if (flagneuperturb) then
-      vn1=vn1+atmosperturb%dvn1inow
-      vn2=vn2+atmosperturb%dvn2inow
-      vn3=vn3+atmosperturb%dvn3inow
+      atmos%vn1=atmos%vn1+atmosperturb%dvn1inow
+      atmos%vn2=atmos%vn2+atmosperturb%dvn2inow
+      atmos%vn3=atmos%vn3+atmosperturb%dvn3inow
     end if
 
     !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
-    vn2=vn2-v2grid
-    vn3=vn3-v3grid
+    atmos%vn2=atmos%vn2-v2grid
+    atmos%vn3=atmos%vn3-v3grid
   end subroutine neutral_wind_update
 
 

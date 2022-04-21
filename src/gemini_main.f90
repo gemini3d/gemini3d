@@ -236,6 +236,7 @@ contains
     end do main
 
     !> deallocate variables and module data
+    call clear_dneu_in(ntvars)
     call gemini_dealloc(fluidvars,fluidauxvars,electrovars,intvars)
   end subroutine gemini_main
 

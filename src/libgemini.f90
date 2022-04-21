@@ -48,7 +48,8 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
-            dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size
+            dateinc, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
+            fluidauxvar_pointers, electrovar_pointers, gemini_work
 
 
 !! temp file used by MSIS 2.0
@@ -167,9 +168,9 @@ contains
   !> allocate space for gemini state variables, bind pointers to blocks of memory
   subroutine gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), intent(inout) :: electrovars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     type(gemini_work), intent(inout) :: intvars
 
     !> one contiguous block for overall simulation data
@@ -215,7 +216,7 @@ contains
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
       allocate(intvars%iver(lx2,lx3,lwave))
-      iver = 0
+      intvars%iver = 0
     end if
 
     !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
@@ -294,24 +295,15 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc(fluidvars,fluidauxvars,electrovars,intvars)
+  subroutine gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars, fluidauxvars, electrovars
     type(gemini_work), intent(inout) :: intvars
 
     deallocate(fluidvars)
-    nullify(ns,vs1,vs2,vs3,Ts)
-
     deallocate(fluidauxvars)
-    nullify(rhovs1,rhoes)
-
-    nullify(rhov2,rhov3,B1,B2,B3)
-    nullify(v1,v2,v3,rhom)
-
     deallocate(electrovars)
-    nullify(E1,E2,E3,J1,J2,J3,Phi)
-
-    call gemini_work_dealloc(intvars)
-
+    call gemini_work_dealloc(cfg,intvars)
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
   end subroutine
 
@@ -324,7 +316,6 @@ contains
     !> neutral variables (never need to be haloed, etc.)
     call neutral_info_dealloc(intvars%atmos)
     deallocate(intvars%atmos)
-    call clear_dneu(intvars,atmosperturb)
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
@@ -380,12 +371,13 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_in(dt,t,ymd,UTsec,x,intvars)
+  subroutine init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    class(curvmesh), intent(in) :: x
     type(gemini_work), intent(inout) :: intvars
 
     call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%eprecip)
@@ -408,7 +400,9 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -465,7 +459,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -479,7 +473,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -500,34 +494,48 @@ contains
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams_in(fluidvars,intvars,x,dt)
+  subroutine sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
   end subroutine sweep3_allparams_in
-  subroutine sweep1_allparams_in(fluidvars,intvars,x,dt)
+
+  subroutine sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
   end subroutine sweep1_allparams_in
-  subroutine sweep2_allparams_in(fluidvars,intvars,x,dt)
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+
+  subroutine sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
   end subroutine sweep2_allparams_in
 
@@ -548,7 +556,7 @@ contains
 
   !> compute artifical viscosity
   subroutine VNRicht_artvisc_in(fluidvars,intvars)
-    real(wp), dimension(:,:,:,:), intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -592,7 +600,7 @@ contains
   subroutine clean_param_in(iparm,x,fluidvars)
     integer, intent(in) :: iparm
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: parm
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -615,8 +623,8 @@ contains
   subroutine energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(in) :: intvars
     real(wp), intent(in) :: dt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -632,9 +640,9 @@ contains
   subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(in) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
@@ -653,7 +661,8 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
                                      intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
-                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver,gavg,Tninf)
+                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
+                                     intvars%iver,gavg,Tninf,intvars%eprecip)
   end subroutine source_loss_allparams_in
 
 
@@ -663,6 +672,6 @@ contains
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec
 
-    call dateinc_main(dt,ymd,UTsec)
+    call dateinc(dt,ymd,UTsec)
   end subroutine dateinc_in
 end module gemini3d

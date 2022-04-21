@@ -11,6 +11,7 @@ use, intrinsic :: ieee_arithmetic
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
 use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all,g1,g2,g3
 use meshobj, only: curvmesh
+use efielddataobj, only: efielddata
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
 use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput, compute_rootBGEfields
@@ -105,7 +106,7 @@ interface !< potential_root.f90
 end interface
 
 contains
-  subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x, &
+  subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,efield, &
                            E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
     !! THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !! PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
@@ -125,6 +126,7 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
     class(curvmesh), intent(in) :: x
+    type(efielddata), intent(inout) :: efield
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
@@ -179,7 +181,7 @@ contains
     if (mpi_cfg%myid/=0) then
       call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
     else
-      call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+      call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x,efield, &
                                        flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                        E01,E02,E03,Vminx1slab,Vmaxx1slab)
     end if
@@ -235,7 +237,7 @@ contains
   end subroutine electrodynamics_curv
   
   
-  subroutine BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+  subroutine BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x,efield, &
                                         flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                         E01,E02,E03,Vminx1slab,Vmaxx1slab)
     !> Root only!  populate arrays for background electric fields and potential/FAC boundary conditions.  If we are root this
@@ -246,6 +248,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
+    type(efielddata), intent(inout) :: efield
     integer, intent(out) :: flagdirich
     real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1
     !! intent(out)
@@ -269,7 +272,7 @@ contains
     allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
     call cpu_time(tstart)
     if (cfg%flagE0file==1) then
-      call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+      call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,efield,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                           E01all,E02all,E03all,flagdirich)
     else
       call potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
@@ -723,10 +726,11 @@ contains
   end subroutine polarization_currents
   
   
-  subroutine get_BGEfields(x,E01,E02,E03)
+  subroutine get_BGEfields(x,E01,E02,E03,efield)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
     !! intent(out)
+    type(efielddata), intent(inout) :: efield
     !> routine to pull the background electric fields from the BCs modules and distribute
     !   them to worker processes; called by both root and worker processes
     real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all    !space to pull the full dataset out of the module
@@ -735,7 +739,7 @@ contains
     if (mpi_cfg%myid==0) then
       allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
       E01all=0._wp
-      call compute_rootBGEfields(x,E02all,E03all)
+      call compute_rootBGEfields(x,E02all,E03all,efield)
   
       call bcast_send(E01all,tag%E01,E01)
       call bcast_send(E02all,tag%E02,E02)

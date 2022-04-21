@@ -45,7 +45,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    type(efieldata), intent(inout) :: efield
+    type(efielddata), intent(inout) :: efield
     real(wp), dimension(:,:), intent(inout), target :: Vminx1,Vmaxx1
     !! intent(out)
     real(wp), dimension(:,:), intent(inout) :: Vminx2,Vmaxx2
@@ -66,7 +66,7 @@ contains
     call efield%update(cfg,dtmodel,t,x,ymd,UTsec)
   
     !! now we need to take data in the efield object and map along the field lines
-    call compute_rootBGEfields(x,E02all,E03all)
+    call compute_rootBGEfields(x,E02all,E03all,efield)
   
     !! object double flag to int
     flagdirich=nint(efield%flagdirich)
@@ -163,8 +163,8 @@ contains
     type(efielddata), intent(inout) :: efield
     integer :: ix1,ix2,ix3
     real(wp) :: h2ref,h3ref
-    integer, private :: ix1ref,ix2ref,ix3ref    ! reference locations for field line mapping
-    integer, private :: ix1eq=-1                ! index for the equatorial location in terms of index into the x%x1 array; used by default boundary conditions 
+    integer :: ix1ref,ix2ref,ix3ref    ! reference locations for field line mapping
+    integer :: ix1eq=-1                ! index for the equatorial location in terms of index into the x%x1 array; used by default boundary conditions 
 
     !! the only danger here is that this routine could be called before any module data are loaded
     !   so check just to make sure it isn't being misused in this way
@@ -230,7 +230,7 @@ contains
     real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
     real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
     real(wp) :: vamp,LThrs,veltime,z,glonmer
-  
+    integer :: ix1eq=-1                ! index for the equatorial location in terms of index into the x%x1 array; used by default boundary conditions   
   
     !CALCULATE/SET TOP BOUNDARY CONDITIONS
     sigx2=1/20._wp*(x%x2all(lx2all)-x%x2all(1))

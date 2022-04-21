@@ -9,20 +9,20 @@ use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
+use grid, only: lx1,lx2,lx3
 use grid_mpi, only: grid_drift, read_grid
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
-use potential_comm,only : pot2perpfield
+use potential_comm,only : pot2perpfield, electrodynamics
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal, only : dt_comm
 use sanity_check, only : check_finite_pertub, check_finite_output
-use potential_comm,only : electrodynamics
 use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
-use gemini3d, only: fluidvar_pointers,electrovar_pointers,intvars
+use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work
 
 implicit none (type, external)
 private
@@ -68,7 +68,7 @@ contains
   !> read in the grid and distribute to workers
   subroutine read_grid_in(cfg,x)
     type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), pointer, intent(inout) :: x
+    class(curvmesh), allocatable, intent(inout) :: x
 
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
@@ -76,19 +76,24 @@ contains
 
 
   !> load initial conditions
-  subroutine get_initial_state(cfg,fluidvars,x,UTsec,ymd,tdur)
-    type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
+  subroutine get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
+    type(gemini_cfg), intent(inout) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: tdur
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp,ttmp
     character(:), allocatable :: filetmp
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
     call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
     if ( ttmp > 0 ) then
       !! restart scenario
@@ -110,7 +115,7 @@ contains
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
 
       cfg%tdur=tdur         ! just to insure consistency
-      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
+      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)
     else !! start at the beginning
       UTsec = cfg%UTsec0
       ymd = cfg%ymd0
@@ -118,7 +123,7 @@ contains
 
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
       print*, 'Starting from beginning of simulation...'
-      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
+      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,intvars%Phiall)
     end if
   end subroutine get_initial_state
 
@@ -128,7 +133,7 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
-    type(gemini_work), intent(in) :: intvars
+    type(gemini_work), intent(inout) :: intvars
     real(wp), intent(in) :: t
     real(wp), intent(inout) :: tout,tglowout,tmilestone
     integer, intent(inout) :: flagoutput
@@ -154,13 +159,13 @@ contains
       if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
         flagoutput=1    !force a full output at the milestone
         call output_plasma(cfg%outdir,flagoutput,ymd, &
-          UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+          UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
           cfg%out_format)
         tmilestone = t + cfg%dtout * cfg%mcadence
         if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
       else
         call output_plasma(cfg%outdir,flagoutput,ymd, &
-          UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+          UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
           cfg%out_format)
       end if
       if (mpi_cfg%myid==0 .and. debug) then
@@ -201,15 +206,21 @@ contains
 
 
   !> prep simulation for use of Lagrangian grid, if needed
-  subroutine BGfield_Lagrangian(x,v2grid,v3grid)
+  subroutine BGfield_Lagrangian(cfg,x,electrovars,intvars,v2grid,v3grid)
+    type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
     real(wp), intent(inout) :: v2grid,v3grid
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)     ! bind pointers for EM variables
 
     allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))    ! allocate without ghost cells
     E01=0; E02=0; E03=0;
     if (cfg%flagE0file==1) then
-      call get_BGEfields(x,E01,E02,E03)
+      call get_BGEfields(x,E01,E02,E03,intvars%efield)
     end if
     if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
       call grid_drift(x,E02,E03,v2grid,v3grid)
@@ -233,18 +244,19 @@ contains
 
 
   !> initial drifts at the start of the simulation
-  subroutine get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars)
+  subroutine get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     ! bind pointers
@@ -256,8 +268,9 @@ contains
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
-    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+    call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+    call velocities(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
+                      cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
     if(mpi_cfg%myid==0) then
       print*, 'Recomputed initial drifts:  '
@@ -283,7 +296,8 @@ contains
 
 
   !> initialize electric field input data
-  subroutine init_Efieldinput_in(x,dt,t,intvars,ymd,UTsec)
+  subroutine init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
     type(gemini_work), intent(inout) :: intvars
@@ -297,7 +311,7 @@ contains
   !> convert potential to electric field by differentiating
   subroutine pot2perpfield_in(x,electrovars)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: electrovars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
@@ -314,8 +328,9 @@ contains
 
 
   !> initialize neutral perturbations
-  subroutine init_neutralperturb_in(dt,x,intvars,ymd,UTsec)
+  subroutine init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
     real(wp), intent(in) :: dt
+    type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
@@ -329,15 +344,17 @@ contains
   subroutine dt_select(cfg,x,fluidvars,fluidauxvars,it,t,tout,tglowout,dt)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     integer, intent(in) :: it
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
     real(wp) :: dtprev
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
-    ! bind pointers
+    ! bind pointers for fluid and auxiliary variables
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
@@ -365,8 +382,8 @@ contains
     type(gemini_work), intent(inout) :: intvars
     real(wp), intent(in) :: v2grid,v3grid
 
-    call neutral_denstemp_update(intvars%atmos%nn,intvars%atmos%Tn)
-    call neutral_wind_update(intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,v2grid,v3grid)
+    call neutral_denstemp_update(intvars%atmos,intvars%atmosperturb)
+    call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
   end subroutine neutral_atmos_wind_update
 
 
@@ -374,22 +391,24 @@ contains
   subroutine neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec,v2grid,v3grid)
     type(gemini_cfg), intent(in) :: cfg
     type(gemini_work), intent(inout) :: intvars
-    class(curvmesh), intent(in) :: x
+    class(curvmesh), intent(inout) :: x     ! unit vectors could be deallocated in this procedure
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
 
-    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
-    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
+    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
+                               intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
   end subroutine neutral_perturb_in
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_in(fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), intent(in) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), intent(in) :: electrovars
+  subroutine electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: it
@@ -398,7 +417,7 @@ contains
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     ! bind pointers
@@ -407,7 +426,9 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
     ! E&M solves
-    call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,intvars%Phiall,ymd,UTsec)
+    call electrodynamics(it,t,dt,intvars%atmos%nn,intvars%atmos%vn2,intvars%atmos%vn3,intvars%atmos%Tn, &
+                           cfg,ns,Ts,vs1,B1,vs2,vs3,x,intvars%efield,E1,E2,E3,J1,J2,J3, &
+                           intvars%Phiall,ymd,UTsec)
   end subroutine electrodynamics_in
 
 
@@ -418,6 +439,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     real(wp), intent(in) :: t
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     ! bind pointers
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -430,7 +452,7 @@ contains
   !> haloing for computing cell interface velocities
   subroutine halo_interface_vels_allspec_in(x,fluidvars,lsp)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
     integer, intent(in) :: lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -442,30 +464,31 @@ contains
   !> enforce global boundary conditions
   subroutine set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     ! bind pointers
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
     ! fix global boundaries, as needed
-    call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp)
+    call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,intvars%vs1i,lsp)
   end subroutine set_global_boundaries_allspec_in
 
 
   !> halo all advected parameters
   subroutine halo_allparams_in(x,fluidvars,fluidauxvars)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     ! bind pointers
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -479,7 +502,7 @@ contains
   !> prepare/halo data for compression substep
   subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -488,15 +511,18 @@ contains
 
 
   !> agree on average value of gravity and exospheric temp
-  subroutine get_gavg_Tinf_in(gavg,Tninf)
+  subroutine get_gavg_Tinf_in(intvars,gavg,Tninf)
+    type(gemini_work), intent(in) :: intvars
     real(wp), intent(inout) :: gavg,Tninf
 
-    call get_gavg_Tinf(gavg,Tninf)
+    call get_gavg_Tinf(intvars%atmos,gavg,Tninf)
   end subroutine get_gavg_Tinf_in
 
 
   !> deallocate module storage for neutral perturbations
   subroutine clear_dneu_in(intvars)
-    call clear_dneu()
+    type(gemini_work), intent(inout) :: intvars
+
+    call clear_dneu(intvars%atmosperturb)
   end subroutine clear_dneu_in
 end module gemini3d_mpi
