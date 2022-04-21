@@ -345,7 +345,9 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
     !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t

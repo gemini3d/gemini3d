@@ -161,7 +161,7 @@ contains
         if (debug) print *, 'Conductivities for time step:  ',t,' took ',tfin-tstart,' seconds...'
       end if
     end if
-  
+
     !> error checking for cap. vs. grid types - viz. we do not support capacitive solves on anything other than Cartesian grids
     if (cfg%flagcap/=0) then      ! some sort of capacitance is being used in the simulation
       call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...

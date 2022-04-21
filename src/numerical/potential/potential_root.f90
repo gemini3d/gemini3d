@@ -205,7 +205,7 @@ module procedure potential_root_mpi_curv
     call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
     call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
     call gather_recv(srcterm,tag%src,srctermall)
-  
+
     !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
     ! Note that it is a little inefficient to have root do this calculation, but if we are in 2D it probably doesn't matter anyway...
     !print*, 'set field aligned current'
