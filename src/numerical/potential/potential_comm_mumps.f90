@@ -439,11 +439,11 @@ contains
       call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
-  
+
     call halo_pot(J1,tag%J1,x%flagper,.false.)
     call halo_pot(J2,tag%J2,x%flagper,.false.)
     call halo_pot(J3,tag%J3,x%flagper,.false.)
-  
+ 
     divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)

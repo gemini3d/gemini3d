@@ -41,10 +41,11 @@ module procedure potential_root_mpi_curv
   
   !> store a cached ordering for later use (improves performance substantially)
   perflag=.true.
-  
+
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
-  
+
+ 
   !!!!!!!!
   !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
   !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
@@ -110,13 +111,15 @@ module procedure potential_root_mpi_curv
         call cpu_time(tstart)
         if (.not. x%flagper) then     !nonperiodic mesh
           if (debug) print *, '!!!User selected aperiodic solve...'
-          Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
+          Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all, &
+                                   SigHintall,incapintall,v2slaball,v3slaball, &
                                    Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                    dt,x,Phislab0,perflag,it)
           !! note that this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
         else
           if (debug) print *, '!!!User selected periodic solve...'
-          Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
+          Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
+                                     incapintall,v2slaball,v3slaball, &
                                      Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                      dt,x,Phislab0,perflag,it)
           !! !note that either sigPint2 or 3 will work since this must be cartesian...
@@ -236,7 +239,7 @@ module procedure potential_root_mpi_curv
   end if
   if (debug) print *, 'MUMPS time:  ',tfin-tstart
   !!!!!!!!!
- 
+
   !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
   call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
 

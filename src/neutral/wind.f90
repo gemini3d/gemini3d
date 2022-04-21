@@ -12,7 +12,7 @@ contains
 !     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
 !     program for neutral parameters.   
 module procedure neutral_winds
-  real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt, v1, v2, v3
+  real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt
   integer :: i1,i2,i3, dayOfYear
   real(wp) :: altnow,glonnow,glatnow
   integer :: iinull
@@ -42,11 +42,6 @@ module procedure neutral_winds
   
   call rotate_geo2native(vnalt=Walt, vnglat=Wmeridional, vnglon=Wzonal,x=x, atmos=atmos)
   !v1=Walt; v2=Wmeridional; v3=Wzonal;
-
-  !! update module background winds 
-  atmos%vn1base = v1
-  atmos%vn2base = v2
-  atmos%vn3base = v3
 
   !! zero out background winds at null points
   do iinull=1,x%lnull

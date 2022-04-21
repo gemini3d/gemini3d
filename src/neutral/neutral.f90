@@ -18,7 +18,8 @@ public :: neutral_atmos, init_neutralBG, neutral_info, neutral_info_dealloc, neu
 type neutral_info
   !! total//overall atmospheric state (BG + perturbations)
   real(wp), dimension(:,:,:,:), allocatable :: nn    !! neutral density array
-  real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3    !! neutral temperature and velocities
+  real(wp), dimension(:,:,:), allocatable :: Tn
+  real(wp), dimension(:,:,:), allocatable :: vn1,vn2,vn3    !! neutral temperature and velocities
 
   !! base msis state
   real(wp), dimension(:,:,:,:), allocatable :: nnmsis
@@ -198,6 +199,11 @@ contains
                atmos%vn1base(lx1,lx2,lx3),atmos%vn2base(lx1,lx2,lx3),atmos%vn3base(lx1,lx2,lx3))
 
     ! start everyone out at zero
+    atmos%nn=0
+    atmos%Tn=0
+    atmos%vn1=0
+    atmos%vn2=0
+    atmos%vn3=0
     atmos%nnmsis = 0
     atmos%Tnmsis = 0
     atmos%vn1base = 0
