@@ -36,14 +36,14 @@ include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
 
 # Fortran filesystem library "ffilesystem"
-find_package(ffilesystem 3.3.0 CONFIG)
+find_package(ffilesystem CONFIG)
 if(ffilesystem_VERSION VERSION_LESS 3.4.2)
   target_link_libraries(ffilesystem::filesystem INTERFACE
   $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:${CMAKE_CXX_COMPILER_VERSION},9.1.0>>:stdc++fs>
   )
 endif()
 # this is the first package we find, so make a special error message for users
-if(NOT ffilesystem_FOUND)
+if(NOT ffilesystem_FOUND OR ffilesystem_VERSION VERSION_LESS 3.3.0)
   message(FATAL_ERROR "
 Gemini3D requires several external libraries that are one-time installed via this procedure. Note: the 'gemini_libs' directory is arbitrary example.
 
