@@ -25,7 +25,6 @@ if(BUILD_TESTING)
 
 add_executable(test_excess_mpi test_excess_mpi.f90)
 target_link_libraries(test_excess_mpi PRIVATE autogrid)
-set_target_properties(test_excess_mpi PROPERTIES LABELS unit)
 
 add_test(NAME unit:mpi:excessCPU COMMAND test_excess_mpi)
 set_tests_properties(unit:mpi:excessCPU PROPERTIES

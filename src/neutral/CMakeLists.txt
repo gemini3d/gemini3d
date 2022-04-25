@@ -10,7 +10,7 @@ h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 
 add_library(neutral_perturbations OBJECT neutral_perturbations.f90)
@@ -24,7 +24,7 @@ h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 
 # self-tests
@@ -48,7 +48,7 @@ timeutils mpimod const
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE Fortran)

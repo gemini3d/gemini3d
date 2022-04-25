@@ -22,13 +22,9 @@ if(NOT abi_ok)
   endif()
 endif()
 
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-
 # C++ filesystem link
-set(lib_filesystem)
 if(CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
-  set(lib_filesystem stdc++fs)
+  target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
 endif()
 
 # avoid MacOS unwind warnings

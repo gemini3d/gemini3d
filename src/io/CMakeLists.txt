@@ -56,7 +56,7 @@ endif()
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE const
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
@@ -73,13 +73,8 @@ TIMEOUT 10
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE config
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(test_compiler_vendor PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(test_compiler_vendor PROPERTIES LINKER_LANGUAGE CXX)
-endif()
 
 add_test(NAME unit:compiler_vendor COMMAND test_compiler_vendor)
 set_tests_properties(unit:compiler_vendor PROPERTIES
@@ -90,13 +85,8 @@ TIMEOUT 10
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
 target_link_libraries(test_expand_envvar PRIVATE config
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(test_expand_envvar PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
-endif()
 
 add_test(NAME unit:expand_envvar COMMAND test_expand_envvar)
 set_tests_properties(unit:expand_envvar PROPERTIES
@@ -104,6 +94,14 @@ ENVIRONMENT test__gem=hello
 LABELS unit
 TIMEOUT 10
 )
+
+# --- test props
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(test_compiler_vendor test_expand_envvar PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(test_compiler_vendor test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
 dll_test_path(ffilesystem::filesystem "unit:expand_envvar;unit:compiler_vendor")
 
@@ -130,7 +128,7 @@ $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 
 # --- reader
@@ -140,7 +138,7 @@ $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 target_link_libraries(reader PRIVATE const
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 
 if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)

@@ -21,7 +21,7 @@ sanity_check errors config timeutils const
 hwloc_ifc hwloc_c
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE Fortran)

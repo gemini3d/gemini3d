@@ -28,58 +28,54 @@ add_executable(newton_testdriver newton_testdriver.f90)
 target_link_libraries(newton_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
+add_test(NAME newton_testdriver COMMAND newton_testdriver)
 
 add_executable(geomag2geog_testdriver geomag2geog_testdriver.f90)
 target_link_libraries(geomag2geog_testdriver PRIVATE geomagnetic const)
+add_test(NAME geomag2geog_testdriver COMMAND newton_testdriver)
 
 add_executable(grid_testdriver grid_testdriver.f90)
 target_link_libraries(grid_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
+add_test(NAME grid_testdriver COMMAND grid_testdriver)
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
 target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(fullgrid_dipole_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(fullgrid_dipole_testdriver PROPERTIES LINKER_LANGUAGE CXX)
-endif()
+add_test(NAME fullgrid_dipole_testdriver COMMAND fullgrid_dipole_testdriver)
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
 target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE CXX)
-endif()
+add_test(NAME fullgrid_cartesian_testdriver COMMAND fullgrid_cartesian_testdriver)
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
 target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
+add_test(NAME fullgrid_dipole_testdriver_root COMMAND fullgrid_dipole_testdriver_root)
 
-foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipole_testdriver fullgrid_cartesian_testdriver fullgrid_dipole_testdriver_root)
+# --- test props
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(fullgrid_dipole_testdriver fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(fullgrid_dipole_testdriver fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+endif()
 
-  add_test(NAME "unit:${t}" COMMAND ${t})
+get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 
-  set_tests_properties(unit:${t} PROPERTIES
-  TIMEOUT 30
-  LABELS "unit"
-  )
-
-endforeach()
-
-
-dll_test_path("h5fortran::h5fortran;LAPACK::LAPACK" "unit:fullgrid_dipole_testdriver;unit:fullgrid_dipole_testdriver_root;unit:fullgrid_cartesian_testdriver;unit:grid_testdriver;unit:newton_testdriver")
+set_tests_properties(${test_names} PROPERTIES
+TIMEOUT 30
+LABELS unit
+)
 
 if(host_ramGB LESS 8)
-  set_tests_properties(unit:fullgrid_cartesian_testdriver unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
-  RESOURCE_LOCK cpu_ram
-  )
+  set_tests_properties(${test_names} PROPERTIES RESOURCE_LOCK cpu_ram)
 endif()
+
+dll_test_path("h5fortran::h5fortran;LAPACK::LAPACK" "${test_names}")

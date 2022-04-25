@@ -53,7 +53,7 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 msis::msis_ifc
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 # need to have this explicit include for use of Gemini3D from ExternalProject
 # else compiler will fail to include top-level build/include for some targets e.g. filesystem
@@ -154,7 +154,7 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-ffilesystem::filesystem ${lib_filesystem}
+ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE Fortran)
@@ -226,7 +226,7 @@ find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
 add_library(gemini3d_c_old libgemini.cpp)
-target_link_libraries(gemini3d_c PUBLIC
+target_link_libraries(gemini3d_c_old PUBLIC
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 MUMPS::MUMPS
