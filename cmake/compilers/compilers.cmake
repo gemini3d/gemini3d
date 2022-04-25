@@ -22,11 +22,6 @@ if(NOT abi_ok)
   endif()
 endif()
 
-# C++ filesystem link
-if(CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
-  target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
-endif()
-
 # avoid MacOS unwind warnings
 if(CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
   add_link_options(-Wl,-no_compact_unwind)
