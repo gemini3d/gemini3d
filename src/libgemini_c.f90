@@ -12,10 +12,13 @@
 ! See the License for the specific language governing permissions and
 ! limitations under the License.
 
-!> This module contains C/CXX wrappers for functions in libgemini.  These routines match those in libgemini.f90 and are
-!!   principally meant to convert the C pointers to various data objects into fortran pointers (including in the case of the
-!!   grid a class pointer (pointer to polymorphic object).  Other polymorhpic objects (neutraldata, etc.) are kept in a static
-!!   derived type (intvars::gemini_work) and don't need to be passes as class pointers.  
+!> This module contains C/CXX wrappers for functions in libgemini.
+!! These routines match those in libgemini.f90 and are
+!! principally meant to convert the C pointers to various data objects into fortran pointers.
+!! The grid is a class pointer (pointer to polymorphic object).
+!! Other polymorphic objects (neutraldata, etc.) are kept in a static
+!! derived type (intvars::gemini_work) and don't need to be passes as class pointers.
+
 module gemini3d_C
 
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
@@ -30,7 +33,7 @@ use neutraldataobj, only: neutraldata
 use config, only: gemini_cfg
 use gemini3d, only: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
             set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, & 
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
@@ -42,7 +45,7 @@ private
 
 contains
   !> set fortran object pointer dynamic type to what is indicated in objtype.  Convert C pointer using
-  !    declared static types (c_f_pointer will not work on a polymorphic object).  
+  !>    declared static types (c_f_pointer will not work on a polymorphic object).
   function set_gridpointer_dyntype(xtype,xC) result(x)
     type(c_ptr), intent(in) :: xC
     integer, intent(in) :: xtype
@@ -158,8 +161,8 @@ contains
   end subroutine gemini_dealloc_C
 
 
-  !> set start values for some variables.  some case is required here because the state variable pointers are mapped; 
-  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args 
+  !> set start values for some variables.  some case is required here because the state variable pointers are mapped;
+  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
   subroutine set_start_values_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC) bind(C,name='set_start_values_C')
     integer, intent(inout) :: it
@@ -491,7 +494,7 @@ contains
   end subroutine source_loss_allparams_C
 
 
-  !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.  
+  !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
   subroutine dateinc_C(dt,ymd,UTsec) bind(C,name='dateinc_C')
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
