@@ -57,15 +57,13 @@ ffilesystem::filesystem ${lib_filesystem}
 )
 # need to have this explicit include for use of Gemini3D from ExternalProject
 # else compiler will fail to include top-level build/include for some targets e.g. filesystem
-set_target_properties(gemini3d PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-)
 
 add_library(gemini3d_mpi libgemini_mpi.f90)
-set_target_properties(gemini3d_mpi PROPERTIES
+
+set_target_properties(gemini3d gemini3d_mpi PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 
 set(gemini_internal_mods
@@ -116,12 +114,11 @@ autogrid
 hwloc_ifc hwloc_c
 )
 
-
-foreach(l ${gemini_internal_mods})
+foreach(l IN LISTS gemini_internal_mods)
   target_sources(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>)
 endforeach()
 
-foreach(l ${gemini_mpi_internal_mods})
+foreach(l IN LISTS gemini_mpi_internal_mods)
   target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
 endforeach()
 
@@ -212,10 +209,9 @@ LABELS unit
 )
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" unit:gemini_exe_ok)
 
-install(TARGETS gemini3d gemini.bin gemini3d_mpi
+install(TARGETS gemini.bin gemini3d gemini3d_mpi
 EXPORT ${PROJECT_NAME}-targets
 )
-
 
 # need this header for external projects using Gemini3D
 install(FILES gemini3d.h TYPE INCLUDE)
