@@ -12,7 +12,7 @@
 ! See the License for the specific language governing permissions and
 ! limitations under the License.
 
-!> This module contains C/CXX wrappers for functions in libgemini.
+!! This module contains C/CXX wrappers for functions in libgemini.
 !! These routines match those in libgemini.f90 and are
 !! principally meant to convert the C pointers to various data objects into fortran pointers.
 !! The grid is a class pointer (pointer to polymorphic object).

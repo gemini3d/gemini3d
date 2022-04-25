@@ -212,7 +212,7 @@ LABELS unit
 )
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" unit:gemini_exe_ok)
 
-install(TARGETS gemini3d gemini.bin
+install(TARGETS gemini3d gemini.bin gemini3d_mpi
 EXPORT ${PROJECT_NAME}-targets
 )
 
@@ -220,15 +220,16 @@ EXPORT ${PROJECT_NAME}-targets
 # need this header for external projects using Gemini3D
 install(FILES gemini3d.h TYPE INCLUDE)
 
-# --- Gemini_c.bin
-# C++ main program just like Fortran gemini.bin
 
 if(cpp)
+
+# --- Gemini_c.bin
+# C++ main program just like Fortran gemini.bin
 
 find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
-add_library(gemini3d_c libgemini.cpp)
+add_library(gemini3d_c_old libgemini.cpp)
 target_link_libraries(gemini3d_c PUBLIC
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
@@ -249,14 +250,14 @@ RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
 )
 target_link_libraries(gemini_c.bin PRIVATE
-gemini3d_c
+gemini3d_c_old
 gemini3d
 gemini3d_mpi
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
-install(TARGETS gemini_c.bin gemini3d_c gemini3d_mpi
+install(TARGETS gemini_c.bin gemini3d_c_old
 EXPORT ${PROJECT_NAME}-targets
 )
 
