@@ -213,6 +213,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     type(gemini_work), intent(inout) :: intvars
     real(wp), intent(inout) :: v2grid,v3grid
+
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
@@ -252,6 +253,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(in) :: intvars
+
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
@@ -313,6 +315,7 @@ contains
   subroutine pot2perpfield_in(x,electrovars)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
@@ -350,6 +353,7 @@ contains
     integer, intent(in) :: it
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
+
     real(wp) :: dtprev
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
@@ -416,6 +420,7 @@ contains
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
@@ -439,6 +444,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     real(wp), intent(in) :: t
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
@@ -455,6 +461,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     integer, intent(in) :: lsp
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -469,6 +476,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
@@ -487,6 +495,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
@@ -504,6 +513,7 @@ contains
   subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
