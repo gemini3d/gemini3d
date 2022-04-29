@@ -225,6 +225,7 @@ ${gemini_internal_mods}
 add_library(gemini3d_mpi_c libgemini_mpi_c.f90)
 target_link_libraries(gemini3d_mpi_c PRIVATE
 gemini3d_mpi
+gemini3d_c
 ${gemini_mpi_internal_mods}
 )
 

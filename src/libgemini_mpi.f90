@@ -85,6 +85,7 @@ contains
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: tdur
+
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     integer, dimension(3) :: ymdtmp
@@ -452,7 +453,7 @@ contains
   !> haloing for computing cell interface velocities
   subroutine halo_interface_vels_allspec_in(x,fluidvars,lsp)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     integer, intent(in) :: lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -464,7 +465,7 @@ contains
   !> enforce global boundary conditions
   subroutine set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
@@ -484,7 +485,7 @@ contains
   !> halo all advected parameters
   subroutine halo_allparams_in(x,fluidvars,fluidauxvars)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
@@ -502,7 +503,7 @@ contains
   !> prepare/halo data for compression substep
   subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
     class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars    
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)

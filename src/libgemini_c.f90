@@ -21,8 +21,8 @@
 
 module gemini3d_C
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
-use phys_consts, only: wp,debug,lnchem,lwave,lsp
+use, intrinsic :: iso_c_binding, only : c_int, c_bool, c_loc, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
+use phys_consts, only: lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
 use meshobj_cart, only: cartmesh
@@ -41,7 +41,9 @@ use gemini3d, only: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc,
             fluidauxvar_pointers, electrovar_pointers, gemini_work
 
 implicit none (type, external)
+
 private
+public :: set_gridpointer_dyntype
 
 contains
   !> set fortran object pointer dynamic type to what is indicated in objtype.  Convert C pointer using
@@ -198,7 +200,7 @@ contains
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: intvarsC
 
@@ -229,7 +231,7 @@ contains
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt,t
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
     type(c_ptr), intent(inout) :: intvarsC
@@ -258,7 +260,7 @@ contains
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: intvarsC
 
@@ -505,7 +507,7 @@ contains
     type(c_ptr), intent(in) :: electrovarsC
     type(c_ptr), intent(in) :: intvarsC
     real(wp), intent(in) :: dt,t
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: f107a,f107
     logical(C_BOOL), intent(in) :: first
@@ -532,7 +534,7 @@ contains
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
   subroutine dateinc_C(dt,ymd,UTsec) bind(C)
     real(wp), intent(in) :: dt
-    integer, dimension(3), intent(inout) :: ymd
+    integer(C_INT), dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec
 
     call dateinc_in(dt,ymd,UTsec)
