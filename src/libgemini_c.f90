@@ -25,8 +25,8 @@ use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_fl
 use phys_consts, only: wp,debug,lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
-use cartmeshobj, only: cartmesh
-use dipolemeshobj, only: dipolemesh
+use meshobj_cart, only: cartmesh
+use meshobj_dipole, only: dipolemesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
@@ -67,7 +67,7 @@ contains
 
 
   !> basic command line and grid size determination
-  subroutine cli_config_gridsize_C(p,lid2in,lid3in,cfgC) bind(C,name='cli_config_gridsize_C')
+  subroutine cli_config_gridsize_C(p,lid2in,lid3in,cfgC) bind(C)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
     type(c_ptr), intent(inout) :: cfgC
@@ -79,7 +79,7 @@ contains
 
 
   !> return some data from cfg that is needed in the main program
-  subroutine get_config_vars_C(cfgC,flagneuBG,flagdneu,dtneuBG,dtneu) bind(C,name='get_config_vars_C')
+  subroutine get_config_vars_C(cfgC,flagneuBG,flagdneu,dtneuBG,dtneu) bind(C)
     type(c_ptr), intent(in) :: cfgC
     logical, intent(inout) :: flagneuBG
     integer, intent(inout) :: flagdneu
@@ -92,7 +92,7 @@ contains
 
 
   !> returns the subgrid sizes *** stored in the grid module ***
-  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C,name='get_subgrid_size_C')
+  subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C)
     integer, intent(inout) :: lx1out,lx2out,lx3out
 
     call get_subgrid_size(lx1out,lx2out,lx3out)
@@ -100,15 +100,15 @@ contains
 
 
   !> return full grid extents *** stored in the grid module ***
-  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C,name='get_fullgrid_size_C')
+  subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C)
     integer, intent(inout) :: lx1out,lx2allout,lx3allout
 
-    call get_fullgrid_size(lx1out,lx2out,lx3out)
+    call get_fullgrid_size(lx1out, lx2allout, lx3allout)
   end subroutine get_fullgrid_size_C
 
 
   !> return number of species *** from phys_consts module ***
-  subroutine get_species_size_C(lspout) bind(C,name='get_species_size_C')
+  subroutine get_species_size_C(lspout) bind(C)
     integer, intent(inout) :: lspout
 
     call get_species_size(lspout)
@@ -116,12 +116,13 @@ contains
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_alloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C,name='gemini_alloc_C')
+  subroutine gemini_alloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: electrovarsC
     type(c_ptr), intent(inout) :: intvarsC
+
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
@@ -139,12 +140,13 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C,name='gemini_dealloc_C')
+  subroutine gemini_dealloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: electrovarsC
     type(c_ptr), intent(inout) :: intvarsC
+
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
@@ -161,15 +163,19 @@ contains
   end subroutine gemini_dealloc_C
 
 
-  !> set start values for some variables.  some case is required here because the state variable pointers are mapped;
-  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
-  !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
-  subroutine set_start_values_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC) bind(C,name='set_start_values_C')
+  !> set start values for some variables.
+  !    some case is required here because the state variable pointers are mapped;
+  !    however, note that the lbound and ubound have not been set since arrays
+  !    are not passed through as dummy args
+  !    with specific ubound so that we need to use intrinsic calls to make sure we fill
+  !    computational cells (not ghost)
+  subroutine set_start_values_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC) bind(C)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
     type(c_ptr), intent(inout) :: xC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     integer, intent(in) :: xtype
+
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
@@ -180,7 +186,7 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C,name='init_precipinput_C')
+  subroutine init_precipinput_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
     integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -189,6 +195,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: intvarsC
+
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
     type(gemini_work), pointer :: intvars
@@ -196,12 +203,12 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_precip_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
   end subroutine init_precipinput_C
 
 
   !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_C(cfgC) bind(C,name='msisinit_C'
+  subroutine msisinit_C(cfgC) bind(C)
     type(c_ptr), intent(in) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
@@ -211,15 +218,16 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C,name='init_neutralBG_C')
+  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer :: xtype
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
     type(c_ptr), intent(inout) :: intvarsC
+
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x    ! so neutral module can deallocate unit vectors once used...
     type(gemini_work), pointer :: intvars
@@ -232,7 +240,7 @@ contains
 
 
   !> set update cadence for printing out diagnostic information during simulation
-  subroutine set_update_cadence_C(iupdate) bind(C,name='set_update_cadence_C')
+  subroutine set_update_cadence_C(iupdate) bind(C)
     integer, intent(inout) :: iupdate
 
     call set_update_cadence(iupdate)
@@ -240,28 +248,30 @@ contains
 
 
   !> compute background neutral density, temperature, and wind
-  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C,name='neutral_atmos_winds_C')
+  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
     integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    type(c_ptr), intent(inout) :: intvars
+    type(c_ptr), intent(inout) :: intvarsC
+
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(intvarsC,intvars)
     call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
   end subroutine neutral_atmos_winds_C
 
 
   !> get solar indices from cfg struct
-  subroutine get_solar_indices_C(cfgC,f107,f107a) bind(C,name='get_solar_indices_C')
+  subroutine get_solar_indices_C(cfgC,f107,f107a) bind(C)
     type(c_ptr), intent(in) :: cfgC
     real(wp), intent(inout) :: f107,f107a
+
     type(gemini_cfg), pointer :: cfg
 
     call c_f_pointer(cfgC,cfg)
@@ -273,6 +283,7 @@ contains
   subroutine v12rhov1_C(fluidvarsC,fluidauxvarsC) bind(C,name='v12rho1_C')
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
@@ -283,23 +294,25 @@ contains
 
 
   !> convert temperature to specific internal energy density
-  subroutine T2rhoe_C(fluidvarsC,fluidauxvarsC) bind(C,name='T2rhoe_C')
+  subroutine T2rhoe_C(fluidvarsC,fluidauxvarsC) bind(C)
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call T2rhoe(fluidvars,fluidauxvars)
+    call T2rhoe_in(fluidvars,fluidauxvars)
   end subroutine T2rhoe_C
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_C(fluidvarsC,intvarsC,lsp) bind(C,name='interface_vels_allspec_C')
+  subroutine interface_vels_allspec_C(fluidvarsC,intvarsC,lsp) bind(C)
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: intvarsC
     integer, intent(in) :: lsp
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     type(gemini_work), pointer :: intvars
 
@@ -310,12 +323,14 @@ contains
 
 
   !> functions for sweeping advection
-  subroutine sweep3_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xC,dt) bind(C, name='sweep3_allparams_C')
+  subroutine sweep3_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     type(gemini_work), pointer :: intvars
@@ -323,17 +338,19 @@ contains
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(intvarsC,intvars)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    call c_f_pointer(intvarsC, intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allparams_C
 
-  subroutine sweep1_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xC,dt) bind(C,name='sweep3_allparams_C')
+  subroutine sweep1_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     type(gemini_work), pointer :: intvars
@@ -342,16 +359,18 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC,intvars)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep1_allparams_C
 
-  subroutine sweep2_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xC,dt) bind(C,name='sweep2_allparams_C')
+  subroutine sweep2_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     type(gemini_work), pointer :: intvars
@@ -360,15 +379,16 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC,intvars)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep2_allparams_C
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1_C(fluidvars,fluidauxvars) bind(C,name='rhov12v1_C')
+  subroutine rhov12v1_C(fluidvarsC, fluidauxvarsC) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(in) :: fluidauxvarsC
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
@@ -379,7 +399,7 @@ contains
 
 
   !> compute artifical viscosity
-  subroutine VNRicht_artvisc_C(fluidvarsC,intvarsC) bind(C,name='VNRicht_artvisc_C')
+  subroutine VNRicht_artvisc_C(fluidvarsC,intvarsC) bind(C)
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: intvarsC
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -392,12 +412,14 @@ contains
 
 
   !> compression substep for fluid solve
-  subroutine compression_C(fluidvarsC,fluidauxvarsC,intvarsC,xC,dt) bind(C,name='compression_C')
+  subroutine compression_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     type(gemini_work), pointer :: intvars
@@ -406,15 +428,16 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC,intvars)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call compression_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine compression_C
 
 
   !> convert specific internal energy density into temperature
-  subroutine rhoe2T_C(fluidvarsC,fluidauxvarsC) bind(C,name='rhoe2T_C')
+  subroutine rhoe2T_C(fluidvarsC,fluidauxvarsC) bind(C)
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(in) :: fluidauxvarsC
+
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
@@ -425,35 +448,39 @@ contains
 
 
   !> deal with null cell solutions
-  subroutine clean_param_C(iparm,xC,fluidvarsC) bind(C,name='clean_param_C')
+  subroutine clean_param_C(iparm,xtype,xC,fluidvarsC) bind(C)
     integer, intent(in) :: iparm
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(in) :: fluidvarsC
+
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
 
-    x=>set_gridpointer_dyntype(xtype,xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call clean_param_in(iparm,x,fluidvars)
   end subroutine clean_param_C
 
 
   !> diffusion of energy
-  subroutine energy_diffusion_C(cfgC,xC,fluidvarsC,electrovarsC,intvarsC,dt) bind(C,name='energy_diffusion_C')
-    type(c_ptr), intent(in) :: cfg
+  subroutine energy_diffusion_C(cfgC,xtype,xC,fluidvarsC,electrovarsC,intvarsC,dt) bind(C)
+    type(c_ptr), intent(in) :: cfgC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(in) :: electrovarsC
     type(c_ptr), intent(in) :: intvarsC
     real(wp), intent(in) :: dt
+
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
-    c_f_pointer(cfgC,cfg)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
@@ -462,9 +489,10 @@ contains
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xC,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf) bind(C,name='source_loss_allparams_C')
-    type(c_ptr), intent(in) :: cfg
+  subroutine source_loss_allparams_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf) bind(C)
+    type(c_ptr), intent(in) :: cfgC
+    integer, intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
@@ -476,6 +504,7 @@ contains
     real(wp), intent(in) :: f107a,f107
     logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
+
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
@@ -483,8 +512,8 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
 
-    c_f_pointer(cfgC,cfg)
-    x=>set_gridpointer_dyntype(xtype,xC)
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
@@ -495,7 +524,7 @@ contains
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
-  subroutine dateinc_C(dt,ymd,UTsec) bind(C,name='dateinc_C')
+  subroutine dateinc_C(dt,ymd,UTsec) bind(C)
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
     real(wp), intent(inout) :: UTsec

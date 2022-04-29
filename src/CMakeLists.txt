@@ -216,6 +216,11 @@ EXPORT ${PROJECT_NAME}-targets
 # need this header for external projects using Gemini3D
 install(FILES gemini3d.h TYPE INCLUDE)
 
+add_library(gemini3d_c libgemini_c.f90)
+target_link_libraries(gemini3d_c PRIVATE
+gemini3d
+${gemini_internal_mods}
+)
 
 if(cpp)
 
