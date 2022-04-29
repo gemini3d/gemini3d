@@ -14,8 +14,8 @@
 
 !> This module is intended to have various interfaces/wrappers for main gemini functionality
 !!   that does not involve mpi or mpi-dependent modules.  There will be a separate module with the
-!!   C bindings and pointer conversions that can be called from C (i.e. wrappers for these routines).  
-!!   For the most part this is a bunch of "getter" routines. 
+!!   C bindings and pointer conversions that can be called from C (i.e. wrappers for these routines).
+!!   For the most part this is a bunch of "getter" routines.
 module gemini3d
 
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
@@ -44,7 +44,7 @@ implicit none (type, external)
 private
 public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
             set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, & 
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
@@ -62,7 +62,7 @@ character(*), parameter :: msis2_param_file = "msis20.parm"
 type gemini_work
   real(wp), dimension(:,:,:), pointer :: Phiall=>null()    !! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
-  
+
   !> Other variables used by the fluid solvers
   real(wp), dimension(:,:,:,:), pointer :: vs1i
   real(wp), dimension(:,:,:,:), pointer :: vs2i
@@ -229,11 +229,11 @@ contains
     allocate(intvars%eprecip)
     allocate(intvars%efield)
     ! neutral stuff allocated elsewhere...
-  end subroutine gemini_work_alloc 
+  end subroutine gemini_work_alloc
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
-  !!   This will be called any time a gemini library procedures needs to access individual state variables.  
+  !!   This will be called any time a gemini library procedures needs to access individual state variables.
   subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: ns
@@ -332,11 +332,11 @@ contains
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
-  end subroutine gemini_work_dealloc 
+  end subroutine gemini_work_dealloc
 
 
-  !> set start values for some variables.  some case is required here because the state variable pointers are mapped; 
-  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args 
+  !> set start values for some variables.  some case is required here because the state variable pointers are mapped;
+  !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
   subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
     integer, intent(inout) :: it
@@ -365,7 +365,7 @@ contains
     ix2max=ubound(B1,2)-2
     ix3min=lbound(B1,3)+2
     ix3max=ubound(B1,3)-2
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0; 
+    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0;
     B1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max) = x%Bmag(1:lx1,1:lx2,1:lx3)
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
@@ -668,7 +668,7 @@ contains
   end subroutine source_loss_allparams_in
 
 
-  !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.  
+  !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
   subroutine dateinc_in(dt,ymd,UTsec)
     real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd

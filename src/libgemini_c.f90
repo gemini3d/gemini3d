@@ -48,7 +48,7 @@ contains
   !>    declared static types (c_f_pointer will not work on a polymorphic object).
   function set_gridpointer_dyntype(xtype,xC) result(x)
     type(c_ptr), intent(in) :: xC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     class(curvmesh), pointer :: x
     type(cartmesh), pointer :: xcart
     type(dipolemesh), pointer :: xdipole
@@ -69,7 +69,7 @@ contains
   !> basic command line and grid size determination
   subroutine cli_config_gridsize_C(p,lid2in,lid3in,cfgC) bind(C)
     type(c_params), intent(in) :: p
-    integer, intent(inout) :: lid2in,lid3in
+    integer(C_INT), intent(inout) :: lid2in,lid3in
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
@@ -81,19 +81,25 @@ contains
   !> return some data from cfg that is needed in the main program
   subroutine get_config_vars_C(cfgC,flagneuBG,flagdneu,dtneuBG,dtneu) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    logical, intent(inout) :: flagneuBG
-    integer, intent(inout) :: flagdneu
+    logical(C_BOOL), intent(inout) :: flagneuBG
+    integer(C_INT), intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
+
     type(gemini_cfg), pointer :: cfg
+    logical :: neuBG
+
+    neuBG = flagneuBG
 
     call c_f_pointer(cfgC,cfg)
-    call get_config_vars(cfg,flagneuBG,flagdneu,dtneuBG,dtneu)
+    call get_config_vars(cfg, neuBG, flagdneu,dtneuBG,dtneu)
+
+    flagneuBG = neuBG
   end subroutine get_config_vars_C
 
 
   !> returns the subgrid sizes *** stored in the grid module ***
   subroutine get_subgrid_size_C(lx1out,lx2out,lx3out) bind(C)
-    integer, intent(inout) :: lx1out,lx2out,lx3out
+    integer(C_INT), intent(inout) :: lx1out,lx2out,lx3out
 
     call get_subgrid_size(lx1out,lx2out,lx3out)
   end subroutine get_subgrid_size_C
@@ -101,7 +107,7 @@ contains
 
   !> return full grid extents *** stored in the grid module ***
   subroutine get_fullgrid_size_C(lx1out,lx2allout,lx3allout) bind(C)
-    integer, intent(inout) :: lx1out,lx2allout,lx3allout
+    integer(C_INT), intent(inout) :: lx1out,lx2allout,lx3allout
 
     call get_fullgrid_size(lx1out, lx2allout, lx3allout)
   end subroutine get_fullgrid_size_C
@@ -109,7 +115,7 @@ contains
 
   !> return number of species *** from phys_consts module ***
   subroutine get_species_size_C(lspout) bind(C)
-    integer, intent(inout) :: lspout
+    integer(C_INT), intent(inout) :: lspout
 
     call get_species_size(lspout)
   end subroutine get_species_size_C
@@ -170,11 +176,11 @@ contains
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill
   !    computational cells (not ghost)
   subroutine set_start_values_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC) bind(C)
-    integer, intent(inout) :: it
+    integer(C_INT), intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
     type(c_ptr), intent(inout) :: xC
     type(c_ptr), intent(inout) :: fluidauxvarsC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
 
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
@@ -188,7 +194,7 @@ contains
   !> Wrapper for initialization of electron precipitation data
   subroutine init_precipinput_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
@@ -220,7 +226,7 @@ contains
   !> call to initialize the neutral background information
   subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
@@ -241,7 +247,7 @@ contains
 
   !> set update cadence for printing out diagnostic information during simulation
   subroutine set_update_cadence_C(iupdate) bind(C)
-    integer, intent(inout) :: iupdate
+    integer(C_INT), intent(inout) :: iupdate
 
     call set_update_cadence(iupdate)
   end subroutine set_update_cadence_C
@@ -250,7 +256,7 @@ contains
   !> compute background neutral density, temperature, and wind
   subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -311,7 +317,7 @@ contains
   subroutine interface_vels_allspec_C(fluidvarsC,intvarsC,lsp) bind(C)
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: intvarsC
-    integer, intent(in) :: lsp
+    integer(C_INT), intent(in) :: lsp
 
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     type(gemini_work), pointer :: intvars
@@ -327,7 +333,7 @@ contains
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
 
@@ -347,7 +353,7 @@ contains
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
 
@@ -367,7 +373,7 @@ contains
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
 
@@ -416,7 +422,7 @@ contains
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(inout) :: intvarsC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
 
@@ -449,8 +455,8 @@ contains
 
   !> deal with null cell solutions
   subroutine clean_param_C(iparm,xtype,xC,fluidvarsC) bind(C)
-    integer, intent(in) :: iparm
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: iparm
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(in) :: fluidvarsC
 
@@ -466,7 +472,7 @@ contains
   !> diffusion of energy
   subroutine energy_diffusion_C(cfgC,xtype,xC,fluidvarsC,electrovarsC,intvarsC,dt) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(in) :: electrovarsC
@@ -492,7 +498,7 @@ contains
   subroutine source_loss_allparams_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf) bind(C)
     type(c_ptr), intent(in) :: cfgC
-    integer, intent(in) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
@@ -502,7 +508,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: f107a,f107
-    logical, intent(in) :: first
+    logical(C_BOOL), intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
@@ -519,7 +525,7 @@ contains
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+                                        UTsec,f107a,f107,logical(first),gavg,Tninf)
   end subroutine source_loss_allparams_C
 
 
