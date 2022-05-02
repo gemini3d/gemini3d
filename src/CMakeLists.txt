@@ -174,7 +174,7 @@ if(hwm14)
   # due to legacy coding style, HWM14 files need to be in binary directory
   get_target_property(_def hwm14::hwm_ifc INTERFACE_COMPILE_DEFINITIONS)
   string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
-  set(hwm14_data_dir "${CMAKE_MATCH_1}")
+  set(hwm14_data_dir "/Users/zettergm/libs/share/data/hwm14/")
   if(NOT IS_DIRECTORY "${hwm14_data_dir}")
     message(FATAL_ERROR "HWM14 data directory not found: ${_def}
     ${hwm14_data_dir}")

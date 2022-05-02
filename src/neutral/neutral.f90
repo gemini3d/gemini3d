@@ -125,10 +125,11 @@ contains
  
 
   !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
-  subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,atmos)
+  subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,atmos,flagBG)
     real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
     class(curvmesh), intent(in) :: x
     type(neutral_info), intent(inout) :: atmos
+    logical, intent(in), optional :: flagBG
     real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
     integer :: lx1,lx2,lx3
 
@@ -140,9 +141,15 @@ contains
     end if
 
     !> rotate vectors into model native coordinate system
-    atmos%vn1=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
-    atmos%vn2=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
-    atmos%vn3=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
+    if (present(flagBG) .and. flagBG) then
+      atmos%vn1base=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
+      atmos%vn2base=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
+      atmos%vn3base=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
+    else
+      atmos%vn1=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
+      atmos%vn2=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
+      atmos%vn3=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
+    end if
   end subroutine rotate_geo2native
 
 
