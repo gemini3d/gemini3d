@@ -175,7 +175,7 @@ target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
 if(hwm14)
   # HWM14 data files
   # due to legacy coding style, HWM14 files need to be in binary directory
-  get_target_property(_def hwm14::hwm14 INTERFACE_COMPILE_DEFINITIONS)
+  get_target_property(_def hwm14::hwm_ifc INTERFACE_COMPILE_DEFINITIONS)
   string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
   set(hwm14_data_dir "${CMAKE_MATCH_1}")
   if(NOT IS_DIRECTORY "${hwm14_data_dir}")
