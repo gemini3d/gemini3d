@@ -24,7 +24,7 @@ VERSION ${PROJECT_VERSION}
 )
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
-include(CTest) # for CDash
+include(CTest)
 
 message(STATUS "Gemini3D: CMake ${CMAKE_VERSION}")
 
@@ -37,18 +37,13 @@ include(cmake/config/options.cmake)
 
 # Fortran filesystem library "ffilesystem"
 find_package(ffilesystem CONFIG)
-if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
-  #target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
-  # function target_link_libraries() should work, but doesn't (CMake bug?)
-  set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
-endif()
-# this is the first package we find, so make a special error message for users
+# this is the first package to find, so make a special error message for users
 if(NOT ffilesystem_FOUND OR ffilesystem_VERSION VERSION_LESS 3.3.0)
   message(FATAL_ERROR "
-Gemini3D requires several external libraries that are one-time installed via this procedure. Note: the 'gemini_libs' directory is arbitrary example.
+Gemini3D requires several external libraries that are one-time installed via this procedure. 'gemini_libs' directory is an arbitrary location.
 
   git clone https://github.com/gemini3d/external
-  cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/gemini_libs
+  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/gemini_libs
   cmake --build external/build
 
 Now, configure and build Gemini3D (from gemini3d/ directory) like this:
@@ -56,6 +51,11 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake -B build -DCMAKE_PREFIX_PATH=~/gemini_libs
   cmake --build build --parallel
 ")
+endif()
+if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
+  #target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
+  # function target_link_libraries() should work, but doesn't (CMake bug)
+  set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
 endif()
 
 if(mpi)
