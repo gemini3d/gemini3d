@@ -26,3 +26,12 @@ target_compile_options(neutraldata2Dcart PRIVATE ${gfortran_opts})
 add_library(neutraldata3D_mpi OBJECT neutraldata3Dobj_mpi.f90 neuslab_mpi.f90)
 target_link_libraries(neutraldata3D_mpi PRIVATE const config grid meshobj interp timeutils neutraldata inputdata reader MPI::MPI_Fortran h5fortran::h5fortran)
 target_compile_options(neutraldata3D_mpi PRIVATE ${gfortran_opts})
+
+add_library(neutraldata3D_geom_mpi OBJECT neutraldata3Dobj_geom_mpi.f90)
+target_link_libraries(neutraldata3D_geom_mpi PRIVATE const config grid meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader MPI::MPI_Fortran h5fortran::h5fortran)
+target_compile_options(neutraldata3D_geom_mpi PRIVATE ${gfortran_opts})
+
+add_library(neutraldata3D_geog_mpi OBJECT neutraldata3Dobj_geog_mpi.f90)
+target_link_libraries(neutraldata3D_geog_mpi PRIVATE const config grid meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader MPI::MPI_Fortran h5fortran::h5fortran)
+target_compile_options(neutraldata3D_geog_mpi PRIVATE ${gfortran_opts})
+

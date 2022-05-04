@@ -35,7 +35,7 @@ $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 
 foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
-neutraldata neutraldata3D_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 )
 
   target_sources(test_proj PRIVATE $<TARGET_OBJECTS:${t}>)

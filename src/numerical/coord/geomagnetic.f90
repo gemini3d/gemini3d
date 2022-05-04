@@ -41,7 +41,6 @@ end subroutine geog2geomag
 
 
 !> convert geographic coordinates to geomagnetic; do not use at the magnetic pole!!!
-
 elemental subroutine geomag2geog(phi,theta,glon,glat)
   real(wp), intent(in) :: phi,theta
   real(wp), intent(out) :: glon,glat
