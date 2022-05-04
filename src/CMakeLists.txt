@@ -252,8 +252,6 @@ gemini3d
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
-set_target_properties(gemini_c.bin PROPERTIES LINKER_LANGUAGE Fortran)
-
 install(TARGETS gemini_c.bin gemini3d_cpp
 EXPORT ${PROJECT_NAME}-targets
 )
