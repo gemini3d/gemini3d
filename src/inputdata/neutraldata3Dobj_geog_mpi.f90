@@ -54,11 +54,14 @@ contains
     phi1=glon1*pi/180
     theta1=pi/2 - glat1*pi/180
 
+    !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
+    if (mpi_cfg%myid==0) print*, 'Getting unit vectors for geographic directions on mesh...'
+    call x%calc_unitvec_geo(ealt,eglon,eglat)
+
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations, using geographic coordinates...'
     end if
-
     self%zimat=x%alt     !vertical coordinate is just altitude array already stored in grid object; assume the same for geographic v. geomagnetic
     do ix3=1,x%lx3
       do ix2=1,x%lx2
@@ -103,9 +106,6 @@ contains
 
           self%ximat(ix1,ix2,ix3)=xp     !eastward distance
           self%yimat(ix1,ix2,ix3)=yp     !northward distance
-
-          !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
-          call x%calc_unitvec_geo(ealt,eglon,eglat)
 
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections as well)
           ezp=ealt(ix1,ix2,ix3,:)
