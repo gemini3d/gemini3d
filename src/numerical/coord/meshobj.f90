@@ -600,7 +600,8 @@ contains
     class(curvmesh), intent(in) :: self
     real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglon,eglat
     integer :: lx1,lx2,lx3
-    real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
+    !real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
+    real(wp), dimension(:,:,:), allocatable :: theta,phi
 
     if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to & 
                                                  computing unit vectors'
@@ -609,20 +610,27 @@ contains
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
     ! space for spherical coordinate computed from lat./long
-    allocate(thetag(lx1,lx2,lx3),phig(lx1,lx2,lx3))
+    !allocate(thetag(lx1,lx2,lx3),phig(lx1,lx2,lx3))
+    allocate(theta(lx1,lx2,lx3),phi(lx1,lx2,lx3))
     
-    ! spherical geographic positions
-    thetag=pi/2._wp-self%glat(1:lx1,1:lx2,1:lx3)*pi/180._wp
-    phig=self%glon(1:lx1,1:lx2,1:lx3)*pi/180._wp
+    ! spherical geomagnetic positions; e.g. need to first pass through conversion to geomag. before we get unit vectors
+    !thetag=pi/2._wp-self%glat(1:lx1,1:lx2,1:lx3)*pi/180._wp
+    !phig=self%glon(1:lx1,1:lx2,1:lx3)*pi/180._wp
+    call geog2geomag(self%glon,self%glat,phi,theta)
 
-    ! conversion to spherical (geo) unit vectors
-    ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
-    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
-    eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
+    ! conversion to spherical unit vectors
+    !ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
+    !eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
+    !eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
+    !eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
+    ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(theta,phi)
+    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(theta,phi)
+    eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(theta,phi)
     eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
 
     ! cleanup position arrays
-    deallocate(thetag,phig)
+    !deallocate(thetag,phig)
+    deallocate(theta,phi)
   end subroutine calc_unitvec_geo
 
 

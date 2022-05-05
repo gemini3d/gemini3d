@@ -70,9 +70,9 @@ contains
           theta2=pi/2 - x%glat(ix1,ix2,ix3)*pi/180                    !field point zenith angle
 
           if (x%lx2/=1) then
-            phi2=x%glon(ix1,ix2,ix3)*pi/180                      !field point azimuth, full 3D calculation
+            phi2=x%glon(ix1,ix2,ix3)*pi/180                           !field point azimuth, full 3D calculation
           else
-            phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
+            phi2=phi1                                    !assume the longitude is the samem as the source in 2D
           end if
 
           !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
@@ -109,6 +109,7 @@ contains
 
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections as well)
           ezp=ealt(ix1,ix2,ix3,:)
+          !ezp=x%er(ix1,ix2,ix3,:)
 
           tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
@@ -123,8 +124,8 @@ contains
           self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
 
           ! we now need geographic unit vectors which we can get from our grid methods
-
           eyp=eglat(ix1,ix2,ix3,:)
+          !eyp= -x%etheta(ix1,ix2,ix3,:)
 
           tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
@@ -139,6 +140,7 @@ contains
           self%proj_eyp_e3(ix1,ix2,ix3)=tmpsca
 
           exprm=eglon(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
+          !exprm=x%ephi(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
 
           tmpvec=exprm*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
