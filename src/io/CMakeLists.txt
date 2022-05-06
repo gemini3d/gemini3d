@@ -76,9 +76,15 @@ target_link_libraries(test_compiler_vendor PRIVATE config
 ffilesystem::filesystem
 )
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set(compiler_vendor Intel)
+else()
+  set(compiler_vendor ${CMAKE_Fortran_COMPILER_ID})
+endif()
+
 add_test(NAME unit:compiler_vendor COMMAND test_compiler_vendor)
 set_tests_properties(unit:compiler_vendor PROPERTIES
-PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
+PASS_REGULAR_EXPRESSION ${compiler_vendor}
 LABELS unit
 TIMEOUT 10
 )
