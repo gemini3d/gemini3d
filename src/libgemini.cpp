@@ -52,23 +52,23 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Allocate memory and get pointers to blocks of data */
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
-  std::cout << "start C allocations\n";
+  std::cout << "start C allocations" << std::endl;
   fluidvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*5*lsp*sizeof(double));
   fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*2*lsp*sizeof(double));
   electrovars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*7*sizeof(double));
   if (! fluidvars){
-    std::cerr << "fluidvars failed malloc\n";
+    std::cerr << "fluidvars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
   if (! fluidauxvars){
-    std::cerr << "fluiduxvars failed malloc\n";
+    std::cerr << "fluiduxvars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
   if (! electrovars){
-    std::cerr << "electrovars failed malloc\n";
+    std::cerr << "electrovars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
-  std::cout << "end C allocations\n";
+  std::cout << "end C allocations, worker: " << myid << std::endl;
   // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
   outdir_fullgridvaralloc_C(&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
 
