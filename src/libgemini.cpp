@@ -6,8 +6,8 @@
 void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, int*, void**, void**);
 
 // top-level module calls for gemini simulation
-void gemini_main(struct params* ps, int* plid2in, int* plid3in){
-  int ierr;
+int gemini_main(struct params* ps, int* plid2in, int* plid3in){
+
   int lx1,lx2,lx3;
   int lx2all,lx3all;
   int lsp;
@@ -58,15 +58,15 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
   electrovars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*7*sizeof(double));
   if (! fluidvars){
     std::cerr << "fluidvars failed malloc\n";
-    return;
+    return 1;
   }
   if (! fluidauxvars){
     std::cerr << "fluiduxvars failed malloc\n";
-    return;
+    return 1;
   }
   if (! electrovars){
     std::cerr << "electrovars failed malloc\n";
-    return;
+    return 1;
   }
   std::cout << "end C allocations\n";
   // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
@@ -142,6 +142,8 @@ void gemini_main(struct params* ps, int* plid2in, int* plid3in){
 //  clear_neuBG_C();
   clear_dneu_C(intvars);
 
+  return 0;
+
 }
 
 
@@ -195,5 +197,4 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   clean_param_C(&one, xtype, xC, &fluidvars);
 
   // Fix electron veloc???
-  return;
 }
