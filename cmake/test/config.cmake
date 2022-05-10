@@ -25,7 +25,12 @@ TIMEOUT 180
 )
 
 # construct command
-set(test_cmd gemini3d.run ${out_dir} -exe $<TARGET_FILE:gemini.bin>)
+set(test_cmd gemini3d.run ${out_dir})
+if(name MATCHES "_cpp$")
+  list(APPEND test_cmd -exe $<TARGET_FILE:gemini_c.bin>)
+else()
+  list(APPEND test_cmd -exe $<TARGET_FILE:gemini.bin>)
+endif()
 if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
 endif()
