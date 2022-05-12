@@ -1,5 +1,4 @@
 add_compile_options(
-$<IF:$<BOOL:${WIN32}>,/QxHost,-xHost>
 $<$<COMPILE_LANGUAGE:Fortran>:-warn>
 $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>

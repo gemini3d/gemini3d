@@ -1,5 +1,5 @@
 # NOTE: don't use -march=native as GCC doesn't support all CPU arches with that option.
-add_compile_options(-mtune=native)
+# add_compile_options(-mtune=native)
 
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 
