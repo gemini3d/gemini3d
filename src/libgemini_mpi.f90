@@ -68,7 +68,7 @@ contains
   !> read in the grid and distribute to workers
   subroutine read_grid_in(cfg,x)
     type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), allocatable, intent(inout) :: x
+    class(curvmesh), pointer, intent(inout) :: x
 
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file

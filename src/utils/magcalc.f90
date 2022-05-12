@@ -34,7 +34,7 @@ type(gemini_cfg) :: cfg
 !! most user parameters
 
 !! GRID STRUCTURE
-class(curvmesh), allocatable :: x
+class(curvmesh), pointer :: x
 !! structure containing grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES

@@ -4,7 +4,7 @@
 !!   derived type (intvars::gemini_work) and don't need to be passes as class pointers.
 module gemini3d_mpi_C
 
-use, intrinsic :: iso_c_binding, only : c_f_pointer, C_PTR, C_INT, wp => C_DOUBLE, c_loc
+use, intrinsic :: iso_c_binding, only : c_f_pointer, C_PTR, C_INT, wp => C_DOUBLE, c_loc, c_associated
 
 use phys_consts, only : lsp
 use meshobj, only: curvmesh
@@ -61,7 +61,11 @@ subroutine outdir_fullgridvaralloc_C(cfgC,intvarsC,lx1,lx2all,lx3all) bind(C, na
   type(gemini_work), pointer :: intvars
 
   call c_f_pointer(cfgC, cfg)
-  call c_f_pointer(intvarsC,intvars)
+  allocate(intvars)
+  if(.not. associated(intvars)) error stop "outdir_fullgridvaralloc_C: intvars not associated"
+  intvarsC = c_loc(intvars)
+  ! NOTE: crashes on c_loc
+  if(.not. c_associated(intvarsC)) error stop "outdir_fullgridvaralloc_C: intvarsC not c_associated"
 
   call outdir_fullgridvaralloc(cfg, intvars, lx1, lx2all, lx3all)
 end subroutine outdir_fullgridvaralloc_C
@@ -73,21 +77,11 @@ subroutine read_grid_C(cfgC, xtype, xC) bind(C, name='read_grid_C')
 
   type(gemini_cfg), pointer :: cfg
   class(curvmesh), pointer :: x
-  class(cartmesh), pointer :: xcart
 
   call c_f_pointer(cfgC, cfg)
 
-  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
-
+  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x, xC)
   print *, "read_grid fortran done"
-  select type (x)
-  type is (cartmesh)
-    allocate(xcart)
-    xC = c_loc(xcart)
-    x => xcart
-  end select
-
-  print *, "set_gridpointer_dyntype done"
 
 end subroutine read_grid_C
 

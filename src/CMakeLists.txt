@@ -237,6 +237,12 @@ $<$<BOOL:${glow}>:glow::glow>
 iniparser::iniparser
 ffilesystem::filesystem
 )
+target_compile_definitions(gemini3d_cpp PRIVATE
+$<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
+$<$<BOOL:${MSVC}>:_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH>
+)
+#$<$<BOOL:${MSVC}>:_HAS_ITERATOR_DEBUGGING=1>
+#$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 
 add_executable(gemini_c.bin gemini_main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
@@ -252,7 +258,6 @@ gemini3d_mpi
 gemini3d_c
 gemini3d
 )
-target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
 install(TARGETS gemini_c.bin gemini3d_cpp

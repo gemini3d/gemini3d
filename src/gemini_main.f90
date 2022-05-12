@@ -114,7 +114,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
-    class(curvmesh), allocatable :: x
+    class(curvmesh), pointer :: x
     type(gemini_cfg) :: cfg
     type(gemini_work) :: intvars
 

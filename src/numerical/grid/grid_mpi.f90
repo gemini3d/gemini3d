@@ -1,5 +1,7 @@
 !> contains procedures for setting up grid that involve message passing of some sort.
 module grid_mpi
+
+use, intrinsic:: iso_c_binding, only : C_PTR, c_f_pointer, c_loc
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use meshobj, only: curvmesh
@@ -47,15 +49,19 @@ end interface
 contains
 
 !> read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size()
-subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
+subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xC)
   character(*), intent(in) :: indatsize,indatgrid
   integer, intent(in) :: flagperiodic
   class(curvmesh), pointer, intent(inout) :: x
+  type(C_PTR), intent(inout), optional :: xC
+
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: islstart,islfin
   integer, dimension(2) :: indsgrid
   integer iid
   real(wp) :: glonctr,glatctr
+  type(cartmesh), pointer :: xcart
+
   !! Declare grid type that we are dealing with; note lack of matching deallocates assume
   !!   that the compiler will deal with it automatically
   !!  Also set the grid center position if not already dictated by the coordinate system
@@ -92,6 +98,11 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   else
     print*, 'Detected Cartesian grid...'
     allocate(cartmesh::x)
+    allocate(xcart)
+    print *, "allocated cartmesh"
+    xC = c_loc(xcart)
+    print *, "xcart c_loc"
+    x=>xcart
     call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
   end if
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all

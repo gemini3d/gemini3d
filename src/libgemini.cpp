@@ -42,6 +42,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
   init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
+  std::cout << "init_procgrid_C done" << std::endl;
   get_config_vars_C(cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
   std::cout << "get_config_vars_C done" << std::endl;
 
@@ -73,16 +74,20 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
   std::cout << "end C allocations, worker: " << myid << std::endl;
   // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
-  outdir_fullgridvaralloc_C(&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
+  outdir_fullgridvaralloc_C(cfgC, intvars, &lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
+  std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
 
   /* initialize state variables from input file */
   get_initial_state_C(&UTsec,&ymd[0],&tdur);
+  std::cout << "get_initial_state_C done" << std::endl;
   set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG);
 
   /* initialize other file input data */
   std::cout << " Initializing electric field input data..." << std::endl;
   init_Efieldinput_C(&dt,&t,&ymd[0],&UTsec);
   pot2perpfield_C();
+  std::cout << "pot2perpfield_C done" << std::endl;
+
   BGfield_Lagrangian_C(cfgC, &xtype, xC, &electrovars, intvars, &v2grid,&v3grid);
   std::cout << " Initialize precipitation input data..." << std::endl;
   init_precipinput_C(&dt,&t,&ymd[0],&UTsec);
