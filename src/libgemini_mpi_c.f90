@@ -4,10 +4,11 @@
 !!   derived type (intvars::gemini_work) and don't need to be passes as class pointers.
 module gemini3d_mpi_C
 
-use, intrinsic :: iso_c_binding, only : c_f_pointer, C_PTR, C_INT, wp => C_DOUBLE
+use, intrinsic :: iso_c_binding, only : c_f_pointer, C_PTR, C_INT, wp => C_DOUBLE, c_loc
 
 use phys_consts, only : lsp
 use meshobj, only: curvmesh
+use meshobj_cart, only: cartmesh
 use config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
@@ -72,14 +73,22 @@ subroutine read_grid_C(cfgC, xtype, xC) bind(C, name='read_grid_C')
 
   type(gemini_cfg), pointer :: cfg
   class(curvmesh), pointer :: x
-  class(curvmesh), allocatable, target :: x_alloc
+  class(cartmesh), pointer :: xcart
 
   call c_f_pointer(cfgC, cfg)
-  x=>set_gridpointer_dyntype(xtype, xC)
 
-  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x_alloc)
-  x => x_alloc
-  !! FIXME: is this allocatable, target implementation correct?
+  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
+
+  print *, "read_grid fortran done"
+  select type (x)
+  type is (cartmesh)
+    allocate(xcart)
+    xC = c_loc(xcart)
+    x => xcart
+  end select
+
+  print *, "set_gridpointer_dyntype done"
+
 end subroutine read_grid_C
 
 subroutine get_initial_state_C(cfgC,fluidvarsC,electrovarsC,intvarsC,xtype, xC,UTsec,ymd,tdur) bind(C, name='get_initial_state_C')

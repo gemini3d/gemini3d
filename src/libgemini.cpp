@@ -39,12 +39,15 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   mpisetup_C();                               // organize mpi workers
   mpiparms_C(&myid,&lid);                     // information about worker number, etc.
   cli_config_gridsize_C(ps, plid2in, plid3in, cfgC);    // handling of input data, create internal fortran type with parameters for run
+
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
   init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
   get_config_vars_C(cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
+  std::cout << "get_config_vars_C done" << std::endl;
 
   /* Get input grid from file */
   read_grid_C(cfgC, &xtype, xC);                              // read the input grid from file, storage as fortran module object
+  std::cout << "read_grid_C done" << std::endl;
 
   /* Main needs to know the grid sizes and species numbers */
   get_subgrid_size_C(&lx1,&lx2,&lx3);     // once grid is input we need to know the subgrid sizes based on no of workers and overall size
