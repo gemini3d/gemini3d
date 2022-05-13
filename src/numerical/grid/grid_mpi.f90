@@ -97,13 +97,14 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xC)
     call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
   else
     print*, 'Detected Cartesian grid...'
-    allocate(cartmesh::x)
+    !allocate(cartmesh::x)
     allocate(xcart)
-    print *, "allocated cartmesh"
-    xC = c_loc(xcart)
-    print *, "xcart c_loc"
     x=>xcart
     call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
+    print*, 'read_grid_cart done'
+    xC = c_loc(xcart)
+    print *, "xcart c_loc"
+
   end if
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all
   print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3

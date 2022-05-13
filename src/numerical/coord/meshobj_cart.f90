@@ -59,7 +59,9 @@ subroutine init_cartmesh(self)
 
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
+  print *,"cart:calc_coord_diffs done"
   call self%init_storage()
+  print *, "cart:init_storage done"
   ! fixme: need to add geographic coord arrays first...
   !call self%calc_inull()
 
@@ -203,6 +205,7 @@ subroutine make_cartmesh(self)
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
   print*, ' make_cartmesh:  inclination angle...'
   call self%calc_inclination()
+  print *, "make_cartmesh done"
 end subroutine make_cartmesh
 
 

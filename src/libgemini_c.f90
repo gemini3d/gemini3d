@@ -75,9 +75,8 @@ contains
     type(gemini_cfg), pointer :: cfg
 
     allocate(cfg)
-    cfgC = c_loc(cfg)
     call cli_config_gridsize(p,lid2in,lid3in,cfg)
-    ! NOT call c_f_pointer(cfgC,cfg) here, allocate(cfg) and c_loc(cfg) before call cli_config_gridsize()
+    cfgC = c_loc(cfg)
   end subroutine cli_config_gridsize_C
 
 

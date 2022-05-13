@@ -16,7 +16,7 @@ contains
 
 subroutine cli(cfg, lid2, lid3, debug, ymdstart,UTsecstart,ymdend,UTsecend)
 
-type(gemini_cfg), intent(out) :: cfg
+type(gemini_cfg), intent(inout) :: cfg
 integer, intent(out) :: lid2, lid3
 logical, intent(inout) :: debug
 integer, dimension(3), intent(out) :: ymdstart

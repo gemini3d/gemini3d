@@ -23,6 +23,7 @@ module procedure read_grid_cart
   !> We need to collect the info for root's fullgrid variables
   if (mpi_cfg%myid==0) then
     call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
+    print *, 'init_storage_root done'
     call gather_grid_root(x%h1,x%h2,x%h3, &
                           x%h1x1i,x%h2x1i,x%h3x1i, &
                           x%h1x2i,x%h2x2i,x%h3x2i, &
@@ -35,8 +36,10 @@ module procedure read_grid_cart
                           x%h1x3iall,x%h2x3iall,x%h3x3iall, &
                           x%rall,x%thetaall,x%phiall, &
                           x%altall,x%Bmagall,x%glonall)
+    print *, 'gather_grid_root done'
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
     call x%calc_coord_diffs_root()
+    print *, 'calc_coord_diffs_root done'
   else
     !! gather
     call gather_grid_workers(x%h1,x%h2,x%h3, &
@@ -49,7 +52,7 @@ module procedure read_grid_cart
 
   !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
   call enforce_gridmpi_periodic(flagperiodic,x)
-
+  print *, 'enforce_gridmpi_periodic done'
   !> Set flags for module scope vars.
   !gridflag=x%gridflag
   call set_gridflag(x%gridflag)
@@ -57,10 +60,12 @@ module procedure read_grid_cart
   !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
   !g1=>x%g1; g2=>x%g2; g3=>x%g3
   call bind_grav_ptrs(x%g1,x%g2,x%g3)
+  print *, 'bind_grav_ptrs done'
 
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
   if(mpi_cfg%myid == 0) call grid_check(x)
+  print *, 'grid_check done'
 end procedure read_grid_cart
 
 
@@ -134,7 +139,7 @@ subroutine enforce_gridmpi_periodic(flagperiodic,x)
         call gather_ref_meridian(refalt,refglon,refglat)
         call x%set_periodic(flagperiodic,refalt,refglon,refglat)
       case default
-        call x%set_periodic(flagperiodic,refalt,refglon,refglat)       
+        call x%set_periodic(flagperiodic,refalt,refglon,refglat)
     end select
   end if
 end subroutine enforce_gridmpi_periodic
@@ -150,7 +155,7 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
 
   ! set sizes for convenience
   lx1=size(refalt,1); lx2=size(refalt,2);
-  
+
   ! loop over all processes, find reference data copy into arrays
   if (mpi_cfg%myid3==0) then
     do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid

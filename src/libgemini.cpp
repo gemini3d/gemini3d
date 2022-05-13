@@ -3,7 +3,7 @@
 
 #include "gemini3d.h"
 
-void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, int*, void**, void**);
+void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, int*, void*, void*, void*);
 
 // top-level module calls for gemini simulation
 int gemini_main(struct params* ps, int* plid2in, int* plid3in){
@@ -26,9 +26,9 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   int flagdneu;
   double dtneu,dtneuBG;
   int myid,lid;
-  void** cfgC;
-  void** intvars;
-  void** xC;
+  void* cfgC;
+  void* intvars;
+  void* xC;
 
   int cart_type = 1, dipole_type = 2;
 
@@ -38,16 +38,16 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Basic setup */
   mpisetup_C();                               // organize mpi workers
   mpiparms_C(&myid,&lid);                     // information about worker number, etc.
-  cli_config_gridsize_C(ps, plid2in, plid3in, cfgC);    // handling of input data, create internal fortran type with parameters for run
+  cli_config_gridsize_C(ps, plid2in, plid3in, &cfgC);    // handling of input data, create internal fortran type with parameters for run
 
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
   init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
   std::cout << "init_procgrid_C done" << std::endl;
-  get_config_vars_C(cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
+  get_config_vars_C(&cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
   std::cout << "get_config_vars_C done" << std::endl;
 
   /* Get input grid from file */
-  read_grid_C(cfgC, &xtype, xC);                              // read the input grid from file, storage as fortran module object
+  read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
   std::cout << "read_grid_C done" << std::endl;
 
   /* Main needs to know the grid sizes and species numbers */
@@ -74,7 +74,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
   std::cout << "end C allocations, worker: " << myid << std::endl;
   // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
-  outdir_fullgridvaralloc_C(cfgC, intvars, &lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
+  outdir_fullgridvaralloc_C(&cfgC, &intvars, &lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
   std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
 
   /* initialize state variables from input file */
@@ -88,7 +88,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   pot2perpfield_C();
   std::cout << "pot2perpfield_C done" << std::endl;
 
-  BGfield_Lagrangian_C(cfgC, &xtype, xC, &electrovars, intvars, &v2grid,&v3grid);
+  BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
   std::cout << " Initialize precipitation input data..." << std::endl;
   init_precipinput_C(&dt,&t,&ymd[0],&UTsec);
   std::cout << " Initialize neutral background and input files..." << std::endl;
@@ -97,7 +97,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   init_neutralperturb_C(&dt,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
-  get_initial_drifts_C(cfgC, &xtype, xC, &fluidvars, &fluidauxvars, &electrovars, intvars);
+  get_initial_drifts_C(&cfgC, &xtype, &xC, &fluidvars, &fluidauxvars, &electrovars, &intvars);
 
   /* Control console printing for, actually superfluous FIXME */
   set_update_cadence_C(&iupdate);
@@ -131,13 +131,13 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // advance the fluid state variables
     first=it==1;
-    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid, fluidvars, fluidauxvars, &xtype, xC, intvars);
+    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid, fluidvars, fluidauxvars, &xtype, cfgC, xC, intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 
     check_finite_output_C(&t);
     it+=1; t+=dt;
     dateinc_C(&dt,&ymd[0],&UTsec);
-    check_dryrun_C(cfgC);
+    check_dryrun_C(&cfgC);
     check_fileoutput_C(&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
     if (myid==0){
       std::cout << " Time step " << it << " finished: " << ymd[0] << " " << ymd[1] << " " << ymd[2] << " " << UTsec << " " << t << std::endl;
@@ -148,7 +148,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Call deallocation procedures */
   gemini_dealloc_C(&fluidvars,&fluidauxvars,&electrovars);
 //  clear_neuBG_C();
-  clear_dneu_C(intvars);
+  clear_dneu_C(&intvars);
 
   return 0;
 
@@ -157,16 +157,16 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
 void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid,
   double* fluidvars, double* fluidauxvars,
-  int* xtype, void** xC, void** intvars)
+  int* xtype,
+  void* cfgC, void* xC, void* intvars)
   {
   double f107,f107a;
   double gavg,Tninf;
-  void** cfgC;
 
   int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
 
   /* Set up variables for the time step */
-  get_solar_indices_C(cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
+  get_solar_indices_C(&cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
   v12rhov1_C();
   T2rhoe_C();
 
@@ -174,35 +174,35 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   halo_interface_vels_allspec_C(plsp);
   interface_vels_allspec_C(plsp);
   set_global_boundaries_allspec_C(plsp);
-  halo_allparams_C(xtype, xC, &fluidvars, &fluidauxvars);
+  halo_allparams_C(xtype, &xC, &fluidvars, &fluidauxvars);
   sweep3_allparams_C(pdt);
   sweep1_allparams_C(pdt);
-  halo_allparams_C(xtype, xC, &fluidvars, &fluidauxvars);
+  halo_allparams_C(xtype, &xC, &fluidvars, &fluidauxvars);
   sweep2_allparams_C(pdt);
   rhov12v1_C();
-  clean_param_C(&one, xtype, xC, &fluidvars);
-  clean_param_C(&two, xtype, xC, &fluidvars);
+  clean_param_C(&one, xtype, &xC, &fluidvars);
+  clean_param_C(&two, xtype, &xC, &fluidvars);
 
   /* Compression substep */
   VNRicht_artvisc_C();
-  RK2_prep_mpi_allspec_C(xtype, xC, &fluidvars);
+  RK2_prep_mpi_allspec_C(xtype, &xC, &fluidvars);
   compression_C(pdt);
   rhoe2T_C();
-  clean_param_C(&three, xtype, xC, &fluidvars);
+  clean_param_C(&three, xtype, &xC, &fluidvars);
 
   /* Energy diffusion substep */
   energy_diffusion_C(pdt);
-  clean_param_C(&three, xtype, xC, &fluidvars);
+  clean_param_C(&three, xtype, &xC, &fluidvars);
   T2rhoe_C();
 
   /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
-  get_gavg_Tinf_C(intvars, &gavg ,&Tninf);
+  get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
 
   /* Sources substep and finalize solution for this time step */
   source_loss_allparams_C(pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
-  clean_param_C(&three, xtype, xC, &fluidvars);
-  clean_param_C(&two, xtype, xC, &fluidvars);
-  clean_param_C(&one, xtype, xC, &fluidvars);
+  clean_param_C(&three, xtype, &xC, &fluidvars);
+  clean_param_C(&two, xtype, &xC, &fluidvars);
+  clean_param_C(&one, xtype, &xC, &fluidvars);
 
   // Fix electron veloc???
 }
