@@ -1,7 +1,7 @@
 !> contains procedures for setting up grid that involve message passing of some sort.
 module grid_mpi
 
-use, intrinsic:: iso_c_binding, only : C_PTR, c_f_pointer, c_loc
+use, intrinsic:: iso_c_binding, only : C_PTR, c_f_pointer, c_loc, C_INT
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use meshobj, only: curvmesh
@@ -49,10 +49,11 @@ end interface
 contains
 
 !> read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size()
-subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xC)
+subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   character(*), intent(in) :: indatsize,indatgrid
   integer, intent(in) :: flagperiodic
   class(curvmesh), pointer, intent(inout) :: x
+  integer(C_INT), intent(inout), optional :: xtype
   type(C_PTR), intent(inout), optional :: xC
 
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
@@ -103,6 +104,7 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xC)
     call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
     print*, 'read_grid_cart done'
     xC = c_loc(xcart)
+    xtype=1
     print *, "xcart c_loc"
 
   end if

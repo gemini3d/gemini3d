@@ -72,7 +72,7 @@ end subroutine outdir_fullgridvaralloc_C
 
 subroutine read_grid_C(cfgC, xtype, xC) bind(C, name='read_grid_C')
   type(C_PTR), intent(in) :: cfgC
-  integer(C_INT), intent(in) :: xtype
+  integer(C_INT), intent(inout) :: xtype
   type(C_PTR), intent(inout) :: xC
 
   type(gemini_cfg), pointer :: cfg
@@ -80,7 +80,7 @@ subroutine read_grid_C(cfgC, xtype, xC) bind(C, name='read_grid_C')
 
   call c_f_pointer(cfgC, cfg)
 
-  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x, xC)
+  call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x, xtype=xtype, xC=xC)
   print *, "read_grid fortran done"
 
 end subroutine read_grid_C

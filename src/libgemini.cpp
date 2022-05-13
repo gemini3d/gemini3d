@@ -54,8 +54,10 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   get_subgrid_size_C(&lx1,&lx2,&lx3);     // once grid is input we need to know the subgrid sizes based on no of workers and overall size
   get_species_size_C(&lsp);               // so main knows the number of species used
 
-  /* Allocate memory and get pointers to blocks of data */
+
+  // Allocate memory and get pointers to blocks of data */
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
+/*
   std::cout << "start C allocations" << std::endl;
   fluidvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*5*lsp*sizeof(double));
   fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*2*lsp*sizeof(double));
@@ -74,6 +76,11 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
   std::cout << "end C allocations, worker: " << myid << std::endl;
   // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
+*/
+
+  std::cout << "Begin allocations for subgrids\n";
+  gemini_alloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
+  std::cout << "Begin allocations for full grid\n";
   outdir_fullgridvaralloc_C(&cfgC, &intvars, &lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
   std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
 
