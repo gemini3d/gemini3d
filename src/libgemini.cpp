@@ -81,11 +81,11 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   std::cout << "Begin allocations for subgrids\n";
   gemini_alloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
   std::cout << "Begin allocations for full grid\n";
-  outdir_fullgridvaralloc_C(&cfgC, &intvars, &lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
+  outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
   std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
 
   /* initialize state variables from input file */
-  get_initial_state_C(&UTsec,&ymd[0],&tdur);
+  get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
   std::cout << "get_initial_state_C done" << std::endl;
   set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG);
 

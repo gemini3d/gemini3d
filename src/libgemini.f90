@@ -179,7 +179,7 @@ contains
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
     !> electrodynamic state variables (lx1,lx2,lx3)
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
-
+    !> internal work struct
     call gemini_work_alloc(cfg,intvars)
   end subroutine gemini_alloc
 
@@ -208,6 +208,9 @@ contains
   subroutine gemini_work_alloc(cfg,intvars)
     type(gemini_cfg), intent(in) :: cfg
     type(gemini_work), intent(inout) :: intvars
+
+    !> allocate base struct
+    !allocate(intvars)
 
     !> neutral variables (never need to be haloed, etc.)
     allocate(intvars%atmos)

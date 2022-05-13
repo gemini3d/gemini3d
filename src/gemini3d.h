@@ -74,7 +74,7 @@ extern void mpiparms_C(int*, int*);
 extern void init_procgrid_C(int*, int*, int*, int*);
 extern void read_grid_C(void**, int*, void**);
 extern void outdir_fullgridvaralloc_C(void**, void**, int*, int*, int*);
-extern void get_initial_state_C(double*, int*, double*);
+extern void get_initial_state_C(void**, double**, double**, void**, int*, void**, double*, int*, double*);
 extern void init_Efieldinput_C(double*, double*, int*, double*);
 extern void pot2perpfield_C();
 extern void BGfield_Lagrangian_C(void**, int*, void**, double**, void**, double*, double*);

@@ -138,12 +138,13 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
-    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
-    call c_f_pointer(intvarsC,intvars)
-
+    allocate(intvars)
     call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+
+    fluidvarsC=c_loc(fluidvars)
+    fluidauxvarsC=c_loc(fluidauxvars)
+    electrovarsC=c_loc(electrovars)
+    intvarsC=c_loc(intvars)
   end subroutine gemini_alloc_C
 
 

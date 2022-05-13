@@ -60,13 +60,10 @@ subroutine outdir_fullgridvaralloc_C(cfgC,intvarsC,lx1,lx2all,lx3all) bind(C, na
   type(gemini_cfg), pointer :: cfg
   type(gemini_work), pointer :: intvars
 
-  call c_f_pointer(cfgC, cfg)
-  allocate(intvars)
-  if(.not. associated(intvars)) error stop "outdir_fullgridvaralloc_C: intvars not associated"
-  intvarsC = c_loc(intvars)
-  ! NOTE: crashes on c_loc
-  if(.not. c_associated(intvarsC)) error stop "outdir_fullgridvaralloc_C: intvarsC not c_associated"
-
+  print*, 'Binding pointers:  '
+  call c_f_pointer(cfgC,cfg)
+  call c_f_pointer(intvarsC,intvars)
+  print*, 'Fortran calls for allocations:  '
   call outdir_fullgridvaralloc(cfg, intvars, lx1, lx2all, lx3all)
 end subroutine outdir_fullgridvaralloc_C
 
