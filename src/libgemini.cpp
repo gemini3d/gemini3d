@@ -3,7 +3,7 @@
 
 #include "gemini3d.h"
 
-void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, int*, void*, void*, void*);
+void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, double*, int*, void*, void*, void*);
 
 // top-level module calls for gemini simulation
 int gemini_main(struct params* ps, int* plid2in, int* plid3in){
@@ -87,21 +87,21 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* initialize state variables from input file */
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
   std::cout << "get_initial_state_C done" << std::endl;
-  set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG);
+  set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG,&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
   std::cout << " Initializing electric field input data..." << std::endl;
-  init_Efieldinput_C(&dt,&t,&ymd[0],&UTsec);
-  pot2perpfield_C();
+  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
+  pot2perpfield_C(&xtype,&xC,&electrovars);
   std::cout << "pot2perpfield_C done" << std::endl;
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
   std::cout << " Initialize precipitation input data..." << std::endl;
-  init_precipinput_C(&dt,&t,&ymd[0],&UTsec);
+  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
   std::cout << " Initialize neutral background and input files..." << std::endl;
-  msisinit_C();
-  init_neutralBG_C(&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
-  init_neutralperturb_C(&dt,&ymd[0],&UTsec);
+  msisinit_C(&cfgC);
+  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
+  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
   get_initial_drifts_C(&cfgC, &xtype, &xC, &fluidvars, &fluidauxvars, &electrovars, &intvars);
@@ -110,22 +110,22 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_update_cadence_C(&iupdate);
 
   while(t<tdur){
-    dt_select_C(&it,&t,&tout,&tglowout,&dt);
+    dt_select_C(&cfgC,&xtype,&xC,&fluidvars,&fluidauxvars,&it,&t,&tout,&tglowout,&dt);
     if (myid ==0){
       std::cout << " ...Selected time step (seconds) " << dt << std::endl;
     }
 
     // neutral data
     if (it!=1 && flagneuBG && t>tneuBG){
-      neutral_atmos_winds_C(&ymd[0],&UTsec);
-      neutral_atmos_wind_update_C(&v2grid,&v3grid);
+      neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
+      neutral_atmos_wind_update_C(&intvars,&v2grid,&v3grid);
       tneuBG+=dtneuBG;
       if (myid==0){
         std::cout << " Computed neutral background..." << std::endl;
       }
     }
     if (flagdneu==1){
-      neutral_perturb_C(&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
+      neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
       if (myid==0){
         std::cout << " Computed neutral perturbations..." << std::endl;
       }
@@ -133,19 +133,19 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // call electrodynamics solution
     //std::cout << " Start electro solution..." << std::endl;
-    electrodynamics_C(&it,&t,&dt,&ymd[0],&UTsec);
+    electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&it,&t,&dt,&ymd[0],&UTsec);
     //std::cout << " Computed electrodynamics solutions..." << std::endl;
 
     // advance the fluid state variables
     first=it==1;
-    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid, fluidvars, fluidauxvars, &xtype, cfgC, xC, intvars);
+    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC, intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 
-    check_finite_output_C(&t);
+    check_finite_output_C(&cfgC,&fluidvars,&electrovars,&t);
     it+=1; t+=dt;
     dateinc_C(&dt,&ymd[0],&UTsec);
     check_dryrun_C(&cfgC);
-    check_fileoutput_C(&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
+    check_fileoutput_C(&cfgC,&fluidvars,&electrovars,&intvars,&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
     if (myid==0){
       std::cout << " Time step " << it << " finished: " << ymd[0] << " " << ymd[1] << " " << ymd[2] << " " << UTsec << " " << t << std::endl;
       //std::cout << " Output cadence variables:  " << tout << " " << tglowout << " " << tmilestone << std::endl;
@@ -153,7 +153,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
 
   /* Call deallocation procedures */
-  gemini_dealloc_C(&fluidvars,&fluidauxvars,&electrovars);
+  gemini_dealloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
 //  clear_neuBG_C();
   clear_dneu_C(&intvars);
 
@@ -163,8 +163,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
 
 void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid,
-  double* fluidvars, double* fluidauxvars,
-  int* xtype,
+  double* fluidvars, double* fluidauxvars, double* electrovars,
+  int* pxtype,
   void* cfgC, void* xC, void* intvars)
   {
   double f107,f107a;
@@ -174,42 +174,41 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
 
   /* Set up variables for the time step */
   get_solar_indices_C(&cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
-  v12rhov1_C();
-  T2rhoe_C();
+  v12rhov1_C(&fluidvars,&fluidauxvars);
+  T2rhoe_C(&fluidvars,&fluidauxvars);
 
   /* Advection substep */
-  halo_interface_vels_allspec_C(plsp);
-  interface_vels_allspec_C(plsp);
-  set_global_boundaries_allspec_C(plsp);
-  halo_allparams_C(xtype, &xC, &fluidvars, &fluidauxvars);
-  sweep3_allparams_C(pdt);
-  sweep1_allparams_C(pdt);
-  halo_allparams_C(xtype, &xC, &fluidvars, &fluidauxvars);
-  sweep2_allparams_C(pdt);
-  rhov12v1_C();
-  clean_param_C(&one, xtype, &xC, &fluidvars);
-  clean_param_C(&two, xtype, &xC, &fluidvars);
+  halo_interface_vels_allspec_C(pxtype,&xC,&fluidvars,plsp);
+  interface_vels_allspec_C(&fluidvars,&intvars,plsp);
+  set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);
+  halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
+  sweep3_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep1_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
+  sweep2_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  rhov12v1_C(&fluidvars,&fluidauxvars);
+  clean_param_C(&one, pxtype, &xC, &fluidvars);
+  clean_param_C(&two, pxtype, &xC, &fluidvars);
 
   /* Compression substep */
-  VNRicht_artvisc_C();
-  RK2_prep_mpi_allspec_C(xtype, &xC, &fluidvars);
-  compression_C(pdt);
-  rhoe2T_C();
-  clean_param_C(&three, xtype, &xC, &fluidvars);
+  VNRicht_artvisc_C(&fluidvars,&intvars);
+  RK2_prep_mpi_allspec_C(pxtype, &xC, &fluidvars);
+  compression_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  rhoe2T_C(&fluidvars,&fluidauxvars);
+  clean_param_C(&three, pxtype, &xC, &fluidvars);
 
   /* Energy diffusion substep */
-  energy_diffusion_C(pdt);
-  clean_param_C(&three, xtype, &xC, &fluidvars);
-  T2rhoe_C();
+  energy_diffusion_C(&cfgC,pxtype,&xC,&fluidvars,&electrovars,&intvars,pdt);
+  clean_param_C(&three, pxtype, &xC, &fluidvars);
+  T2rhoe_C(&fluidvars,&fluidauxvars);
 
   /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
   get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
-
   /* Sources substep and finalize solution for this time step */
-  source_loss_allparams_C(pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
-  clean_param_C(&three, xtype, &xC, &fluidvars);
-  clean_param_C(&two, xtype, &xC, &fluidvars);
-  clean_param_C(&one, xtype, &xC, &fluidvars);
+  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
+  clean_param_C(&three, pxtype, &xC, &fluidvars);
+  clean_param_C(&two, pxtype, &xC, &fluidvars);
+  clean_param_C(&one, pxtype, &xC, &fluidvars);
 
   // Fix electron veloc???
 }
