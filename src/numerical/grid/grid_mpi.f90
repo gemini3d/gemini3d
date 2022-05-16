@@ -103,10 +103,11 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
     x=>xcart
     call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
     print*, 'read_grid_cart done'
-    xC = c_loc(xcart)
-    xtype=1
-    print *, "xcart c_loc"
-
+    if (present(xC) .and. present(xtype)) then
+      xC = c_loc(xcart)
+      xtype=1
+      print *, "xcart c_loc"
+    end if
   end if
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all
   print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3

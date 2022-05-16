@@ -132,6 +132,7 @@ contains
 
     !> load the grid data from the input file and store in gemini module
     call read_grid_in(cfg,x)
+    print*, 'Done with read_grid_in...'
 
     !> Sizes of state variable
     call get_subgrid_size(lx1,lx2,lx3)
