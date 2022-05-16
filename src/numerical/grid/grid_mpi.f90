@@ -98,6 +98,7 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   if (maxval(abs(x2))<100) then
     print*, ' Detected dipole grid...'
     !allocate(dipolemesh::x)
+    allocate(xdipole)
     x=>xdipole
     call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
     if (present(xC) .and. present(xtype)) then
