@@ -91,6 +91,11 @@ type, bind(C) :: c_params
 end type c_params
 
 
+!> FIXME: for ifort workaround
+type :: gemini_arr_dat
+  real(wp), dimension(:,:,:,:), pointer :: fluidvars,fluidauxvars,electrovars
+end type gemini_arr_dat
+
 contains
   !> basic command line and grid size determination
   subroutine cli_config_gridsize(p,lid2in,lid3in,cfg)
@@ -302,13 +307,27 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars, fluidauxvars, electrovars
     type(gemini_work), intent(inout) :: intvars
+    type(gemini_arr_dat) :: gemini_data
 
-    deallocate(fluidvars)
-    deallocate(fluidauxvars)
-    deallocate(electrovars)
+    !> FIXME: ifort simple will not deallocate these but it will if I put them in a derived type first
+    !           this seems pretty silly and like it might be a compiler bug.  
+    !deallocate(fluidvars)
+    !deallocate(fluidauxvars)
+    !deallocate(electrovars)
+    gemini_data%fluidvars=>fluidvars
+    gemini_data%fluidauxvars=>fluidauxvars
+    gemini_data%electrovars=>electrovars
     call gemini_work_dealloc(cfg,intvars)
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
   end subroutine
+
+
+  !> stupid wrapper to work around ifort bugs
+  subroutine gemini_array_dealloc(gemini_data)
+    type(gemini_arr_dat), intent(inout) :: gemini_data
+
+    deallocate(gemini_data%fluidvars,gemini_data%fluidauxvars,gemini_data%electrovars)
+  end subroutine gemini_array_dealloc
 
 
   !> deallocate work arrays used by gemini instances

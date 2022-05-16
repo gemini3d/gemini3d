@@ -55,7 +55,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   get_species_size_C(&lsp);               // so main knows the number of species used
 
 
-  // Allocate memory and get pointers to blocks of data */
+  // Allocate memory and get pointers to blocks of data
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
 /*
   std::cout << "start C allocations" << std::endl;
@@ -153,9 +153,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
 
   /* Call deallocation procedures */
-  gemini_dealloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
-//  clear_neuBG_C();
   clear_dneu_C(&intvars);
+  gemini_dealloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
 
   return 0;
 
