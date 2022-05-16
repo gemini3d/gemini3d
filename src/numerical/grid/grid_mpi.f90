@@ -61,7 +61,10 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   integer, dimension(2) :: indsgrid
   integer iid
   real(wp) :: glonctr,glatctr
+  !> For whatever reason c_loc must be called on a static type (not polymorphic) though I don't see why
+  !    this limitation exists...
   type(cartmesh), pointer :: xcart
+  type(dipolemesh), pointer :: xdipole
 
   !! Declare grid type that we are dealing with; note lack of matching deallocates assume
   !!   that the compiler will deal with it automatically
@@ -94,8 +97,14 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   !! right now we just have Cartesian and dipole so it's easy to detect based on x2
   if (maxval(abs(x2))<100) then
     print*, ' Detected dipole grid...'
-    allocate(dipolemesh::x)
+    !allocate(dipolemesh::x)
+    x=>xdipole
     call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
+    if (present(xC) .and. present(xtype)) then
+      xC = c_loc(xdipole)
+      xtype=2
+      print *, "dipole c_loc"
+    end if
   else
     print*, 'Detected Cartesian grid...'
     !allocate(cartmesh::x)

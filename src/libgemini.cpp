@@ -29,10 +29,10 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   void* cfgC;
   void* intvars;
   void* xC;
+  int xtype;
 
-  int cart_type = 1, dipole_type = 2;
-
-  int xtype = cart_type;  // TODO: make this dynamic for cartmesh
+  //int cart_type = 1, dipole_type = 2;
+  //int xtype = cart_type;  // TODO: make this dynamic for cartmesh
 
 
   /* Basic setup */
