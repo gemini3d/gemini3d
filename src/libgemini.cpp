@@ -57,10 +57,9 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   // Allocate memory and get pointers to blocks of data
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
-/*
-  std::cout << "start C allocations" << std::endl;
+  std::cout << "start C allocations:  " << lx1 << " " << lx2 << " " << lx3 << std::endl;
   fluidvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*5*lsp*sizeof(double));
-  fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*2*lsp*sizeof(double));
+  fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)*sizeof(double));
   electrovars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*7*sizeof(double));
   if (! fluidvars){
     std::cerr << "fluidvars failed malloc, worker: " << myid << std::endl;
@@ -75,16 +74,15 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     return 1;
   }
   std::cout << "end C allocations, worker: " << myid << std::endl;
-  // memblock_from_C(&fluidvars,&fluidauxvars,&electrovars);
-*/
 
   std::cout << "Begin allocations for subgrids\n";
-  gemini_alloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
+  gemini_alloc_C(&cfgC,&intvars);
   std::cout << "Begin allocations for full grid\n";
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
   std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
 
   /* initialize state variables from input file */
+  std::cout << "calling get_initial_state_C...";
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
   std::cout << "get_initial_state_C done" << std::endl;
   set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG,&xtype,&xC,&fluidauxvars);
@@ -154,7 +152,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Call deallocation procedures */
   clear_dneu_C(&intvars);
-  gemini_dealloc_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars);
+  gemini_dealloc_C(&cfgC,&intvars);
+  free(fluidvars); free(fluidauxvars); free(electrovars);
 
   return 0;
 

@@ -49,7 +49,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble
 
 
 !! temp file used by MSIS 2.0
@@ -185,28 +185,20 @@ contains
     !> electrodynamic state variables (lx1,lx2,lx3)
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
     !> internal work struct
-    call gemini_work_alloc(cfg,intvars)
+    call gemini_alloc_nodouble(cfg,intvars)
   end subroutine gemini_alloc
 
-!  !> as an alternative to gemini_alloc (fortran allocation) can have C allocate space and pass in pointers that fortran will bind to state vars
-!  subroutine memblock_from_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="memblock_from_C")
-!    type(c_ptr), intent(inout) :: fluidvarsC
-!    type(c_ptr), intent(inout) :: fluidauxvarsC
-!    type(c_ptr), intent(inout) :: electrovarsC
-!
-!    call c_f_pointer(fluidvarsC,fluidvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(5*lsp)])
-!    fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:5*lsp)=>fluidvars_flat    ! this is the make absolutely sure that the bounds are okay and same as fortran alloc procedure
-!    call c_f_pointer(fluidauxvarsC,fluidauxvars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)])
-!    fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:2*lsp)=>fluidauxvars_flat
-!    call c_f_pointer(electrovarsC,electrovars_flat,[(lx1+4)*(lx2+4)*(lx3+4)*7])
-!    electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:7)=>electrovars_flat
-!
-!    call fluidvar_pointers(fluidvars)
-!    call fluidauxvar_pointers(fluidauxvars)
-!    call electrovar_pointers(electrovars)
-!
-!    call neuMHDalloc()
-!  end subroutine memblock_from_C
+
+  !> as an alternative to gemini_alloc (fortran allocation) C programs should allocate space and pass in pointers
+  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from 
+  !    fortran which only seems to work on all compilers on types...
+  subroutine gemini_alloc_nodouble(cfg,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+
+    !> for simulations that are called from C we only want to allocate space for opaque objects not used by C
+    call gemini_work_alloc(cfg,intvars)
+  end subroutine gemini_alloc_nodouble
 
 
   !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
@@ -302,32 +294,28 @@ contains
   end subroutine electrovar_pointers
 
 
-  !> deallocate state variables
+  !> deallocate state variables include double precision data arrays; only works for all compilers from fortran main programs
   subroutine gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars, fluidauxvars, electrovars
     type(gemini_work), intent(inout) :: intvars
-    type(gemini_arr_dat) :: gemini_data
 
-    !> FIXME: ifort simple will not deallocate these but it will if I put them in a derived type first
-    !           this seems pretty silly and like it might be a compiler bug.  
-    !deallocate(fluidvars)
-    !deallocate(fluidauxvars)
-    !deallocate(electrovars)
-    gemini_data%fluidvars=>fluidvars
-    gemini_data%fluidauxvars=>fluidauxvars
-    gemini_data%electrovars=>electrovars
-    call gemini_work_dealloc(cfg,intvars)
-    if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
+    !> ifort generates a runtime error for this if called from C; I guess memory management needs to be done on the C-side of things
+    deallocate(fluidvars)
+    deallocate(fluidauxvars)
+    deallocate(electrovars)
+    call gemini_alloc_nodouble(cfg,intvars)
   end subroutine
 
 
-  !> stupid wrapper to work around ifort bugs
-  subroutine gemini_array_dealloc(gemini_data)
-    type(gemini_arr_dat), intent(inout) :: gemini_data
+  !> deallocate state variables
+  subroutine gemini_dealloc_nodouble(cfg,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
 
-    deallocate(gemini_data%fluidvars,gemini_data%fluidauxvars,gemini_data%electrovars)
-  end subroutine gemini_array_dealloc
+    call gemini_work_dealloc(cfg,intvars)
+    if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
+  end subroutine
 
 
   !> deallocate work arrays used by gemini instances

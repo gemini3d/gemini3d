@@ -31,14 +31,14 @@ use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use config, only: gemini_cfg
-use gemini3d, only: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
+use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit_in, &
             set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble
 
 implicit none (type, external)
 
@@ -124,36 +124,22 @@ contains
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
-  subroutine gemini_alloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C, name='gemini_alloc_C')
+  subroutine gemini_alloc_C(cfgC,intvarsC) bind(C, name='gemini_alloc_C')
     type(c_ptr), intent(in) :: cfgC
-    type(c_ptr), intent(inout) :: fluidvarsC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    type(c_ptr), intent(inout) :: electrovarsC
     type(c_ptr), intent(inout) :: intvarsC
-
     type(gemini_cfg), pointer :: cfg
-    real(wp), dimension(:,:,:,:), pointer :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
     allocate(intvars)
-    call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
-
-    fluidvarsC=c_loc(fluidvars)
-    fluidauxvarsC=c_loc(fluidauxvars)
-    electrovarsC=c_loc(electrovars)
+    call gemini_alloc_nodouble(cfg,intvars)
     intvarsC=c_loc(intvars)
   end subroutine gemini_alloc_C
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) bind(C, name='gemini_dealloc_C')
+  subroutine gemini_dealloc_C(cfgC,intvarsC) bind(C, name='gemini_dealloc_C')
     type(c_ptr), intent(in) :: cfgC
-    type(c_ptr), intent(inout) :: fluidvarsC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    type(c_ptr), intent(inout) :: electrovarsC
     type(c_ptr), intent(inout) :: intvarsC
 
     type(gemini_cfg), pointer :: cfg
@@ -163,12 +149,11 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
-    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
 
-    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    !> there are issues with allocating primitives variables (doubles/ints) and then deallocating
+    !    when passed back and forth with C so only deallocate the derived types
+    call gemini_dealloc_nodouble(cfg,intvars)
   end subroutine gemini_dealloc_C
 
 
