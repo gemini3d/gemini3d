@@ -6,7 +6,7 @@ module meshobj
 
 use phys_consts, only : wp,pi
 use h5fortran, only : hdf5_file
-use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
+use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r,rotgg2gm
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
 implicit none (type, external)
@@ -596,41 +596,46 @@ contains
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
   !    This works on a full spatial arrays worth of data.  
-  pure subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
+  subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
     class(curvmesh), intent(in) :: self
     real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglon,eglat
-    integer :: lx1,lx2,lx3
-    !real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
-    real(wp), dimension(:,:,:), allocatable :: theta,phi
-
+    integer :: lx1,lx2,lx3,ix1,ix2,ix3
+    real(wp) :: thetagg,phigg    ! geographic spherical coords
+    real(wp), dimension(3,3) :: Rgg2gm
+    real(wp), dimension(3,1) :: ehere,ehererot
+   
     if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to & 
                                                  computing unit vectors'
 
     ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
-    ! space for spherical coordinate computed from lat./long
-    !allocate(thetag(lx1,lx2,lx3),phig(lx1,lx2,lx3))
-    allocate(theta(lx1,lx2,lx3),phi(lx1,lx2,lx3))
-    
-    ! spherical geomagnetic positions; e.g. need to first pass through conversion to geomag. before we get unit vectors
-    !thetag=pi/2._wp-self%glat(1:lx1,1:lx2,1:lx3)*pi/180._wp
-    !phig=self%glon(1:lx1,1:lx2,1:lx3)*pi/180._wp
-    call geog2geomag(self%glon,self%glat,phi,theta)
+    ! rotate geographic Cartesian ECEF into geomagnetic Cartesian ECEF
+    Rgg2gm=rotgg2gm()
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          ! spherical geographic coords
+          thetagg=pi/2-self%glat(ix1,ix2,ix3)*pi/180
+          phigg=self%glon(ix1,ix2,ix3)*pi/180
 
-    ! conversion to spherical unit vectors
-    !ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
-    !eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
-    !eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
-    !eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
-    ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(theta,phi)
-    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(theta,phi)
-    eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(theta,phi)
-    eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
+          ! altitude unit vector
+          ehere(1:3,1)=er_spherical(thetagg,phigg)
+          ehererot=matmul(Rgg2gm,ehere)
+          ealt(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
 
-    ! cleanup position arrays
-    !deallocate(thetag,phig)
-    deallocate(theta,phi)
+          ! latitude unit vector
+          ehere(1:3,1)=-1._wp*etheta_spherical(thetagg,phigg)
+          ehererot=matmul(Rgg2gm,ehere)
+          eglat(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
+
+          ! longitude
+          ehere(1:3,1)=ephi_spherical(thetagg,phigg)
+          ehererot=matmul(Rgg2gm,ehere)
+          eglon(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
+        end do
+      end do
+    end do
   end subroutine calc_unitvec_geo
 
 
