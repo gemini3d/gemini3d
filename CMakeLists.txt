@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20...3.23)
-# For CMake presets, CMake >= 3.21 required
+# CMake presets require >= 3.21
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/codemeta.json _j)
 string(JSON PROJECT_VERSION GET ${_j} version)

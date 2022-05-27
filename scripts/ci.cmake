@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20...3.23)
+cmake_minimum_required(VERSION 3.20)
 
 set(CTEST_PROJECT_NAME "Gemini3D")
 set(CTEST_LABELS_FOR_SUBPROJECTS "unit;core;python;matlab")

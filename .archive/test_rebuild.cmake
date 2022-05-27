@@ -4,7 +4,7 @@
 
 # let's do a basic test, as HDF5 will fail with this if link-time becomes broken
 
-cmake_minimum_required(VERSION 3.20...3.23)
+cmake_minimum_required(VERSION 3.20)
 
 set(opts)
 set(tgt msis_setup)

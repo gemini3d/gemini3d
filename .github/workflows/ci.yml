@@ -4,6 +4,7 @@ env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   cmake_version: "3.21.6"
+# CMake presets require >= 3.21
 
 on:
   push:
