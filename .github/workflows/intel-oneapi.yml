@@ -55,7 +55,7 @@ jobs:
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 5
       run: |
-        ${{ env.GITHUB_WORKSPACE}}/.github/workflows/oneapi_setup_apt_repo_linux.sh
+        $GITHUB_WORKSPACE/.github/workflows/oneapi_setup_apt_repo_linux.sh
         sudo apt install ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
 
     - name: install system tools
@@ -109,4 +109,4 @@ jobs:
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
-      run: ${{ env.GITHUB_WORKSPACE}}//.github/workflows/oneapi_cache_exclude_linux.sh
+      run: $GITHUB_WORKSPACE//.github/workflows/oneapi_cache_exclude_linux.sh
