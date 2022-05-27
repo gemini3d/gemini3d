@@ -1,13 +1,16 @@
 name: intel-oneapi
 
 env:
-  CTEST_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 3
   CC: icx
-  FC: ifort
-  LINUX_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh
-  LINUX_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/irc_nas/18479/l_HPCKit_p_2022.1.2.117_offline.sh
+  CXX: icpx
+  FC: ifx
+  LINUX_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/irc_nas/18673/l_BaseKit_p_2022.2.0.262_offline.sh
+  LINUX_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/irc_nas/18679/l_HPCKit_p_2022.2.0.191_offline.sh
   LINUX_CPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
   LINUX_FORTRAN_COMPONENTS: intel-oneapi-compiler-fortran
+  LINUX_MKL_COMPONENTS: intel-oneapi-mkl intel-oneapi-mkl-devel
+  LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
 
 on:
@@ -37,6 +40,9 @@ jobs:
 
     steps:
 
+    - uses: actions/checkout@v2
+    # this must be before oneAPI script commands else the scripts do not exist on the image
+
     - name: cache install oneAPI
       id: cache-install
       uses: actions/cache@v2
@@ -49,8 +55,8 @@ jobs:
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 5
       run: |
-        .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl intel-oneapi-mkl-devel
+        ${{ env.GITHUB_WORKSPACE}}/.github/workflows/oneapi_setup_apt_repo_linux.sh
+        sudo apt install ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
 
     - name: install system tools
       run: sudo apt install ninja-build autoconf automake libtool-bin
@@ -82,10 +88,10 @@ jobs:
       with:
         python-version: '3.8'
 
-    - uses: actions/checkout@v2
-
     - name: CMake Configure Ninja Multi-config
-      run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} || cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} --debug-find
+      run: cmake --preset multi || cmake --preset multi --debug-find
+      env:
+        CMAKE_PREFIX_PATH: ${{ runner.temp }}
 
     - name: DEBUG build
       run: cmake --build --parallel --preset debug
@@ -103,4 +109,4 @@ jobs:
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
-      run: .github/workflows/oneapi_cache_exclude_linux.sh
+      run: ${{ env.GITHUB_WORKSPACE}}//.github/workflows/oneapi_cache_exclude_linux.sh
