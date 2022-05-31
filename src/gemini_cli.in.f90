@@ -28,11 +28,17 @@ cfg%git_revision = "@git_rev@"
 argc = command_argument_count()
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) call help_gemini_bin()
+if (i/=0) then
+  call help_gemini_bin()
+  ierr = mpibreakdown()
+  stop 1
+endif
 
 select case (argv)
 case ('-h', '-help')
   call help_gemini_bin()
+  ierr = mpibreakdown()
+  stop
 case ('-compiler')
   print '(A)', get_compiler_vendor()
   stop

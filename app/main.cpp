@@ -21,8 +21,15 @@ int main(int argc, char **argv) {
 
   // CLI
   if (argc < 2) {
-    std::cerr << "Gemini3D: please give simulation output directory e.g. ~/data/my_sim" << std::endl;
+    help_gemini_bin();
+    MPI_Finalize();
     return EXIT_FAILURE;
+  }
+
+  if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0) {
+    help_gemini_bin();
+    MPI_Finalize();
+    return EXIT_SUCCESS;
   }
 
   // simulation directory
@@ -86,8 +93,8 @@ int main(int argc, char **argv) {
     if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "-debug") == 0) s.debug = true;
     if (strcmp(argv[i], "-dryrun") == 0) s.dryrun = true;
     if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) {
-      MPI_Finalize();
       help_gemini_bin();
+      MPI_Finalize();
       return EXIT_SUCCESS;
     }
     if (strcmp(argv[i], "-manual_grid") == 0) {

@@ -115,8 +115,7 @@ hwloc_ifc hwloc_c
 )
 
 # --- Gemini.bin minimal main Fortran program
-add_executable(gemini.bin gemini_main.f90
-)
+add_executable(gemini.bin ${PROJECT_SOURCE_DIR}/app/main.f90)
 set_target_properties(gemini.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 RELWITHDEBINFO_POSTFIX .debug
@@ -182,17 +181,18 @@ endif(hwm14)
 
 # same link logic applied to src/unit_tests/test_mumps
 
-add_test(NAME unit:gemini_exe_ok COMMAND gemini.bin)
-set_tests_properties(unit:gemini_exe_ok PROPERTIES
+add_test(NAME gemini_fortran COMMAND gemini.bin -h)
+set_tests_properties(gemini_fortran PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
 LABELS unit
 )
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" unit:gemini_exe_ok)
+dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_fortran)
+
 
 # need this header for external projects using Gemini3D
-install(FILES gemini3d.h TYPE INCLUDE)
+install(FILES ${PROJECT_SOURCE_DIR}/include/gemini3d.h TYPE INCLUDE)
 
 add_library(gemini3d_c libgemini_c.f90)
 target_link_libraries(gemini3d_c PRIVATE gemini3d)
@@ -223,6 +223,10 @@ find_package(iniparser CONFIG REQUIRED)
 # for gemini_c C++ front end
 
 add_library(gemini3d_cpp libgemini.cpp)
+target_include_directories(gemini3d_cpp PUBLIC
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
+)
 target_link_libraries(gemini3d_cpp PUBLIC
 gemini3d_mpi_c
 gemini3d_mpi
@@ -244,12 +248,16 @@ $<$<BOOL:${MSVC}>:_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH>
 #$<$<BOOL:${MSVC}>:_HAS_ITERATOR_DEBUGGING=1>
 #$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 
-add_executable(gemini_c.bin gemini_main.cpp)
+add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 #LINKER_LANGUAGE CXX
 RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
+)
+target_include_directories(gemini_c.bin PUBLIC
+$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d_cpp
@@ -263,5 +271,15 @@ target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 install(TARGETS gemini_c.bin gemini3d_cpp
 EXPORT ${PROJECT_NAME}-targets
 )
+
+add_test(NAME gemini_cpp COMMAND gemini_c.bin -h)
+set_tests_properties(gemini_cpp PROPERTIES
+PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
+FIXTURES_SETUP gemini_exe_fxt
+FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
+LABELS unit
+)
+dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_cpp)
+
 
 endif(cpp)

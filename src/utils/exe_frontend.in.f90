@@ -254,17 +254,15 @@ end function check_mpiexec
 subroutine help_gemini_bin() bind(C)
 
 print '(/,A,/)', 'GEMINI-3D: gemini.bin ' // "@git_rev@"
-print '(A)', 'by Matthew Zettergren'
-print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
+print '(a,/,a)', 'by Matthew Zettergren', 'GLOW and auroral interfaces by Guy Grubbs'
 print '(A)', 'build system and software engineering by Michael Hirsch'
-print '(A)', 'Compiler vendor: '// get_compiler_vendor()
-print '(A)', 'Compiler version: ' // compiler_version()
+print '(a,/,a)', 'Compiler vendor: '// get_compiler_vendor(), 'Compiler version: ' // compiler_version()
 print '(/,A,/)', 'the first and only positional argument is simulation output directory.'
 print '(A)', 'Optional arguments:'
 print '(a,t25,a)', '-dryrun', 'allows quick check of first time step'
 print '(a,t25,a)', '-manual_grid lx2 lx3', 'defines the number of MPI processes along x2 and x3.'
 print '(t25,a)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
-stop 'EOF: gemini.bin'
+print '(a)', 'EOF: gemini.bin'
 
 end subroutine help_gemini_bin
 
