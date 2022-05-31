@@ -99,8 +99,12 @@ include(cmake/compilers/flags.cmake)
 # unit test DLL paths
 include(cmake/DllTestPath.cmake)
 
-# all Gemini3D source code under this
+
+add_subdirectory(test)
+# fundamental tests of MPI and numeric libraries essential for Gemini3D
+
 add_subdirectory(src)
+# Gemini3D source code
 
 # self-test simulations -- after all targets for if(TARGET ...)
 if(matlab)

@@ -1,5 +1,3 @@
-add_subdirectory(unit_tests)
-
 # --- MSISE00 or MSIS 2.0
 find_package(msis CONFIG REQUIRED)
 
@@ -179,7 +177,7 @@ if(hwm14)
 
 endif(hwm14)
 
-# same link logic applied to src/unit_tests/test_mumps
+# same link logic applied to test/test_mumps
 
 add_test(NAME gemini_fortran COMMAND gemini.bin -h)
 set_tests_properties(gemini_fortran PROPERTIES

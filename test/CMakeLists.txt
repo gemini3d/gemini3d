@@ -25,13 +25,7 @@ RESOURCE_LOCK cpu_mpi
 
 # --- SCALAPACK
 
-if("d" IN_LIST arith)
-  set(lamch "pdlamch")
-elseif("s" IN_LIST arith)
-  set(lamch "pslamch")
-endif()
-configure_file(test_scalapack.in.f90 test_scalapack.f90 @ONLY)
-add_executable(gemini_scalapack ${CMAKE_CURRENT_BINARY_DIR}/test_scalapack.f90)
+add_executable(gemini_scalapack test_scalapack.f90)
 target_link_libraries(gemini_scalapack PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
 add_test(NAME scalapack COMMAND gemini_scalapack)

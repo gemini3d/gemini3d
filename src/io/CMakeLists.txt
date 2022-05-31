@@ -59,7 +59,7 @@ target_link_libraries(config PRIVATE const
 ffilesystem::filesystem
 )
 
-set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
+cmake_path(SET _test_file ${PROJECT_SOURCE_DIR}/test/config/config_example.nml)
 
 if(${PROJECT_NAME}_BUILD_TESTING)
 
