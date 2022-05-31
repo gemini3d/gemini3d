@@ -65,6 +65,8 @@ if(NOT ${PROJECT_NAME}_BUILD_TESTING)
   return()
 endif()
 
+add_subdirectory(coord)
+add_subdirectory(diffusion)
 add_subdirectory(io)
 add_subdirectory(ionization)
 add_subdirectory(mpi)

@@ -1,6 +1,5 @@
 set_directory_properties(PROPERTIES LABELS io)
 
-
 cmake_path(SET _test_file ${PROJECT_SOURCE_DIR}/test/config/config_example.nml)
 
 add_executable(test_namelist test_nml.f90)
