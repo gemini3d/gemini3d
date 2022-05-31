@@ -58,3 +58,11 @@ FIXTURES_SETUP mumps_fxt
 )
 
 dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "scalapack;mumps_basic")
+
+
+# ---
+if(NOT ${PROJECT_NAME}_BUILD_TESTING)
+  return()
+endif()
+
+add_subdirectory(io)
