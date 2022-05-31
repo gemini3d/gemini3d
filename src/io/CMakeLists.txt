@@ -64,8 +64,8 @@ set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.n
 if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_namelist test_nml.f90)
-add_test(NAME unit:namelist COMMAND test_namelist ${_test_file})
-set_tests_properties(unit:namelist PROPERTIES
+add_test(NAME Fortran_namelist COMMAND test_namelist ${_test_file})
+set_tests_properties(Fortran_namelist PROPERTIES
 REQUIRED_FILES ${_test_file}
 LABELS unit
 TIMEOUT 10
@@ -82,8 +82,8 @@ else()
   set(compiler_vendor ${CMAKE_Fortran_COMPILER_ID})
 endif()
 
-add_test(NAME unit:compiler_vendor COMMAND test_compiler_vendor)
-set_tests_properties(unit:compiler_vendor PROPERTIES
+add_test(NAME compiler_vendor COMMAND test_compiler_vendor)
+set_tests_properties(compiler_vendor PROPERTIES
 PASS_REGULAR_EXPRESSION ${compiler_vendor}
 LABELS unit
 TIMEOUT 10
@@ -94,8 +94,8 @@ target_link_libraries(test_expand_envvar PRIVATE config
 ffilesystem::filesystem
 )
 
-add_test(NAME unit:expand_envvar COMMAND test_expand_envvar)
-set_tests_properties(unit:expand_envvar PROPERTIES
+add_test(NAME expand_envvar COMMAND test_expand_envvar)
+set_tests_properties(expand_envvar PROPERTIES
 ENVIRONMENT test__gem=hello
 LABELS unit
 TIMEOUT 10
@@ -109,7 +109,7 @@ else()
   set_target_properties(test_compiler_vendor test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 
-dll_test_path(ffilesystem::filesystem "unit:expand_envvar;unit:compiler_vendor")
+dll_test_path(ffilesystem::filesystem "expand_envvar;compiler_vendor")
 
 endif()
 
@@ -150,5 +150,6 @@ ffilesystem::filesystem
 if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
   add_executable(test_simsize_nc4 test_simsize_nc4.f90)
   target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
-  # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
+  # add_test(NAME simsize_nc4 COMMAND test_simsize_nc4)
+  # set_tests_properties(simsize_nc4 PROPERTIES LABELS unit)
 endif()

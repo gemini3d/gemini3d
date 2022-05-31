@@ -46,8 +46,8 @@ set(_cmd $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 if(mpi)
   list(PREPEND _cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu})
 endif()
-add_test(NAME unit:potential2 COMMAND ${_cmd})
-set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
+add_test(NAME potential2 COMMAND ${_cmd})
+set_tests_properties(potential2 PROPERTIES TIMEOUT 30
 FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
@@ -55,14 +55,14 @@ LABELS "unit"
 DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
-dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" unit:potential2)
+dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential2)
 
 if(python)
 
-add_test(NAME unit:potential2:python
+add_test(NAME potential2:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile}
 )
-set_tests_properties(unit:potential2:python PROPERTIES
+set_tests_properties(potential2:python PROPERTIES
 REQUIRED_FILES ${_potential_testfile}
 TIMEOUT 10
 LABELS "unit;python"
