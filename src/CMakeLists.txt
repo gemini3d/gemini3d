@@ -1,6 +1,3 @@
-# --- MSISE00 or MSIS 2.0
-find_package(msis CONFIG REQUIRED)
-
 # --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
@@ -137,13 +134,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-
-# WORKAROUND: MSIS shared Rpath fail
-# Rpath is defined in MSIS, but ld fails to use it
-get_target_property(msis_loc msis::msis_ifc LOCATION)
-cmake_path(GET msis_loc PARENT_PATH msis_dir)
+# MSIS WORKAROUND
 target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
-# END WORKAROUND
 
 if(hwm14)
   # HWM14 data files

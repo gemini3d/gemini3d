@@ -94,17 +94,26 @@ if(hwm14)
   find_package(hwm14 CONFIG REQUIRED)
 endif()
 
+# --- MSISE00 or MSIS 2.0
+find_package(msis CONFIG REQUIRED)
+# WORKAROUND: MSIS shared Rpath fail
+# Rpath is defined in MSIS, but ld fails to use it
+get_target_property(msis_loc msis::msis_ifc LOCATION)
+cmake_path(GET msis_loc PARENT_PATH msis_dir)
+# END WORKAROUND
+
+
 include(cmake/compilers/flags.cmake)
 
 # unit test DLL paths
 include(cmake/DllTestPath.cmake)
 
 
-add_subdirectory(test)
-# fundamental tests of MPI and numeric libraries essential for Gemini3D
-
 add_subdirectory(src)
 # Gemini3D source code
+
+add_subdirectory(test)
+# fundamental tests of MPI and numeric libraries essential for Gemini3D
 
 # self-test simulations -- after all targets for if(TARGET ...)
 if(matlab)

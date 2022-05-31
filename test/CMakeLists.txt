@@ -66,3 +66,6 @@ if(NOT ${PROJECT_NAME}_BUILD_TESTING)
 endif()
 
 add_subdirectory(io)
+add_subdirectory(ionization)
+add_subdirectory(mpi)
+add_subdirectory(neutral)
