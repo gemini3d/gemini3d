@@ -23,7 +23,7 @@ real(wp), dimension(:,:,:), allocatable :: proj
 character(:), allocatable :: path
 character(1000) :: argv
 type(dipolemesh) :: x
-real(wp), dimension(lq,lp,lphi,3) :: ealt,eglat,eglon
+real(wp), dimension(lq-4,lp-4,lphi-4,3) :: ealt,eglat,eglon
 real(wp), dimension(3,3,lq,lp,lphi) :: rotmats
 real(wp), dimension(3,3) :: matnow,eyetest,eye
 real(wp), parameter :: errthresh=1e-6
