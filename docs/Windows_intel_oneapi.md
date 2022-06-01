@@ -1,6 +1,6 @@
 # Build Gemini3D with Intel oneAPI on Windows
 
-Intel oneAPI provides Intel MPI, LAPACK, and Scalapack on Windows.
+Intel oneAPI (no cost) provides Intel MPI, LAPACK, and Scalapack on Windows.
 We do not use MSYS2/GCC libraries with Windows oneAPI as they are ABI incompatible.
 
 Whenever wanting to use oneAPI in Windows, use the "oneAPI Command Prompt for Intel 64" on Windows.
@@ -9,7 +9,7 @@ We will use Ninja backend for CMake.
 
 ## setup Windows Intel oneAPI
 
-Install latest Visual Studio Community edition.
+Install latest no cost [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/).
 No particular options are needed -- a minimal install is fine.
 
 Install

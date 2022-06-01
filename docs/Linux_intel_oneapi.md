@@ -1,11 +1,9 @@
 # Build Gemini3D with Intel oneAPI on Linux
 
-Intel oneAPI provides Intel MPI, LAPACK, and Scalapack on Linux.
-
-## setup Intel oneAPI
+Intel oneAPI (no cost) provides Intel MPI, LAPACK, and Scalapack on Linux.
 
 Like LLVM, oneAPI relies on the underlying GCC compiler for libc and libstdc++.
-Having too old GCC/libc will fail to build.
+Having too old GCC/libc/libstdc++ will fail to build.
 Ensure your system has GCC 8 or newer to work with Intel oneAPI on Linux.
 
 Install
@@ -28,15 +26,27 @@ The contents of this script would be like:
 ```sh
 source /opt/intel/oneapi/setvars.sh
 
-export FC=ifort CC=icx CXX=icpx
+export FC=ifx CC=icx CXX=icpx
 ```
 
-Intel LLVM "icx" and "icpx" replace the legacy "icc" and "icpc" compilers.
+Intel LLVM "icx", "icpx", "ifx" replace the legacy "icc", "icpc", "ifx" compilers.
 
 To enable oneAPI in this Terminal:
 
 ```sh
 source ~/intel_oneapi.sh
+```
+
+If there are problems with defaulting to old GCC, specify the GCC toolchain in "~/intel_oneapi.sh" like:
+
+```sh
+export CXXFLAGS=--gcc-toolchain=/opt/rh/gcc-toolset-11/root/usr/
+```
+
+which can be determined like:
+
+```sh
+scl enable gcc-toolset-11 "which g++"
 ```
 
 ## One-time Gemini3D external library setup

@@ -2,17 +2,15 @@
 
 GCC 7.5 and newer works with Gemini3D.
 
-## setup GCC
-
 ```sh
 apt install g++ gfortran
 # or
-yum install gcc-c++ gcc-gfortran
+dnf install gcc-c++ gcc-gfortran
 ```
 
 The compiler relies on libc and libstdc++.
 If build errors about "filesystem" at C++ link time, the system configuration may be messed up.
-If problems, ensure the system LD_LIBRARY_PATH has first the libc and libstdc++ for the GCC version you wish to use.
+If problems, ensure environment variable LD_LIBRARY_PATH has first the libc and libstdc++ for the GCC version you wish to use.
 
 ## One-time Gemini3D external library setup
 

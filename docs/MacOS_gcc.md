@@ -2,8 +2,6 @@
 
 AppleClang LLVM compilers work fine with GCC/Gfortran in general on MacOS.
 
-## setup GCC
-
 Install the latest GCC/Gfortran via [Homebrew](https://brew.sh):
 
 ```sh

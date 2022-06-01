@@ -1,9 +1,7 @@
 # Build Gemini3D with Intel oneAPI on MacOS
 
-Intel oneAPI does not come with MPI on MacOS.
-The gemini3d/external repo will build MPI for oneAPI on MacOS.
-
-## setup Intel oneAPI
+Intel oneAPI (no cost) does not come with MPI on MacOS.
+The [gemini3d/external](https://github.com/gemini3d/external) repo can build MPICH for oneAPI on MacOS.
 
 oneAPI relies on the underlying AppleClang compiler for libc and libstdc++.
 Xcode is required:

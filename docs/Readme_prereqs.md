@@ -4,19 +4,20 @@ As indicated in the main readme there are a number of prerequisites for GEMINI. 
 
 ## Working with MacOS
 
-You will need to install XCode through the app store.  Then it may be necessary (depending on your OS version) to manually install XCode command line tools:
+You will need to install XCode through the app store.
+Then it may be necessary (depending on your OS version) to manually install XCode command line tools:
 
 ```sh
 xcode-select --install
 ```
 
-It is strongly recommended that you install homebrew by following instructions on [the homebrew website](https://brew.sh).  Instructions in this readme assume that you will use this package manager to get most of the prereqs.  Users have also reported that [Macports](https://www.macports.org) works fine for getting required packages, as well.  Both are available from the linked websites.
+It is strongly recommended that you install Homebrew by following instructions on [the homebrew website](https://brew.sh).
+Instructions in this readme assume that you will use this package manager to get most of the prereqs.  Users have also reported that [Macports](https://www.macports.org) works fine for getting required packages, as well.  Both are available from the linked websites.
 
 ## Installing Compilers
 
-Many default installations will not have the required compilers, e.g. there is no default Fortran compiler in Mac OS, and many ubuntu distributions install without a C++ compiler.
+Many default installations will not have the required compilers, e.g. there is no default Fortran compiler in Mac OS, and many Linux distributions install without a C++ compiler.
 See [Readme_compilers](./Readme_compilers.md) for more info.
-
 
 ## Installing Parallelization Libraries
 

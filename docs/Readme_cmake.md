@@ -8,7 +8,7 @@ Feel free to use any directory name you like.
 
 When using a meta-build system like CMake, building a program takes two steps.
 
-1. configure: "cmake -B build": user specifies options (if any) and CMake determines what compiler options and finds libraries. If libraries are missing, CMake prepares to build them via CMake's ExternalProject features.
+1. configure: "cmake -B build": user specifies options (if any) and CMake determines what compiler options and finds libraries.
 2. build: "cmake --build build": CMake uses a low-level build system, typically Ninja or Make, to orchestrate the C, C++, and Fortran compiler commands in parallel.
 
 If a user makes changes to source code, they need only rerun the `cmake --build build` command.
@@ -20,7 +20,8 @@ Many Gemini3D users don't need any custom options to get started.
 In that case, build Gemini3D from the gemini3d/ directory by:
 
 ```sh
-cmake -B build
+cmake -B build -DCMAKE_PREFIX_PATH=~/lib_gcc
+# ~/lib_gcc is the arbitrary location you installed Gemini3D/external libraries to.
 
 cmake --build build
 ```
@@ -61,7 +62,7 @@ Tell CMake (or other build systems) you want to use just GCC by:
 export FC=gfortran-11 CC=gcc-11 CXX=g++-11
 ```
 
-If you want to default to GCC / Gfortran, add the line above in ~/.bashrc or ~/.zshrc.
+To default to GCC / Gfortran, add the line above in ~/.zprofile.
 
 ### GLOW
 
@@ -80,13 +81,6 @@ HDF5 is enabled by default, and disabled by:
 
 ```sh
 cmake -B build -Dhdf5=off
-```
-
-If desired, build HDF5 manually by
-[PyGemini](https://github.com/gemini3d/pygemini):
-
-```sh
-python -m gemini3d.prereqs gcc hdf5
 ```
 
 ### NetCDF
