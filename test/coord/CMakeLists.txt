@@ -46,7 +46,7 @@ endif()
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 
 set_tests_properties(${test_names} PROPERTIES
-TIMEOUT 30
+TIMEOUT 90
 LABELS unit
 )
 

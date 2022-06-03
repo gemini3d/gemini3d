@@ -30,7 +30,7 @@ add_test(NAME Projection
 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_proj>
 )
 set_tests_properties(Projection PROPERTIES
-TIMEOUT 15
+TIMEOUT 90
 LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
