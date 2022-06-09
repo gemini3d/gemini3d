@@ -131,6 +131,6 @@ endfunction(setup_magcalc_test)
 add_test(NAME internetConnectivity
 COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
 set_tests_properties(internetConnectivity PROPERTIES
-TIMEOUT 3
+TIMEOUT 10
 FIXTURES_SETUP internet_fxt
 )
