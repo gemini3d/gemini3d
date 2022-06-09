@@ -78,6 +78,3 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   # will not take effect without FORCE
   set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "Install top-level directory" FORCE)
 endif()
-
-# --- special handling of MacOS Homebrew/Macports
-include(${CMAKE_CURRENT_LIST_DIR}/macos.cmake)
