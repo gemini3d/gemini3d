@@ -16,6 +16,7 @@ endif()
 
 if(HWLOC_FOUND)
   target_sources(hwloc_c PRIVATE get_cpu_hwloc.c)
+  target_compile_definitions(hwloc_c PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
   target_include_directories(hwloc_c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_link_libraries(hwloc_c PRIVATE HWLOC::HWLOC)
 
