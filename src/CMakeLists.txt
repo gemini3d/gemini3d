@@ -171,16 +171,6 @@ endif(hwm14)
 
 # same link logic applied to test/test_mumps
 
-add_test(NAME gemini_fortran COMMAND gemini.bin -h)
-set_tests_properties(gemini_fortran PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
-FIXTURES_SETUP gemini_exe_fxt
-FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
-LABELS unit
-)
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_fortran)
-
-
 # need this header for external projects using Gemini3D
 install(FILES ${PROJECT_SOURCE_DIR}/include/gemini3d.h TYPE INCLUDE)
 
@@ -261,15 +251,5 @@ target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 install(TARGETS gemini_c.bin gemini3d_cpp
 EXPORT ${PROJECT_NAME}-targets
 )
-
-add_test(NAME gemini_cpp COMMAND gemini_c.bin -h)
-set_tests_properties(gemini_cpp PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
-FIXTURES_SETUP gemini_exe_fxt
-FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
-LABELS unit
-)
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_cpp)
-
 
 endif(cpp)

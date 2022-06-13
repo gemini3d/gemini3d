@@ -1,11 +1,6 @@
 include(CheckSymbolExists)
 include(CheckIncludeFile)
 
-if(BUILD_TESTING)
-  add_executable(echo_path echo_path.f90)
-  add_test(NAME debug:EchoEnvVar COMMAND echo_path)
-endif()
-
 #--------magnetic field calculation executable---------------
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)
@@ -30,13 +25,6 @@ else()
 endif()
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
-)
-
-add_test(NAME magcalc_exe_ok COMMAND magcalc.bin)
-set_tests_properties(magcalc_exe_ok PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
-LABELS unit
-TIMEOUT 10
 )
 
 # --- gemini3d.run Fortran front end
@@ -82,13 +70,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-add_test(NAME gemini3d_run_ok COMMAND gemini3d.run)
-set_tests_properties(gemini3d_run_ok PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-FIXTURES_SETUP gemini_exe_fxt
-LABELS unit
-TIMEOUT 10
-)
 
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90
@@ -106,15 +87,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-add_test(NAME magcalc_run_ok COMMAND magcalc.run)
-set_tests_properties(magcalc_run_ok PROPERTIES
-PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
-LABELS unit
-TIMEOUT 10
-)
-
-# --- Windows needs DLLs on path
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" "magcalc_exe_ok;magcalc_run_ok;gemini3d_run_ok")
 
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)
