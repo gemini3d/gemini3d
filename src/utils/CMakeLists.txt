@@ -1,6 +1,3 @@
-include(CheckSymbolExists)
-include(CheckIncludeFile)
-
 #--------magnetic field calculation executable---------------
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)

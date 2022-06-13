@@ -17,22 +17,11 @@ endif()
 if(HWLOC_FOUND)
   target_sources(hwloc_c PRIVATE get_cpu_hwloc.c)
   target_compile_definitions(hwloc_c PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
-  target_include_directories(hwloc_c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(hwloc_c PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:include>
+  )
   target_link_libraries(hwloc_c PRIVATE HWLOC::HWLOC)
-
-  if(BUILD_TESTING)
-    add_executable(test_hwloc test_hwloc.c get_cpu_hwloc.c)
-    target_include_directories(test_hwloc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(test_hwloc PRIVATE HWLOC::HWLOC)
-    # NOTE: MPIEXEC_MAX_NUMPROCS is fallible, it uses less robust methods than hwloc! Particularly on ARM (Raspberry Pi)
-    add_test(NAME HWLOC COMMAND test_hwloc ${Ncpu})
-    set_tests_properties(HWLOC PROPERTIES
-    FIXTURES_SETUP hwloc_fxt
-    TIMEOUT 10
-    PROCESSORS 1
-    LABELS unit
-    )
-  endif()
 
   return()
 endif()
