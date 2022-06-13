@@ -41,7 +41,7 @@ set(PYGEMINI_VERSION ${out} CACHE STRING "PyGemini version")
 endfunction()
 
 
-find_package(Python 3.8 COMPONENTS Interpreter)
+find_package(Python COMPONENTS Interpreter)
 if(Python_FOUND AND NOT PYGEMINI_FOUND)
   check_pygemini()
 endif()

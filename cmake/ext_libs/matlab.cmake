@@ -1,7 +1,4 @@
 find_package(Matlab COMPONENTS MAIN_PROGRAM REQUIRED)
-if(Matlab_VERSION_STRING AND Matlab_VERSION_STRING VERSION_LESS 9.9)
-  message(STATUS "Matlab >= 9.9 required, found ${Matlab_VERSION_STRING}")
-endif()
 
 find_path(matgemini_SOURCE_DIR
 NAMES setup_gemini3d.m
