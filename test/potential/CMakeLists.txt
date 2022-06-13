@@ -35,7 +35,7 @@ DISABLED $<NOT:$<BOOL:${hdf5}>>
 
 dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential2d)
 
-if(python)
+if(H5PY_FOUND)
 
 add_test(NAME potential2d:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential2d_testfile}

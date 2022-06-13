@@ -23,7 +23,7 @@ DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" diffusion1)
 
-if(python)
+if(H5PY_FOUND)
   add_test(NAME diffusion1:python
   COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
   )

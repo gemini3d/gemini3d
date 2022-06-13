@@ -55,7 +55,7 @@ DISABLED $<NOT:$<BOOL:${hdf5}>>
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "interp2;interp3")
 
 
-if(python)
+if(H5PY_FOUND)
 
 add_test(NAME interp2:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}

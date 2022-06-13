@@ -10,7 +10,7 @@ LABELS unit
 )
 dll_test_path(msis::msis_ifc fangIonize)
 
-if(python)
+if(H5PY_FOUND)
   add_test(NAME fangIonize:python
   COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>
   )

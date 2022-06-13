@@ -1,9 +1,7 @@
 function(check_pygemini)
 
-# Python::Interpreter does NOT work, use ${Python_EXECUTABLE}
-
 # Numpy conflicts are a general source of trouble
-execute_process(COMMAND ${Python_EXECUTABLE} -c "import numpy,sys; print(f'Python {sys.version}  Numpy {numpy.__version__}')"
+execute_process(COMMAND ${Python_EXECUTABLE} -c "import numpy"
 RESULT_VARIABLE ret
 OUTPUT_VARIABLE out
 ERROR_VARIABLE err
@@ -11,11 +9,38 @@ TIMEOUT 15
 )
 
 if(NOT ret EQUAL 0)
-  message(FATAL_ERROR "Problem with Python Numpy, cannot use PyGemini
+  message(STATUS "Problem with Python Numpy:
   ${ret}
   ${out}
   ${err}"
   )
+
+  return()
+endif()
+
+# need h5py for Python tests
+execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py,numpy,sys; print(f'Python {sys.version}  Numpy {numpy.__version__} h5py {h5py.__version__}')"
+RESULT_VARIABLE ret
+OUTPUT_VARIABLE out
+ERROR_VARIABLE err
+TIMEOUT 15
+)
+
+if(ret EQUAL 0)
+  set(H5PY_FOUND true CACHE BOOL "Python h5py Found")
+else()
+  message(STATUS "Problem with Python h5py:
+  ${ret}
+  ${out}
+  ${err}"
+  )
+
+  return()
+endif()
+
+
+if(NOT python)
+  return()
 endif()
 
 execute_process(COMMAND ${Python_EXECUTABLE} -c "import gemini3d; print(gemini3d.__version__)"
@@ -35,13 +60,10 @@ if(NOT ret EQUAL 0)
   )
 endif()
 
-set(PYGEMINI_FOUND true CACHE BOOL "PyGemini Found")
-set(PYGEMINI_VERSION ${out} CACHE STRING "PyGemini version")
-
 endfunction()
 
 
 find_package(Python COMPONENTS Interpreter)
-if(Python_FOUND AND NOT PYGEMINI_FOUND)
+if(Python_FOUND AND NOT DEFINED PYGEMINI_FOUND)
   check_pygemini()
 endif()

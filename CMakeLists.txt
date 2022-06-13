@@ -33,7 +33,7 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
 endif()
 
 include(cmake/package/git_rev.cmake)
-include(cmake/config/options.cmake)
+include(cmake/options.cmake)
 
 # Fortran filesystem library "ffilesystem"
 find_package(ffilesystem CONFIG)
@@ -117,17 +117,16 @@ add_subdirectory(test)
 
 # self-test simulations -- after all targets for if(TARGET ...)
 if(matlab)
-  include(cmake/ext_libs/matlab.cmake)
+  include(cmake/matlab.cmake)
 endif(matlab)
-if(python)
-  include(cmake/ext_libs/python.cmake)
-endif(python)
+
+include(cmake/python.cmake)
 
 include(cmake/test/config.cmake)
 include(cmake/test/sim.cmake)
 
 # summary print
-include(cmake/config/summary.cmake)
+include(cmake/summary.cmake)
 
 # packaging
 include(cmake/package/pkgconf.cmake)
