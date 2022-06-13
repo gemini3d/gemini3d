@@ -52,7 +52,7 @@ real(wp) :: dt=1          !not used
 integer :: gridflag=1
 integer, dimension(4), parameter :: flagsdirich=[1,1,1,1]        !denoting all Dirichlet conditions for test problem
 
-character(1024) :: argv
+character(4096) :: argv
 
 ! --- avoid stack issues by using allocatable()
 
@@ -147,8 +147,8 @@ end if
 
 ! Write some output for visualizations
 if (myid==0) then
-  call get_command_argument(1, argv)
-  if(argv=="") error stop 'please specify filename'
+  call get_command_argument(1, argv, status=ierr)
+  if(ierr /= 0) error stop 'please specify filename'
 
   print*, 'Numerical solution range:  ',minval(Phi),maxval(Phi)
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
