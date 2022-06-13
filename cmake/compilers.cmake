@@ -32,12 +32,3 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   include(${CMAKE_CURRENT_LIST_DIR}/gnu.cmake)
 endif()
-
-
-# === check that the compiler has adequate Fortran 2008 support
-# this is to mitigate confusing syntax error messages for new users
-
-# clean out prior libs to avoid false fails
-set(CMAKE_REQUIRED_LIBRARIES)
-set(CMAKE_REQUIRED_INCLUDES)
-set(CMAKE_REQUIRED_FLAGS)
