@@ -71,7 +71,7 @@ if(netcdf)
   find_package(nc4fortran CONFIG REQUIRED)
 endif()
 
-include(cmake/compilers/compilers.cmake)
+include(cmake/compilers.cmake)
 if(mpi)
   # here for HWLOC_FOUND directory scope
   find_package(HWLOC)
@@ -102,8 +102,6 @@ get_target_property(msis_loc msis::msis_ifc LOCATION)
 cmake_path(GET msis_loc PARENT_PATH msis_dir)
 # END WORKAROUND
 
-
-include(cmake/compilers/flags.cmake)
 
 # unit test DLL paths
 include(cmake/DllTestPath.cmake)

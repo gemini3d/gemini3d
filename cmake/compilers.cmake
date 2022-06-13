@@ -27,6 +27,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
   add_link_options(-Wl,-no_compact_unwind)
 endif()
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  include(${CMAKE_CURRENT_LIST_DIR}/intel.cmake)
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+  include(${CMAKE_CURRENT_LIST_DIR}/gnu.cmake)
+endif()
+
+
 # === check that the compiler has adequate Fortran 2008 support
 # this is to mitigate confusing syntax error messages for new users
 
@@ -34,45 +41,3 @@ endif()
 set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
-
-if(dev)
-check_source_compiles(Fortran
-"program imp
-implicit none (type, external)
-end program"
-f2018impnone
-)
-if(NOT f2018impnone)
-  message(FATAL_ERROR "Compiler does not support Fortran 2018 IMPLICIT NONE (type, external): ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
-
-check_source_compiles(Fortran
-"program es2018
-character :: x
-error stop x
-end program"
-f2018errorstop
-)
-if(NOT f2018errorstop)
-  message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
-endif()
-
-if(dev)
-check_source_compiles(Fortran
-"program f18_assumed_rank
-implicit none (type, external)
-contains
-subroutine ranker(A)
-integer, intent(in) :: A(..)
-select rank(A)
-  rank (0)
-    print *, rank(A)
-  rank default
-    print *, rank(A)
-end select
-end subroutine ranker
-end program"
-f2018assumed_rank
-)
-endif(dev)
