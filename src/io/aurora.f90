@@ -67,10 +67,10 @@ case ('h5')
 case ('nc')
   call output_aur_root_nc4(stem // ".nc", flagglow, iver)
 case default
-  error stop 'aurora:output_aur_root: unknown grid format' // out_format
+  error stop 'ERROR:aurora:output_aur_root: unknown grid format' // out_format
 end select
 
-if(.not. all(ieee_is_finite(iver))) error stop 'iverout: non-finite value(s)'
+if(.not. all(ieee_is_finite(iver))) error stop 'ERROR: iverout: non-finite value(s)'
 
 end subroutine output_aur_root
 
