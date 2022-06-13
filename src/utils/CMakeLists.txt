@@ -88,38 +88,19 @@ endif()
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)
 
-add_executable(gemini3d.compare)
-target_sources(gemini3d.compare PRIVATE
-gemini_compare.f90
-${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90
-${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_grid_h5.f90
-${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_out_h5.f90
-${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90
-$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
-)
-target_link_libraries(gemini3d.compare PRIVATE assert config reader timeutils const
-h5fortran::h5fortran
-$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
-ffilesystem::filesystem
-)
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
-endif()
-set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run
 PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run
 PROPERTY DEBUG_POSTFIX .debug
 )
-set_property(TARGET gemini3d.run gemini3d.compare magcalc.bin magcalc.run
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run
 PROPERTY RELWITHDEBINFO_POSTFIX .debug
 )
 
 # --- Install
 
-install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
+install(TARGETS magcalc.bin gemini3d.run magcalc.run
 EXPORT ${PROJECT_NAME}-targets
 )

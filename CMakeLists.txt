@@ -116,12 +116,6 @@ add_subdirectory(test)
 # fundamental tests of MPI and numeric libraries essential for Gemini3D
 
 # self-test simulations -- after all targets for if(TARGET ...)
-if(matlab)
-  include(cmake/matlab.cmake)
-endif(matlab)
-
-include(cmake/python.cmake)
-
 include(cmake/test/config.cmake)
 include(cmake/test/sim.cmake)
 

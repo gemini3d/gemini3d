@@ -1,3 +1,34 @@
+add_executable(gemini3d.compare)
+target_sources(gemini3d.compare PRIVATE
+gemini_compare.f90 compare.f90 compare_grid_h5.f90 compare_out_h5.f90 compare_in_h5.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
+target_link_libraries(gemini3d.compare PRIVATE assert config reader timeutils const
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
+$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+ffilesystem::filesystem
+)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
+endif()
+
+set_target_properties(gemini3d.compare PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+DEBUG_POSTFIX .debug
+RELWITHDEBINFO_POSTFIX .debug
+)
+
+# --- Install
+
+install(TARGETS gemini3d.compare
+EXPORT ${PROJECT_NAME}-targets
+)
+
+
+# --- helper functions
 
 function(matlab_compare outdir refdir name)
 

@@ -1,5 +1,3 @@
-include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
-
 function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
