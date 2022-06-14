@@ -23,8 +23,12 @@ ffilesystem::filesystem
 )
 add_test(NAME fullgrid_dipole_testdriver COMMAND fullgrid_dipole_testdriver)
 
-add_executable(fullgrid_dipole_regen fullgrid_dipole_regen.f90)
-target_link_libraries(fullgrid_dipole_regen PRIVATE grid newton spherical geomagnetic meshobj_dipole meshobj const
+add_executable(fullgrid_dipole_regen fullgrid_dipole_regen.f90
+$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
+)
+target_link_libraries(fullgrid_dipole_regen PRIVATE grid reader newton spherical geomagnetic meshobj_dipole meshobj const
+h5fortran::h5fortran
+$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
