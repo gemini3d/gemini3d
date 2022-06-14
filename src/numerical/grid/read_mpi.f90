@@ -11,14 +11,7 @@ contains
 !   must also set those.
 module procedure read_grid_cartdip
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-
-  call x%set_center(glonctr,glatctr)
-
-  !> Create the grid object
-  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
-
-  call x%init()                              ! allocate space for subgrid variables
-  call x%make()                              ! fill auxiliary arrays
+  call generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
 
   !> We need to collect the info for root's fullgrid variables
   if (mpi_cfg%myid==0) then
@@ -53,14 +46,6 @@ module procedure read_grid_cartdip
   !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
   call enforce_gridmpi_periodic(flagperiodic,x)
   print *, 'enforce_gridmpi_periodic done'
-  !> Set flags for module scope vars.
-  !gridflag=x%gridflag
-  call set_gridflag(x%gridflag)
-
-  !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-  !g1=>x%g1; g2=>x%g2; g3=>x%g3
-  call bind_grav_ptrs(x%g1,x%g2,x%g3)
-  print *, 'bind_grav_ptrs done'
 
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
