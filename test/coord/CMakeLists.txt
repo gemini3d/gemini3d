@@ -32,7 +32,7 @@ $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
-add_test(NAME fullgrid_dipole_regen COMMAND fullgrid_dipole_regen)
+#add_test(NAME fullgrid_dipole_regen COMMAND fullgrid_dipole_regen)
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
 target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj const

@@ -786,10 +786,13 @@ contains
 
     ! coordinate-specific arrays set by type extensions
     if (self%coord_alloc_status) then
-      deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+      deallocate(self%er,self%etheta,self%ephi)
+      deallocate(self%e1,self%e2,self%e3)
       deallocate(self%r,self%theta,self%phi)
+      deallocate(self%h1,self%h2,self%h3)
       deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
       deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
+      deallocate(self%h1x3i,self%h2x3i,self%h3x3i)
       deallocate(self%g1,self%g2,self%g3)
       deallocate(self%Bmag,self%I)
       deallocate(self%alt,self%glon,self%glat)
