@@ -24,20 +24,19 @@ public :: read_grid, grid_check, grid_drift
 external :: mpi_recv, mpi_send
 
 interface ! read.f90
-  module subroutine read_grid_cart(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
+  module subroutine read_grid_cartdip(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: indatsize,indatgrid
     integer, intent(in) :: flagperiodic
     class(curvmesh), intent(inout) :: x
     real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
     real(wp), intent(in) :: glonctr,glatctr
-  end subroutine read_grid_cart
-
-   module subroutine read_grid_dipole(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all)
-    character(*), intent(in) :: indatsize,indatgrid
-    integer, intent(in) :: flagperiodic
-    class(curvmesh), intent(inout) :: x
-    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
-  end subroutine read_grid_dipole
+  end subroutine read_grid_cartdip
+!  module subroutine read_grid_dipole(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all)
+!    character(*), intent(in) :: indatsize,indatgrid
+!    integer, intent(in) :: flagperiodic
+!    class(curvmesh), intent(inout) :: x
+!    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
+!  end subroutine read_grid_dipole
 end interface
 
 interface ! check.f90
@@ -75,7 +74,7 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
   !! tmp space for coords from file
   call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
-  !! only need ctr location for certain grid types
+  !! read the grid coordinates in from a file only need ctr location for certain grid types
 
   !> each worker needs to set their specific subgrid coordinates
   indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
@@ -100,29 +99,29 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
     !allocate(dipolemesh::x)
     allocate(xdipole)
     x=>xdipole
-    call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
+    call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
     if (present(xC) .and. present(xtype)) then
       xC = c_loc(xdipole)
       xtype=2
-      print *, "dipole c_loc"
     end if
   else
     print*, 'Detected Cartesian grid...'
     !allocate(cartmesh::x)
     allocate(xcart)
     x=>xcart
-    call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
+    call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
     print*, 'read_grid_cart done'
     if (present(xC) .and. present(xtype)) then
       xC = c_loc(xcart)
       xtype=1
-      print *, "xcart c_loc"
     end if
   end if
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all
   print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3
 end subroutine read_grid
 
+
+!> Read in native coordinates from a grid file
 subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
   character(*), intent(in) :: path
   real(wp), dimension(:), intent(inout) :: x1,x2all,x3all

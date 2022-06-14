@@ -91,11 +91,6 @@ type, bind(C) :: c_params
 end type c_params
 
 
-!> FIXME: for ifort workaround
-type :: gemini_arr_dat
-  real(wp), dimension(:,:,:,:), pointer :: fluidvars,fluidauxvars,electrovars
-end type gemini_arr_dat
-
 contains
   !> basic command line and grid size determination
   subroutine cli_config_gridsize(p,lid2in,lid3in,cfg)
@@ -304,7 +299,7 @@ contains
     deallocate(fluidvars)
     deallocate(fluidauxvars)
     deallocate(electrovars)
-    call gemini_alloc_nodouble(cfg,intvars)
+    call gemini_dealloc_nodouble(cfg,intvars)
   end subroutine
 
 

@@ -6,10 +6,10 @@ implicit none (type, external)
 
 contains
 
-!> Read in the grid information and prep grid object.  Note that there are also module-scope variables
+!> Prep either Cartesian or dipole grid object.  Note that there are also module-scope variables
 !   that are (redundantly, for convenience) defined based on the grid structure and this procedure
 !   must also set those.
-module procedure read_grid_cart
+module procedure read_grid_cartdip
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
 
   call x%set_center(glonctr,glatctr)
@@ -66,66 +66,68 @@ module procedure read_grid_cart
   !> and that parameters aren't impossible
   if(mpi_cfg%myid == 0) call grid_check(x)
   print *, 'grid_check done'
-end procedure read_grid_cart
+end procedure read_grid_cartdip
 
 
-module procedure read_grid_dipole
-! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-
-  !> Create the grid object
-  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
-
-  call x%init()                              ! allocate space for subgrid variables
-  call x%make()                              ! fill auxiliary arrays
-
-  !> We need to collect the info for root's fullgrid variables
-  if (mpi_cfg%myid==0) then
-    call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
-    call gather_grid_root(x%h1,x%h2,x%h3, &
-                          x%h1x1i,x%h2x1i,x%h3x1i, &
-                          x%h1x2i,x%h2x2i,x%h3x2i, &
-                          x%h1x3i,x%h2x3i,x%h3x3i, &
-                          x%r,x%theta,x%phi, &
-                          x%alt,x%Bmag,x%glon, &
-                          x%h1all,x%h2all,x%h3all, &
-                          x%h1x1iall,x%h2x1iall,x%h3x1iall, &
-                          x%h1x2iall,x%h2x2iall,x%h3x2iall, &
-                          x%h1x3iall,x%h2x3iall,x%h3x3iall, &
-                          x%rall,x%thetaall,x%phiall, &
-                          x%altall,x%Bmagall,x%glonall)
-    !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
-    call x%calc_coord_diffs_root()
-  else
-    !! gather
-    call gather_grid_workers(x%h1,x%h2,x%h3, &
-                          x%h1x1i,x%h2x1i,x%h3x1i, &
-                          x%h1x2i,x%h2x2i,x%h3x2i, &
-                          x%h1x3i,x%h2x3i,x%h3x3i, &
-                          x%r,x%theta,x%phi, &
-                          x%alt,x%Bmag,x%glon)
-  end if
-
-  !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
-  call enforce_gridmpi_periodic(flagperiodic,x)
-
-  !> Set flags for module scope vars.
-  !gridflag=x%gridflag
-  call set_gridflag(x%gridflag)
-
-  !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-  !g1=>x%g1; g2=>x%g2; g3=>x%g3
-  call bind_grav_ptrs(x%g1,x%g2,x%g3)
-
-  !> Make sure we have a sensible x2,3 decomposition of grid
-  !> and that parameters aren't impossible
-  if(mpi_cfg%myid == 0) call grid_check(x)
-end procedure read_grid_dipole
+!module procedure read_grid_dipole
+!! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
+!
+!  !> Create the grid object
+!  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+!
+!  call x%init()                              ! allocate space for subgrid variables
+!  call x%make()                              ! fill auxiliary arrays
+!
+!  !> We need to collect the info for root's fullgrid variables
+!  if (mpi_cfg%myid==0) then
+!    call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
+!    call gather_grid_root(x%h1,x%h2,x%h3, &
+!                          x%h1x1i,x%h2x1i,x%h3x1i, &
+!                          x%h1x2i,x%h2x2i,x%h3x2i, &
+!                          x%h1x3i,x%h2x3i,x%h3x3i, &
+!                          x%r,x%theta,x%phi, &
+!                          x%alt,x%Bmag,x%glon, &
+!                          x%h1all,x%h2all,x%h3all, &
+!                          x%h1x1iall,x%h2x1iall,x%h3x1iall, &
+!                          x%h1x2iall,x%h2x2iall,x%h3x2iall, &
+!                          x%h1x3iall,x%h2x3iall,x%h3x3iall, &
+!                          x%rall,x%thetaall,x%phiall, &
+!                          x%altall,x%Bmagall,x%glonall)
+!    !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
+!    call x%calc_coord_diffs_root()
+!  else
+!    !! gather
+!    call gather_grid_workers(x%h1,x%h2,x%h3, &
+!                          x%h1x1i,x%h2x1i,x%h3x1i, &
+!                          x%h1x2i,x%h2x2i,x%h3x2i, &
+!                          x%h1x3i,x%h2x3i,x%h3x3i, &
+!                          x%r,x%theta,x%phi, &
+!                          x%alt,x%Bmag,x%glon)
+!  end if
+!
+!  !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
+!  call enforce_gridmpi_periodic(flagperiodic,x)
+!
+!  !> Set flags for module scope vars.
+!  !gridflag=x%gridflag
+!  call set_gridflag(x%gridflag)
+!
+!  !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
+!  !g1=>x%g1; g2=>x%g2; g3=>x%g3
+!  call bind_grav_ptrs(x%g1,x%g2,x%g3)
+!
+!  !> Make sure we have a sensible x2,3 decomposition of grid
+!  !> and that parameters aren't impossible
+!  if(mpi_cfg%myid == 0) call grid_check(x)
+!end procedure read_grid_dipole
 
 !--------------------------------------------------------------------------------------------------
 ! submodule specific procedures
 
 
-!> Assign periodic or not based on user input -- this needs to be done "outside" object methods
+!> Assign periodic or not based on user input -- this needs to be done "outside" object methods this e nforces
+!    geographic locations to be constant along the x3-direction so that empirical models etc. will spit out data
+!    consistent with a periodic domain, i.e. constant along x3.  
 subroutine enforce_gridmpi_periodic(flagperiodic,x)
   integer, intent(in) :: flagperiodic
   class(curvmesh), intent(inout) :: x
