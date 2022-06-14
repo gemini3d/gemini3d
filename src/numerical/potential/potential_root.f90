@@ -286,7 +286,7 @@ module procedure potential_root_mpi_curv
     call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
   end if
   if (cfg%flaggravdrift) then
-    call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+    call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
   end if
   !--------
  

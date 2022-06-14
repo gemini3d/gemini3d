@@ -344,7 +344,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
-        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang)
+        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang, x%g1)
         !! calculation based on Fang et al [2008]
         Prprecip=Prprecip+Prpreciptmp
       end do

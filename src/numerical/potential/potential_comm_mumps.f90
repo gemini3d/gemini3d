@@ -9,7 +9,7 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
-use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all,g1,g2,g3
+use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use efielddataobj, only: efielddata
 use collisions, only: conductivities, capacitance
@@ -377,8 +377,8 @@ contains
     !> Gravitational drift terms (if required)
     if (flaggravdrift) then
       do isp=1,lsp
-        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2-muH(:,:,:,isp)*g3)    !FIXME: +muH looks suspicious, I'm changing to (-)
-        vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
+        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*x%g2-muH(:,:,:,isp)*x%g3)    !FIXME: +muH looks suspicious, I'm changing to (-)
+        vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*x%g2+muP(:,:,:,isp)*x%g3)
       end do
     end if
 
@@ -436,7 +436,7 @@ contains
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed pressure currents...'
     end if
     if (flaggravdrift) then
-      call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+      call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
 

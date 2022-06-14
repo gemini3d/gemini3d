@@ -14,12 +14,12 @@ integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 
 !! FIXME:  these must be stored in a patch user_data object!!!!
-real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
+!real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
 !! so other modules can simply access gravitational field data
 
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
-             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs,grid_size
+             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
@@ -56,7 +56,7 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
     call set_gridflag(x%gridflag)
   
     !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-    call bind_grav_ptrs(x%g1,x%g2,x%g3)  
+    !call bind_grav_ptrs(x%g1,x%g2,x%g3)  
   end subroutine generate_worker_grid
   
   
@@ -89,11 +89,11 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
   end subroutine set_gridflag
 
 
-  subroutine bind_grav_ptrs(g1in,g2in,g3in)
-    real(wp), dimension(:,:,:), pointer, intent(in) :: g1in,g2in,g3in
-
-    g1=>g1in; g2=>g2in; g3=>g3in
-  end subroutine bind_grav_ptrs
+!  subroutine bind_grav_ptrs(g1in,g2in,g3in)
+!    real(wp), dimension(:,:,:), pointer, intent(in) :: g1in,g2in,g3in
+!
+!    g1=>g1in; g2=>g2in; g3=>g3in
+!  end subroutine bind_grav_ptrs
 
 
   subroutine grid_size(indatsize)

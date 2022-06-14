@@ -3,7 +3,7 @@ module ionization
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use ionize_fang, only: fang2008, fang2010
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
-use grid, only: lx1,lx2,lx3,g1,g2,g3
+use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
 use timeutils, only: ymd2doy
 
@@ -207,21 +207,16 @@ end do
 end function photoionization
 
 
-pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, flag_fang)
-
+pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, flag_fang, g1)
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
-
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 integer, intent(in) :: flag_fang
-
+real(wp), dimension(:,:,:), intent(in) :: g1
 real(wp) :: W0keV,PhiW
 real(wp), dimension(1:size(nn,1)) :: massden,meanmass
-
 integer :: ix2,ix3,lx2,lx3
-
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
-
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang
 
 
