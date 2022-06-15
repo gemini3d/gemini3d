@@ -41,7 +41,7 @@ block
 type(dipolemesh) :: x
 integer :: irepeat
 
-do irepeat=1,1000
+do irepeat=1,10
   !call generate_worker_grid(q,p,phi,p,phi,0._wp,0._wp,x)
   call grid_from_extents(qlims,plims,philims,lq,lp,lphi,0._wp,0._wp,x)
 
