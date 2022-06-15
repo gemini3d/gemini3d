@@ -43,8 +43,8 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a 
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!
-  subroutine grid_from_extents(x1lower,x1upper,x2lower,x2upper,x3lower,x3upper,lx1wg,lx2wg,lx3wg,glonctr,glatctr,x)
-    real(wp), intent(in) :: x1lower,x1upper,x2lower,x2upper,x3lower,x3upper
+  subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,glonctr,glatctr,x)
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     real(wp), intent(in) :: glonctr,glatctr
     class(curvmesh), intent(inout) :: x
@@ -55,9 +55,9 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
     allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
 
     ! make uniformly spaced coordinate arrays
-    x1=[(x1lower + (x1upper-x1lower)/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
-    x2=[(x2lower + (x2upper-x2lower)/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
-    x3=[(x3lower + (x3upper-x3lower)/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)] 
+    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+    x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
+    x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)] 
 
     ! generate a subgrid from these
     call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)

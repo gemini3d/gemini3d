@@ -2,7 +2,7 @@ program fullgrid_dipole_testdriver
 
 use filesystem, only : mkdir
 use phys_consts, only: wp
-use grid, only: generate_worker_grid, ungenerate_worker_grid
+use grid, only: generate_worker_grid, ungenerate_worker_grid, grid_from_extents
 use meshobj_dipole, only : dipolemesh
 
 implicit none (type, external)
@@ -42,7 +42,8 @@ type(dipolemesh) :: x
 integer :: irepeat
 
 do irepeat=1,1000
-  call generate_worker_grid(q,p,phi,p,phi,0._wp,0._wp,x)
+  !call generate_worker_grid(q,p,phi,p,phi,0._wp,0._wp,x)
+  call grid_from_extents(qlims,plims,philims,lq,lp,lphi,0._wp,0._wp,x)
 
   ! check variable allocation and set status
   if(.not. (x%xi_alloc_status .and. x%dxi_alloc_status .and. x%difflen_alloc_status .and. x%null_alloc_status .and. &
