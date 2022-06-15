@@ -47,6 +47,12 @@ interface ! plasma_input_*.f90
     !! intent(out)
   end subroutine input_root_mpi_hdf5
 
+  module subroutine getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+    character(*), intent(in) :: indatsize, indatfile
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: nsall,vs1all,Tsall
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
+  end subroutine getICs_hdf5
+
   module subroutine input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
@@ -127,6 +133,14 @@ module procedure input_plasma
     call input_workers_mpi(ns,vs1,Ts,Phi)
   end if
 end procedure input_plasma
+
+
+!> This procedure is used to have all workers read in the full dataset and pick out the parts of the input data
+!    that they need for their own subgrids.  This procedure is to be used as a substitute for input_plasma in
+!    cases where a root-to-all communication pattern needs to be avoided (e.g. trees-GEMINI apps).  
+!module procedure input_plasma_roleagnostic()
+!
+!end procedure input_plasma_roleagnostic
 
 
 module procedure input_plasma_currents

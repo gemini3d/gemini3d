@@ -20,7 +20,6 @@ public :: create_outdir, &
 
 
 interface !< aurora.f90
-
   module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagglow
@@ -28,19 +27,16 @@ interface !< aurora.f90
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:), intent(in) :: iver
   end subroutine output_aur
-
 end interface
 
 
 interface !< cond.f90
-
   module subroutine output_cond(outdir, ymd, UTsec, sig0, sigP, sigH, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:), intent(in) :: sig0, sigP, sigH
   end subroutine output_cond
-
 end interface
 
 

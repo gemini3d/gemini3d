@@ -13,10 +13,6 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 
-!! FIXME:  these must be stored in a patch user_data object!!!!
-!real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
-!! so other modules can simply access gravitational field data
-
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size
@@ -39,7 +35,7 @@ interface ! readgrid_*.f90
   end subroutine get_grid3_coords_nc4
 end interface
 
-contains    !! all we have are setter procedures + whatever mpi-independent stuff is in submodules
+contains
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a 
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!
@@ -62,14 +58,15 @@ contains    !! all we have are setter procedures + whatever mpi-independent stuf
     ! generate a subgrid from these
     call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
 
-    ! release memory
+    ! get rid of temp. arrays
     deallocate(x1,x2,x3)
   end subroutine grid_from_extents
 
 
   !> Generate a "worker" grid based soley on coordinate arrays, polymorphic grid object must already
-  !    exist, i.e. already be allocated.  Note that you can set x2all=x2 and x3all=x3 if you are only
-  !    doing "local" grid operations in your GEMINI application, e.g. as with trees-GEMINI.
+  !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and 
+  !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with 
+  !    trees-GEMINI.
   subroutine generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
     real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
     real(wp), intent(in) :: glonctr,glatctr 

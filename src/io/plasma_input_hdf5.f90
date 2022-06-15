@@ -52,21 +52,10 @@ module procedure input_root_mpi_hdf5
   !! THAT RECORD-BASED INPUT IS USED SO NO FILES > 2GB DUE
   !! TO GFORTRAN BUG WHICH DISALLOWS 8 BYTE INTEGER RECORD
   !! LENGTHS.
-
-  type(hdf5_file) :: hf
-
-  integer :: lx1,lx2,lx3,lx2all,lx3all,isp
-  integer :: ix1
-
   real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
-  integer :: lx1in,lx2in,lx3in,u, utrace
-  real(wp) :: tin
-  real(wp), dimension(3) :: ymdtmp
   real(wp) :: tstart,tfin
-  real(wp), dimension(:,:), allocatable :: Phislab
-  real(wp), allocatable :: tmp(:,:,:,:), tmpPhi(:), tmpPhi2(:,:)
 
-  !> so that random values (including NaN) don't show up in Ghost cells
+  !> to avoid having garbage in ghost cells
   nsall = 0
   ns = 0
   vs1all= 0
@@ -74,13 +63,36 @@ module procedure input_root_mpi_hdf5
   Tsall = 0
   Ts = 0
 
-  !> SYSTEM SIZES
-  lx1=size(ns,1)-4
-  lx2=size(ns,2)-4
-  lx3=size(ns,3)-4
-  lx2all=size(x2all)-4
-  lx3all=size(x3all)-4
+  !> read in the full initial conditions files
+  call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
+  !> ROOT BROADCASTS IC DATA TO WORKERS
+  call cpu_time(tstart)
+  call bcast_send(nsall,tag%ns,ns)
+  call bcast_send(vs1all,tag%vs1,vs1)
+  call bcast_send(Tsall,tag%Ts,Ts)
+  !call bcast_send(Phiall,tag%Phi,Phi)
+  call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
+  call cpu_time(tfin)
+  print '(A,ES12.3,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
+end procedure input_root_mpi_hdf5
+
+
+!> Read in a full dataset from an input file
+module procedure getICs_hdf5
+  type(hdf5_file) :: hf
+  integer :: lx2all,lx3all,isp
+  integer :: ix1
+  integer :: lx1in,lx2in,lx3in,u,utrace
+  real(wp), dimension(:,:), allocatable :: Phislab
+  real(wp), allocatable :: tmp(:,:,:,:), tmpPhi(:), tmpPhi2(:,:)
+
+  !> so that random values (including NaN) don't show up in Ghost cells
+
+  !> SYSTEM SIZES
+  lx1=size(nsall,1)-4
+  lx2all=size(nsall,2)-4
+  lx3all=size(nsall,3)-4
 
   allocate(Phislab(1:lx2all,1:lx3all))  !space to store EFL potential
 
@@ -131,17 +143,29 @@ module procedure input_root_mpi_hdf5
     Phiall(ix1,1:lx2all,1:lx3all)=Phislab(1:lx2all,1:lx3all)
   end do
 
-  !> ROOT BROADCASTS IC DATA TO WORKERS
-  call cpu_time(tstart)
-  call bcast_send(nsall,tag%ns,ns)
-  call bcast_send(vs1all,tag%vs1,vs1)
-  call bcast_send(Tsall,tag%Ts,Ts)
-  !call bcast_send(Phiall,tag%Phi,Phi)
-  call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
-  call cpu_time(tfin)
-  print '(A,ES12.3,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
+  deallocate(Phislab)    ! explicitly get rid of allocated storage
+end procedure getICs_hdf5
 
-  deallocate(Phislab)
-end procedure input_root_mpi_hdf5
+
+!> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
+!    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
+!    custom arrangement.  
+!  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
+!    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
+!    and then overriding the interp to space-only.
+!module procedure interp_file2subgrid()
+!  ! read in the ICs size and grid
+!  call get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
+!
+!  ! read in the input initial conditions
+!  call input_fullgrid_data()
+!
+!  ! interpolation input data to mesh sites
+!  call interp3(x1,x2all,x3all,ns(:,:,:,1),x%x1,x%x2,x%x3)
+!  call interp3(x1,x2all,x3all,ns(:,:,:,2),x%x1,x%x2,x%x3)
+!  ! ... etc.
+!
+!  ! deallocate any fullgrid info used.  
+!end procedure interp_file2subgrid
 
 end submodule plasma_input_hdf5
