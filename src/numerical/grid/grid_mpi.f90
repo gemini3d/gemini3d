@@ -16,7 +16,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   gather_send,gather_recv,ID2grid,grid2ID
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 get_grid3_coords_raw,get_grid3_coords_hdf5,get_grid3_coords_nc4, &
-                set_total_grid_sizes,set_subgrid_sizes,set_gridflag,bind_grav_ptrs,generate_worker_grid
+                set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid
 
 implicit none (type, external)
 private
