@@ -8,7 +8,7 @@ target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magca
 $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid_mpi>  $<TARGET_OBJECTS:grid>
 $<TARGET_OBJECTS:mpimod>
 $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:geomagnetic>
-$<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
+$<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io> $<TARGET_OBJECTS:interp>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend

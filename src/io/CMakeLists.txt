@@ -35,7 +35,7 @@ $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 
 target_link_libraries(io PRIVATE
-calculus gemini3d_config const reader grid mpimod sanity_check timeutils
+calculus gemini3d_config const interp reader grid mpimod sanity_check timeutils
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 ffilesystem::filesystem
