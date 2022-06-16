@@ -39,6 +39,7 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
             rhov12v1,v12rhov1
 use advec, only: interface_vels_allspec
 use timeutils, only: dateinc
+use io, only: interp_file2subgrid
 
 implicit none (type, external)
 private
@@ -49,7 +50,8 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            interp_file2subgrid_in
 
 
 !! temp file used by MSIS 2.0
@@ -340,7 +342,22 @@ contains
   end subroutine gemini_work_dealloc
 
 
-  !> set start values for some variables.  some case is required here because the state variable pointers are mapped;
+  !> Have each worker read the entire input file and then interpolate it onto its own subgrid
+  subroutine interp_file2subgrid_in(cfg,x,fluidvars,electrovars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars,electrovars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%outdir,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
+  end subroutine interp_file2subgrid_in
+
+
+  !> set start values for some variables not specified by the input files.  
+  !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
   subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
@@ -363,7 +380,6 @@ contains
     !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
     !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
     !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-    print*, 'B1 checking before init:  ', shape(B1), lbound(B1), ubound(B1)
     ix1min=lbound(B1,1)+2
     ix1max=ubound(B1,1)-2
     ix2min=lbound(B1,2)+2

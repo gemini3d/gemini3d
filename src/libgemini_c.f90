@@ -38,7 +38,8 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            interp_file2subgrid_in
 
 implicit none (type, external)
 
@@ -157,6 +158,26 @@ contains
   end subroutine gemini_dealloc_C
 
 
+  !> C wrapper for procedure that reads full data from input file and interpolates to loca worker subgrid
+  subroutine interp_file2subgrid_C(cfgC,xtype,xC,fluidvarsC,electrovarsC) bind(C,name='interp_file2subgrid_C')
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: electrovarsC
+    type(gemini_cfg), pointer :: cfg
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+
+    call c_f_pointer(cfgC,cfg)
+    x=>set_gridpointer_dyntype(xtype,xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call interp_file2subgrid_in(cfg,x,fluidvars,electrovars)
+  end subroutine interp_file2subgrid_C
+
+
   !> set start values for some variables.
   !    some case is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays
@@ -169,7 +190,6 @@ contains
     type(c_ptr), intent(inout) :: xC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     integer(C_INT), intent(in) :: xtype
-
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 

@@ -4,7 +4,7 @@ use reader, only : get_simsize3
 use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 use interpolation, only : interp3
-use grid, only : get_grid3_coords_hdf5
+use grid, only : get_grid3_coords_hdf5,get_grid3_coords_nc4,get_grid3_coords_raw
 
 implicit none (type, external)
 
@@ -109,14 +109,14 @@ module procedure input_plasma
   if (mpi_cfg%myid==0) then
     !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
     select case (suffix(indatsize))
-    case ('.h5')
-      call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    case ('.nc')   !neither netcdf now raw input support restarting right now
-      call input_root_mpi_nc4(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    case ('.dat')
-      call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    case default
-      error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
+      case ('.h5')
+        call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+      case ('.nc')   !neither netcdf now raw input support restarting right now
+        call input_root_mpi_nc4(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+      case ('.dat')
+        call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+      case default
+        error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
     end select
 
     !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
@@ -139,7 +139,7 @@ end procedure input_plasma
 
 !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
 !    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
-!    custom arrangement.  
+!    custom arrangement.  The entire input file will be read by each worker calling this procedure.  
 !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
 !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
 !    and then overriding the interp to space-only.
@@ -156,7 +156,7 @@ module procedure interp_file2subgrid
   ! convenience
   lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
 
-  ! read in the ICs size and grid
+  ! read in the ICs size and allocate data
   call get_simsize3(out_dir,lx1in,lx2in,lx3in)
   allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
   allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -165,13 +165,36 @@ module procedure interp_file2subgrid
             Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
   allocate(parmflat(lx1*lx2*lx3))
 
-  !FIXME:  switchyard file format
-  call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+  ! get the input grid coordinates
+  select case (suffix(indatsize))
+    case ('.h5')
+      call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+    case ('.nc')   !neither netcdf now raw input support restarting right now
+      call get_grid3_coords_nc4(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+    case ('.dat')
+      call get_grid3_coords_raw(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+    case default
+      error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
+  end select
 
+  ! we must make sure that the target coordinates do not range outside the input file coordinates
+  if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
+    error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
+  end if
+  if(x2(1)<x2in(1) .or. x2(lx2)>x2in(lx2in)) then
+    error stop 'interp_file2grid: x2 target coordinates beyond input grid coords'
+  end if
+  if(x3(1)<x3in(1) .or. x3(lx3)>x3in(lx3in)) then
+    error stop 'interp_file2grid: x3 target coordinates beyond input grid coords'
+  end if
 
-  ! read in the input initial conditions
-  ! FIXME: switchyard file format eventually for now assume hdf5
-  call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+  ! read in the input initial conditions, only hdf5 files are support for this functionality
+  select case (suffix(indatsize))
+    case ('.h5')
+      call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+    case default
+      error stop 'Input interpolation only supported for hdf5 files'
+  end select
 
   ! interpolation input data to mesh sites; do not interpolate to ghost cells
   do isp=1,lsp

@@ -16,7 +16,7 @@ public :: create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
   output_aur, output_cond, &
-  find_milestone
+  find_milestone, interp_file2subgrid
 
 
 interface !< aurora.f90
