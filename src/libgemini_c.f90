@@ -39,7 +39,7 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in
+            interp_file2subgrid_in,grid_from_extents_in,get_gridcenter_in
 
 implicit none (type, external)
 
@@ -156,6 +156,31 @@ contains
     !    when passed back and forth with C so only deallocate the derived types
     call gemini_dealloc_nodouble(cfg,intvars)
   end subroutine gemini_dealloc_C
+
+
+  !> C wrapper for procedure to get the center location of the grid from its input file
+  subroutine get_gridcenter_C(cfgC,glonctr,glatctr) bind(C,name='get_gridcenter_C')
+    type(c_ptr), intent(in) :: cfgC
+    real(wp), intent(inout) :: glonctr,glatctr
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call get_gridcenter_in(cfg,glonctr,glatctr)
+  end subroutine get_gridcenter_C
+
+
+  !> C wrapper for procedure to compute a grid object given extents and fullgrid reference point
+  subroutine grid_from_extents_C(glonctr,glatctr,x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,xtype,xC) bind(C,name='grid_from_extents_C')
+    real(wp), intent(in) :: glonctr,glatctr
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+    integer, intent(in) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype,xC)
+    call grid_from_extents_in(glonctr,glatctr,x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
+  end subroutine grid_from_extents_C
 
 
   !> C wrapper for procedure that reads full data from input file and interpolates to loca worker subgrid

@@ -29,7 +29,10 @@ use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
-use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    ! these are fixed for a given worker (even with multiple patches)
+
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    
+!! these are fixed for a given worker (even with multiple patches)
+
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -51,7 +54,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in
+            interp_file2subgrid_in,grid_from_extents_in,get_gridcenter_in
 
 
 !! temp file used by MSIS 2.0
@@ -354,6 +357,32 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%outdir,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
   end subroutine interp_file2subgrid_in
+
+
+  !> interface for pulling grid center coordinates from the input file
+  subroutine get_gridcenter_in(cfg,glonctr,glatctr)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(inout) :: glonctr,glatctr
+
+    call get_gridcenter(cfg%indatsize,cfg%outdir,glonctr,glatctr)
+  end subroutine get_gridcenter_in
+
+
+  !> A somewhat superfluous wrapper for grid generation from known extents, included here to keep with the
+  !    pattern of only having applications access procedures from this module and no others.  In the case
+  !    of a Cartesian grid we need to somehow set the center point so that there are glat/glon associated
+  !    with each location of the mesh.  This will be obtained from the input cfg file in cases where we are
+  !    generating a grid from extents.  Note that this is distinctly different from the situation where we
+  !    are using read_grid() to input a grid from a file - in that case the parameters glonctr and glatctr
+  !    are expected to be kept within that file.  
+  subroutine grid_from_extents_in(glonctr,glatctr,x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
+    real(wp), intent(in) :: glonctr,glatctr
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+    class(curvmesh), intent(inout) :: x
+
+    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,glonctr,glatctr,x)  
+  end subroutine grid_from_extents_in
 
 
   !> set start values for some variables not specified by the input files.  

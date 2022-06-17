@@ -15,8 +15,8 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
-                get_grid3_coords_raw,get_grid3_coords_hdf5,get_grid3_coords_nc4, &
-                set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid
+                set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid, &
+                get_grid3_coords
 
 implicit none (type, external)
 private
@@ -119,32 +119,6 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all
   print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3
 end subroutine read_grid
-
-
-!> Read in native coordinates from a grid file
-subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
-  character(*), intent(in) :: path
-  real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
-  real(wp) :: glonctr,glatctr
-
-  character(:), allocatable :: fmt
-
-  fmt = path(index(path, '.', back=.true.) : len(path))
-  select case (fmt)
-    case ('.dat')
-      call get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
-    case ('.h5')
-      call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
-    case ('.nc')
-      call get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
-    case default
-      error stop 'grid:read:get_grid3: unknown grid format: ' // fmt
-  end select
-
-  if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'
-  if(size(x2all) < 1) error stop 'grid:get_grid3_coords: size(x2all) must be strictly positive'
-  if(size(x3all) < 1) error stop 'grid:get_grid3_coords: size(x3all) must be strictly positive'
-end subroutine get_grid3_coords
 
 
 !> worker subgrid sizes; requires knowledge of mpi, though not any direct mpi calls

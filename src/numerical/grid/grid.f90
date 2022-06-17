@@ -12,10 +12,12 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! is required when using this module.
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
-
+private 
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
-             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size
+             set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
+             grid_from_extents, generate_worker_grid, ungenerate_worker_grid, &
+             get_grid3_coords,get_gridcenter
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
@@ -36,6 +38,21 @@ interface ! readgrid_*.f90
 end interface
 
 contains
+  !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
+  !    generation of Cartesian meshes.  
+  subroutine get_gridcenter(indatsize,outdir,glonctr,glatctr)
+    character(*), intent(in) :: indatsize,outdir
+    real(wp), intent(inout) :: glonctr,glatctr
+    integer :: lx1,lx2all,lx3all
+    real(wp), dimension(:), allocatable :: x1,x2all,x3all
+    
+    call get_simsize3(indatsize,lx1,lx2all,lx3all)
+    allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+    call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
+    deallocate(x1,x2all,x3all)
+  end subroutine get_gridcenter
+
+
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a 
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!
@@ -91,6 +108,32 @@ contains
   
     call x%dissociate_pointers()
   end subroutine ungenerate_worker_grid
+
+
+  !> Read in native coordinates from a grid file
+  subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
+    character(*), intent(in) :: path
+    real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
+    real(wp) :: glonctr,glatctr
+  
+    character(:), allocatable :: fmt
+  
+    fmt = path(index(path, '.', back=.true.) : len(path))
+    select case (fmt)
+      case ('.dat')
+        call get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
+      case ('.h5')
+        call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
+      case ('.nc')
+        call get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
+      case default
+        error stop 'grid:read:get_grid3: unknown grid format: ' // fmt
+    end select
+  
+    if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'
+    if(size(x2all) < 1) error stop 'grid:get_grid3_coords: size(x2all) must be strictly positive'
+    if(size(x3all) < 1) error stop 'grid:get_grid3_coords: size(x3all) must be strictly positive'
+  end subroutine get_grid3_coords
 
 
   subroutine set_total_grid_sizes(lx1in,lx2allin,lx3allin)
