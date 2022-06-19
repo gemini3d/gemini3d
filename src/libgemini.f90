@@ -30,9 +30,7 @@ use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
 
-use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    
-!! these are fixed for a given worker (even with multiple patches)
-
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -54,7 +52,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in,grid_from_extents_in,get_gridcenter_in
+            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
 
 
 !! temp file used by MSIS 2.0
@@ -360,12 +358,11 @@ contains
 
 
   !> interface for pulling grid center coordinates from the input file
-  subroutine get_gridcenter_in(cfg,glonctr,glatctr)
+  subroutine read_fullsize_gridcenter_in(cfg)
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), intent(inout) :: glonctr,glatctr
 
-    call get_gridcenter(cfg%indatsize,cfg%outdir,glonctr,glatctr)
-  end subroutine get_gridcenter_in
+    call read_size_gridcenter(cfg%indatsize,cfg%outdir)
+  end subroutine read_fullsize_gridcenter_in
 
 
   !> A somewhat superfluous wrapper for grid generation from known extents, included here to keep with the
@@ -375,13 +372,12 @@ contains
   !    generating a grid from extents.  Note that this is distinctly different from the situation where we
   !    are using read_grid() to input a grid from a file - in that case the parameters glonctr and glatctr
   !    are expected to be kept within that file.  
-  subroutine grid_from_extents_in(glonctr,glatctr,x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
-    real(wp), intent(in) :: glonctr,glatctr
+  subroutine grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     class(curvmesh), intent(inout) :: x
 
-    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,glonctr,glatctr,x)  
+    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
   end subroutine grid_from_extents_in
 
 

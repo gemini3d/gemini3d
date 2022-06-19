@@ -12,12 +12,14 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! is required when using this module.
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
+real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
+
 private 
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
              grid_from_extents, generate_worker_grid, ungenerate_worker_grid, &
-             get_grid3_coords,get_gridcenter,detect_gridtype
+             get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
@@ -50,34 +52,47 @@ contains
       print*, 'Detected Cartesian grid...'
       xtype=1
     end if
-  end function detect_gridtype 
+  end function detect_gridtype
+
+
+  !> Force a size and grid center location into module variables
+  subroutine set_size_gridcenter(lx1in,lx2allin,lx3allin,glonctrin,glatctrin)
+    integer, intent(in) :: lx1in,lx2allin,lx3allin
+    real(wp), intent(in) :: glonctrin,glatctrin
+
+    lx1=lx1in; lx2all=lx2allin; lx3all=lx3allin;
+    glonctr=glonctrin; glatctr=glatctrin;
+  end subroutine set_size_gridcenter
 
 
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
-  !    generation of Cartesian meshes.  
-  subroutine get_gridcenter(indatsize,outdir,glonctr,glatctr)
+  !    generation of Cartesian meshes and put in in a module-scope variable.
+  subroutine read_size_gridcenter(indatsize,outdir)
     character(*), intent(in) :: indatsize,outdir
-    real(wp), intent(inout) :: glonctr,glatctr
-    integer :: lx1,lx2all,lx3all
     real(wp), dimension(:), allocatable :: x1,x2all,x3all
     
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
     allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
     deallocate(x1,x2all,x3all)
-  end subroutine get_gridcenter
+  end subroutine read_size_gridcenter
 
 
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a 
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!
-  subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,glonctr,glatctr,x)
+  subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
-    real(wp), intent(in) :: glonctr,glatctr
     class(curvmesh), intent(inout) :: x
     integer :: ix1,ix2,ix3
     real(wp), dimension(:), allocatable :: x1,x2,x3
+
+    ! error checking
+    if (glatctr<-90._wp .or. glatctr>90._wp) then
+      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
+                   module variables glonctr,glatctr'
+    end if
 
     ! create temp space
     allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))

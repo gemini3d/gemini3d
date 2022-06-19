@@ -2,7 +2,7 @@ program fullgrid_dipole_testdriver
 
 use filesystem, only : mkdir
 use phys_consts, only: wp
-use grid, only: generate_worker_grid, ungenerate_worker_grid, grid_from_extents
+use grid, only: generate_worker_grid, ungenerate_worker_grid, grid_from_extents, set_size_gridcenter
 use meshobj_dipole, only : dipolemesh
 
 implicit none (type, external)
@@ -29,6 +29,8 @@ q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/(lp-1)*(ip-1),ip=1,lp)]
 phi=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,lphi)]
 
+call set_size_gridcenter(lq-4,lp-4,lphi-4,0._wp,0._wp)
+
 ! test min/max coordinate limits
 !print*, qlims
 !print*, minval(q),maxval(q)
@@ -43,7 +45,7 @@ integer :: irepeat
 
 do irepeat=1,10
   !call generate_worker_grid(q,p,phi,p,phi,0._wp,0._wp,x)
-  call grid_from_extents(qlims,plims,philims,lq,lp,lphi,0._wp,0._wp,x)
+  call grid_from_extents(qlims,plims,philims,lq,lp,lphi,x)
 
   ! check variable allocation and set status
   if(.not. (x%xi_alloc_status .and. x%dxi_alloc_status .and. x%difflen_alloc_status .and. x%null_alloc_status .and. &

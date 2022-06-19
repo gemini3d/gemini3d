@@ -66,7 +66,7 @@ extern void source_loss_allparams_C(void**, double**, double**, double**, void**
 extern void check_dryrun_C(void**);
 extern void dateinc_C(double*, int*, double*);
 extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
-extern void get_gridcenter_C(void**, double*, double*);
+extern void read_fullsize_gridcenter_C(void**);
 extern void grid_from_extents_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
 
 /* interfaces for libgemini_mpi */
