@@ -1,17 +1,24 @@
 // MAIN PROGRAM FOR GEMINI3D
 
 #include <iostream>
-#include <filesystem>
 #include <vector>
 #include <sstream>
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "No C++ filesystem support"
+#endif
 
 #include <mpi.h>
 
 #include "gemini3d.h"
 #include "iniparser.h"
 #include "filesystem.h"
-
-namespace fs = std::filesystem;
 
 int main(int argc, char **argv) {
 
