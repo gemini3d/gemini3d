@@ -23,7 +23,7 @@ module gemini3d_C
 
 use, intrinsic :: iso_c_binding, only : c_int, c_bool, c_loc, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
 use phys_consts, only: lnchem,lwave,lsp
-use grid, only: lx1,lx2,lx3
+use grid, only: lx1,lx2,lx3, detect_gridtype
 use meshobj, only: curvmesh
 use meshobj_cart, only: cartmesh
 use meshobj_dipole, only: dipolemesh
@@ -174,12 +174,14 @@ contains
     real(wp), intent(in) :: glonctr,glatctr
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
-    integer, intent(in) :: xtype
+    integer, intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
     x=>set_gridpointer_dyntype(xtype,xC)
     call grid_from_extents_in(glonctr,glatctr,x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
+    ! as an extra step we need to also assign a type to the grid
+    xtype=detect_gridtype(x%x1,x%x2,x%x3)
   end subroutine grid_from_extents_C
 
 

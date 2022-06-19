@@ -17,7 +17,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_raw, get_grid3_coords_hdf5, get_grid3_coords_nc4, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
              grid_from_extents, generate_worker_grid, ungenerate_worker_grid, &
-             get_grid3_coords,get_gridcenter
+             get_grid3_coords,get_gridcenter,detect_gridtype
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
@@ -38,6 +38,21 @@ interface ! readgrid_*.f90
 end interface
 
 contains
+  !> detect the type of grid that we are dealing with based solely on native coordinate values
+  function detect_gridtype(x1,x2,x3) result(xtype)
+    real(wp), dimension(-1:), intent(in) :: x1,x2,x3
+    integer :: xtype
+   
+    if (maxval(abs(x2))<100) then
+      print*, ' Detected dipole grid...'
+      xtype=2
+    else
+      print*, 'Detected Cartesian grid...'
+      xtype=1
+    end if
+  end function detect_gridtype 
+
+
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
   !    generation of Cartesian meshes.  
   subroutine get_gridcenter(indatsize,outdir,glonctr,glatctr)

@@ -16,7 +16,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   gather_send,gather_recv,ID2grid,grid2ID
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid, &
-                get_grid3_coords
+                get_grid3_coords, detect_gridtype
 
 implicit none (type, external)
 private
@@ -64,6 +64,7 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   !    this limitation exists...
   type(cartmesh), pointer :: xcart
   type(dipolemesh), pointer :: xdipole
+  integer :: gridtype
 
   !! Declare grid type that we are dealing with; note lack of matching deallocates assume
   !!   that the compiler will deal with it automatically
@@ -92,21 +93,37 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
 
 
   print*, 'read_grid has size:  ',lx1,lx2,lx3,lx2all,lx3all
-  !! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
+  gridtype=detect_gridtype(x1,x2,x3)
+  print*, 'read_grid detects grid type:  ',gridtype
+  select case (gridtype)
+    case (2)
+      !allocate(dipolemesh::x)
+      allocate(xdipole)
+      x=>xdipole
+      call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
+      if (present(xC) .and. present(xtype)) then
+        xC = c_loc(xdipole)
+        xtype = gridtype
+      end if
+    case (1)
+      !allocate(cartmesh::x)
+      allocate(xcart)
+      x=>xcart
+      call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
+      print*, 'read_grid_cart done'
+      if (present(xC) .and. present(xtype)) then
+        xC = c_loc(xcart)
+        xtype = gridtype
+      end if
+    case default
+      error stop 'Unable to identify grid type'
+  end select
+
   !! right now we just have Cartesian and dipole so it's easy to detect based on x2
   if (maxval(abs(x2))<100) then
     print*, ' Detected dipole grid...'
-    !allocate(dipolemesh::x)
-    allocate(xdipole)
-    x=>xdipole
-    call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
-    if (present(xC) .and. present(xtype)) then
-      xC = c_loc(xdipole)
-      xtype=2
-    end if
   else
     print*, 'Detected Cartesian grid...'
-    !allocate(cartmesh::x)
     allocate(xcart)
     x=>xcart
     call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
