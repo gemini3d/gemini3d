@@ -62,12 +62,18 @@ cmake --build external/build
 that installs Gemini3d external libraries under ~/lib_intel.
 This path is arbitrary but should be distinct between compilers.
 
+NOTE: If CMake is too old, update by:
+
+```sh
+cmake -P external/scripts/install_cmake.cmake
+```
+
 ## Build and Test Gemini3D
 
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -G Ninja -DCMAKE_PREFIX_PATH=~/lib_intel
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/lib_intel
 
 cmake --build gemini3d/build
 

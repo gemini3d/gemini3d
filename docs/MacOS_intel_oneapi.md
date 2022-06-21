@@ -1,7 +1,10 @@
 # Build Gemini3D with Intel oneAPI on MacOS
 
 Intel oneAPI (no cost) does not come with MPI on MacOS.
-The [gemini3d/external](https://github.com/gemini3d/external) repo can build MPICH for oneAPI on MacOS.
+The [gemini3d/external](https://github.com/gemini3d/external)
+repo can build MPICH for oneAPI on MacOS.
+
+NOTE: Apple Silicon CPU (arm64) is not compatible with Intel oneAPI.
 
 oneAPI relies on the underlying AppleClang compiler for libc and libstdc++.
 Xcode is required:
@@ -28,12 +31,6 @@ The contents of this script would be like:
 
 ```sh
 source /opt/intel/oneapi/setvars.sh
-
-export LIBRARY_PATH=$LIBRARY_PATH:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
-export CPLUS_INCLUDE_PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
-
-export CXXFLAGS=-I$CPLUS_INCLUDE_PATH
-export CFLAGS=$CXXFLAGS
 
 export FC=ifort CC=icc CXX=icpc
 ```
@@ -62,9 +59,21 @@ This path is arbitrary but should be distinct between compilers.
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -G Ninja -DCMAKE_PREFIX_PATH=~/lib_intel
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/lib_intel
 
 cmake --build gemini3d/build
 
 ctest --test-dir gemini3d/build
+```
+
+## Troubleshooting
+
+If there are compiler failures in general, try adding to "~/intel_oneapi.sh":
+
+```sh
+export LIBRARY_PATH=$LIBRARY_PATH:/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
+export CPLUS_INCLUDE_PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include
+
+export CXXFLAGS=-I$CPLUS_INCLUDE_PATH
+export CFLAGS=$CXXFLAGS
 ```

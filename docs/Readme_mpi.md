@@ -6,7 +6,7 @@ Here's how to get MPI for common computing platforms.
 ## MacOS Homebrew
 
 [Homebrew](https://brew.sh)
-is a very popular development repository for MacOS.
+is a popular development repository for MacOS.
 Installing the latest MPI is simply:
 
 ```sh
@@ -27,9 +27,16 @@ provides Intel MPI and Scalapack on Linux.
 
 ## Windows
 
-In general for Fortran development on Windows,
+We suggest using Windows Subsystem for Linux, which works as Linux above:
+
+```sh
+wsl --install
+```
+
+---
+
 [MSYS2](https://www.scivision.dev/install-msys2-windows/)
-provides a comprehensive development solution.
+also provides a comprehensive development solution.
 From the MSYS2 terminal, install MPI by:
 
 ```sh

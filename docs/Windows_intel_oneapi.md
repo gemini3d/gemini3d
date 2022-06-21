@@ -65,3 +65,5 @@ cmake --build gemini3d/build
 
 ctest --test-dir gemini3d/build
 ```
+
+Note: to avoid having to type "-G Ninja", set environment variable `CMAKE_GENERATOR` to `Ninja`

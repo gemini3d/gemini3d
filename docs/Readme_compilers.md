@@ -9,18 +9,18 @@ These compilers are known to work with GEMINI3D on Linux, MacOS, and Windows:
 * Intel oneAPI &ge; 2022.2 core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
 * Cray with GCC or Intel backend
 
-Intel Parallel Studio XE (PSXE) 2020 (Intel Fortran 19.1) is replaced by no-cost oneAPI.
+Intel Parallel Studio XE is obsolete and replaced by no-cost Intel oneAPI.
 
 Some older point releases of GCC are known to be broken (example: GCC 7.4 and 8.1 are broken in general).
-Currently, GCC 10 is the oldest version maintained by the GCC team.
 
 ## Linux
 
 HPC users usually can switch to a recent GCC version.
-[GCC](./Linux_gcc.md) is an easy choice for Linux users.
+[GCC](./Linux_gcc.md)
+is an easy choice for Linux users.
 
 [Intel oneAPI](./Linux_intel_oneapi.md)
-provides Intel MPI, LAPACK, and Scalapack for Linux.
+is another choice that may yield better runtime speed with Intel CPUs.
 
 ## MacOS
 
@@ -32,6 +32,8 @@ and
 ## Windows
 
 Windows users can choose between
-[Intel oneAPI](./Windows_intel_oneapi.md),
+[Windows Subsystem for Linux](./Linux_gcc.md),
 [MSYS2](./Windows_gcc.md),
-[Windows Subsystem for Linux](./Linux_gcc.md), or Cygwin.
+[Intel oneAPI](./Windows_intel_oneapi.md),
+or Cygwin.
+Cygwin has noticeably slower performance in general for any program.

@@ -1,21 +1,27 @@
-# Build Gemini3D with GCC on Windows
+# GCC on Windows
 
-If using Windows Subsystem for Linux, simply use [Linux GCC](./Linux_gcc.md) procedure.
+The simplest method of using GCC is via Windows Subsystem for Linux.
+[Install WSL](https://docs.microsoft.com/en-us/windows/wsl/install#install-wsl-command)
+by typing in Windows Terminal:
 
-## GCC install
+```sh
+wsl --install
+```
+
+and then use [Linux GCC](./Linux_gcc.md) procedure.
+
+---
+
+If you wish to use Gemini3D in native Windows instead, that is possible using MSYS2 as follows.
+
+## MSYS2 GCC install
 
 [MSYS2](https://www.scivision.dev/install-msys2-windows)
 provides a comprehensive Windows development solution from the Windows terminal.
-From the MSYS2 terminal, install GCC C++ and Fortran compilers:
+From the MSYS2 terminal, install CMake:
 
 ```sh
-pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
-```
-
-Also install CMake, Ninja, HDF5, and MS-MPI:
-
-```sh
-pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-hdf5 mingw-w64-x86_64-msmpi
+pacman -S mingw-w64-x86_64-cmake
 ```
 
 Install
@@ -28,6 +34,9 @@ Add MSYS2 binary directory to environment variable PATH, like `C:\msys64\mingw64
 
 ```sh
 git clone https://github.com/gemini3d/external
+
+cmake -P external/scripts/requirements.cmake
+# gives command to install compiler and system libraries
 
 cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/lib_gcc
 
@@ -48,3 +57,5 @@ cmake --build gemini3d/build
 
 ctest --test-dir gemini3d/build
 ```
+
+Note: to avoid having to type "-G Ninja", set environment variable `CMAKE_GENERATOR` to `Ninja`

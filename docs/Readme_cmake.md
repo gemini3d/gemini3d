@@ -14,14 +14,30 @@ When using a meta-build system like CMake, building a program takes two steps.
 If a user makes changes to source code, they need only rerun the `cmake --build build` command.
 If a user wishes to change a CMake option, run both commands again.
 
+## One-time Gemini3D external library setup
+
+```sh
+git clone https://github.com/gemini3d/external
+
+cmake -P external/scripts/requirements.cmake
+# gives command to install compiler and system libraries
+
+cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
+# ~/libgem is an arbitrary location--pick whatever name you like.
+
+cmake --build external/build
+```
+
+that installs Gemini3d external libraries under ~/libgem.
+
 ## Gemini3D build
 
 Many Gemini3D users don't need any custom options to get started.
 In that case, build Gemini3D from the gemini3d/ directory by:
 
 ```sh
-cmake -B build -DCMAKE_PREFIX_PATH=~/lib_gcc
-# ~/lib_gcc is the arbitrary location you installed Gemini3D/external libraries to.
+cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
+# ~/libgem is the arbitrary location you installed Gemini3D/external libraries to.
 
 cmake --build build
 ```
@@ -42,7 +58,8 @@ If you've already built Gemini but wish to change a CMake configuration option, 
 cmake --build build
 ```
 
-Those adding or modifying Gemini3D code itself may be interested in [Debug builds](./Readme_debug.md).
+Those adding or modifying Gemini3D code itself may be interested in
+[Debug builds](./Readme_debug.md).
 
 ### MacOS
 
