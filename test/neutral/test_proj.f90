@@ -22,8 +22,8 @@ real(wp), dimension(:,:,:), allocatable :: proj
 character(:), allocatable :: path
 character(1000) :: argv
 type(dipolemesh) :: x
-real(wp), dimension(lq-4,lp-4,lphi-4,3) :: ealt,eglat,eglon
-real(wp), dimension(3,3,lq,lp,lphi) :: rotmats
+real(wp), dimension(:,:,:,:), allocatable :: ealt,eglat,eglon
+real(wp), dimension(:,:,:,:,:), allocatable :: rotmats
 real(wp), dimension(3,3) :: matnow,eyetest,eye
 real(wp), parameter :: errthresh=1e-6
 real(wp) :: eyeerr
@@ -31,6 +31,8 @@ logical :: debug=.false.
 type(neutral_info) :: atmos
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+allocate(ealt(lq-4,lp-4,lphi-4,3), eglat(lq-4,lp-4,lphi-4,3), eglon(lq-4,lp-4,lphi-4,3))
+allocate(rotmats(3,3,lq,lp,lphi))
 
 !! create a dipole grid
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
