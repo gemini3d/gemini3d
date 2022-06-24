@@ -1,3 +1,6 @@
+add_library(gemini3d_sysinfo OBJECT sys.f90)
+target_link_libraries(gemini3d_sysinfo PRIVATE ffilesystem::filesystem)
+
 #--------magnetic field calculation executable---------------
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)
@@ -9,7 +12,7 @@ $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
-sanity_check errors config timeutils const
+sanity_check errors config timeutils const gemini3d_sysinfo
 hwloc_ifc hwloc_c
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
@@ -54,7 +57,8 @@ add_executable(gemini3d.run gemini3d_run.f90
 $<TARGET_OBJECTS:exe_frontend>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
-target_link_libraries(gemini3d.run PRIVATE const config timeutils autogrid reader
+target_link_libraries(gemini3d.run PRIVATE
+const config timeutils autogrid reader gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 hwloc_ifc hwloc_c
@@ -70,9 +74,11 @@ endif()
 
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90
+$<TARGET_OBJECTS:exe_frontend>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
-target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config timeutils const hwloc_ifc hwloc_c
+target_link_libraries(magcalc.run PRIVATE
+autogrid reader config timeutils const hwloc_ifc hwloc_c gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>

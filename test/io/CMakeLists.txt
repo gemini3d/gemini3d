@@ -10,46 +10,6 @@ LABELS unit
 TIMEOUT 10
 )
 
-add_executable(test_compiler_vendor test_compiler_vendor.f90)
-target_link_libraries(test_compiler_vendor PRIVATE config
-ffilesystem::filesystem
-)
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set(compiler_vendor Intel)
-else()
-  set(compiler_vendor ${CMAKE_Fortran_COMPILER_ID})
-endif()
-
-add_test(NAME compiler_vendor COMMAND test_compiler_vendor)
-set_tests_properties(compiler_vendor PROPERTIES
-PASS_REGULAR_EXPRESSION ${compiler_vendor}
-LABELS unit
-TIMEOUT 10
-)
-
-add_executable(test_expand_envvar test_expand_envvar.f90)
-target_link_libraries(test_expand_envvar PRIVATE config
-ffilesystem::filesystem
-)
-
-add_test(NAME expand_envvar COMMAND test_expand_envvar)
-set_tests_properties(expand_envvar PROPERTIES
-ENVIRONMENT test__gem=hello
-LABELS unit
-TIMEOUT 10
-)
-
-# --- test props
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(test_compiler_vendor test_expand_envvar PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(test_compiler_vendor test_expand_envvar PROPERTIES LINKER_LANGUAGE CXX)
-endif()
-
-dll_test_path(ffilesystem::filesystem "expand_envvar;compiler_vendor")
-
 
 if(f2018assumed_rank)
   add_library(debug_dump OBJECT debug_dump.f90)

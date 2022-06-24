@@ -1,6 +1,7 @@
 module gemini_cli
 
-use config, only : gemini_cfg, get_compiler_vendor
+use config, only : gemini_cfg
+use gemini3d_sysinfo, only : get_compiler_vendor
 use filesystem, only : expanduser
 use mpimod, only : mpibreakdown, mpi_cfg
 use exe_frontend, only : help_gemini_bin

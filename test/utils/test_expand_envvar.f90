@@ -1,6 +1,6 @@
 program test_expand
 
-use config, only : expand_envvar
+use gemini3d_sysinfo, only : expand_envvar
 
 implicit none (type, external)
 

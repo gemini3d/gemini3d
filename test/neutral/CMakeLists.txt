@@ -13,8 +13,8 @@ neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neut
 endforeach()
 
 target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
-target_link_libraries(test_proj PRIVATE config const reader inputdata
-timeutils mpimod const
+target_link_libraries(test_proj PRIVATE
+config const reader inputdata timeutils mpimod gemini3d_sysinfo
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>

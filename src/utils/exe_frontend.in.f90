@@ -2,7 +2,8 @@ module exe_frontend
 
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, compiler_options
 use phys_consts, only : wp
-use config, only : get_compiler_vendor, gemini_cfg, read_configfile
+use config, only : gemini_cfg, read_configfile
+use gemini3d_sysinfo, only : get_compiler_vendor
 use hwloc_ifc, only : get_cpu_count
 use filesystem, only : parent, file_name, assert_is_dir, expanduser, suffix
 use timeutils, only : date_filename,dateinc

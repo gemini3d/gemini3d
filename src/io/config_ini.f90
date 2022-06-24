@@ -1,5 +1,7 @@
 submodule (config) config_ini
 
+use filesystem, only : expanduser
+
 implicit none (type, external)
 
 contains

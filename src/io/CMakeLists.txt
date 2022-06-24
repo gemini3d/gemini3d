@@ -11,7 +11,7 @@ target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
 
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
-target_link_libraries(config PRIVATE const
+target_link_libraries(config PRIVATE const gemini3d_sysinfo
 ffilesystem::filesystem
 )
 

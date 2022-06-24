@@ -1,6 +1,6 @@
 program test_compiler_vendor
 
-use config, only : get_compiler_vendor
+use gemini3d_sysinfo, only : get_compiler_vendor
 
 implicit none (type, external)
 

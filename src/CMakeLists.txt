@@ -69,6 +69,7 @@ collision
 diffusion fang interp
 ionization
 inputdata precipdata efielddata
+gemini3d_sysinfo
 neutral
 neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
@@ -93,6 +94,7 @@ diffusion fang interp
 ionization
 ionization_mpi
 inputdata precipdata efielddata
+gemini3d_sysinfo
 neutral
 neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
