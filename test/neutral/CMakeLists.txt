@@ -18,7 +18,6 @@ gemini3d_config const reader inputdata timeutils mpimod gemini3d_sysinfo
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE Fortran)
