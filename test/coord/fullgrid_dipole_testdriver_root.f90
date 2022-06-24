@@ -19,13 +19,15 @@ real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi
 integer :: ierr, i, N
 real(wp) :: minchkvar,maxchkvar
-real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
+real(wp), dimension(:,:,:), allocatable :: proj
 integer(int64) :: mem_bytes, Bel
 
 character(:), allocatable :: path
 character(10) :: argv
 
 real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall
+
+allocate(proj(1:lq-4,1:lp-4,1:lphi-4))
 
 allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)), &
 tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)), &
