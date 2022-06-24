@@ -4,7 +4,7 @@ gemini_compare.f90 compare.f90 compare_grid_h5.f90 compare_out_h5.f90 compare_in
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(gemini3d.compare PRIVATE
-assert config reader timeutils const gemini3d_sysinfo
+assert gemini3d_config reader timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>

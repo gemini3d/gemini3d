@@ -3,7 +3,7 @@ module neutraldata2Daxisymmobj
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp,debug,pi,Re
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use neutraldata2Dobj, only: neutraldata2D

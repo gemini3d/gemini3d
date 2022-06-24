@@ -14,7 +14,7 @@ module temporal
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use meshobj, only:  curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 
 implicit none (type, external)
 

@@ -6,7 +6,7 @@ use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use reader, only: get_grid2,get_neutral2
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file

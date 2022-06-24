@@ -25,7 +25,7 @@ use PDEelliptic, only: elliptic_workers
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 mpi_cfg, tag=>gemini_mpi, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo, bcast_send3D_ghost, bcast_recv3D_ghost
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -148,7 +148,7 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
     integer :: flagdirich
     real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
- 
+
 
     !> update conductivities and mobilities
     call cpu_time(tstart)
@@ -176,7 +176,7 @@ contains
     else
       incap=0d0
     end if
-  
+
     !> assign values to the background fields, etc., irrespective of whether or not we do a potential solve
     if (mpi_cfg%myid/=0) then
       call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
@@ -186,7 +186,7 @@ contains
                                        E01,E02,E03,Vminx1slab,Vmaxx1slab)
     end if
 
-    !> must set these variables regardless of whether the solve is done because they are added to the field later  
+    !> must set these variables regardless of whether the solve is done because they are added to the field later
     if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
       E02src=0._wp; E03src=0._wp
     else                             ! Eulerian grid, use background fields
@@ -209,7 +209,7 @@ contains
                                   E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
       end if
       call cpu_time(tfin)
-  
+
       if (mpi_cfg%myid==0) then
         if (debug) print *, 'Potential solution for time step:  ',t,' took ',tfin-tstart,' seconds...'
       end if
@@ -218,7 +218,7 @@ contains
     else   !null solve; set all disturbance fields and currents to zero; these will be accumulated later if backgrounds are used
       E1=0._wp; E2=0._wp; E3=0._wp; J1=0._wp; J2=0._wp; J3=0._wp;
     end if
-  
+
     !> update *total* electric field variable to include background values
     !if (.not. cfg%flaglagrangian) then     !only add these in if we are not using a lagrangian grid
     !  E2=E2+E02
@@ -227,7 +227,7 @@ contains
 
     !> E0?src has been already adjust to account for lagrangian; no need to check again just add
     E2(1:lx1,1:lx2,1:lx3)=E2(1:lx1,1:lx2,1:lx3)+E02src
-    E3(1:lx1,1:lx2,1:lx3)=E3(1:lx1,1:lx2,1:lx3)+E03src  
+    E3(1:lx1,1:lx2,1:lx3)=E3(1:lx1,1:lx2,1:lx3)+E03src
 
     !> velocities should be computed irrespective of whether a solve was done
     call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
@@ -235,8 +235,8 @@ contains
       if (debug) print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
     end if
   end subroutine electrodynamics_curv
-  
-  
+
+
   subroutine BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x,efield, &
                                         flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                         E01,E02,E03,Vminx1slab,Vmaxx1slab)
@@ -266,8 +266,8 @@ contains
     integer :: iid,ierr
     real(wp) :: tstart,tfin
     real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1buf,Vmaxx1buf
-  
-  
+
+
     !> either read in the data from a file or use a subroutine to set the array values
     allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
     call cpu_time(tstart)
@@ -280,14 +280,14 @@ contains
     end if
     call cpu_time(tfin)
     if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
-  
+
     ierr=0
     do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
       call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
     end do
     if (ierr/=0) error stop 'mpi_send failed to send solve intent'
     if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
-  
+
     ! Need to broadcast background fields from root
     ! Need to also broadcast x1 boundary conditions for source term calculations.
     ! This duplicates some code for get_BGEfields, but that is necessary since that lower level routine renormalizes fields using metric factors, which does not need to be done again following a call to potentialBCs
@@ -295,14 +295,14 @@ contains
     call bcast_send(E02all,tag%E02,E02)
     call bcast_send(E03all,tag%E03,E03)
     deallocate(E01all,E02all,E03all)
-  
+
     !These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
     Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
     call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
     call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
   end subroutine BGfields_boundaries_root
-  
-  
+
+
   subroutine BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
     !> Worker only!  receive background and boundary condition information from root
     integer, intent(out) :: flagdirich
@@ -312,10 +312,10 @@ contains
     !! intent(out)
     ! local variables
     integer :: ierr
-  
+
     call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     if (ierr /= 0) error stop 'dirich'
-  
+
     !Need to broadcast background fields from root
     !Need to also broadcast x1 boundary conditions for source term calculations.
     call bcast_recv(E01,tag%E01)
@@ -324,8 +324,8 @@ contains
     call bcast_recv(Vminx1slab,tag%Vminx1)
     call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
   end subroutine BGfields_boundaries_worker
-  
-  
+
+
   subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiamagnetic,vs2,vs3)
     !> compute steady state drifts resulting from a range of forces.  Can be used
     !   by both root and worker processes
@@ -343,7 +343,7 @@ contains
     integer :: isp
     real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure    ! temp space for computing these
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradlp2,gradlp3
-  
+
     !! FIXME:  Do we really need separate wind mobility or
     !! can we just compute off electrical mobility as done with gravity.
     !! This is necessary because we are not storing the collision frequencies...
@@ -356,7 +356,7 @@ contains
       vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*E3(1:lx1,1:lx2,1:lx3)+ &
                         (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
     end do
-  
+
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
       do isp=1,lsp
@@ -373,7 +373,7 @@ contains
                    -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp3(1:lx1,1:lx2,1:lx3)
       end do
     end if
-  
+
     !> Gravitational drift terms (if required)
     if (flaggravdrift) then
       do isp=1,lsp
@@ -381,8 +381,8 @@ contains
         vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
       end do
     end if
-  
-  
+
+
     !! If it were appropriate this is how polarzations drifts could be computed.  However the particular quasistatic
     !   model that we use explicitly omits this from the drift calculation which is then used in convective term in
     !   polarization current.  Physically it accounts for charge accumulation from polarization currents but not for
@@ -394,8 +394,8 @@ contains
     !      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE3Dt
     !    end do
   end subroutine velocities
-  
-  
+
+
   subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                                    flaggravdrift,flagdiamagnetic,flagnodivJ0,srcterm)
     !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
@@ -417,7 +417,7 @@ contains
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
     !! one extra grid point on either end to facilitate derivatives
     !! haloing assumes existence of two ghost cells
-  
+
     !-------
     !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
     J1 = 0
@@ -443,15 +443,15 @@ contains
     call halo_pot(J1,tag%J1,x%flagper,.false.)
     call halo_pot(J2,tag%J2,x%flagper,.false.)
     call halo_pot(J3,tag%J3,x%flagper,.false.)
- 
+
     divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)
     !-------
   end subroutine potential_sourceterms
-  
- 
-  !> only to be used with electric field arrays that do not have ghost cells 
+
+
+  !> only to be used with electric field arrays that do not have ghost cells
   subroutine acc_perpBGconductioncurrents(sigP,sigH,E2,E3,J2,J3)
     !> ***Accumulate*** conduction currents into the variables J2,J3.  This
     !    routine will not independently add background fields unless they are
@@ -461,7 +461,7 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
     real(wp), dimension(1:,1:,1:), intent(in) :: E2,E3
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-  
+
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
     J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpBGconductioncurrents
@@ -480,8 +480,8 @@ contains
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
     J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpconductioncurrents
-  
-  
+
+
   subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
     !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
     !    routine for additional caveats.
@@ -489,15 +489,15 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-  
+
     !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
                             sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
     J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
                             sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpwindcurrents
-  
-  
+
+
   subroutine acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
     !> ***Accumulate*** pressure currents into the variables J2,J3.  See conduction currents
     !    routine for additional caveats.
@@ -508,7 +508,7 @@ contains
     integer :: isp
     real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradp2,gradp3
-  
+
     do isp=1,lsp
       pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)
@@ -520,20 +520,20 @@ contains
                                muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
     end do
   end subroutine acc_pressurecurrents
-  
-  
+
+
   subroutine acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
     !> ***Accumulate*** gravitational currents into the variables J2,J3.  See conduction currents
     !    routine for additional caveats.
     real(wp), dimension(:,:,:), intent(in) :: sigPgrav,sigHgrav
     real(wp), dimension(:,:,:), intent(in) :: g2,g3
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-  
+
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigPgrav*g2-sigHgrav*g3
     J3(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigHgrav*g2+sigPgrav*g3
   end subroutine acc_perpgravcurrents
-  
-  
+
+
   subroutine pot2perpfield(Phi,x,E2,E3)
     !> computes electric field (perp components only) from a worker potential pattern.  Can
     !   be called by either root or worker processes
@@ -545,7 +545,7 @@ contains
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: Phitmp
     !! one extra grid point on either end to facilitate derivatives
     !! haloing assumes existence of two ghost cells
-  
+
     !CALCULATE PERP FIELDS FROM POTENTIAL
     !      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
     !! causes major memory leak. maybe from arithmetic statement argument?
@@ -562,8 +562,8 @@ contains
     E3(1:lx1,1:lx2,1:lx3)=-1*gradtmp(1:lx1,1:lx2,1:lx3)
     !--------
   end subroutine pot2perpfield
-  
-  
+
+
   subroutine parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdirich,J1,E1)
     !> Compute the parallel currents given a potential solution and calculation of perpendicular currents
     type(gemini_cfg), intent(in) :: cfg
@@ -580,23 +580,23 @@ contains
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: divJperp
     !! haloing assumes existence of two ghost cells
-  
+
     !> inputs to this block of code:  cfg,x,J2,3,Vmaxx1slab,Vminx1slab,flagdirich,gridflag
     !> outputs to code:  J1
     !NOW DEAL WITH THE PARALLEL FIELDS AND ALL CURRENTS
     if (lx2/=1 .and. lx3/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for potential
       if (debug) print*, 'Appear to need to differentiate to get J1...'
-  
+
       !-------
       !NOTE THAT A DIRECT E1ALL CALCULATION WILL GIVE ZERO, SO USE INDIRECT METHOD, AS FOLLOWS
       J1= 0    !a placeholder so that only the perp divergence is calculated - will get overwritten later.
     !      divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
-  
+
       if (cfg%flagJpar) then   ! user can elect not to compute Jpar, which can be prone to artifacts particularly at low resolution
         call halo_pot(J1,tag%J1,x%flagper,.false.)
         call halo_pot(J2,tag%J2,x%flagper,.false.)
         call halo_pot(J3,tag%J3,x%flagper,.false.)
-  
+
         divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
                      J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
         divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
@@ -633,7 +633,7 @@ contains
               J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                                (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,1:lx2,1:lx3))
             end do
-  
+
           else        !minx1 is at the bottom of the grid to integrate from max x1
     !        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
             J1(1:lx1,1:lx2,1:lx3)=integral3D1_curv_alt(divJperp,x,1,lx1)
@@ -642,7 +642,7 @@ contains
               J1(ix1,1:lx2,1:lx3)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                                (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,1:lx2,1:lx3))
             end do
-  
+
           end if
         else
           !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
@@ -675,8 +675,8 @@ contains
       !-------
     end if
   end subroutine parallel_currents
-  
-  
+
+
   subroutine polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
     !> Computes the polarization currents resulting from time-dependence and shearing of the plasma
     type(gemini_cfg), intent(in) :: cfg
@@ -689,7 +689,7 @@ contains
     ! internal work arrays
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: DE2Dt,DE3Dt,grad2E,grad3E
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: divtmp
-  
+
     ! check whether electrodynamics is being used or not
     if (cfg%flagcap/=0) then
       !differentiate E2 in x2
@@ -701,7 +701,7 @@ contains
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
       !compute total derivative in x2
       DE2Dt=(E2(1:lx1,1:lx2,1:lx3)-E2prev)/dt+v2*grad2E+v3*grad3E
-  
+
       !differentiate E3 in x2
       call halo_pot(E3,tag%J1,x%flagper,.false.)
       divtmp=grad3D2(E3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -711,7 +711,7 @@ contains
       grad3E=divtmp(1:lx1,1:lx2,1:lx3)
       !x3 total derivative
       DE3Dt=(E3(1:lx1,1:lx2,1:lx3)-E3prev)/dt+v2*grad2E+v3*grad3E
-  
+
       !convert derivative into polarization current density
       J1pol= 0
       J2pol=incap*DE2Dt
@@ -724,8 +724,8 @@ contains
       J3pol= 0
     end if
   end subroutine polarization_currents
-  
-  
+
+
   subroutine get_BGEfields(x,E01,E02,E03,efield)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
@@ -734,13 +734,13 @@ contains
     !> routine to pull the background electric fields from the BCs modules and distribute
     !   them to worker processes; called by both root and worker processes
     real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all    !space to pull the full dataset out of the module
-  
-  
+
+
     if (mpi_cfg%myid==0) then
       allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
       E01all=0._wp
       call compute_rootBGEfields(x,E02all,E03all,efield)
-  
+
       call bcast_send(E01all,tag%E01,E01)
       call bcast_send(E02all,tag%E02,E02)
       call bcast_send(E03all,tag%E03,E03)
@@ -751,8 +751,8 @@ contains
       call bcast_recv(E03,tag%E03)
     end if
   end subroutine get_BGEfields
-  
-  
+
+
   subroutine halo_pot(parmhalo,tagcurrent,flagper,flagdegrade)
     !THIS SUBROUTINE REPLICATES A COMMON MESSAGE PASSING SCHEME USED IN THE COMPUTATION
     !OF ELECTRODYNAMICS PARAMETERS THAT RESULT FROM DERIVATIVE (WHICH REQUIRE HALOING)
@@ -762,23 +762,23 @@ contains
     logical, intent(in) :: flagdegrade    !whether or not to degrade edge derivatives to first order in x2
     integer :: lx1,lx2,lx3
     integer :: idleft,idright,iddown,idup
-  
-  
+
+
     lx1=size(parmhalo,1)-4
     lx2=size(parmhalo,2)-4
     lx3=size(parmhalo,3)-4
-  
+
     idleft=mpi_cfg%myid3-1
     idright=mpi_cfg%myid3+1
     iddown=mpi_cfg%myid2-1
     idup=mpi_cfg%myid2+1
-  
+
     parmhalo(0,1:lx2,1:lx3)=parmhalo(1,1:lx2,1:lx3)
     parmhalo(lx1+1,1:lx2,1:lx3)=parmhalo(lx1,1:lx2,1:lx3)
-  
+
     call halo(parmhalo,1,tagcurrent,flagper)     !this particular type of message passing only needs a single ghost cell
 
-    ! x2 global boundary  
+    ! x2 global boundary
     if (iddown==-1) then
       if (flagdegrade .and. lx2>1) then     !for whatever reason this fails ctest without checking lx2>1
         parmhalo(1:lx1,0,1:lx3)=-1*parmhalo(1:lx1,2,1:lx3)+2*parmhalo(1:lx1,1,1:lx3)

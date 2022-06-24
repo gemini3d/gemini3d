@@ -11,7 +11,7 @@ use grid, only : lx1, lx2, lx3, lx2all,lx3all,grid_size
 use grid_mpi, only: read_grid
 use meshobj, only : curvmesh
 use timeutils, only : dateinc,find_time_elapsed
-use config, only : gemini_cfg
+use gemini3d_config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &

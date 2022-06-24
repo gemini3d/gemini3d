@@ -2,7 +2,7 @@ program test_config
 !! test config file reading from Fortran, as NAMELIST has its quirks
 !! the order of variables in namelist specification doesn't have to match that of file namelist.
 
-use config, only : read_configfile, gemini_cfg
+use gemini3d_config, only : read_configfile, gemini_cfg
 
 implicit none (type, external)
 

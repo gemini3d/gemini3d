@@ -6,7 +6,7 @@ use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename

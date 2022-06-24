@@ -9,7 +9,7 @@ use, intrinsic :: iso_c_binding, only : c_f_pointer, C_PTR, C_INT, wp => C_DOUBL
 use phys_consts, only : lsp
 use meshobj, only: curvmesh
 use meshobj_cart, only: cartmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
 use grid, only: lx1,lx2,lx3

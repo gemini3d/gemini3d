@@ -2,7 +2,7 @@ module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-use config, only : gemini_cfg
+use gemini3d_config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave, comp_lvl
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  &
   mpi_cfg, tag=>gemini_mpi, bcast_send3D_ghost, bcast_recv3D_ghost, gather_send3D_ghost, &

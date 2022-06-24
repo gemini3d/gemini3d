@@ -20,7 +20,7 @@ TIMEOUT 10
 )
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
-target_link_libraries(test_expand_envvar PRIVATE config
+target_link_libraries(test_expand_envvar PRIVATE gemini3d_config
 ffilesystem::filesystem
 )
 

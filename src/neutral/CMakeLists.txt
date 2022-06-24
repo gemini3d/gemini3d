@@ -4,7 +4,7 @@ add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90
 $<$<NOT:$<BOOL:${hwm14}>>:${PROJECT_SOURCE_DIR}/src/vendor/hwm14_dummy.f90>
 )
 target_compile_options(neutral PRIVATE ${gfortran_opts})
-target_link_libraries(neutral PRIVATE config const reader grid meshobj interp mpimod
+target_link_libraries(neutral PRIVATE gemini3d_config const reader grid meshobj interp mpimod
 timeutils
 inputdata neutraldata neutraldata3D_mpi
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
@@ -17,7 +17,7 @@ ffilesystem::filesystem
 
 add_library(neutral_perturbations OBJECT neutral_perturbations.f90)
 target_compile_options(neutral_perturbations PRIVATE ${gfortran_opts})
-target_link_libraries(neutral_perturbations PRIVATE config const reader grid meshobj interp mpimod
+target_link_libraries(neutral_perturbations PRIVATE gemini3d_config const reader grid meshobj interp mpimod
 timeutils
 inputdata
 neutral neutraldata neutraldata3D_mpi neutraldata3D_geog_mpi neutraldata3D_geom_mpi

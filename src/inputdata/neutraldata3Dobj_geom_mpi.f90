@@ -5,7 +5,7 @@ use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use neutraldata3Dobj_mpi, only: neutraldata3D
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 
 implicit none (type,external)

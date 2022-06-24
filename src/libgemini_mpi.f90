@@ -6,7 +6,7 @@ use, intrinsic :: iso_c_binding, only : c_ptr
 use phys_consts, only: wp,debug
 use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown, mpisetup
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
 use grid, only: lx1,lx2,lx3

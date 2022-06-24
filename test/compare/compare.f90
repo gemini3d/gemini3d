@@ -7,7 +7,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, int64
 use phys_consts, only : wp
 use timeutils, only : date_filename, dateinc
-use config, only : gemini_cfg, read_configfile
+use gemini3d_config, only : gemini_cfg, read_configfile
 use h5fortran, only : hdf5_file
 use filesystem, only : suffix, file_name, is_file
 use reader, only : get_simsize3, get_simsize2

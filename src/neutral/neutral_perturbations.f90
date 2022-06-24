@@ -1,7 +1,7 @@
 module neutral_perturbations
 
 use phys_consts, only: wp, lnchem, pi, Re, debug
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use meshobj, only: curvmesh
 use mpimod, only: mpi_cfg
 use neutraldataobj, only: neutraldata
@@ -97,7 +97,7 @@ contains
   !> Adds stored base (viz. background) and perturbation neutral atmospheric density
   !   This does not use any of the existing data in arrays, but is declared inout to avoid potential
   !   issues with deallocation/reallocation.  This procedure should be used when you have both neutral
-  !   background and perturbations and an update needs to be done. 
+  !   background and perturbations and an update needs to be done.
   subroutine neutral_denstemp_update(atmos,atmosperturb)
     type(neutral_info), intent(inout) :: atmos
     class(neutraldata), intent(inout) :: atmosperturb
@@ -125,7 +125,7 @@ contains
 
   !> update wind variables with background and perturbation quantities, note that this does not use any of the
   !    existing data in vn; but we still use intent(inout) to avoid weirdness with allocatable arrays.  This procedure
-  !    should only be used when one has both a background and perturbation.  
+  !    should only be used when one has both a background and perturbation.
   subroutine neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
     real(wp), intent(in) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
@@ -152,7 +152,7 @@ contains
   !> deallocate neutral data object
   subroutine clear_dneu(atmosperturb)
     class(neutraldata), pointer, intent(inout) :: atmosperturb
- 
+
     if (associated(atmosperturb)) deallocate(atmosperturb)
   end subroutine clear_dneu
 end module neutral_perturbations

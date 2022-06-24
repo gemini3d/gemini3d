@@ -1,13 +1,13 @@
 module precipdataobj
 
 ! type extension for file-based precipitation data input.  Assumes parallel communication between root/workers for data
-! distribution.  
+! distribution.
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_precip
 use timeutils, only: dateinc,date_filename
 
@@ -25,7 +25,7 @@ type, extends(inputdata) :: precipdata
 
   contains
     ! overriding procedures
-    procedure :: set_sizes=>set_sizes_precip 
+    procedure :: set_sizes=>set_sizes_precip
 
     ! deferred bindings
     procedure :: init=>init_precip
@@ -68,10 +68,10 @@ contains
     !select type (x)
     !  class is (dipolemesh)
     !    print*, ' precipdata:  detected dipole mesh...'
-    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
     !    self%lc2i=x%lx3; self%lc3i=x%lx2;    ! dipolemesh mesh permuted ~alt,lat,lon  more or less...
     !  class default
-        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
         self%lc2i=x%lx2; self%lc3i=x%lx3;
     !end select
 
@@ -83,7 +83,7 @@ contains
 
     ! flag sizes as assigned
     self%flagsizes=.true.
-  end subroutine set_sizes_precip  
+  end subroutine set_sizes_precip
 
 
   !> set pointers to appropriate data arrays (taking into account dimensionality of the problem) and prime everything

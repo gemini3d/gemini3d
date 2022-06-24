@@ -1,6 +1,6 @@
 module gemini_init
 
-use config, only : gemini_cfg
+use gemini3d_config, only : gemini_cfg
 use mpimod, only : mpi_cfg
 use filesystem, only : assert_is_file, assert_is_dir
 

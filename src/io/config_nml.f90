@@ -1,4 +1,4 @@
-submodule(config) config_nml
+submodule(gemini3d_config) config_nml
 
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 

@@ -26,11 +26,11 @@ use meshobj, only: curvmesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all    ! these are fixed for a given worker (even with multiple patches)
-use config, only : gemini_cfg,read_configfile
+use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
 use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
@@ -190,7 +190,7 @@ contains
 
 
   !> as an alternative to gemini_alloc (fortran allocation) C programs should allocate space and pass in pointers
-  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from 
+  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from
   !    fortran which only seems to work on all compilers on types...
   subroutine gemini_alloc_nodouble(cfg,intvars)
     type(gemini_cfg), intent(in) :: cfg

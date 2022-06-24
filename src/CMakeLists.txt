@@ -12,7 +12,7 @@ add_subdirectory(io)
 add_subdirectory(temporal)
 
 add_library(collision OBJECT collisions/collisions.f90)
-target_link_libraries(collision PRIVATE const config)
+target_link_libraries(collision PRIVATE const gemini3d_config)
 
 # --- other libs
 
@@ -22,7 +22,9 @@ add_subdirectory(sources)
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
 target_link_libraries(multifluid_mpi PRIVATE const mpimod grid_mpi advec_mpi)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj precipdata ionization precipBCs sources timeutils config)
+target_link_libraries(multifluid PRIVATE
+advec calculus collision const diffusion grid meshobj precipdata ionization precipBCs sources timeutils gemini3d_config
+)
 
 add_subdirectory(utils)
 add_subdirectory(inputdata)
@@ -63,7 +65,7 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 
 set(gemini_internal_mods
 advec
-calculus config
+calculus gemini3d_config
 const
 collision
 diffusion fang interp
@@ -87,7 +89,7 @@ set(gemini_mpi_internal_mods
 gemini3d
 advec
 advec_mpi
-calculus config
+calculus gemini3d_config
 const
 collision
 diffusion fang interp

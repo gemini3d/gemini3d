@@ -12,7 +12,7 @@ $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
-sanity_check errors config timeutils const gemini3d_sysinfo
+sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 hwloc_ifc hwloc_c
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
@@ -48,7 +48,7 @@ INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
 )
 
 add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
-target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c timeutils const
+target_link_libraries(exe_frontend PRIVATE gemini3d_config hwloc_ifc hwloc_c timeutils const
 ffilesystem::filesystem
 )
 
@@ -58,7 +58,7 @@ $<TARGET_OBJECTS:exe_frontend>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(gemini3d.run PRIVATE
-const config timeutils autogrid reader gemini3d_sysinfo
+const gemini3d_config timeutils autogrid reader gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 hwloc_ifc hwloc_c
@@ -78,7 +78,7 @@ $<TARGET_OBJECTS:exe_frontend>
 $<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_link_libraries(magcalc.run PRIVATE
-autogrid reader config timeutils const hwloc_ifc hwloc_c gemini3d_sysinfo
+autogrid reader gemini3d_config timeutils const hwloc_ifc hwloc_c gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>

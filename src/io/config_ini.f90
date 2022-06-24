@@ -1,4 +1,4 @@
-submodule (config) config_ini
+submodule (gemini3d_config) config_ini
 
 use filesystem, only : expanduser
 

@@ -36,6 +36,6 @@ MPI::MPI_Fortran
 
 add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
 target_compile_options(precipBCs PRIVATE ${gfortran_opts})
-target_link_libraries(precipBCs PRIVATE reader const grid meshobj interp timeutils config
+target_link_libraries(precipBCs PRIVATE reader const grid meshobj interp timeutils gemini3d_config
 inputdata precipdata
 )

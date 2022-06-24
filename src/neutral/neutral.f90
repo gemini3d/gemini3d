@@ -4,7 +4,7 @@ use phys_consts, only: wp, lnchem, pi, Re, debug
 use grid, only: lx1, lx2, lx3
 use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 
 ! also links MSIS from vendor/msis00/
 
@@ -25,7 +25,7 @@ type neutral_info
   real(wp), dimension(:,:,:,:), allocatable :: nnmsis
   real(wp), dimension(:,:,:), allocatable :: Tnmsis
   real(wp), dimension(:,:,:), allocatable :: vn1base,vn2base,vn3base
-  
+
   !! projection factors for converting vectors mag->geo; e.g. defining rotation matrix from geographic coords into
   logical :: flagprojections=.false.
   real(wp), dimension(:,:,:), allocatable :: proj_ealt_e1,proj_ealt_e2,proj_ealt_e3
@@ -108,7 +108,7 @@ contains
 
 
   !>  Sets neutral winds to background values (usually from MSIS).  If running with neutral perturbations use the sister
-  !     procedure in neutral_perturb instead of this one.  
+  !     procedure in neutral_perturb instead of this one.
   subroutine neutralBG_wind(atmos,v2grid,v3grid)
     type(neutral_info), intent(inout) :: atmos
     real(wp), intent(in) :: v2grid,v3grid
@@ -122,7 +122,7 @@ contains
     atmos%vn2=atmos%vn2-v2grid
     atmos%vn3=atmos%vn3-v3grid
   end subroutine neutralBG_wind
- 
+
 
   !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
   subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,atmos,flagBG)

@@ -21,7 +21,7 @@ use mpi, only: MPI_COMM_WORLD
 
 !> type definitions
 use meshobj, only: curvmesh
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 
 !> main gemini libraries
 use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &

@@ -14,7 +14,7 @@ endforeach()
 
 target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(test_proj PRIVATE
-config const reader inputdata timeutils mpimod gemini3d_sysinfo
+gemini3d_config const reader inputdata timeutils mpimod gemini3d_sysinfo
 MPI::MPI_Fortran
 msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>

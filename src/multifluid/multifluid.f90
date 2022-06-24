@@ -13,7 +13,7 @@
 ! limitations under the License.
 
 !>  This module contains subroutines to be called by a gemini main program in order to execute numerical solutions
-!     to the ionospheric transport equations (electrodynamics calls are located elsewhere).  
+!     to the ionospheric transport equations (electrodynamics calls are located elsewhere).
 module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
@@ -28,7 +28,7 @@ use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
-use config, only: gemini_cfg
+use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
 
 implicit none (type, external)
@@ -51,7 +51,7 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
- 
+
   call sweep3_allspec(ns,vs3i,dt,x,0,6)
   call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
   call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
@@ -117,7 +117,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
     !! no file input specified, so just call 'regular' function
     call precipBCs(t,x,cfg,W0,PhiWmWm2)
   end if
-  
+
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
   call cpu_time(tstart)
   Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
@@ -130,7 +130,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
-  
+
   !ALL VELOCITY SOURCES
   call cpu_time(tstart)
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
@@ -139,7 +139,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
-  
+
   !ALL MASS SOURCES
   call cpu_time(tstart)
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
@@ -234,7 +234,7 @@ end subroutine VNRicht_artvisc
 !> Adiabatic compression term, including (precomputed) artifical viscosity.  All velocities must be haloed a single
 !    point prior to calling this procedure.  Upon entering this procedure the specific internal energy density contains
 !    the most recent updated state, while the temperature may or mat not.  Upon exit both the energy density and temp.
-!    can be considered fully updated.  
+!    can be considered fully updated.
 subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -252,10 +252,10 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
                   vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
     !! diff with one set of ghost cells to preserve second order accuracy over the grid
     paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-  
+
     rhoeshalf = paramtrim - dt/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
     !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
-  
+
     paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
   end do
@@ -263,7 +263,7 @@ end subroutine compression
 
 
 !> Execute energy diffusion substep, no mpi required.  Upon entering this procedure the temperature needs to be have its
-!     most recently updated state.  Upon exit the temperature will be updated with diffusion properly applied.  
+!     most recently updated state.  Upon exit the temperature will be updated with diffusion properly applied.
 subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -282,7 +282,7 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   do isp=1,lsp
     param=Ts(:,:,:,isp)     !temperature for this species
     call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
-  
+
     call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
     select case (flagdiffsolve)
       case (1)
@@ -293,7 +293,7 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
         print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
         error stop
     end select
-  
+
     Ts(:,:,:,isp) = param
     Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
   end do
@@ -369,7 +369,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
     !  print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
     !end if
   end if
-  
+
   !if (mpi_cfg%myid==0) then
   !  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
   !    minval(Prprecip), maxval(Prprecip)
@@ -389,7 +389,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   real(wp), intent(in) :: UTsec
   real(wp), intent(in) :: f107a,f107
   real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
-  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip  
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
@@ -405,7 +405,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
     print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
       minval(chi)*180/pi, maxval(chi)*180/pi
   end if
-  
+
   ! solar fluxes and resulting ionization rates
   Prpreciptmp=photoionization(x,nn,chi,f107,f107a,gavg,Tninf)
   !if (mpi_cfg%myid==0 .and. debug) then
@@ -413,14 +413,14 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
       minval(Prpreciptmp), maxval(Prpreciptmp)
   end if
-  
+
   Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
   !! enforce minimum production rate to preserve conditioning for species that rely on constant production
   !! testing should probably be done to see what the best choice is...
-  
+
   Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
   !! thermal electron heating rate from Swartz and Nisbet, (1978)
-  
+
   !> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
   Prprecip = Prprecip + Prpreciptmp
   Qeprecip = Qeprecip + Qepreciptmp
@@ -428,7 +428,7 @@ end subroutine solar_ionization
 
 
 !> Energy source/loss solutions.  Upon entry the energy density should have the most recently updated state.  Upon exit
-!    both the energy density and temperature are fully updated.  
+!    both the energy density and temperature are fully updated.
 subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
@@ -446,7 +446,7 @@ subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
     paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
     paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-  
+
     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
   end do
@@ -454,7 +454,7 @@ end subroutine energy_source_loss
 
 
 !>  Momentum source/loss processes.  Upon entry the momentum density should be updated to most recent; upon exit
-!     both momentum density and velocity will be updated.  
+!     both momentum density and velocity will be updated.
 subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -473,7 +473,7 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
     rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
   end do
-  
+
   ! Update velocity and momentum for electrons
   ! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
   chrgflux = 0.0
@@ -507,7 +507,7 @@ subroutine mass_source_loss(dt,Pr,Lo,Prprecip,ns)
 end subroutine mass_source_loss
 
 
-!> Deal with cells outside computation domain; i.e. apply fill values.  
+!> Deal with cells outside computation domain; i.e. apply fill values.
 subroutine clean_param(x,paramflag,param)
   !------------------------------------------------------------
   !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
@@ -518,19 +518,19 @@ subroutine clean_param(x,paramflag,param)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
   real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
-  
+
   select case (paramflag)
     case (1)    !density
       param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)
       param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)       !enforce charge neutrality based on ion densities
-  
+
       do isp=1,lsp             !set null cells to some value
         if (isp==1) then
           do iinull=1,x%lnull
             ix1=x%inull(iinull,1)
             ix2=x%inull(iinull,2)
             ix3=x%inull(iinull,3)
-  
+
             param(ix1,ix2,ix3,isp)=mindensnull*1e-2_wp
           end do
         else
@@ -538,13 +538,13 @@ subroutine clean_param(x,paramflag,param)
             ix1=x%inull(iinull,1)
             ix2=x%inull(iinull,2)
             ix3=x%inull(iinull,3)
-  
+
             param(ix1,ix2,ix3,isp)=mindensnull
           end do
         end if
       end do
-  
-  
+
+
       !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
       param(-1:0,:,:,:)=mindensdiv
       param(lx1+1:lx1+2,:,:,:)=mindensdiv
@@ -558,11 +558,11 @@ subroutine clean_param(x,paramflag,param)
           ix1=x%inull(iinull,1)
           ix2=x%inull(iinull,2)
           ix3=x%inull(iinull,3)
-  
+
           param(ix1,ix2,ix3,isp) = 0
         end do
       end do
-  
+
       !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
       if (x%gridflag==0) then      ! closed dipole
         do isp=1,lsp
@@ -572,12 +572,12 @@ subroutine clean_param(x,paramflag,param)
               do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
                 ix1beg=ix1beg+1
               end do
-  
+
               ix1end=ix1beg
               do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the first non-null index for this field line
                 ix1end=ix1end+1
               end do
-  
+
               if (ix1beg /= lx1) then    !only do this if we actually have null grid points
                 param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
               end if
@@ -595,7 +595,7 @@ subroutine clean_param(x,paramflag,param)
               do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
                 ix1end=ix1end+1
               end do
-  
+
               if (ix1end /= lx1) then
                 param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
               end if
@@ -603,7 +603,7 @@ subroutine clean_param(x,paramflag,param)
           end do
         end do
       end if
-  
+
   !MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...  Okay so the deal here is that the ghost cell velocity values are used to compute artificial viscosity in fluid_adv, so one cannot clear them out without ruining the solution.  AFAIK no other params have this issue...
       !ZERO OUT THE GHOST CELL VELOCITIES
   !    param(-1:0,:,:,:)= 0
@@ -614,17 +614,17 @@ subroutine clean_param(x,paramflag,param)
   !    param(:,:,lx3+1:lx3+2,:)= 0
     case (3)    !temperature
       param=max(param,100._wp)     !temperature floor
-  
+
       do isp=1,lsp       !set null cells to some value
         do iinull=1,x%lnull
           ix1=x%inull(iinull,1)
           ix2=x%inull(iinull,2)
           ix3=x%inull(iinull,3)
-  
+
           param(ix1,ix2,ix3,isp) = 100
         end do
       end do
-  
+
       !> SET TEMPS TO SOME NOMINAL VALUE in the ghost cells
       param(-1:0,:,:,:) = 100
       param(lx1+1:lx1+2,:,:,:) = 100

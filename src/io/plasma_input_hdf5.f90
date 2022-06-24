@@ -16,8 +16,9 @@ module procedure input_root_currents_hdf5
   type(hdf5_file) :: hf
 
   !>  CHECK TO MAKE SURE WE ACTUALLY HAVE THE DATA WE NEED TO DO THE MAG COMPUTATIONS.
-  if (flagoutput==3) error stop 'Need current densities in the output to compute magnetic fields'
-
+  if (flagoutput==3) then
+    error stop 'ERROR:gemini3d:input_root_currents: Need current densities in the output to compute magnetic fields'
+  endif
 
   !> FORM THE INPUT FILE NAME
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
@@ -33,7 +34,7 @@ module procedure input_root_currents_hdf5
   call hf%read('/J1all', J1all(1:lx1,1:lx2all,1:lx3all))
   call hf%read('/J2all', J2all(1:lx1,1:lx2all,1:lx3all))
   call hf%read('/J3all', J3all(1:lx1,1:lx2all,1:lx3all))
-  print *, 'Min/max current data:  ',minval(J1all(1:lx1,1:lx2all,1:lx3all)),maxval(J1all(1:lx1,1:lx2all,1:lx3all)), & 
+  print *, 'Min/max current data:  ',minval(J1all(1:lx1,1:lx2all,1:lx3all)),maxval(J1all(1:lx1,1:lx2all,1:lx3all)), &
                                      minval(J2all(1:lx1,1:lx2all,1:lx3all)),maxval(J2all(1:lx1,1:lx2all,1:lx3all)), &
                                      minval(J3all(1:lx1,1:lx2all,1:lx3all)),maxval(J3all(1:lx1,1:lx2all,1:lx3all))
   call hf%close()
@@ -89,7 +90,7 @@ module procedure input_root_mpi_hdf5
   print '(A,3I6)', 'Target (output) grid structure dimensions:',lx1,lx2all,lx3all
 
   if (.not. (lx1==lx1in .and. lx2all==lx2in .and. lx3all==lx3in)) then
-    error stop 'The input data must be the same size as the grid which you are running the simulation on' // &
+    error stop 'ERROR:gemini3d: The input data must be the same size as the grid which you are running the simulation on' // &
          '- use a script to interpolate up/down to the simulation grid'
   end if
 
