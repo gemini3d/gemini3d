@@ -52,7 +52,7 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake --build build --parallel
 ")
 endif()
-if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
+if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
   #target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
   # function target_link_libraries() should work, but doesn't (CMake bug)
   set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)

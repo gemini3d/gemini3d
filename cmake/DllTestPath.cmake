@@ -15,7 +15,7 @@ set(dll_mod)
 foreach(lib IN LISTS libs)
 
   get_target_property(ttype ${lib} TYPE)
-  if(ttype STREQUAL STATIC_LIBRARY)
+  if(ttype STREQUAL "STATIC_LIBRARY")
     message(DEBUG "${lib} is ${ttype}. No need for ENVIRONMENT_MODIFICATION for ${test_names}")
     continue()
   endif()

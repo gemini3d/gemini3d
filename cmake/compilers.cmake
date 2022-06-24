@@ -23,12 +23,12 @@ if(NOT abi_ok)
 endif()
 
 # avoid MacOS unwind warnings
-if(CMAKE_CXX_COMPILER_ID STREQUAL AppleClang)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   add_link_options(-Wl,-no_compact_unwind)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   include(${CMAKE_CURRENT_LIST_DIR}/intel.cmake)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
   include(${CMAKE_CURRENT_LIST_DIR}/gnu.cmake)
 endif()
