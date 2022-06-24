@@ -10,43 +10,47 @@ public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_c
 
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( [ real(wp) :: &
--1, 6.82e-10_wp, 6.64e-10_wp, -1, &
-2.44e-10_wp, 4.34e-10_wp, 4.27e-10_wp, 0.69e-10_wp, &
-2.58e-10_wp, -1, 4.49e-10_wp, 0.74e-10_wp, &
-2.31e-10_wp, 4.13e-10_wp, -1, 0.65e-10_wp, &
-4.42e-10_wp, 7.47e-10_wp, 7.25e-10_wp, 1.45e-10_wp, &
--1, 33.6e-10_wp, 32.0e-10_wp, -1, &
+-1, 6.82e-10, 6.64e-10, -1, &
+2.44e-10, 4.34e-10, 4.27e-10, 0.69e-10, &
+2.58e-10, -1, 4.49e-10, 0.74e-10, &
+2.31e-10, 4.13e-10, -1, 0.65e-10, &
+4.42e-10, 7.47e-10, 7.25e-10, 1.45e-10, &
+-1, 33.6e-10, 32.0e-10, -1, &
 -1, -1, -1, -1], shape(Csn), order=[2,1])
 
 real(wp), parameter :: C2sn1(lsp,ln) = reshape( &
-[3.67e-11_wp, 0._wp, 0._wp, 4.63e-12_wp, &
-0._wp, 0._wp, 0._wp, 0._wp, &
-0._wp, 5.14e-11_wp, 0._wp, 0._wp, &
-0._wp, 0._wp, 2.59e-11_wp, 0._wp, &
-0._wp, 0._wp, 0._wp, 0._wp, &
-6.61e-11_wp, 0._wp, 0._wp, 2.65e-10_wp, &
--1._wp, -1._wp, -1._wp, -1._wp], shape(C2sn1), order=[2,1])
+[real(wp) :: &
+3.67e-11, 0, 0, 4.63e-12, &
+0, 0, 0, 0, &
+0, 5.14e-11, 0, 0, &
+0, 0, 2.59e-11, 0, &
+0, 0, 0, 0, &
+6.61e-11, 0, 0, 2.65e-10, &
+-1, -1, -1, -1], shape(C2sn1), order=[2,1])
 
 real(wp), parameter :: C2sn2(lsp,ln) = reshape( &
-[0.064_wp, 0._wp, 0._wp, -1._wp, &
-0._wp, 0._wp, 0._wp, 0._wp, &
-0._wp, 0.069_wp, 0._wp, 0._wp, &
-0._wp, 0._wp, 0.073_wp, 0._wp, &
-0._wp, 0._wp, 0._wp, 0._wp, &
-0.047_wp, 0._wp, 0._wp, 0.083_wp, &
--1._wp, -1._wp, -1._wp, -1._wp], shape(C2sn2), order=[2,1])
+[real(wp) :: &
+0.064, 0, 0, -1, &
+0, 0, 0, 0, &
+0, 0.069, 0, 0, &
+0, 0, 0.073, 0, &
+0, 0, 0, 0, &
+0.047, 0, 0, 0.083, &
+-1, -1, -1, -1], shape(C2sn2), order=[2,1])
 
 real(wp), parameter :: Csj(lsp,lsp) = reshape( &
-[0.22_wp, 0.26_wp, 0.25_wp, 0.26_wp, 0.22_wp, 0.077_wp, 1.87e-3_wp, &
-0.14_wp, 0.16_wp, 0.16_wp, 0.17_wp, 0.13_wp, 0.042_wp, 9.97e-4_wp, &
-0.15_wp, 0.17_wp, 0.17_wp, 0.18_wp, 0.14_wp, 0.045_wp, 1.07e-3_wp, &
-0.13_wp, 0.16_wp, 0.15_wp, 0.16_wp, 0.12_wp, 0.039_wp, 9.347e-4_wp, &
-0.25_wp, 0.28_wp, 0.28_wp, 0.28_wp, 0.24_wp, 0.088_wp, 2.136e-3_wp, &
-1.23_wp, 1.25_wp, 1.25_wp, 1.25_wp, 1.23_wp, 0.90_wp,  29.7e-3_wp, &
-54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp,  38.537_wp], shape(Csj), order=[2,1])
+[real(wp) :: &
+0.22, 0.26, 0.25, 0.26, 0.22, 0.077, 1.87e-3, &
+0.14, 0.16, 0.16, 0.17, 0.13, 0.042, 9.97e-4, &
+0.15, 0.17, 0.17, 0.18, 0.14, 0.045, 1.07e-3, &
+0.13, 0.16, 0.15, 0.16, 0.12, 0.039, 9.347e-4, &
+0.25, 0.28, 0.28, 0.28, 0.24, 0.088, 2.136e-3, &
+1.23, 1.25, 1.25, 1.25, 1.23, 0.90,  29.7e-3, &
+54.5, 54.5, 54.5, 54.5, 54.5, 54.5,  38.537], shape(Csj), order=[2,1])
 
-real(wp), parameter :: thermal_coeff(lsp-1) = [0.1019e-12_wp,0.0747e-12_wp,0.0754e-12_wp,0.0701e-12_wp, &
-                                        0.1068e-12_wp,0.3986e-12_wp]
+real(wp), parameter :: thermal_coeff(lsp-1) = [real(wp) :: &
+0.1019e-12, 0.0747e-12, 0.0754e-12, 0.0701e-12, &
+0.1068e-12, 0.3986e-12]
 
 contains
 
@@ -234,7 +238,7 @@ do isp=1,lsp
   !! cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude
   !! since the magnetic field is *assumed* to be along the x1-direction
 
-  nusn(:,:,:,isp) = 0._wp
+  nusn(:,:,:,isp) = 0
   do isp2=1,ln
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nutmp)
     nusn(:,:,:,isp)=nusn(:,:,:,isp)+nutmp
