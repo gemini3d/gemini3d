@@ -81,7 +81,7 @@ contains
   !> Read in a full dataset from an input file
   module procedure getICs_hdf5
     type(hdf5_file) :: hf
-    integer :: lx2all,lx3all,isp
+    integer :: lx1,lx2all,lx3all,isp
     integer :: ix1
     integer :: lx1in,lx2in,lx3in,u,utrace
     real(wp), dimension(:,:), allocatable :: Phislab
@@ -135,14 +135,14 @@ contains
     else
       Phislab = 0
     end if
-  
+
     call hf%close()
-  
+
     !> Apply EFL approx to compute full grid potential
     do ix1=1,lx1
       Phiall(ix1,1:lx2all,1:lx3all)=Phislab(1:lx2all,1:lx3all)
     end do
-  
+
     deallocate(Phislab)    ! explicitly get rid of allocated storage
   end procedure getICs_hdf5
 end submodule plasma_input_hdf5
