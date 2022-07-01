@@ -20,8 +20,7 @@ use h5fortran, only : hdf5_file
 use filesystem, only : suffix
 
 implicit none (type, external)
-
-external :: mpi_reduce
+external :: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce
 
 !> VARIABLES READ IN FROM CONFIG FILE
 
@@ -101,6 +100,7 @@ integer :: iid
 character(256) :: filename
 
 !! --- MAIN PROGRAM
+call mpi_init(ierr)
 
 !> get command line parameters and simulation config
 call cli(cfg,lid2in,lid3in,debug,ymdstart,UTsecstart,ymdend,UTsecend)
@@ -169,7 +169,7 @@ end if
 
 
 !ALLOCATE ARRAYS (AT THIS POINT ALL SIZES ARE SET FOR EACH PROCESS SUBGRID)
-allocate(J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
+allocate(J1(-1:lx1+2,-1:lx2+2,-1:lx3+2),J2(-1:lx1+2,-1:lx2+2,-1:lx3+2),J3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 
 
@@ -353,9 +353,9 @@ main : do while (t < cfg%tdur)
   if (mpi_cfg%myid==0) then
     print *, 'magcalc.f90 --> Rotating currents into geomagnetic coordinates...'
   end if
-  Jx=J1*proj_e1er+J2*proj_e2er+J3*proj_e3er                 !vertical
-  Jy=J1*proj_e1etheta+J2*proj_e2etheta+J3*proj_e3etheta     !south
-  Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
+  Jx=J1(1:lx1,1:lx2,1:lx3)*proj_e1er+J2(1:lx1,1:lx2,1:lx3)*proj_e2er+J3(1:lx1,1:lx2,1:lx3)*proj_e3er                 !vertical
+  Jy=J1(1:lx1,1:lx2,1:lx3)*proj_e1etheta+J2(1:lx1,1:lx2,1:lx3)*proj_e2etheta+J3(1:lx1,1:lx2,1:lx3)*proj_e3etheta     !south
+  Jz=J1(1:lx1,1:lx2,1:lx3)*proj_e1ephi+J2(1:lx1,1:lx2,1:lx3)*proj_e2ephi+J3(1:lx1,1:lx2,1:lx3)*proj_e3ephi           !east
 
 !    print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
 !                                               minval(Jz),maxval(Jz)
@@ -527,10 +527,10 @@ contains    ! declare integral functions as internal subprograms; too specific t
   subroutine fixJ(J1,J2,J3)
     ! host program data used (but not modified)
     ! mpi_cfg, alt
-    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     integer :: lx1,lx2,lx3
 
-    lx1=size(J1,1); lx2=size(J2,2); lx3=size(J3,3);
+    lx1=size(J1,1)-4; lx2=size(J2,2)-4; lx3=size(J3,3)-4;
 
     !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
     if(mpi_cfg%myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
