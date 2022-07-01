@@ -49,9 +49,13 @@ add_test(NAME fullgrid_dipole_testdriver_root COMMAND fullgrid_dipole_testdriver
 
 # --- test props
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(fullgrid_dipole_testdriver fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE Fortran)
+  set_target_properties(fullgrid_dipole_regen fullgrid_dipole_testdriver fullgrid_cartesian_testdriver
+  PROPERTIES LINKER_LANGUAGE Fortran
+  )
 else()
-  set_target_properties(fullgrid_dipole_testdriver fullgrid_cartesian_testdriver PROPERTIES LINKER_LANGUAGE CXX)
+  set_target_properties(fullgrid_dipole_regen fullgrid_dipole_testdriver fullgrid_cartesian_testdriver
+  PROPERTIES LINKER_LANGUAGE CXX
+  )
 endif()
 
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
