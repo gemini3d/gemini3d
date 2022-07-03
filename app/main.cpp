@@ -54,9 +54,6 @@ int main(int argc, char **argv) {
   if(fs::is_regular_file(ini_file)) {
 
     dictionary  *ini;
-    int b,i ;
-    double d;
-    const char *txt;
 
     ini = iniparser_load(ini_file.string().c_str());
     if (ini==NULL) {

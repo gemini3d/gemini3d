@@ -18,7 +18,6 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   double* electrovars;    // pointers modifiable by fortran
   double t, dt=1e-6;
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
-  double tstart, tfin;
   int it, iupdate;
   int flagoutput;
   double v2grid,v3grid;
