@@ -30,7 +30,7 @@ use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
 
-use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter,ungenerate_worker_grid
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -52,11 +52,17 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
+            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, ungenerate_worker_grid_in, setv2v3, &
+            v2grid, v3grid
 
 
-!! temp file used by MSIS 2.0
+!> temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
+
+
+!> global variables used by libgemini
+real(wp) :: v2grid=0._wp, v3grid=0._wp
+!^ NOTE: this could also in principle include cfg but we've already used that as arguments everywhere so we'll avoid that for now
 
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
@@ -166,6 +172,15 @@ contains
 
     lspout=lsp
   end subroutine get_species_size
+
+
+  !> force a value for the grid drift speed (only use if not automatically detecting)
+  subroutine setv2v3(v2gridin,v3gridin)
+    real(wp), intent(in) :: v2gridin,v3gridin
+
+    v2grid=v2gridin
+    v3grid=v3gridin
+  end subroutine setv2v3
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
@@ -381,6 +396,14 @@ contains
   end subroutine grid_from_extents_in
 
 
+  !> A wrapper for forcing deallocation of the grid, if needed
+  subroutine ungenerate_worker_grid_in(x)
+    class(curvmesh), intent(inout) :: x
+
+    call ungenerate_worker_grid(x)
+  end subroutine ungenerate_worker_grid_in
+
+
   !> set start values for some variables not specified by the input files.  
   !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
@@ -448,13 +471,12 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
+    class(curvmesh), intent(inout) :: x    ! included so neutral module can deallocate unit vectors once used...
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
     type(gemini_work), intent(inout) :: intvars
 
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)

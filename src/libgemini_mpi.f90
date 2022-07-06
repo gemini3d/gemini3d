@@ -22,7 +22,7 @@ use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
-use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work
+use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work, v2grid, v3grid
 
 implicit none (type, external)
 private
@@ -207,12 +207,11 @@ contains
 
 
   !> prep simulation for use of Lagrangian grid, if needed
-  subroutine BGfield_Lagrangian(cfg,x,electrovars,intvars,v2grid,v3grid)
+  subroutine BGfield_Lagrangian(cfg,x,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     type(gemini_work), intent(inout) :: intvars
-    real(wp), intent(inout) :: v2grid,v3grid
 
     real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
@@ -383,9 +382,8 @@ contains
 
 
   !> apply neutral perturbations/background and assign to main code variables
-  subroutine neutral_atmos_wind_update(intvars,v2grid,v3grid)
+  subroutine neutral_atmos_wind_update(intvars)
     type(gemini_work), intent(inout) :: intvars
-    real(wp), intent(in) :: v2grid,v3grid
 
     call neutral_denstemp_update(intvars%atmos,intvars%atmosperturb)
     call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
@@ -393,14 +391,13 @@ contains
 
 
   !> compute neutral perturbations and apply to main code variables
-  subroutine neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec,v2grid,v3grid)
+  subroutine neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(inout) :: x     ! unit vectors could be deallocated in this procedure
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
 
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &

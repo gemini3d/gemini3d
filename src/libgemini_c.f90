@@ -39,7 +39,7 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
+            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, setv2v3
 
 implicit none (type, external)
 
@@ -122,6 +122,14 @@ contains
 
     call get_species_size(lspout)
   end subroutine get_species_size_C
+
+
+  !> force a value for the grid drifts
+  subroutine setv2v3_C(v2gridin,v3gridin) bind(C, name='setv2v3_C')
+    real(wp), intent(in) :: v2gridin,v3gridin
+
+    call setv2v3(v2gridin,v3gridin)
+  end subroutine setv2v3_C
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory
@@ -257,14 +265,13 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C, name='init_neutralBG_C')
+  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_neutralBG_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt,t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
     type(c_ptr), intent(inout) :: intvarsC
 
     type(gemini_cfg), pointer :: cfg
@@ -274,7 +281,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
   end subroutine init_neutralBG_C
 
 

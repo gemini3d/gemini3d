@@ -20,7 +20,6 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
   int it, iupdate;
   int flagoutput;
-  double v2grid,v3grid;
   bool first,flagneuBG;
   int flagdneu;
   double dtneu,dtneuBG;
@@ -92,12 +91,12 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   pot2perpfield_C(&xtype,&xC,&electrovars);
   std::cout << "pot2perpfield_C done" << std::endl;
 
-  BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
+  BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars);
   std::cout << " Initialize precipitation input data..." << std::endl;
   init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
   std::cout << " Initialize neutral background and input files..." << std::endl;
   msisinit_C(&cfgC);
-  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
+  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
   init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
@@ -115,14 +114,14 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     // neutral data
     if (it!=1 && flagneuBG && t>tneuBG){
       neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
-      neutral_atmos_wind_update_C(&intvars,&v2grid,&v3grid);
+      neutral_atmos_wind_update_C(&intvars);
       tneuBG+=dtneuBG;
       if (myid==0){
         std::cout << " Computed neutral background..." << std::endl;
       }
     }
     if (flagdneu==1){
-      neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid);
+      neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
       if (myid==0){
         std::cout << " Computed neutral perturbations..." << std::endl;
       }
