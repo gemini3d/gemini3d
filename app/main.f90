@@ -277,15 +277,15 @@ contains
     ! advection substep for all species
     call cpu_time(tstart)
 
-    !call halo_interface_vels_allspec_in(x,fluidvars,lsp)
-    !call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-    !call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
-    !call halo_allparams_in(x,fluidvars,fluidauxvars)
-
-    !> check that generic haloing works
-    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    call halo_interface_vels_allspec_in(x,fluidvars,lsp)
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    call halo_allparams_in(x,fluidvars,fluidauxvars)
+
+    !> check that generic haloing works
+    !call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    !call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    !call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
 
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -305,12 +305,12 @@ contains
     call cpu_time(tstart)
     call VNRicht_artvisc_in(fluidvars,intvars)
 
-    !call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
-    !call RK2_global_boundary_allspec_in(x,fluidvars)
+    call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
+    call RK2_global_boundary_allspec_in(x,fluidvars)
 
     !> check that generic haloing works
-    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
-    call RK2_global_boundary_allspec_in(x,fluidvars)
+    !call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    !call RK2_global_boundary_allspec_in(x,fluidvars)
 
     call compression_in(fluidvars,fluidauxvars,intvars,x,dt)   ! this applies compression substep and then converts back to temperature
     call rhoe2T_in(fluidvars,fluidauxvars)
