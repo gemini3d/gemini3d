@@ -174,10 +174,16 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   T2rhoe_C(&fluidvars,&fluidauxvars);
 
   /* Advection substep */
-  halo_interface_vels_allspec_C(pxtype,&xC,&fluidvars,plsp);
+  // halo_interface_vels_allspec_C(pxtype,&xC,&fluidvars,plsp);
+  // interface_vels_allspec_C(&fluidvars,&intvars,plsp);
+  // set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);
+  // halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
+
+  // test generic haloing here
+  halo_fluidvars_C(pxtype, &xC, &fluidvars, &fluidauxvars);
   interface_vels_allspec_C(&fluidvars,&intvars,plsp);
   set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);
-  halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
+
   sweep3_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   sweep1_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
@@ -188,7 +194,14 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
 
   /* Compression substep */
   VNRicht_artvisc_C(&fluidvars,&intvars);
-  RK2_prep_mpi_allspec_C(pxtype, &xC, &fluidvars);
+
+  // RK2_prep_mpi_allspec_C(pxtype, &xC, &fluidvars);
+  // RK2_global_boundary_allspec_C(pxtype, &xC, &fluidvars);
+
+  // test generic haloing here
+  halo_fluidvars_C(pxtype,&xC,&fluidvars,&fluidauxvars);
+  RK2_global_boundary_allspec_C(pxtype, &xC, &fluidvars);
+
   compression_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   rhoe2T_C(&fluidvars,&fluidauxvars);
   clean_param_C(&three, pxtype, &xC, &fluidvars);
