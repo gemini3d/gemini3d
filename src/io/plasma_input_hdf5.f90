@@ -112,7 +112,7 @@ contains
     call hf%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
     call hf%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
     if (hf%exist('/Phiall')) then
-      if (hf%ndims('/Phiall') == 1) then
+      if (hf%ndim('/Phiall') == 1) then
         if (lx2all==1) then
           allocate(tmpPhi(lx3all))
         else
