@@ -1,7 +1,6 @@
 set_directory_properties(PROPERTIES LABEL neutral)
 
 add_executable(test_proj test_proj.f90
-$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 
 foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp

@@ -6,7 +6,7 @@ implicit none (type, external)
 public
 
 integer, parameter :: comp_lvl = 3
-!! compression level when writing HDF5/NetCDF4 files.
+!! compression level when writing files.
 !! 0 disables compression, 1->9 increasing compression
 !! only 2-D or higher variables are compressed
 

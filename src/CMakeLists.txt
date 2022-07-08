@@ -35,7 +35,6 @@ configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
 add_library(gemini3d libgemini.f90 gemini_init.f90
 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
-$<$<NOT:$<BOOL:${netcdf}>>:$<TARGET_OBJECTS:nc4fortran_dummy>>
 )
 target_include_directories(gemini3d PUBLIC
 $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -43,7 +42,6 @@ $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
-$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
@@ -124,7 +122,6 @@ target_link_libraries(gemini.bin PRIVATE
 gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
-$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MUMPS::MUMPS
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
@@ -216,7 +213,6 @@ gemini3d_mpi_c
 gemini3d_mpi
 gemini3d_c
 h5fortran::h5fortran
-$<$<BOOL:${netcdf}>:nc4fortran::nc4fortran>
 MUMPS::MUMPS
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_CXX

@@ -15,35 +15,7 @@ module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avga
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
   real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
   real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-end subroutine output_root_stream_mpi_hdf5
-
-
-module subroutine output_root_stream_mpi_nc4(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                              Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-  character(*), intent(in) :: outdir
-  integer, intent(in) :: flagoutput
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
-  real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-  real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
-  real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-end subroutine output_root_stream_mpi_nc4
-
-
-module subroutine output_root_stream_mpi_raw(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                              Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-  character(*), intent(in) :: outdir
-  integer, intent(in) :: flagoutput
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
-  real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-  real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
-  real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-end subroutine output_root_stream_mpi_raw
+end subroutine
 
 end interface
 
@@ -169,12 +141,6 @@ end if
 select case (out_format)
 case ('h5')
   call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                     Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-case ('nc')
-  call output_root_stream_mpi_nc4(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                     Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-case ('dat')
-  call output_root_stream_mpi_raw(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
                                      Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
 case default
   error stop 'plasma_output:output_root_stream_api: unknown format' // out_format

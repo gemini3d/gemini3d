@@ -1,8 +1,6 @@
 # Gemini load and plot data
 
-The default file format for Gemini is HDF5.  NetCDF4 file IO is [optionally available](./Readme_cmake.md).  Raw file output (flat binary) was the original Gemini format, but does not support all features, is no longer routinely tested and not recommended.
-
-All of the instrutions below
+The file format for Gemini is HDF5.
 
 ## Default plotting
 
@@ -13,7 +11,7 @@ import gemini3d.plot
 direc="~/simulations/mysim"
 gemini3d.plot.plot_all(direc,saveplot_fmt="png")
 ```
-The last argument is the format in which the plots will be saved, either "png" or "eps".  
+The last argument is the format in which the plots will be saved, either "png" or "eps".
 
 The MATLAB version of this script can be invoked by starting MATLAB and running:
 
@@ -22,14 +20,14 @@ run <location of matgemini>/setup.m
 direc='~/simulations/mysim'
 gemini3d.plot.plotall(direc,"png")
 ```
-where the latter argument specifies the file type to which matlab will print the plots.  Either "png" or "eps" are currently supported. 
+where the latter argument specifies the file type to which matlab will print the plots.  Either "png" or "eps" are currently supported.
 
 The Python/MATLAB ```plotall``` script reads a sequence of files from the simulation directory corresponding to the full sequence of outputs.  This script saves a copy of the output plots into the simulation output directory under "./plots/".
 
 
 ## Loading simulation data
 
-To load output data from a GEMINI simulation, e.g. for purposes of custom plotting or additional calculation, a `loadframe` API is provided.  Loadframe APIs work with any type of GEMINI file output, viz. with binary, hdf5, or netcdf output.
+To load output data from a GEMINI simulation, e.g. for purposes of custom plotting or additional calculation, a `loadframe` API is provided.  Loadframe APIs work with any type of GEMINI file output, viz. with HDF5 output.
 
 In python:
 
@@ -48,7 +46,7 @@ cfg = gemini3d.read.config(direc)
 dat=gemini3d.read.frame(direc,time=cfg["time"][-1])
 ```
 
-The output dictionary ```dat``` will have xarray entries corresponding to simulation variables corresponding to the output frame requested.  
+The output dictionary ```dat``` will have xarray entries corresponding to simulation variables corresponding to the output frame requested.
 
 In MATLAB:
 
@@ -69,7 +67,7 @@ direc="~/simulations/mysim"
 cfg=gemini3d.read.config(direc)
 ```
 
-The ```cfg``` dictionary will contain all of the information from the config.nml or config.ini file.  
+The ```cfg``` dictionary will contain all of the information from the config.nml or config.ini file.
 
 In MATLAB the config file can be read via:
 
@@ -79,7 +77,7 @@ direc='~/simulations/mysim'
 cfg = gemini3d.read.config(direc)
 ```
 
-The returned ```cfg``` variable is a MATLAB struct and will contain input file information.  
+The returned ```cfg``` variable is a MATLAB struct and will contain input file information.
 
 
 ## Loading simulation grid
@@ -101,7 +99,7 @@ run <location of matgemini>/setup.m
 direc='~/simulations/mysim'
 xg = gemini3d.read.grid(direc)
 ```
-Here ```direc``` is the path to the grid data file.  And the output object will be a dictionary or structure containing all of the grid information, list Readme_input.md for a full list.  
+Here ```direc``` is the path to the grid data file.  And the output object will be a dictionary or structure containing all of the grid information, list Readme_input.md for a full list.
 
 
 ## Output file content

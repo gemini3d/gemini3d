@@ -12,22 +12,7 @@ character(*), intent(in) :: outdir
 integer, intent(in) :: ymd(3)
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
-end subroutine output_magfields_hdf5
-
-module subroutine output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
-character(*), intent(in) :: outdir
-integer, intent(in) :: ymd(3)
-real(wp), intent(in) :: UTsec
-real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
-end subroutine output_magfields_nc4
-
-module subroutine output_magfields_raw(outdir,ymd,UTsec,Br,Btheta,Bphi)
-character(*), intent(in) :: outdir
-integer, intent(in) :: ymd(3)
-real(wp), intent(in) :: UTsec
-real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
-end subroutine output_magfields_raw
-
+end subroutine
 
 end interface
 
@@ -50,18 +35,13 @@ end procedure create_outdir_mag
 module procedure output_magfields
 
 select case (out_format)
-case ('dat')
-  call output_magfields_raw(outdir,ymd,UTsec,Br,Btheta,Bphi)
 case ('h5')
   call output_magfields_hdf5(outdir,ymd,UTsec,Br,Btheta,Bphi)
-case ('nc')
-  call output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
 case default
-  error stop 'mag:output_magfields: unknown file format' // out_format
+  error stop 'ERROR:gemini3d:mag:output_magfields: unknown file format' // out_format
 end select
 
 call check_finite_mag(outdir, Br, Btheta, Bphi)
-
 
 end procedure output_magfields
 

@@ -442,7 +442,8 @@ An example
 
 ### Initial condition input file requirements
 
-Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.  If using hdf5 input, these variables are to be organized as follows (```lsp``` is the number of species used in the simulations):
+Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.
+These variables are to be organized as follows (```lsp``` is the number of species used in the simulations):
 
  ```
  "nsall"           ! (lx1,lx2,lx3,lsp) number density of each species over the grid

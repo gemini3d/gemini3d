@@ -30,7 +30,6 @@ set_tests_properties(interp2 PROPERTIES
 TIMEOUT 15
 LABELS unit
 FIXTURES_SETUP gemini_interp2_fxt
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 # --- 3D
@@ -49,7 +48,6 @@ TIMEOUT 60  # need 60 for slow CPU
 LABELS unit
 RESOURCE_LOCK cpu_ram
 FIXTURES_SETUP gemini_interp3_fxt
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "interp2;interp3")
@@ -65,7 +63,6 @@ REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
 TIMEOUT 30
 LABELS "unit;python"
 FIXTURES_REQUIRED gemini_interp2_fxt
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 add_test(NAME interp3:python
@@ -77,7 +74,6 @@ TIMEOUT 30
 LABELS "unit;python"
 RESOURCE_LOCK cpu_ram
 FIXTURES_REQUIRED gemini_interp3_fxt
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 endif()

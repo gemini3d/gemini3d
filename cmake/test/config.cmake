@@ -58,41 +58,9 @@ set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${out_dir}/inputs/config.nml
 LABELS core
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
 )
 # WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
-
-
-if(netcdf)
-add_test(NAME gemini:netcdf:${name}:dryrun
-COMMAND ${test_cmd} -out_format nc -dryrun
-)
-
-set_tests_properties(gemini:netcdf:${name}:dryrun PROPERTIES
-TIMEOUT 60
-FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
-FIXTURES_SETUP netcdf:${name}:dryrun
-)
-
-add_test(NAME gemini:netcdf:${name}
-COMMAND ${test_cmd} -out_format nc
-)
-
-set_tests_properties(gemini:netcdf:${name} PROPERTIES
-TIMEOUT ${TIMEOUT}
-FIXTURES_REQUIRED netcdf:${name}:dryrun
-FIXTURES_SETUP netcdf:${name}:run_fxt
-)
-
-set_tests_properties(gemini:netcdf:${name}:dryrun gemini:netcdf:${name} PROPERTIES
-RESOURCE_LOCK cpu_mpi
-REQUIRED_FILES ${out_dir}/inputs/config.nml
-LABELS core
-WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
-)
-
-endif(netcdf)
 
 compare_gemini_output(${name} ${out_dir} ${ref_dir})
 

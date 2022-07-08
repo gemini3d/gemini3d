@@ -64,12 +64,7 @@ else()
   find_package(mpi_scalapack_stub CONFIG REQUIRED)
 endif()
 
-if(hdf5)
-  find_package(h5fortran CONFIG REQUIRED)
-endif()
-if(netcdf)
-  find_package(nc4fortran CONFIG REQUIRED)
-endif()
+find_package(h5fortran CONFIG REQUIRED)
 
 include(cmake/compilers.cmake)
 if(mpi)

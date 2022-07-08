@@ -92,24 +92,6 @@ Disable GLOW by:
 cmake -B build -Dglow=off
 ```
 
-### HDF5
-
-HDF5 is enabled by default, and disabled by:
-
-```sh
-cmake -B build -Dhdf5=off
-```
-
-### NetCDF
-
-NetCDF is disabled by default, and enabled by:
-
-```sh
-cmake -B build -Dnetcdf=on
-```
-
-Note: NetCDF4 is an overlay on the HDF5 library, so the computer must have a working HDF5 library as well as the NetCDF4 C and Fortran libraries.
-
 ### MSIS 2.0
 
 The neutral atmosphere model MSISE00 is used by default.

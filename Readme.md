@@ -174,13 +174,6 @@ gemini.bin command line options include:
 `-nooutput`
 : do not write data to disk. This is for benchmarking file output time, as the simulation output is lost, so this option would rarely be used.
 
-`-out_format`
-: normally Gemini reads and writes data files in the same format (HDF5, NetCDF4). This option allow one to read in one format (say NetCDF4) while writing HDF5.
-
-* `h5`: HDF5 output (most commonly used)
-* `nc`: NetCDF4 output
-* `dat`: raw binary output (not recommended, doesn't support newer features)
-
 `-manual_grid <# x2 images> <# x3 images>`
 : forces the code to adopt a specific domain decomposition in x2 and x3 by using the integers given.  If not specified the code will attempt to find its own x2,x3 decomposition.  The number of grid points in x2 and x3 must be evenly divisible by the number of user-specified images in each direction, respectively.
 

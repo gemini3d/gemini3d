@@ -30,7 +30,6 @@ FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential2d)
@@ -71,7 +70,6 @@ FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 
 dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential3d)

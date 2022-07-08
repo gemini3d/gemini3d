@@ -44,9 +44,6 @@ option(glow "use NCAR GLOW airglow / aurora model" on)
 option(hwm14 "use HWM14 neutral winds model")
 option(msis2 "use MSIS 2.x neutral atmosphere model")
 
-option(hdf5 "use HDF5 file I/O" on)
-option(netcdf "use NetCDF file I/O")
-
 option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks")

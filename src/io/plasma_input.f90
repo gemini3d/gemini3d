@@ -1,33 +1,14 @@
 submodule (io) plasma_input
-!! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
+!! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for file I/O
 use reader, only : get_simsize3
 use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 use interpolation, only : interp3
-use grid, only : get_grid3_coords_hdf5,get_grid3_coords_nc4,get_grid3_coords_raw
+use grid, only : get_grid3_coords_hdf5
 
 implicit none (type, external)
 
 interface ! plasma_input_*.f90
-  module subroutine input_root_currents_raw(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-    character(*), intent(in) :: outdir
-    integer, intent(in) :: flagoutput
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
-    !! intent(out)
-  end subroutine input_root_currents_raw
-
-  module subroutine input_root_mpi_raw(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
-    character(*), intent(in) :: indatsize, indatfile
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
-    !! intent(out)
-  end subroutine input_root_mpi_raw
 
   module subroutine input_root_currents_hdf5(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
     character(*), intent(in) :: outdir
@@ -36,7 +17,7 @@ interface ! plasma_input_*.f90
     real(wp), intent(in) :: UTsec
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
-  end subroutine input_root_currents_hdf5
+  end subroutine
 
   module subroutine input_root_mpi_hdf5(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
     real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
@@ -47,33 +28,14 @@ interface ! plasma_input_*.f90
     !! intent(out)
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
     !! intent(out)
-  end subroutine input_root_mpi_hdf5
+  end subroutine
 
   module subroutine getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: nsall,vs1all,Tsall
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
-  end subroutine getICs_hdf5
+  end subroutine
 
-  module subroutine input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-    character(*), intent(in) :: outdir
-    integer, intent(in) :: flagoutput
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
-    !! intent(out)
-  end subroutine input_root_currents_nc4
-
-  module subroutine input_root_mpi_nc4(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
-    character(*), intent(in) :: indatsize, indatfile
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
-    !! intent(out)
-  end subroutine input_root_mpi_nc4
 end interface
 
 contains
@@ -88,12 +50,8 @@ subroutine input_root_currents(outdir,out_format, flagoutput,ymd,UTsec,J1,J2,J3)
 
 
   select case(out_format)
-  case('dat')
-    call input_root_currents_raw(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
   case('h5')
     call input_root_currents_hdf5(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-  case ('nc')
-    call input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
   case default
     error stop 'input_root_current: unexpected Gemini input: ' // out_format
   end select
@@ -111,10 +69,6 @@ module procedure input_plasma
     select case (suffix(indatsize))
       case ('.h5')
         call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-      case ('.nc')   !neither netcdf now raw input support restarting right now
-        call input_root_mpi_nc4(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-      case ('.dat')
-        call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
       case default
         error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
     end select
@@ -139,7 +93,7 @@ end procedure input_plasma
 
 !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
 !    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
-!    custom arrangement.  The entire input file will be read by each worker calling this procedure.  
+!    custom arrangement.  The entire input file will be read by each worker calling this procedure.
 !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
 !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
 !    and then overriding the interp to space-only.
@@ -169,10 +123,6 @@ module procedure interp_file2subgrid
   select case (suffix(indatsize))
     case ('.h5')
       call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
-    case ('.nc')   !neither netcdf now raw input support restarting right now
-      call get_grid3_coords_nc4(out_dir,x1in,x2in,x3in,glonctr,glatctr)
-    case ('.dat')
-      call get_grid3_coords_raw(out_dir,x1in,x2in,x3in,glonctr,glatctr)
     case default
       error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
   end select
@@ -207,7 +157,7 @@ module procedure interp_file2subgrid
     parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
                        x1(1:lx1),x2(1:lx2),x3(1:lx3))
     Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-  end do 
+  end do
   parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
                      x1(1:lx1),x2(1:lx2),x3(1:lx3))
   Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])

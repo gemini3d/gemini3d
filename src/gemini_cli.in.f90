@@ -76,12 +76,6 @@ do i = 2,argc
     cfg%dryrun = .true.
   case ('-nooutput')
     cfg%nooutput = .true.
-  case ('-out_format')
-    !! used mostly for debugging--normally should be set as file_format in config.nml
-    call get_command_argument(i+1, argv, status=ierr)
-    if(ierr/=0) error stop 'gemini.bin -out_format {h5,nc,dat} parameter is required'
-    cfg%out_format = trim(argv)
-    print *,'override output file format: ',cfg%out_format
   case ('-manual_grid')
     call get_command_argument(i+1, argv, status=ierr)
     if(ierr/=0) error stop '-manual_grid lx2 lx3 parameters are required. lx2 missing'

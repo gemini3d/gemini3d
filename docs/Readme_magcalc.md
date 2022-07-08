@@ -1,14 +1,14 @@
 # The `magcalc.bin` Program
 
-GEMINI includes a auxiliary program - `magcalc.f90` - that will compute magnetic field fluctuations (deviations from the Earth's main field) due to currents internal to by the model.  Magcalc reads in the output from a *completed* GEMINI disturbance simulation, namely the three components of current density and then uses the Biot-Savart (Ampere's) Law to compute magnetic fields from these currents by executing the appropriate volume integrals.  
+GEMINI includes a auxiliary program - `magcalc.f90` - that will compute magnetic field fluctuations (deviations from the Earth's main field) due to currents internal to by the model.  Magcalc reads in the output from a *completed* GEMINI disturbance simulation, namely the three components of current density and then uses the Biot-Savart (Ampere's) Law to compute magnetic fields from these currents by executing the appropriate volume integrals.
 
-Magcalc will work for either 2D or 3D simulations; however, almost all testing has been conducted on 3D simulation *and* 2D simulations are likely inaccurate (will overestimate magnetic fluctuations usually) for purposes of computing field fluctuations from localized sources (longitudinally extended sources may still be okay).  
+Magcalc will work for either 2D or 3D simulations; however, almost all testing has been conducted on 3D simulation *and* 2D simulations are likely inaccurate (will overestimate magnetic fluctuations usually) for purposes of computing field fluctuations from localized sources (longitudinally extended sources may still be okay).
 
 Magcalc is fully parallelized, in particular making use of built-in mpi\_reduce functionality.  The full simulation grid is distributed to worker processes (domain parallelization) and each worker computes a piece of the Biot-Savart integral corresponding to their subdomain *for all field points* specified by user input.  The root process then collects integral portions from each worker and adds them together to form the full source grid Biot-Savart integral.
 
-It is recommended that you run magcalc with the same number of processors and mpi image configuration as you ran the main simulation with.  This is not required but it will reduce the considerable computation time of the program.  Depending on the number of field points chosen by the user `magcalc.bin` can take as long or longer than the main program, particularly for a 3D set of field points.  For this reason, it is recommended that `magcalc.bin` be run with 1D or 2D lists of field points (e.g. ground plane or a line corresponding to spacecraft orbit) in order to reduce computation time.  
+It is recommended that you run magcalc with the same number of processors and mpi image configuration as you ran the main simulation with.  This is not required but it will reduce the considerable computation time of the program.  Depending on the number of field points chosen by the user `magcalc.bin` can take as long or longer than the main program, particularly for a 3D set of field points.  For this reason, it is recommended that `magcalc.bin` be run with 1D or 2D lists of field points (e.g. ground plane or a line corresponding to spacecraft orbit) in order to reduce computation time.
 
-It is worth noting that the use of the Biot-Savart law is subject to limitation, most notably we are not able to account of induced surface currents using this program.  
+It is worth noting that the use of the Biot-Savart law is subject to limitation, most notably we are not able to account of induced surface currents using this program.
 
 ## Running magcalc.bin
 
@@ -39,7 +39,7 @@ The input files for magcalc are organized as follows.  If raw binary input (.dat
 2.  real(8), dimension(lpoints) :: r,theta,phi ! arrays of spherical magnetic coordinates at which the magnetic field is to be computed
 ```
 
-If an hdf5 input file is used, the above data must be present in addition to a variable `integer(4), dimension(3) :: gridsize` which indicates whether the list of points in the input file form a grid (this is useful for plotting routines which need to reshape the list/array into a proper multidimensional grid array.  If the input field points form a grid, the elements of `gridsize` are the number of grid points in the r,theta, and phi directions.  Otherwise the first element of gridsize is just lpoints, while the other two are -1, which indicates that the input points do *not* form a grid and should just be interpreted as a flat list of locations.
+The above data must be present in addition to a variable `integer(4), dimension(3) :: gridsize` which indicates whether the list of points in the input file form a grid (this is useful for plotting routines which need to reshape the list/array into a proper multidimensional grid array.  If the input field points form a grid, the elements of `gridsize` are the number of grid points in the r,theta, and phi directions.  Otherwise the first element of gridsize is just lpoints, while the other two are -1, which indicates that the input points do *not* form a grid and should just be interpreted as a flat list of locations.
 
 
 ## Simluation vs. field point resolution
@@ -51,14 +51,13 @@ The field point grid can typically be *much* coarser particularly if you intend 
 
 ## Output files created by `magcalc`
 
-By default `magcalc` now uses hdf5 output files containing the following variables:
+`magcalc` uses hdf5 output files containing the following variables:
 
 ```pseudo
 real(wp), dimension(lpoints) :: Br, Btheta, Bphi.     ! there components of the magnetic field in up,south,east coordinates
 ```
 
 Output files created by magcalc can be read using the mat_gemini interfact `gemini3d.read.magdata`.
-
 
 ## Visualizing Magnetic Field Perturbations Computed by `magcalc.bin`
 
@@ -71,17 +70,17 @@ One problematic aspect of magcalc is that you have to input the grid size into b
 
 ## Caveats
 
-`magcalc.bin` is not an entirely straightforward program to use and there are several issues that one must be aware of when running this program and analyzing the results.  
+`magcalc.bin` is not an entirely straightforward program to use and there are several issues that one must be aware of when running this program and analyzing the results.
 
 ### Cell Aspect Ratio
 
-Due to the way the numerator and denominator in the Biot-Savart Law are averaged during the integration process some issues can arise when the resolutions in the different directions are vastly different.  Because distances are averaged over cells (which may be large in one dimension vs. another) there is a minimum distance which can be accomodated on a given grid; as such the field magnitudes can be underestimated in these cases.  
+Due to the way the numerator and denominator in the Biot-Savart Law are averaged during the integration process some issues can arise when the resolutions in the different directions are vastly different.  Because distances are averaged over cells (which may be large in one dimension vs. another) there is a minimum distance which can be accomodated on a given grid; as such the field magnitudes can be underestimated in these cases.
 
-The workaround for this issue is to avoid grids with highly anisotropic grid spacing; if this is not possible one could interpolate the model output into a more isotropic grid but there are no scripts currently that support this so the user would need to make these.  
+The workaround for this issue is to avoid grids with highly anisotropic grid spacing; if this is not possible one could interpolate the model output into a more isotropic grid but there are no scripts currently that support this so the user would need to make these.
 
 ### Field Point Spacing
 
-If one chooses a field point spacing *closer* than the source grid points, then some aliasing (spurrious periodic features) can occur.  Avoid such configurations as there is likely no advantage to having a more dense field point than source point grid.  
+If one chooses a field point spacing *closer* than the source grid points, then some aliasing (spurrious periodic features) can occur.  Avoid such configurations as there is likely no advantage to having a more dense field point than source point grid.
 
 
 ### Parallel Currents are (likely) Required

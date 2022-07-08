@@ -84,12 +84,6 @@ do i = 2, argc
   case ('-dryrun', '-debug', '-nooutput')
     !! flags with no parameters
     extra = extra // ' ' // trim(buf)
-  case ('-out_format')
-    !! flags with one parameter
-    extra = extra // ' ' // trim(buf)
-    call get_command_argument(i+1, buf, length=L, status=ierr)
-    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -out_format missing parameter"
-    extra = extra // ' ' // trim(buf)
   case ('-manual_grid')
     !! flags with two parameters
     extra = extra // ' ' // trim(buf)

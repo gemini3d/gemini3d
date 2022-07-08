@@ -19,7 +19,6 @@ set_tests_properties(diffusion1 PROPERTIES
 TIMEOUT 5
 LABELS unit
 FIXTURES_SETUP gemini_diffusion_fxt
-DISABLED $<NOT:$<BOOL:${hdf5}>>
 )
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" diffusion1)
 
@@ -32,6 +31,5 @@ if(H5PY_FOUND)
   LABELS "unit;python"
   REQUIRED_FILES ${_tmpdifffn}
   FIXTURES_REQUIRED gemini_diffusion_fxt
-  DISABLED $<NOT:$<BOOL:${hdf5}>>
   )
 endif()

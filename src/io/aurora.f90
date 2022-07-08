@@ -9,23 +9,11 @@ implicit none (type, external)
 
 interface ! aurora_*.f90
 
-module subroutine output_aur_root_raw(filename,flagglow,iver)
-character(*), intent(in) :: filename
-integer, intent(in) :: flagglow
-real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine output_aur_root_raw
-
 module subroutine output_aur_root_hdf5(filename,flagglow,iver)
 character(*), intent(in) :: filename
 integer, intent(in) :: flagglow
 real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine output_aur_root_hdf5
-
-module subroutine output_aur_root_nc4(filename, flagglow,iver)
-character(*), intent(in) :: filename
-integer, intent(in) :: flagglow
-real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine output_aur_root_nc4
+end subroutine
 
 end interface
 
@@ -60,12 +48,8 @@ integer, intent(in) :: flagglow
 real(wp), dimension(:,:,:), intent(in) :: iver
 
 select case (out_format)
-case ('dat')
-  call output_aur_root_raw(stem // ".dat", flagglow, iver)
 case ('h5')
   call output_aur_root_hdf5(stem // ".h5", flagglow, iver)
-case ('nc')
-  call output_aur_root_nc4(stem // ".nc", flagglow, iver)
 case default
   error stop 'ERROR:aurora:output_aur_root: unknown grid format' // out_format
 end select

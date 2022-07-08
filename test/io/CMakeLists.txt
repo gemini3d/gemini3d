@@ -50,11 +50,3 @@ foreach(t root worker input)
 
   dll_test_path("h5fortran::h5fortran;HDF5::HDF5" "gemini:dump:${t};gemini:dump:check:${t}")
 endforeach()
-
-
-if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
-  add_executable(test_simsize_nc4 test_simsize_nc4.f90)
-  target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
-  # add_test(NAME simsize_nc4 COMMAND test_simsize_nc4)
-  # set_tests_properties(simsize_nc4 PROPERTIES LABELS unit)
-endif()
