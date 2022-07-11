@@ -54,12 +54,6 @@ URL "http://www.netlib.org/lapack/"
 DESCRIPTION "linear algebra library"
 PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
 
-set_package_properties(HWLOC PROPERTIES
-TYPE RECOMMENDED
-URL "https://www.open-mpi.org/projects/hwloc/"
-DESCRIPTION "portable abstraction of CPU hierarchical topology"
-PURPOSE "Determine the number of physical CPU cores on the host computer for gemini3d.run parallel run")
-
 # --- options
 
 add_feature_info(DevMode dev "Gemini developer mode")

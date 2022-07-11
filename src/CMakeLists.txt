@@ -42,7 +42,6 @@ $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
-$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
@@ -80,7 +79,6 @@ exe_frontend
 grid
 mpimod
 autogrid
-hwloc_ifc hwloc_c
 )
 
 set(gemini_mpi_internal_mods
@@ -108,7 +106,6 @@ grid grid_mpi io
 PDEelliptic potential mumps_interface
 mpimod
 autogrid
-hwloc_ifc hwloc_c
 )
 
 # --- Gemini.bin minimal main Fortran program
@@ -121,8 +118,8 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini.bin PRIVATE
 gemini3d_mpi
 gemini3d
+cpu_count
 h5fortran::h5fortran
-$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MUMPS::MUMPS
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
@@ -214,7 +211,6 @@ gemini3d_mpi
 gemini3d_c
 h5fortran::h5fortran
 MUMPS::MUMPS
-$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_CXX
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
@@ -245,6 +241,7 @@ gemini3d_mpi_c
 gemini3d_mpi
 gemini3d_c
 gemini3d
+cpu_count
 )
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 target_compile_definitions(gemini_c.bin PRIVATE

@@ -60,21 +60,6 @@ FIXTURES_SETUP mumps_fxt
 dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "scalapack;mumps_basic")
 
 
-if(HWLOC_FOUND)
-
-add_executable(test_hwloc test_hwloc.c)
-target_link_libraries(test_hwloc PRIVATE hwloc_c HWLOC::HWLOC)
-# NOTE: MPIEXEC_MAX_NUMPROCS uses less robust methods than hwloc, particularly on ARM (Raspberry Pi)
-add_test(NAME HWLOC COMMAND test_hwloc ${Ncpu})
-set_tests_properties(HWLOC PROPERTIES
-FIXTURES_SETUP hwloc_fxt
-TIMEOUT 10
-PROCESSORS 1
-LABELS unit
-)
-
-endif(HWLOC_FOUND)
-
 endif(mpi)
 
 
@@ -82,7 +67,7 @@ add_test(NAME gemini_fortran COMMAND gemini.bin -h)
 set_tests_properties(gemini_fortran PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
-FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
+FIXTURES_REQUIRED "mumps_fxt"
 LABELS unit
 )
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_fortran)
@@ -94,7 +79,7 @@ add_test(NAME gemini_cpp COMMAND gemini_c.bin -h)
 set_tests_properties(gemini_cpp PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
-FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
+FIXTURES_REQUIRED "mumps_fxt"
 LABELS unit
 )
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_cpp)

@@ -67,10 +67,6 @@ endif()
 find_package(h5fortran CONFIG REQUIRED)
 
 include(cmake/compilers.cmake)
-if(mpi)
-  # here for HWLOC_FOUND directory scope
-  find_package(HWLOC)
-endif()
 
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)

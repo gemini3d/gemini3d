@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, 
 use phys_consts, only : wp
 use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
-use hwloc_ifc, only : get_cpu_count
+use cpu, only : cpu_count
 use filesystem, only : parent, file_name, assert_is_dir, expanduser, suffix
 use timeutils, only : date_filename,dateinc
 
@@ -143,7 +143,7 @@ if(i/=0) then
   endif
 endif
 if (i/=0) then
-  Ncpu = get_cpu_count()
+  Ncpu = cpu_count()
 
   print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
 endif

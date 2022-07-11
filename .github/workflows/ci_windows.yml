@@ -21,7 +21,7 @@ jobs:
 
   windows_no_mpi:
     # it's tricky to install mpiexec automatically on Windows (see p4est)
-    # thus it's convenient to use Windows as a no-MPI, no-hwloc test case
+    # thus it's convenient to use Windows as a no-MPI test case
     timeout-minutes: 20
     runs-on: windows-latest
 
