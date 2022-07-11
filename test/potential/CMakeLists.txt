@@ -26,6 +26,7 @@ if(mpi)
 endif()
 add_test(NAME potential2d COMMAND ${_cmd})
 set_tests_properties(potential2d PROPERTIES TIMEOUT 30
+FIXTURES_REQUIRED mpi_fxt
 FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
@@ -67,6 +68,7 @@ endif()
 add_test(NAME potential3d COMMAND ${_cmd})
 set_tests_properties(potential3d PROPERTIES TIMEOUT 30
 FIXTURES_SETUP gemini_potential_fxt
+FIXTURES_REQUIRED mpi_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
