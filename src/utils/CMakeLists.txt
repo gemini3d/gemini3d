@@ -11,7 +11,7 @@ $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshob
 $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io> $<TARGET_OBJECTS:interp>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
-sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo cpu_count
+sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
@@ -25,7 +25,6 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
 
 # --- gemini3d.run Fortran front end
-add_subdirectory(cpu)
 
 string(JOIN " " gemini_features
 REALBITS:${realbits}
@@ -41,8 +40,8 @@ file(GENERATE OUTPUT exe_frontend.f90
 INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
 )
 
-add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
-target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const cpu_count
+add_library(exe_frontend OBJECT cpu/cpu.cpp ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
+target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const
 ffilesystem::filesystem
 )
 
@@ -51,7 +50,7 @@ add_executable(gemini3d.run gemini3d_run.f90
 $<TARGET_OBJECTS:exe_frontend>
 )
 target_link_libraries(gemini3d.run PRIVATE
-const gemini3d_config timeutils autogrid reader gemini3d_sysinfo cpu_count
+const gemini3d_config timeutils autogrid reader gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
@@ -67,7 +66,7 @@ add_executable(magcalc.run magcalc_run.f90
 $<TARGET_OBJECTS:exe_frontend>
 )
 target_link_libraries(magcalc.run PRIVATE
-autogrid reader gemini3d_config timeutils const gemini3d_sysinfo cpu_count
+autogrid reader gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem

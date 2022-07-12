@@ -118,7 +118,6 @@ DEBUG_POSTFIX .debug
 target_link_libraries(gemini.bin PRIVATE
 gemini3d_mpi
 gemini3d
-cpu_count
 h5fortran::h5fortran
 MUMPS::MUMPS
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
@@ -241,7 +240,6 @@ gemini3d_mpi_c
 gemini3d_mpi
 gemini3d_c
 gemini3d
-cpu_count
 )
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 target_compile_definitions(gemini_c.bin PRIVATE

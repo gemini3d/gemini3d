@@ -1,10 +1,10 @@
 module exe_frontend
 
+use, intrinsic :: iso_c_binding, only : c_int
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, compiler_options
 use phys_consts, only : wp
 use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
-use cpu, only : cpu_count
 use filesystem, only : parent, file_name, assert_is_dir, expanduser, suffix
 use timeutils, only : date_filename,dateinc
 
@@ -12,7 +12,18 @@ implicit none (type, external)
 private
 public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
 
+interface
+integer(c_int) function cpu_count_c() bind(c, name="cpu_count")
+import c_int
+end function cpu_count_c
+end interface
+
 contains
+
+
+integer function cpu_count()
+cpu_count = int(cpu_count_c())
+end function
 
 
 subroutine cli_parser(plan, Ncpu, path, exe, mpiexec, extra)
