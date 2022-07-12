@@ -42,7 +42,7 @@ INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
 )
 
 add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
-target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const
+target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const cpu_count
 ffilesystem::filesystem
 )
 
