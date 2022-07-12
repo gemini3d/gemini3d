@@ -38,7 +38,7 @@ WORKING_DIRECTORY ${matgemini_SOURCE_DIR}
 
 set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED "hdf5:${name}:run_fxt"
+FIXTURES_REQUIRED "${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 ENVIRONMENT "MATLABPATH=${MATLABPATH}"
 LABELS "compare;matlab"
@@ -49,12 +49,12 @@ endfunction(matlab_compare)
 
 function(python_compare outdir refdir name)
 
-add_test(NAME gemini:compare:hdf5:${name}:python
+add_test(NAME gemini:compare:${name}:python
 COMMAND ${Python_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
 
-set_tests_properties(gemini:compare:hdf5:${name}:python PROPERTIES
+set_tests_properties(gemini:compare:${name}:python PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED hdf5:${name}:run_fxt
+FIXTURES_REQUIRED ${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python"
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
@@ -65,18 +65,18 @@ endfunction(python_compare)
 
 function(fortran_compare outdir refdir name)
 
-add_test(NAME gemini:compare:hdf5:${name}
+add_test(NAME gemini:compare:${name}
 COMMAND gemini3d.compare ${outdir} ${refdir})
 
-set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
+set_tests_properties(gemini:compare:${name} PROPERTIES
 TIMEOUT 60
-FIXTURES_REQUIRED hdf5:${name}:run_fxt
+FIXTURES_REQUIRED ${name}:run_fxt
 RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
 DISABLED $<NOT:$<TARGET_EXISTS:gemini3d.compare>>
 )
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" gemini:compare:hdf5:${name})
+dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" gemini:compare:${name})
 
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.

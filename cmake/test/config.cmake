@@ -33,28 +33,28 @@ if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
 endif()
 
-add_test(NAME gemini:hdf5:${name}:dryrun
+add_test(NAME gemini:${name}:dryrun
 COMMAND ${test_cmd} -dryrun
 )
 
-set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
+set_tests_properties(gemini:${name}:dryrun PROPERTIES
 TIMEOUT 60
-FIXTURES_SETUP hdf5:${name}:dryrun
+FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 )
 
 
-add_test(NAME gemini:hdf5:${name} COMMAND ${test_cmd})
+add_test(NAME gemini:${name} COMMAND ${test_cmd})
 
-set_tests_properties(gemini:hdf5:${name} PROPERTIES
+set_tests_properties(gemini:${name} PROPERTIES
 TIMEOUT ${TIMEOUT}
-FIXTURES_REQUIRED hdf5:${name}:dryrun
-FIXTURES_SETUP hdf5:${name}:run_fxt
+FIXTURES_REQUIRED ${name}:dryrun
+FIXTURES_SETUP ${name}:run_fxt
 )
 
-dll_test_path("ffilesystem::filesystem;gemini3d;h5fortran::h5fortran;HDF5::HDF5" "gemini:hdf5:${name}:dryrun;gemini:hdf5:${name}")
+dll_test_path("ffilesystem::filesystem;gemini3d;h5fortran::h5fortran;HDF5::HDF5" "gemini:${name}:dryrun;gemini:${name}")
 
-set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
+set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${out_dir}/inputs/config.nml
 LABELS core
@@ -75,7 +75,7 @@ add_test(NAME magcalc:${name}:setup
 COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
 )
 set_tests_properties(magcalc:${name}:setup PROPERTIES
-FIXTURES_REQUIRED hdf5:${name}:run_fxt
+FIXTURES_REQUIRED ${name}:run_fxt
 FIXTURES_SETUP magcalc:${name}:setup
 TIMEOUT 30
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>

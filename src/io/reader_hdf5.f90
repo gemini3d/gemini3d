@@ -23,7 +23,7 @@ elseif(hf%exist('/Nlat')) then
 elseif(hf%exist('/lx2')) then
   call hf%read('/lx2', llat)
 else
-  error stop 'reader_hdf5:get_simsize2: llat / lx2'
+  error stop 'ERROR:gemini3d:reader_hdf5:get_simsize2: llat / lx2'
 endif
 
 if(hf%exist('/llon')) then
@@ -33,7 +33,7 @@ elseif(hf%exist('/Nlat')) then
 elseif(hf%exist('/lx3')) then
   call hf%read('/lx3', llon)
 else
-  error stop 'reader_hdf5:get_simsize2: llon / lx3'
+  error stop 'ERROR:gemini3d:reader_hdf5:get_simsize2: llon / lx3'
 endif
 
 call hf%close()
