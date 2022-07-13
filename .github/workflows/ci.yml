@@ -54,7 +54,7 @@ jobs:
       if: runner.os == 'Linux'
       timeout-minutes: 2
       run: |
-        cmake -Dversion=${{ env.cmake_version }} -Dprefix=${{ runner.temp }} -P gemext/scripts/install_cmake.cmake
+        cmake -S gemext/scripts/install_cmake -B ${{ runner.temp }}/install_cmake/build -Dversion=${{ env.cmake_version }} -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         echo "${{ runner.temp }}/cmake-${{ env.cmake_version }}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages (Linux)

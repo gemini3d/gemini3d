@@ -27,10 +27,10 @@ cmake --build external/build
 that installs Gemini3d external libraries under ~/lib_gcc.
 This path is arbitrary but should be distinct between compilers.
 
-NOTE: If CMake is too old, update by:
+NOTE: If CMake is too old, install a new CMake:
 
 ```sh
-cmake -P external/scripts/install_cmake.cmake
+cmake -S external/scripts/install_cmake
 ```
 
 ## Build and Test Gemini3D

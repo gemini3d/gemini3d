@@ -57,7 +57,7 @@ Most **Linux** distributions (even recent ones) come with an outdated cmake pack
 There are several easy ways to get an updated CMake:
 
 ```sh
-pip install cmake
+snap install cmake
 ```
 
 OR, install the distribution cmake package (which will be outdated) and use it with our update script to get a newer version, e.g.:
@@ -65,7 +65,7 @@ OR, install the distribution cmake package (which will be outdated) and use it w
 ```sh
 apt install cmake
 git clone https://github.com/gemini3d/external
-cmake -P external/scripts/install_cmake.cmake
+cmake -S external/scripts/install_cmake
 ```
 
 OR, install cmake from source by first downloading and extracting the latest source from [cmake.org](https://cmake.org):
