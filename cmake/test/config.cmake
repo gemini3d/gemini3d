@@ -31,6 +31,8 @@ else()
 endif()
 if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
+else()
+  list(APPEND test_cmd -n 1)
 endif()
 
 add_test(NAME gemini:${name}:dryrun
