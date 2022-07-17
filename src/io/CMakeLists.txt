@@ -26,10 +26,11 @@ mag.f90 mag_hdf5.f90
 plasma_input.f90 plasma_input_hdf5.f90
 plasma_output.f90 plasma_output_hdf5.f90
 milestone.f90
+$<TARGET_OBJECTS:grid>
 )
 
 target_link_libraries(io PRIVATE
-calculus gemini3d_config const interp reader grid mpimod sanity_check timeutils
+calculus gemini3d_config const interp reader mpimod sanity_check timeutils
 h5fortran::h5fortran
 ffilesystem::filesystem
 )

@@ -21,9 +21,11 @@ add_subdirectory(sources)
 
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
 target_link_libraries(multifluid_mpi PRIVATE const mpimod grid_mpi advec_mpi)
-add_library(multifluid OBJECT multifluid/multifluid.f90)
+add_library(multifluid OBJECT multifluid/multifluid.f90
+$<TARGET_OBJECTS:grid>
+)
 target_link_libraries(multifluid PRIVATE
-advec calculus collision const diffusion grid meshobj precipdata ionization precipBCs sources timeutils gemini3d_config
+advec calculus collision const diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config
 )
 
 add_subdirectory(utils)

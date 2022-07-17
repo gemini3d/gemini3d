@@ -4,9 +4,11 @@ h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
-add_library(grid_mpi OBJECT grid_mpi.f90 read_mpi.f90 check_mpi.f90)
+add_library(grid_mpi OBJECT grid_mpi.f90 read_mpi.f90 check_mpi.f90
+$<TARGET_OBJECTS:grid>
+)
 target_compile_options(grid_mpi PRIVATE ${gfortran_opts})
-target_link_libraries(grid_mpi PRIVATE const grid meshobj meshobj_cart meshobj_dipole mpimod
+target_link_libraries(grid_mpi PRIVATE const meshobj meshobj_cart meshobj_dipole mpimod
 h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )

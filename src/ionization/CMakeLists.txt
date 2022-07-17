@@ -6,7 +6,9 @@ target_link_libraries(fang PRIVATE const)
 add_library(fang_run OBJECT fang_run.f90)
 target_link_libraries(fang_run PRIVATE fang msis::msis_ifc const)
 
-add_library(ionization OBJECT ionization.f90)
+add_library(ionization OBJECT ionization.f90
+$<TARGET_OBJECTS:grid>
+)
 
 if(glow)
   get_target_property(_def glow::glow INTERFACE_COMPILE_DEFINITIONS)
@@ -24,18 +26,22 @@ else()
   target_sources(ionization PRIVATE glow_dummy.f90)
 endif()
 
-target_link_libraries(ionization PRIVATE const grid meshobj timeutils fang
+target_link_libraries(ionization PRIVATE const meshobj timeutils fang
 $<$<BOOL:${glow}>:glow::glow>
 )
 
-add_library(ionization_mpi OBJECT ionization_mpi.f90)
-target_link_libraries(ionization_mpi PRIVATE ionization const neutral grid meshobj timeutils fang
+add_library(ionization_mpi OBJECT ionization_mpi.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(ionization_mpi PRIVATE ionization const neutral meshobj timeutils fang
 mpimod
 MPI::MPI_Fortran
 )
 
-add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
+add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90
+$<TARGET_OBJECTS:grid>
+)
 target_compile_options(precipBCs PRIVATE ${gfortran_opts})
-target_link_libraries(precipBCs PRIVATE reader const grid meshobj interp timeutils gemini3d_config
+target_link_libraries(precipBCs PRIVATE reader const meshobj interp timeutils gemini3d_config
 inputdata precipdata
 )

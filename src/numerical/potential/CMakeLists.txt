@@ -13,8 +13,10 @@ target_link_libraries(PDEelliptic PRIVATE mpimod const mumps_interface MUMPS::MU
 add_library(potential OBJECT
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
 potential_mumps.f90 potential2d.f90
-boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid meshobj efielddata interp timeutils mpimod reader const
+boundary_conditions/potentialBCs_mumps.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(potential PRIVATE PDEelliptic calculus collision meshobj efielddata interp timeutils mpimod reader const
 inputdata efielddata
 MPI::MPI_Fortran
 )

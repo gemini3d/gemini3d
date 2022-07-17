@@ -5,7 +5,6 @@ add_library(const OBJECT ${CMAKE_CURRENT_BINARY_DIR}/phys_consts.f90)
 # --- interpolation
 add_subdirectory(interpolation)
 
-# --- grid
 add_subdirectory(grid)
 
 add_subdirectory(calculus)
