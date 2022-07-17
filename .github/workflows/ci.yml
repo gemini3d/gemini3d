@@ -3,7 +3,7 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  cmake_version: "3.21.6"
+  cmake_version: "3.21.7"
 # CMake presets require >= 3.21
 
 on:
@@ -61,7 +61,7 @@ jobs:
       if: runner.os == 'Linux'
       timeout-minutes: 15
       run: |
-        sudo $(cmake -P gemext/scripts/requirements.cmake) liblapack-dev libscalapack-mpi-dev
+        sudo $(cmake -P gemext/scripts/requirements.cmake) ninja-build liblapack-dev libscalapack-mpi-dev
         sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
@@ -69,7 +69,7 @@ jobs:
       timeout-minutes: 15
       run: |
         $(cmake -P gemext/scripts/requirements.cmake)
-        brew install scalapack
+        brew install ninja scalapack
 
     - name: Install model libraries
       timeout-minutes: 15

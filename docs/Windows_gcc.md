@@ -21,7 +21,7 @@ provides a comprehensive Windows development solution from the Windows terminal.
 From the MSYS2 terminal, install CMake:
 
 ```sh
-pacman -S mingw-w64-x86_64-cmake
+pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 ```
 
 Install
