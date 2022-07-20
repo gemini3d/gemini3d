@@ -53,7 +53,8 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, & 
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
-            gemini_work_alloc, gemini_work_dealloc
+            gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
+            grid_size_in
 
 
 !! temp file used by MSIS 2.0
@@ -104,35 +105,24 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-!    !> command line interface
-!    if(p%fortran_cli) then
-!      call cli(cfg, lid2in, lid3in, debug)
-!    else
-!      buf = "" !< ensure buf has no garbage characters
-!
-!      do i = 1, len(buf)
-!        if (p%out_dir(i) == c_null_char) exit
-!        buf(i:i) = p%out_dir(i)
-!      enddo
-!      cfg%outdir = expanduser(buf)
-!
-!      cfg%dryrun = p%dryrun
-!      debug = p%debug
-!    endif
-   call cli_in(p,lid2in,lid3in,cfg)
+    !> command line interface
+    call cli_in(p,lid2in,lid3in,cfg)
 
-!    !> read the config input file, if not passed .ini info from C++ frontend
-!    if(p%fortran_nml) then
-!      call find_config(cfg)
-!      call read_configfile(cfg, verbose=.false.)
-!    endif
-!    call check_input_files(cfg)
+    !> read the config input file, if not passed .ini info from C++ frontend
     call read_config_in(p,cfg)
 
     !> read the size out of the grid file, store in module variables
-    call grid_size(cfg%indatsize)
+    call grid_size_in(cfg)
     !call read_size_gridcenter(cfg%indatsize,cfg%outdir)
   end subroutine cli_config_gridsize
+
+
+  !> interface subroutine from which we can read in ONLY the grid sizes
+  subroutine grid_size_in(cfg)
+    type(gemini_cfg), intent(in) :: cfg
+
+    call grid_size(cfg%indatsize)
+  end subroutine grid_size_in
 
 
   !> interface subroutine to handle command line inputs or otherwise setup variables that would be specified

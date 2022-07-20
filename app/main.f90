@@ -30,7 +30,8 @@ use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,ini
                       sweep1_allparams_in, sweep2_allparams_in, &
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
                       source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
-                      get_config_vars, get_species_size, gemini_work
+                      get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
+                      gemini_cfg_dealloc, grid_size_in
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_in,pot2perpfield_in, &
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
@@ -118,14 +119,22 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     class(curvmesh), pointer :: x
-    type(gemini_cfg) :: cfg
+    type(gemini_cfg), pointer :: cfg
     type(gemini_work), pointer :: intvars
 
     !> initialize message passing.  FIXME: needs to be msissetup_C()
     call mpisetup_in()
     call mpiparms(myid,lid)
     if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-    call cli_config_gridsize(p,lid2in,lid3in,cfg)
+
+    !> command line interface
+    !call cli_config_gridsize(p,lid2in,lid3in,cfg)
+    cfg=>gemini_cfg_alloc()
+    call cli_in(p,lid2in,lid3in,cfg)     ! transfers some data from p into cfg so cfg must be allocated prior to calling
+    call read_config_in(p,cfg)
+    call grid_size_in(cfg)
+
+    !> retrieve some variables set in prior steps
     call get_fullgrid_size(lx1,lx2all,lx3all)
     call get_config_vars(cfg,flagneuBG,flagdneu,dtneuBG,dtneu)
 
@@ -246,6 +255,7 @@ contains
     !> deallocate variables and module data
     call clear_dneu_in(intvars)
     call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 
 
