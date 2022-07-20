@@ -39,7 +39,7 @@ contains
       print*, ' Detected dipole grid...'
       xtype=2
     else
-      print*, 'Detected Cartesian grid...'
+      print*, ' Detected Cartesian grid...'
       xtype=1
     end if
   end function detect_gridtype
