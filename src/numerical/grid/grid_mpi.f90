@@ -118,21 +118,6 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
     case default
       error stop 'Unable to identify grid type'
   end select
-
-  !! right now we just have Cartesian and dipole so it's easy to detect based on x2
-  if (maxval(abs(x2))<100) then
-    print*, ' Detected dipole grid...'
-  else
-    print*, 'Detected Cartesian grid...'
-    allocate(xcart)
-    x=>xcart
-    call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
-    print*, 'read_grid_cart done'
-    if (present(xC) .and. present(xtype)) then
-      xC = c_loc(xcart)
-      xtype=1
-    end if
-  end if
   print*, 'read_grid end has size:  ',lx1,lx2,lx3,lx2all,lx3all
   print*, 'grid object has size:  ',x%lx1,x%lx2,x%lx3
 end subroutine read_grid
