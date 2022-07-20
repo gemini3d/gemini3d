@@ -51,7 +51,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, & !gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, & 
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc
 
@@ -120,17 +120,34 @@ contains
       debug = p%debug
     endif
 
+!    !> read the config input file, if not passed .ini info from C++ frontend
+!    if(p%fortran_nml) then
+!      call find_config(cfg)
+!      call read_configfile(cfg, verbose=.false.)
+!    endif
+!    call check_input_files(cfg)
+    call read_config_in(p,cfg)
+
+    !> read the size out of the grid file, store in module variables
+    call grid_size(cfg%indatsize)
+    !call read_size_gridcenter(cfg%indatsize,cfg%outdir)
+  end subroutine cli_config_gridsize
+
+
+  !> interface layer to find and read in the config file (we assume struct has already been allocated
+  subroutine read_config_in(p,cfg)
+    type(c_params), intent(in) :: p
+    type(gemini_cfg), intent(inout) :: cfg
+
     !> read the config input file, if not passed .ini info from C++ frontend
     if(p%fortran_nml) then
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
-    endif
+    endif 
 
+    !> at this point we can check the input files and make sure we have a well-formed simulation setup
     call check_input_files(cfg)
-
-    !> read the size out of the grid file, store in module variables
-    call grid_size(cfg%indatsize)
-  end subroutine cli_config_gridsize
+  end subroutine read_config_in
 
 
   !> return some data from cfg that is needed in the main program
@@ -183,6 +200,7 @@ contains
 
     if (associated(cfg)) then
       deallocate(cfg)
+      cfg=>null()
     end if
   end subroutine gemini_cfg_dealloc
 
@@ -271,19 +289,6 @@ contains
   end subroutine gemini_alloc
 
 
-!  !> as an alternative to gemini_alloc (fortran allocation) C programs should allocate space and pass in pointers
-!  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from
-!  !    fortran which only seems to work on all compilers on types...
-!  subroutine gemini_alloc_nodouble(cfg,intvars)
-!    type(gemini_cfg), intent(in) :: cfg
-!    type(gemini_work), pointer, intent(inout) :: intvars
-!
-!    !> for simulations that are called from C we only want to allocate space for opaque objects not used by C
-!    !call gemini_work_alloc(cfg,intvars)
-!    intvars=>gemini_work_alloc(cfg)
-!  end subroutine gemini_alloc_nodouble
-
-
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
   !!   This will be called any time a gemini library procedures needs to access individual state variables.
   subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -360,15 +365,6 @@ contains
     !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
   end subroutine
-
-
-!  !> deallocate state variables
-!  subroutine gemini_dealloc_nodouble(cfg,intvars)
-!    type(gemini_cfg), intent(in) :: cfg
-!    type(gemini_work), pointer, intent(inout) :: intvars
-!
-!    call gemini_work_dealloc(cfg,intvars)
-!  end subroutine
 
 
   !> Have each worker read the entire input file and then interpolate it onto its own subgrid

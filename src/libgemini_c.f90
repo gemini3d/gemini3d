@@ -38,7 +38,7 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, & !gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc
 
