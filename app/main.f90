@@ -110,13 +110,16 @@ contains
     real(wp) :: dtneu,dtneuBG
     integer :: myid,lid
 
-    !> Simulation data
+    !> Simulation data, because these are all intended to be interoperable with C/CXX
+    !    these should all be pointers, i.e. they should be allocated through specific
+    !    calls and not static; this way both C and fortran main programs allocate and
+    !    access these variables in analogous ways.  
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     class(curvmesh), pointer :: x
     type(gemini_cfg) :: cfg
-    type(gemini_work) :: intvars
+    type(gemini_work), pointer :: intvars
 
     !> initialize message passing.  FIXME: needs to be msissetup_C()
     call mpisetup_in()
