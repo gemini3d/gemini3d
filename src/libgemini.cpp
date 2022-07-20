@@ -161,6 +161,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 }
 
 
+/* note that none of the pointer locations will be modified, e.g. with malloc, etc. so these pointers can be passed by value */
 void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid,
   double* fluidvars, double* fluidauxvars, double* electrovars,
   int* pxtype,
