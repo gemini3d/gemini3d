@@ -38,8 +38,9 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, & !gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
+            gemini_work_alloc, gemini_work_dealloc
 
 implicit none (type, external)
 
@@ -124,7 +125,8 @@ contains
   end subroutine get_species_size_C
 
 
-  !> allocate space for gemini state variables, bind pointers to blocks of memory
+  !> allocate space for gemini state variables, bind pointers to blocks of memory specifically internal variables
+  !    we assume the C main program will itself allocate the main floating point data arrays.
   subroutine gemini_alloc_C(cfgC,intvarsC) bind(C, name='gemini_alloc_C')
     type(c_ptr), intent(in) :: cfgC
     type(c_ptr), intent(inout) :: intvarsC
@@ -132,8 +134,9 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
-    allocate(intvars)
-    call gemini_alloc_nodouble(cfg,intvars)
+    ! allocate(intvars)
+    ! call gemini_alloc_nodouble(cfg,intvars)
+    intvars=>gemini_work_alloc(cfg)
     intvarsC=c_loc(intvars)
   end subroutine gemini_alloc_C
 
@@ -154,7 +157,8 @@ contains
 
     !> there are issues with allocating primitives variables (doubles/ints) and then deallocating
     !    when passed back and forth with C so only deallocate the derived types
-    call gemini_dealloc_nodouble(cfg,intvars)
+    !call gemini_dealloc_nodouble(cfg,intvars)
+    call gemini_work_dealloc(cfg,intvars)
   end subroutine gemini_dealloc_C
 
 
