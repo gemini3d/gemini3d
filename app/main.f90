@@ -131,10 +131,14 @@ contains
     !call cli_config_gridsize(p,lid2in,lid3in,cfg)
     cfg=>gemini_cfg_alloc()
     call cli_in(p,lid2in,lid3in,cfg)     ! transfers some data from p into cfg so cfg must be allocated prior to calling
-    call read_config_in(p,cfg)
-    call grid_size_in(cfg)
 
-    !> retrieve some variables set in prior steps
+    !> read in config file and add contents to cfg
+    call read_config_in(p,cfg)           ! read configuration file and add information to cfg
+
+    !> allocations depend on grid size so read that into our module variables
+    call grid_size_in(cfg)               ! retrieve the total grid size form the input filename stored in cfg
+
+    !> retrieve some needed module-scope variables
     call get_fullgrid_size(lx1,lx2all,lx3all)
     call get_config_vars(cfg,flagneuBG,flagdneu,dtneuBG,dtneu)
 
