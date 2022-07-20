@@ -31,8 +31,9 @@ end interface
 
 contains
   !> detect the type of grid that we are dealing with based solely on native coordinate values
-  integer function detect_gridtype(x2) result(xtype)
-    real(wp), dimension(-1:), intent(in) :: x2
+  function detect_gridtype(x1,x2,x3) result(xtype)
+    real(wp), dimension(-1:), intent(in) :: x1,x2,x3
+    integer :: xtype
 
     if (maxval(abs(x2))<100) then
       print '(a)', 'Detected dipole grid...'
