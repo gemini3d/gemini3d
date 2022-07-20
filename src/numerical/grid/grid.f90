@@ -45,7 +45,8 @@ contains
   end function detect_gridtype
 
 
-  !> Force a size and grid center location into module variables
+  !> Force a size and grid center location into module variables, if desired.  In general some other method
+  !    should be used like read_size_gridcenter().  
   subroutine set_size_gridcenter(lx1in,lx2allin,lx3allin,glonctrin,glatctrin)
     integer, intent(in) :: lx1in,lx2allin,lx3allin
     real(wp), intent(in) :: glonctrin,glatctrin
@@ -100,7 +101,7 @@ contains
   end subroutine grid_from_extents
 
 
-  !> Generate a "worker" grid based soley on coordinate arrays, polymorphic grid object must already
+  !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
   !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and
   !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with
   !    trees-GEMINI.
@@ -116,9 +117,6 @@ contains
     call x%make()                              ! fill auxiliary arrays
 
     call set_gridflag(x%gridflag)
-
-    !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
-    !call bind_grav_ptrs(x%g1,x%g2,x%g3)
   end subroutine generate_worker_grid
 
 
