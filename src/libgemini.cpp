@@ -30,10 +30,6 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   void* xC;
   int xtype;
 
-  //int cart_type = 1, dipole_type = 2;
-  //int xtype = cart_type;  // TODO: make this dynamic for cartmesh
-
-
   /* Basic setup */
   mpisetup_C();                               // organize mpi workers
   mpiparms_C(&myid,&lid);                     // information about worker number, etc.
@@ -45,8 +41,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_config_in_C(ps,&cfgC);
   grid_size_in_C(&cfgC);
 
-  get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
-  init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
+  get_fullgrid_size_C(&lx1,&lx2all,&lx3all);                        // retrieve sizes that are stored in the grid module
+  init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);                 // compute process grid for this run
   std::cout << "init_procgrid_C done" << std::endl;
   get_config_vars_C(&cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
   std::cout << "get_config_vars_C done" << std::endl;
