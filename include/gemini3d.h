@@ -36,6 +36,10 @@ extern void help_gemini_bin();
 
 /* interfaces to libgemini */
 extern void cli_config_gridsize_C(struct params*, int*, int*, void**);
+extern void gemini_cfg_alloc_C(void**);
+extern void cli_in_C(struct params*, int*, int*, void**);
+extern void read_config_in_C(struct params*, void**);
+extern void grid_size_in_C(void**);
 extern void get_fullgrid_size_C(int*, int*, int*);
 extern void get_config_vars_C(void**, bool*, int*, double*, double*);
 extern void get_subgrid_size_C(int*, int*, int*);
@@ -62,7 +66,8 @@ extern void VNRicht_artvisc_C(double**, void**);
 extern void compression_C(double**, double**, void**, int*, void**, double*);
 extern void rhoe2T_C(double**, double**);
 extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**, double*);
-extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, double*, double*, int*, double*, double*, double*, bool*, double*, double*);
+extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
+                                      double*, double*, int*, double*, double*, double*, bool*, double*, double*);
 extern void check_dryrun_C(void**);
 extern void dateinc_C(double*, int*, double*);
 extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
