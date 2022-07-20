@@ -40,7 +40,8 @@ use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
-            gemini_work_alloc, gemini_work_dealloc
+            gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
+            cli_in
 
 implicit none (type, external)
 
@@ -80,6 +81,61 @@ contains
     call cli_config_gridsize(p,lid2in,lid3in,cfg)
     cfgC = c_loc(cfg)
   end subroutine cli_config_gridsize_C
+
+
+  !> wrapper for command line interface
+  subroutine cli_in_C(p,lid2in,lid3in,cfgC) bind(C, name='cli_in_C')
+    type(c_params), intent(in) :: p
+    integer(C_INT), intent(inout) :: lid2in,lid3in
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call cli_in(p,lid2in,lid3in,cfg)
+  end subroutine cli_in_C
+
+
+  !> interface for reading in the config.nml file
+  subroutine read_config_in_C(p,cfgC) bind(C, name='read_config_in_C')
+    type(c_params), intent(in) :: p
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call read_config_in(p,cfg)
+  end subroutine read_config_in_C
+
+
+  !> interface for reading in grid sizes into fortran module variables
+  subroutine grid_size_in_C(cfgC) bind(C, name='grid_size_in_C')
+    type(c_ptr), intent(in) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call grid_size_in(cfg)
+  end subroutine grid_size_in_C
+
+
+  !> allocate a fortran struct for cfg and store the address in the C pointer cfgC
+  subroutine gemini_cfg_alloc_C(cfgC) bind(C, name='gemini_cfg_alloc_C')
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+    
+    cfg=>gemini_cfg_alloc()
+    cfgC=c_loc(cfg)
+  end subroutine gemini_cfg_alloc_C
+
+
+  !> deallocate fortran struct connected to cfgC pointer
+  subroutine gemini_cfg_dealloc_C(cfgC) bind(C, name='gemini_cfg_dealloc_C') 
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    deallocate(cfg)
+    cfg=>null()
+    cfgC=c_loc(cfg)     ! send back a null pointer as a precaution
+  end subroutine gemini_cfg_dealloc_C
 
 
   !> return some data from cfg that is needed in the main program
