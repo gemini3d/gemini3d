@@ -51,8 +51,9 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, gemini_alloc_nodouble, gemini_dealloc_nodouble, &
-            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, & !gemini_alloc_nodouble, gemini_dealloc_nodouble, &
+            interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
+            gemini_work_alloc, gemini_work_dealloc
 
 
 !! temp file used by MSIS 2.0
@@ -265,52 +266,22 @@ contains
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
 
     !> internal work struct
-    call gemini_alloc_nodouble(cfg,intvars)
+    !call gemini_alloc_nodouble(cfg,intvars)
+    intvars=>gemini_work_alloc(cfg)
   end subroutine gemini_alloc
 
 
-  !> as an alternative to gemini_alloc (fortran allocation) C programs should allocate space and pass in pointers
-  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from
-  !    fortran which only seems to work on all compilers on types...
-  subroutine gemini_alloc_nodouble(cfg,intvars)
-    type(gemini_cfg), intent(in) :: cfg
-    type(gemini_work), pointer, intent(inout) :: intvars
-
-    !> for simulations that are called from C we only want to allocate space for opaque objects not used by C
-    !call gemini_work_alloc(cfg,intvars)
-    intvars=>gemini_work_alloc(cfg)
-  end subroutine gemini_alloc_nodouble
-
-
-!  !> allocation space for neutral data and MHD-like parameters; this gets called regardless of whether C or Fortran allocates the main block of memory; these arrays are not visible to the "outside world"
-!  subroutine gemini_work_alloc(cfg,intvars)
+!  !> as an alternative to gemini_alloc (fortran allocation) C programs should allocate space and pass in pointers
+!  !    that fortran will bind to state vars.  This avoids issues with compiler-dependent allocate/deallcoate from
+!  !    fortran which only seems to work on all compilers on types...
+!  subroutine gemini_alloc_nodouble(cfg,intvars)
 !    type(gemini_cfg), intent(in) :: cfg
-!    type(gemini_work), intent(inout) :: intvars
+!    type(gemini_work), pointer, intent(inout) :: intvars
 !
-!    !> allocate base struct
-!    !allocate(intvars)
-!
-!    !> neutral variables (never need to be haloed, etc.)
-!    allocate(intvars%atmos)
-!    call neutral_info_alloc(intvars%atmos)
-!
-!     !> space for integrated volume emission rates (lx2,lx3,lwave)
-!    if (cfg%flagglow /= 0) then
-!      allocate(intvars%iver(lx2,lx3,lwave))
-!      intvars%iver = 0
-!    end if
-!
-!    !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
-!    !    are computed from haloed vs1,2,3 arrays
-!    allocate(intvars%vs1i(1:lx1+1,1:lx2,1:lx3,1:lsp))
-!    allocate(intvars%vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
-!    allocate(intvars%vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
-!    allocate(intvars%Q(1:lx1,1:lx2,1:lx3,1:lsp))
-!
-!    allocate(intvars%eprecip)
-!    allocate(intvars%efield)
-!    ! neutral stuff allocated elsewhere...
-!  end subroutine gemini_work_alloc
+!    !> for simulations that are called from C we only want to allocate space for opaque objects not used by C
+!    !call gemini_work_alloc(cfg,intvars)
+!    intvars=>gemini_work_alloc(cfg)
+!  end subroutine gemini_alloc_nodouble
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
@@ -386,44 +357,18 @@ contains
     deallocate(fluidvars)
     deallocate(fluidauxvars)
     deallocate(electrovars)
-    call gemini_dealloc_nodouble(cfg,intvars)
-  end subroutine
-
-
-  !> deallocate state variables
-  subroutine gemini_dealloc_nodouble(cfg,intvars)
-    type(gemini_cfg), intent(in) :: cfg
-    type(gemini_work), pointer, intent(inout) :: intvars
-
+    !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
   end subroutine
 
 
-!  !> deallocate work arrays used by gemini instances
-!  subroutine gemini_work_dealloc(cfg,intvars)
+!  !> deallocate state variables
+!  subroutine gemini_dealloc_nodouble(cfg,intvars)
 !    type(gemini_cfg), intent(in) :: cfg
-!    type(gemini_work), intent(inout) :: intvars
+!    type(gemini_work), pointer, intent(inout) :: intvars
 !
-!    !> neutral variables (never need to be haloed, etc.)
-!    call neutral_info_dealloc(intvars%atmos)
-!    deallocate(intvars%atmos)
-!
-!     !> space for integrated volume emission rates (lx2,lx3,lwave)
-!    if (cfg%flagglow /= 0) then
-!      deallocate(intvars%iver)
-!    end if
-!
-!    !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
-!    !    are computed from haloed vs1,2,3 arrays
-!    deallocate(intvars%vs1i)
-!    deallocate(intvars%vs2i)
-!    deallocate(intvars%vs3i)
-!    deallocate(intvars%Q)
-!
-!    if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
-!    if (associated(intvars%efield)) deallocate(intvars%efield)
-!    !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
-!  end subroutine gemini_work_dealloc
+!    call gemini_work_dealloc(cfg,intvars)
+!  end subroutine
 
 
   !> Have each worker read the entire input file and then interpolate it onto its own subgrid
