@@ -44,7 +44,7 @@ use io, only: interp_file2subgrid
 
 implicit none (type, external)
 private
-public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
+public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
             set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
@@ -97,26 +97,6 @@ end type c_params
 
 
 contains
-  !> basic command line and grid size determination
-  subroutine cli_config_gridsize(p,lid2in,lid3in,cfg)
-    type(c_params), intent(in) :: p
-    integer, intent(inout) :: lid2in,lid3in
-    type(gemini_cfg), intent(inout) :: cfg
-    character(size(p%out_dir)) :: buf
-    integer :: i
-
-    !> command line interface
-    call cli_in(p,lid2in,lid3in,cfg)
-
-    !> read the config input file, if not passed .ini info from C++ frontend
-    call read_config_in(p,cfg)
-
-    !> read the size out of the grid file, store in module variables
-    call grid_size_in(cfg)
-    !call read_size_gridcenter(cfg%indatsize,cfg%outdir)
-  end subroutine cli_config_gridsize
-
-
   !> interface subroutine from which we can read in ONLY the grid sizes
   subroutine grid_size_in(cfg)
     type(gemini_cfg), intent(in) :: cfg

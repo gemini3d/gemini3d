@@ -35,7 +35,6 @@ extern int gemini_main(struct params *, int*, int*);
 extern void help_gemini_bin();
 
 /* interfaces to libgemini */
-extern void cli_config_gridsize_C(struct params*, int*, int*, void**);
 extern void gemini_cfg_alloc_C(void**);
 extern void cli_in_C(struct params*, int*, int*, void**);
 extern void read_config_in_C(struct params*, void**);

@@ -24,7 +24,7 @@ use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 
 !> main gemini libraries
-use gemini3d, only: c_params,cli_config_gridsize,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
+use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
                       set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, sweep3_allparams_in, &
                       sweep1_allparams_in, sweep2_allparams_in, &

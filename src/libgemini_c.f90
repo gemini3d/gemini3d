@@ -31,7 +31,7 @@ use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
-use gemini3d, only: c_params, cli_config_gridsize, init_precipinput_in, msisinit_in, &
+use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
@@ -68,19 +68,6 @@ contains
         error stop 'unable to identify object type during conversion from C to fortran class pointer'
     end select
   end function set_gridpointer_dyntype
-
-
-  !> basic command line and grid size determination
-  subroutine cli_config_gridsize_C(p,lid2in,lid3in,cfgC) bind(C, name='cli_config_gridsize_C')
-    type(c_params), intent(in) :: p
-    integer(C_INT), intent(inout) :: lid2in,lid3in
-    type(c_ptr), intent(inout) :: cfgC
-    type(gemini_cfg), pointer :: cfg
-
-    allocate(cfg)
-    call cli_config_gridsize(p,lid2in,lid3in,cfg)
-    cfgC = c_loc(cfg)
-  end subroutine cli_config_gridsize_C
 
 
   !> wrapper for command line interface
