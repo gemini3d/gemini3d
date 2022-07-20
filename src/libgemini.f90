@@ -104,7 +104,46 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-    !> command line interface
+!    !> command line interface
+!    if(p%fortran_cli) then
+!      call cli(cfg, lid2in, lid3in, debug)
+!    else
+!      buf = "" !< ensure buf has no garbage characters
+!
+!      do i = 1, len(buf)
+!        if (p%out_dir(i) == c_null_char) exit
+!        buf(i:i) = p%out_dir(i)
+!      enddo
+!      cfg%outdir = expanduser(buf)
+!
+!      cfg%dryrun = p%dryrun
+!      debug = p%debug
+!    endif
+   call cli_in(p,lid2in,lid3in,cfg)
+
+!    !> read the config input file, if not passed .ini info from C++ frontend
+!    if(p%fortran_nml) then
+!      call find_config(cfg)
+!      call read_configfile(cfg, verbose=.false.)
+!    endif
+!    call check_input_files(cfg)
+    call read_config_in(p,cfg)
+
+    !> read the size out of the grid file, store in module variables
+    call grid_size(cfg%indatsize)
+    !call read_size_gridcenter(cfg%indatsize,cfg%outdir)
+  end subroutine cli_config_gridsize
+
+
+  !> interface subroutine to handle command line inputs or otherwise setup variables that would be specified
+  !    from the command line.  
+  subroutine cli_in(p,lid2in,lid3in,cfg)
+    type(c_params), intent(in) :: p
+    integer, intent(inout) :: lid2in,lid3in
+    type(gemini_cfg), intent(inout) :: cfg
+    character(size(p%out_dir)) :: buf
+    integer :: i
+
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
     else
@@ -119,19 +158,7 @@ contains
       cfg%dryrun = p%dryrun
       debug = p%debug
     endif
-
-!    !> read the config input file, if not passed .ini info from C++ frontend
-!    if(p%fortran_nml) then
-!      call find_config(cfg)
-!      call read_configfile(cfg, verbose=.false.)
-!    endif
-!    call check_input_files(cfg)
-    call read_config_in(p,cfg)
-
-    !> read the size out of the grid file, store in module variables
-    call grid_size(cfg%indatsize)
-    !call read_size_gridcenter(cfg%indatsize,cfg%outdir)
-  end subroutine cli_config_gridsize
+  end subroutine cli_in
 
 
   !> interface layer to find and read in the config file (we assume struct has already been allocated
