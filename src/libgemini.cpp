@@ -37,7 +37,13 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   /* Basic setup */
   mpisetup_C();                               // organize mpi workers
   mpiparms_C(&myid,&lid);                     // information about worker number, etc.
-  cli_config_gridsize_C(ps, plid2in, plid3in, &cfgC);    // handling of input data, create internal fortran type with parameters for run
+
+  /* Command line and config structure setup */
+  // cli_config_gridsize_C(ps, plid2in, plid3in, &cfgC);    // handling of input data, create internal fortran type with parameters for run
+  gemini_cfg_alloc_C(&cfgC);
+  cli_in_C(ps,plid2in,plid3in,&cfgC);
+  read_config_in_C(ps,&cfgC);
+  grid_size_in_C(&cfgC);
 
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);  // read input file that has the grid size information and set it
   init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);            // compute process grid for this run
