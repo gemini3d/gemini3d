@@ -14,8 +14,9 @@ use mpimod, only :  mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
-                set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid, &
-                get_grid3_coords, detect_gridtype, meshobj_alloc
+                set_total_grid_sizes,set_subgrid_sizes,set_gridflag, &
+                get_grid3_coords, detect_gridtype, meshobj_alloc, grid_internaldata_alloc, &
+                grid_internaldata_generate, generate_worker_grid
 
 use mpi_f08, only : mpi_recv, mpi_send, mpi_comm_world, mpi_status_ignore
 
@@ -95,9 +96,9 @@ contains
  
     !> allocate the correct class for the grid and bind a C pointer (which can only be done at creation!) 
     if (present(xC) .and. present(xtype)) then
-      call meshobj_alloc(x1,x2,x3,x2all,x3all,x,xtype,xC)
+      call meshobj_alloc(x1,x2,x3,x,xtype,xC)
     else
-      call meshobj_alloc(x1,x2,x3,x2all,x3all,x)
+      call meshobj_alloc(x1,x2,x3,x)
     end if
 
     !> execute call to collect global data, as needed
