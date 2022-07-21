@@ -31,7 +31,8 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
                       source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
-                      gemini_cfg_dealloc, grid_size_in
+                      gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
+                      gemini_work_dealloc
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_in,pot2perpfield_in, &
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
@@ -158,7 +159,9 @@ contains
     call get_species_size(lsp)
 
     !> Allocate space for solutions, sizes will be pulled from internal modules, can happen once lx1,2,3,2all,3all defined
-    call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    !call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    call gemini_double_alloc(fluidvars,fluidauxvars,electrovars)
+    intvars=>gemini_work_alloc(cfg)
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
@@ -266,7 +269,9 @@ contains
 
     !> deallocate variables and module data
     call clear_dneu_in(intvars)
-    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+    call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 
