@@ -10,7 +10,7 @@ use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
 use grid, only: lx1,lx2,lx3
-use grid_mpi, only: grid_drift, read_grid
+use grid_mpi, only: grid_drift, read_grid, calc_subgrid_size
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics
@@ -31,7 +31,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             get_initial_drifts, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
             halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, halo_allparams_in, &
-            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms
+            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in
 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
@@ -73,6 +73,14 @@ contains
     call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
     !! read in a previously generated grid from filenames listed in input file
   end subroutine read_grid_in
+
+
+  !> interface for setting simulation subgrid sizes for a particular worker in grid module
+  subroutine calc_subgrid_size_in(lx2all,lx3all)
+    integer, intent(in) :: lx2all, lx3all
+
+    call calc_subgrid_size(lx2all,lx3all)
+  end subroutine calc_subgrid_size_in
 
 
   !> load initial conditions

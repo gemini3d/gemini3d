@@ -20,7 +20,7 @@ use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
 
 implicit none (type, external)
 private
-public :: read_grid, grid_check, grid_drift
+public :: read_grid, grid_check, grid_drift, calc_subgrid_size
 external :: mpi_recv, mpi_send
 
 interface ! read.f90

@@ -37,7 +37,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
                           set_global_boundaries_allspec_in, halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_dneu_in,mpisetup_in,mpiparms
+                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in
 
 implicit none (type, external)
 external :: mpi_init,mpi_finalize,mpi_comm_rank
@@ -146,10 +146,12 @@ contains
     !    to workers
     call init_procgrid(lx2all,lx3all,lid2in,lid3in)
 
-    !> load the grid data from the input file and store in gemini module
-    call read_grid_in(cfg,x)
-    print*, 'Done with read_grid_in...'
+    !> At this point all module variables are in a state where we can set the subgrid sizes
+    call calc_subgrid_size_in(lx2all,lx3all)
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! This block *could* be executed earlier *if* we were to set lx1,lx2,lx3 in the grid module 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Sizes of state variable
     call get_subgrid_size(lx1,lx2,lx3)
     call get_species_size(lsp)
@@ -159,6 +161,11 @@ contains
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    !> load the grid data from the input file and store in gemini module
+    call read_grid_in(cfg,x)
+    print*, 'Done with read_grid_in...'
 
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
     call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
