@@ -128,6 +128,10 @@ contains
 
     !> command line interface
     !call cli_config_gridsize(p,lid2in,lid3in,cfg)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Allocations happen during this block
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cfg=>gemini_cfg_alloc()
     call cli_in(p,lid2in,lid3in,cfg)     ! transfers some data from p into cfg so cfg must be allocated prior to calling
 
@@ -157,6 +161,7 @@ contains
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !> load the grid data from the input file and store in gemini module
     call read_grid_in(cfg,x)
