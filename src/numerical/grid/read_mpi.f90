@@ -11,9 +11,9 @@ contains
 !   must also set those.  This involves setting some fullgrid parameters
 module procedure read_grid_cartdip
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-  call generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
-  !call grid_internaldata_alloc(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
-  !call grid_internaldata_generate(x)
+  !call generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
+  call grid_internaldata_alloc(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
+  call grid_internaldata_generate(x)
 
   !> We need to collect the info for root's fullgrid variables
   if (mpi_cfg%myid==0) then
