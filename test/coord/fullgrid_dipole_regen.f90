@@ -2,7 +2,7 @@ program fullgrid_dipole_testdriver
 
 use filesystem, only : mkdir
 use phys_consts, only: wp
-use grid, only: generate_worker_grid, ungenerate_worker_grid, grid_from_extents, set_size_gridcenter
+use grid, only: grid_internaldata_ungenerate, grid_from_extents, set_size_gridcenter
 use meshobj_dipole, only : dipolemesh
 
 implicit none (type, external)
@@ -105,7 +105,7 @@ do irepeat=1,10
   print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
   ! deallocate and try again
-  call ungenerate_worker_grid(x)
+  call grid_internaldata_ungenerate(x)
 end do
 
 
