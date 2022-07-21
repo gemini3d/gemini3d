@@ -71,8 +71,10 @@ contains
     !!   that the compiler will deal with it automatically
     !!  Also set the grid center position if not already dictated by the coordinate system
   
-    call calc_subgrid_size(lx2all,lx3all)
+    !call calc_subgrid_size(lx2all,lx3all)
     !! everyone computes what the size of their subgrid should be
+    !^ this is now done as a separate step from the main application through libgemini_mpi calls
+
     allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
     !! tmp space for coords from file
     call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)

@@ -149,19 +149,15 @@ contains
     !> At this point all module variables are in a state where we can set the subgrid sizes
     call calc_subgrid_size_in(lx2all,lx3all)
 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ! This block *could* be executed earlier *if* we were to set lx1,lx2,lx3 in the grid module 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Sizes of state variable
     call get_subgrid_size(lx1,lx2,lx3)
     call get_species_size(lsp)
 
-    !> Allocate space for solutions, sizes will be pulled from internal modules
+    !> Allocate space for solutions, sizes will be pulled from internal modules, can happen once lx1,2,3,2all,3all defined
     call gemini_alloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
 
     !> root creates a place to put output and allocates any needed fullgrid arrays for plasma state variables
     call outdir_fullgridvaralloc(cfg,intvars,lx1,lx2all,lx3all)
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !> load the grid data from the input file and store in gemini module
     call read_grid_in(cfg,x)
