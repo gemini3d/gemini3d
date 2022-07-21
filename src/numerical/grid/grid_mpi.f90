@@ -17,7 +17,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag, &
                 get_grid3_coords, detect_gridtype, meshobj_alloc, grid_internaldata_alloc, &
-                grid_internaldata_generate, generate_worker_grid
+                grid_internaldata_generate!, generate_worker_grid
 
 implicit none (type, external)
 private
