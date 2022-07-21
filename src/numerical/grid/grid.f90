@@ -21,9 +21,10 @@ private
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_hdf5, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
-             grid_from_extents, generate_worker_grid, ungenerate_worker_grid, &
+             grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
+             grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
-             meshobj_alloc
+             meshobj_alloc, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -33,10 +34,10 @@ interface ! readgrid_*.f90
   end subroutine
 end interface
 
-! some overloading for situations needing vs. not needing an allocation step
-interface grid_from_extents
-  module procedure grid_from_extents_noalloc,grid_from_extents_alloc
-end interface
+!! some overloading for situations needing vs. not needing an allocation step
+!interface grid_from_extents
+!  module procedure grid_from_extents_noalloc,grid_from_extents_alloc
+!end interface
 
 contains
   !> detect the type of grid that we are dealing with based solely on native coordinate values
@@ -82,7 +83,7 @@ contains
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
   !    the grid type/class already be defined
-  subroutine grid_from_extents_noalloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
+  subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     class(curvmesh), intent(inout) :: x
@@ -104,52 +105,55 @@ contains
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
     call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+    !call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+    !call grid_internaldata_generate(x)
 
     ! get rid of temp. arrays
     deallocate(x1,x2,x3)
-  end subroutine grid_from_extents_noalloc
+  end subroutine grid_from_extents
 
-
-  !> this version additionally allocates the input argument, which is now a pointer
-  subroutine grid_from_extents_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC)
-    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
-    integer, intent(in) :: lx1wg,lx2wg,lx3wg
-    class(curvmesh), intent(inout), pointer :: x
-    integer, intent(inout) :: xtype
-    type(c_ptr), intent(inout) :: xC
-    integer :: ix1,ix2,ix3
-    real(wp), dimension(:), allocatable :: x1,x2,x3
-
-    ! error checking
-    if (glatctr<-90._wp .or. glatctr>90._wp) then
-      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
-                   module variables glonctr,glatctr'
-    end if
-
-    ! create temp space
-    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
-
-    ! make uniformly spaced coordinate arrays
-    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
-    x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
-    x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
-
-    ! generate a subgrid from these
-    !if (present(xtype) .and. present(xC)) then   ! optional arguments confuses overloading for some types of calls :/
-      call meshobj_alloc(x1,x2,x3,x2,x3,x,xtype,xC)
-    !else
-    !  call meshobj_alloc(x1,x2,x3,x2,x3,x)
-    !end if
-    call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
-
-    ! get rid of temp. arrays
-    deallocate(x1,x2,x3)
-  end subroutine grid_from_extents_alloc
+!  ! FIXME: split into grid_alloc and generate_worker_grid; add interfaces for both to libgemini and C
+!  !> this version additionally allocates the input argument, which is now a pointer
+!  subroutine grid_from_extents_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC)
+!    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+!    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+!    class(curvmesh), intent(inout), pointer :: x
+!    integer, intent(inout) :: xtype
+!    type(c_ptr), intent(inout) :: xC
+!    integer :: ix1,ix2,ix3
+!    real(wp), dimension(:), allocatable :: x1,x2,x3
+!
+!    ! error checking
+!    if (glatctr<-90._wp .or. glatctr>90._wp) then
+!      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
+!                   module variables glonctr,glatctr'
+!    end if
+!
+!    ! create temp space
+!    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
+!
+!    ! make uniformly spaced coordinate arrays
+!    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+!    x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
+!    x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
+!
+!    ! generate a subgrid from these
+!    !if (present(xtype) .and. present(xC)) then   ! optional arguments confuses overloading for some types of calls :/
+!      call meshobj_alloc(x1,x2,x3,x,xtype,xC)
+!    !else
+!    !  call meshobj_alloc(x1,x2,x3,x2,x3,x)
+!    !end if
+!    call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+!
+!    ! get rid of temp. arrays
+!    deallocate(x1,x2,x3)
+!  end subroutine grid_from_extents_alloc
 
 
   !> Find the type of the grid and allocate the correct type/class, return a C pointer if requested
-  subroutine meshobj_alloc(x1,x2,x3,x2all,x3all,x,xtype,xC)
-    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
+  !    via optional arguments
+  subroutine meshobj_alloc(x1,x2,x3,x,xtype,xC)
+    real(wp), dimension(:), intent(in) :: x1,x2,x3
     class(curvmesh), pointer, intent(inout) :: x
     integer(C_INT), intent(inout), optional :: xtype
     type(C_PTR), intent(inout), optional :: xC
@@ -202,12 +206,33 @@ contains
   end subroutine generate_worker_grid
 
 
+  !> Trigger allocation of grid class internal data once the class itself has been allocated and typed
+  subroutine grid_internaldata_alloc(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
+    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
+    real(wp), intent(in) :: glonctr,glatctr
+    class(curvmesh), intent(inout) :: x
+
+    call x%set_center(glonctr,glatctr)         ! set center location for grid (in case used, e.g. for Cartesian)
+    call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+    call x%init()                              ! allocate space for subgrid variables
+    call set_gridflag(x%gridflag)              ! set module variable to match the type stored in the grid class
+  end subroutine grid_internaldata_alloc
+
+
+  !> Trigger a generation of all grid internal data
+  subroutine grid_internaldata_generate(x)
+    class(curvmesh), intent(inout) :: x
+
+    call x%make()
+  end subroutine 
+
+
   !> Force deallocation of grid data at least to the point where it can be "remade", e.g. for AMR-like operations
-  subroutine ungenerate_worker_grid(x)
+  subroutine grid_internaldata_ungenerate(x)
     class(curvmesh), intent(inout) :: x
 
     call x%dissociate_pointers()
-  end subroutine ungenerate_worker_grid
+  end subroutine grid_internaldata_ungenerate
 
 
   !> Read in native coordinates from a grid file
