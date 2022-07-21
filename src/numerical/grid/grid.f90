@@ -2,7 +2,10 @@
 !    object...
 module grid
 
+use, intrinsic :: iso_c_binding, only: C_PTR,C_INT,c_loc,c_f_pointer
 use meshobj, only: curvmesh
+use meshobj_dipole, only: dipolemesh
+use meshobj_cart, only: cartmesh
 use phys_consts, only: wp
 use reader, only: get_simsize3
 
@@ -19,7 +22,8 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_hdf5, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
              grid_from_extents, generate_worker_grid, ungenerate_worker_grid, &
-             get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter
+             get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
+             meshobj_alloc
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -71,7 +75,8 @@ contains
 
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
-  !    local grid, i.e. one that doesn't need knowledge of the full grid extents!
+  !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
+  !    the grid type/class already be defined
   subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
@@ -101,10 +106,46 @@ contains
   end subroutine grid_from_extents
 
 
+  !> Find the type of the grid and allocate the correct type/class, return a C pointer if requested
+  subroutine meshobj_alloc(x1,x2,x3,x2all,x3all,x,xtype,xC)
+    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
+    class(curvmesh), pointer, intent(inout) :: x
+    integer(C_INT), intent(inout), optional :: xtype
+    type(C_PTR), intent(inout), optional :: xC
+    integer :: gridtype
+    type(cartmesh), pointer :: xcart
+    type(dipolemesh), pointer :: xdipole
+
+    !! allocate and read correct grid type
+    gridtype=detect_gridtype(x1,x2,x3)
+    select case (gridtype)
+      case (2)
+        !allocate(dipolemesh::x)
+        allocate(xdipole)
+        x=>xdipole
+        if (present(xC) .and. present(xtype)) then
+          xC = c_loc(xdipole)
+          xtype = gridtype
+        end if
+      case (1)
+        !allocate(cartmesh::x)
+        allocate(xcart)
+        x=>xcart
+        if (present(xC) .and. present(xtype)) then
+          xC = c_loc(xcart)
+          xtype = gridtype
+        end if
+      case default
+        error stop 'grid:meshobj_alloc - Unable to identify grid type'
+    end select
+  end subroutine 
+
+
   !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
   !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and
   !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with
-  !    trees-GEMINI.
+  !    trees-GEMINI.  The dynamic type of x must be set prior to calling this function; this can be 
+  !    accomplished e.g. through a wrapper
   subroutine generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
     real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
     real(wp), intent(in) :: glonctr,glatctr

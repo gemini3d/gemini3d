@@ -16,7 +16,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   gather_send,gather_recv,ID2grid,grid2ID
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid, &
-                get_grid3_coords, detect_gridtype
+                get_grid3_coords, detect_gridtype, meshobj_alloc
 
 implicit none (type, external)
 private
@@ -63,9 +63,9 @@ contains
     real(wp) :: glonctr,glatctr
     !> For whatever reason c_loc must be called on a static type (not polymorphic) though I don't see why
     !    this limitation exists...
-    type(cartmesh), pointer :: xcart
-    type(dipolemesh), pointer :: xdipole
-    integer :: gridtype
+    ! type(cartmesh), pointer :: xcart
+    ! type(dipolemesh), pointer :: xdipole
+    ! integer :: gridtype
   
     !! Declare grid type that we are dealing with; note lack of matching deallocates assume
     !!   that the compiler will deal with it automatically
@@ -93,32 +93,19 @@ contains
     !! piece of grid that corresponds to my x3 position
     islfin=islstart+lx3-1
     x3=x3all(islstart-2:islfin+2)
-  
-    !! allocate and read correct grid type
-    gridtype=detect_gridtype(x1,x2,x3)
-    select case (gridtype)
-      case (2)
-        !allocate(dipolemesh::x)
-        allocate(xdipole)
-        x=>xdipole
-        call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
-        if (present(xC) .and. present(xtype)) then
-          xC = c_loc(xdipole)
-          xtype = gridtype
-        end if
-      case (1)
-        !allocate(cartmesh::x)
-        allocate(xcart)
-        x=>xcart
-        call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
-        print*, 'read_grid_cart done'
-        if (present(xC) .and. present(xtype)) then
-          xC = c_loc(xcart)
-          xtype = gridtype
-        end if
-      case default
-        error stop 'Unable to identify grid type'
-    end select
+ 
+    !> allocate the correct class for the grid and bind a C pointer (which can only be done at creation!) 
+    if (present(xC) .and. present(xtype)) then
+      call meshobj_alloc(x1,x2,x3,x2all,x3all,x,xtype,xC)
+    else
+      call meshobj_alloc(x1,x2,x3,x2all,x3all,x)
+    end if
+
+    !> execute call to collect global data, as needed
+    call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
+
+    !> just to be careful explicitly deallocate temp arrays
+    deallocate(x1,x2,x3,x2all,x3all)
   end subroutine read_grid
   
   

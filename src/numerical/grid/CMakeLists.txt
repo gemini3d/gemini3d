@@ -1,5 +1,5 @@
 add_library(grid OBJECT grid.f90 readgrid_hdf5.f90)
-target_link_libraries(grid PRIVATE const reader meshobj
+target_link_libraries(grid PRIVATE const reader meshobj meshobj_cart meshobj_dipole
 h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
