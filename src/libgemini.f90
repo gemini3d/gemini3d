@@ -273,17 +273,34 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     type(gemini_work), pointer, intent(inout) :: intvars
 
+!    !> one contiguous block for overall simulation data
+!    allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
+!    !> fluid momentum and energy density variables
+!    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
+!    !> electrodynamic state variables (lx1,lx2,lx3)
+!    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
+
+    !> allocate floating point arrays
+    call gemini_double_alloc(fluidvars,fluidauxvars,electrovars)
+
+    !> internal work struct
+    intvars=>gemini_work_alloc(cfg)
+  end subroutine gemini_alloc
+
+
+  !> Fortran calls to allocate floating point arrays (should only be used from fortran)
+  subroutine gemini_double_alloc(fluidvars,fluidauxvars,electrovars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+
     !> one contiguous block for overall simulation data
     allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
     !> fluid momentum and energy density variables
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
     !> electrodynamic state variables (lx1,lx2,lx3)
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
-
-    !> internal work struct
-    !call gemini_alloc_nodouble(cfg,intvars)
-    intvars=>gemini_work_alloc(cfg)
-  end subroutine gemini_alloc
+  end subroutine gemini_double_alloc
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables

@@ -170,7 +170,7 @@ contains
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory specifically internal variables
   !    we assume the C main program will itself allocate the main floating point data arrays.
-  subroutine gemini_alloc_C(cfgC,intvarsC) bind(C, name='gemini_alloc_C')
+  subroutine gemini_work_alloc_C(cfgC,intvarsC) bind(C, name='gemini_work_alloc_C')
     type(c_ptr), intent(in) :: cfgC
     type(c_ptr), intent(inout) :: intvarsC
     type(gemini_cfg), pointer :: cfg
@@ -181,7 +181,7 @@ contains
     ! call gemini_alloc_nodouble(cfg,intvars)
     intvars=>gemini_work_alloc(cfg)
     intvarsC=c_loc(intvars)
-  end subroutine gemini_alloc_C
+  end subroutine gemini_work_alloc_C
 
 
   !> deallocate state variables
