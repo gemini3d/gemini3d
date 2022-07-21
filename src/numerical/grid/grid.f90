@@ -2,7 +2,7 @@
 !    object...
 module grid
 
-use, intrinsic :: iso_c_binding, only: C_PTR,C_INT,c_loc,c_f_pointer
+use, intrinsic :: iso_c_binding, only: C_PTR,C_INT,c_loc,c_f_pointer,C_NULL_PTR
 use meshobj, only: curvmesh
 use meshobj_dipole, only: dipolemesh
 use meshobj_cart, only: cartmesh
@@ -24,7 +24,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
-             meshobj_alloc!, generate_worker_grid
+             meshobj_alloc, get_gridcenter, meshobj_dealloc !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -64,6 +64,15 @@ contains
     lx1=lx1in; lx2all=lx2allin; lx3all=lx3allin;
     glonctr=glonctrin; glatctr=glatctrin;
   end subroutine set_size_gridcenter
+
+
+  !> retriece the grid center location from module
+  subroutine get_gridcenter(glonctrout,glatctrout)
+    real(wp), intent(inout) :: glonctrout,glatctrout
+
+    glonctrout=glonctr
+    glatctrout=glatctr
+  end subroutine get_gridcenter
 
 
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
@@ -186,6 +195,20 @@ contains
         error stop 'grid:meshobj_alloc - Unable to identify grid type'
     end select
   end subroutine 
+
+
+  !> deallocate mesh class
+  subroutine meshobj_dealloc(x,xtype,xC)
+    class(curvmesh), pointer, intent(inout) :: x
+    integer(C_INT), intent(inout), optional :: xtype
+    type(C_PTR), intent(inout), optional :: xC
+    
+
+    deallocate(x)
+    x=>null()
+    xC=C_NULL_PTR
+    xtype=-1
+  end subroutine meshobj_dealloc
 
 
 !  !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
