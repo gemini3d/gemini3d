@@ -54,7 +54,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             fluidauxvar_pointers, electrovar_pointers, gemini_work, & 
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
-            grid_size_in
+            grid_size_in, gemini_double_alloc, gemini_double_dealloc
 
 
 !! temp file used by MSIS 2.0
@@ -303,6 +303,18 @@ contains
   end subroutine gemini_double_alloc
 
 
+  subroutine gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+
+    !> ifort generates a runtime error for this if called from C; I guess memory management needs to be done on the C-side of things
+    deallocate(fluidvars)
+    deallocate(fluidauxvars)
+    deallocate(electrovars)
+  end subroutine gemini_double_dealloc
+
+
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
   !!   This will be called any time a gemini library procedures needs to access individual state variables.
   subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -373,9 +385,8 @@ contains
     type(gemini_work), pointer, intent(inout) :: intvars
 
     !> ifort generates a runtime error for this if called from C; I guess memory management needs to be done on the C-side of things
-    deallocate(fluidvars)
-    deallocate(fluidauxvars)
-    deallocate(electrovars)
+    call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+
     !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
   end subroutine
