@@ -24,7 +24,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
-             meshobj_alloc, generate_worker_grid
+             meshobj_alloc!, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -104,9 +104,9 @@ contains
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
-    call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
-    !call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
-    !call grid_internaldata_generate(x)
+    !call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+    call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+    call grid_internaldata_generate(x)
 
     ! get rid of temp. arrays
     deallocate(x1,x2,x3)
@@ -186,24 +186,24 @@ contains
   end subroutine 
 
 
-  !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
-  !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and
-  !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with
-  !    trees-GEMINI.  The dynamic type of x must be set prior to calling this function; this can be 
-  !    accomplished e.g. through a wrapper
-  subroutine generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
-    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
-    real(wp), intent(in) :: glonctr,glatctr
-    class(curvmesh), intent(inout) :: x
-
-    ! Create the grid object
-    call x%set_center(glonctr,glatctr)
-    call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
-    call x%init()                              ! allocate space for subgrid variables
-    call x%make()                              ! fill auxiliary arrays
-
-    call set_gridflag(x%gridflag)
-  end subroutine generate_worker_grid
+!  !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
+!  !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and
+!  !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with
+!  !    trees-GEMINI.  The dynamic type of x must be set prior to calling this function; this can be 
+!  !    accomplished e.g. through a wrapper
+!  subroutine generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
+!    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
+!    real(wp), intent(in) :: glonctr,glatctr
+!    class(curvmesh), intent(inout) :: x
+!
+!    ! Create the grid object
+!    call x%set_center(glonctr,glatctr)
+!    call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+!    call x%init()                              ! allocate space for subgrid variables
+!    call x%make()                              ! fill auxiliary arrays
+!
+!    call set_gridflag(x%gridflag)
+!  end subroutine generate_worker_grid
 
 
   !> Trigger allocation of grid class internal data once the class itself has been allocated and typed
@@ -215,7 +215,6 @@ contains
     call x%set_center(glonctr,glatctr)         ! set center location for grid (in case used, e.g. for Cartesian)
     call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
     call x%init()                              ! allocate space for subgrid variables
-    call set_gridflag(x%gridflag)              ! set module variable to match the type stored in the grid class
   end subroutine grid_internaldata_alloc
 
 
@@ -223,7 +222,8 @@ contains
   subroutine grid_internaldata_generate(x)
     class(curvmesh), intent(inout) :: x
 
-    call x%make()
+    call x%make()                              ! trigger generation of all internal data arrays
+    call set_gridflag(x%gridflag)              ! set module variable to match the type stored in the grid class
   end subroutine 
 
 
