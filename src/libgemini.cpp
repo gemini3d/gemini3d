@@ -147,11 +147,10 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Call deallocation procedures */
   clear_dneu_C(&intvars);
-  gemini_dealloc_C(&cfgC,&intvars);
   free(fluidvars); free(fluidauxvars); free(electrovars);
-
+  gemini_work_dealloc_C(&cfgC,&intvars);
+  gemini_cfg_dealloc_C(&cfgC);
   return 0;
-
 }
 
 
