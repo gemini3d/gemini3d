@@ -21,7 +21,7 @@ use mpi_f08, only : mpi_recv, mpi_send, mpi_comm_world, mpi_status_ignore
 
 implicit none (type, external)
 private
-public :: read_grid, grid_check, grid_drift
+public :: read_grid, grid_check, grid_drift, calc_subgrid_size
 
 interface ! read.f90
   module subroutine read_grid_cartdip(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
