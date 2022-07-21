@@ -144,6 +144,8 @@ contains
 !    !  call meshobj_alloc(x1,x2,x3,x2,x3,x)
 !    !end if
 !    call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+!    ! call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+!    ! call grid_internaldata_generate(x)
 !
 !    ! get rid of temp. arrays
 !    deallocate(x1,x2,x3)
