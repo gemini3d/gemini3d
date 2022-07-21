@@ -75,7 +75,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     std::cerr << "electrovars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
-  gemini_alloc_C(&cfgC,&intvars);
+  gemini_work_alloc_C(&cfgC,&intvars);
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
