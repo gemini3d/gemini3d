@@ -33,6 +33,11 @@ interface ! readgrid_*.f90
   end subroutine
 end interface
 
+! some overloading for situations needing vs. not needing an allocation step
+interface grid_from_extents
+  module procedure grid_from_extents_noalloc,grid_from_extents_alloc
+end interface
+
 contains
   !> detect the type of grid that we are dealing with based solely on native coordinate values
   function detect_gridtype(x1,x2,x3) result(xtype)
@@ -77,7 +82,7 @@ contains
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
   !    the grid type/class already be defined
-  subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
+  subroutine grid_from_extents_noalloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     class(curvmesh), intent(inout) :: x
@@ -98,12 +103,48 @@ contains
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
-    ! generate a subgrid from these
     call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
 
     ! get rid of temp. arrays
     deallocate(x1,x2,x3)
-  end subroutine grid_from_extents
+  end subroutine grid_from_extents_noalloc
+
+
+  !> this version additionally allocates the input argument, which is now a pointer
+  subroutine grid_from_extents_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC)
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+    class(curvmesh), intent(inout), pointer :: x
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    integer :: ix1,ix2,ix3
+    real(wp), dimension(:), allocatable :: x1,x2,x3
+
+    ! error checking
+    if (glatctr<-90._wp .or. glatctr>90._wp) then
+      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
+                   module variables glonctr,glatctr'
+    end if
+
+    ! create temp space
+    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
+
+    ! make uniformly spaced coordinate arrays
+    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+    x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
+    x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
+
+    ! generate a subgrid from these
+    !if (present(xtype) .and. present(xC)) then   ! optional arguments confuses overloading for some types of calls :/
+      call meshobj_alloc(x1,x2,x3,x2,x3,x,xtype,xC)
+    !else
+    !  call meshobj_alloc(x1,x2,x3,x2,x3,x)
+    !end if
+    call generate_worker_grid(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+
+    ! get rid of temp. arrays
+    deallocate(x1,x2,x3)
+  end subroutine grid_from_extents_alloc
 
 
   !> Find the type of the grid and allocate the correct type/class, return a C pointer if requested
