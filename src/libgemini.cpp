@@ -41,20 +41,17 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_config_in_C(ps,&cfgC);
   grid_size_in_C(&cfgC);
 
+  // Grab some variables out of fortran modules
   get_fullgrid_size_C(&lx1,&lx2all,&lx3all);                        // retrieve sizes that are stored in the grid module
   init_procgrid_C(&lx2all,&lx3all,plid2in,plid3in);                 // compute process grid for this run
-  std::cout << "init_procgrid_C done" << std::endl;
   get_config_vars_C(&cfgC, &flagneuBG,&flagdneu,&dtneuBG,&dtneu);   // export config type properties as C variables, for use in main
-  std::cout << "get_config_vars_C done" << std::endl;
 
-  /* Get input grid from file */
-  read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
-  std::cout << "read_grid_C done" << std::endl;
+  // Once the process grid is set we can compute subgrid sizes
+  calc_subgrid_size_in_C(&lx2all,&lx3all);
 
   /* Main needs to know the grid sizes and species numbers */
   get_subgrid_size_C(&lx1,&lx2,&lx3);     // once grid is input we need to know the subgrid sizes based on no of workers and overall size
   get_species_size_C(&lsp);               // so main knows the number of species used
-
 
   // Allocate memory and get pointers to blocks of data
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
@@ -74,30 +71,22 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     std::cerr << "electrovars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
-  std::cout << "end C allocations, worker: " << myid << std::endl;
-
-  std::cout << "Begin allocations for subgrids\n";
   gemini_alloc_C(&cfgC,&intvars);
-  std::cout << "Begin allocations for full grid\n";
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
-  std::cout << "outdir_fullgridvaralloc_C done" << std::endl;
+
+  /* Get input grid from file */
+  read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
 
   /* initialize state variables from input file */
-  std::cout << "calling get_initial_state_C...";
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
-  std::cout << "get_initial_state_C done" << std::endl;
   set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG,&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
-  std::cout << " Initializing electric field input data..." << std::endl;
   init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
   pot2perpfield_C(&xtype,&xC,&electrovars);
-  std::cout << "pot2perpfield_C done" << std::endl;
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
-  std::cout << " Initialize precipitation input data..." << std::endl;
   init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-  std::cout << " Initialize neutral background and input files..." << std::endl;
   msisinit_C(&cfgC);
   init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
   init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
