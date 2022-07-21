@@ -70,6 +70,11 @@ contains
   end function set_gridpointer_dyntype
 
 
+  !> NOTE: because fortran doesn't allow you to do xcart=>x where xcart is a class extension of x the C location
+  !    of the grid pointer can only be determined *at the time of creation* and cannot be arbitrarily retrieved
+  !    as far as I can tell.  SO there is not inverse operation to set_gridpointer_dyntype().
+
+
   !> wrapper for command line interface
   subroutine cli_in_C(p,lid2in,lid3in,cfgC) bind(C, name='cli_in_C')
     type(c_params), intent(in) :: p
@@ -215,7 +220,8 @@ contains
   end subroutine read_fullsize_gridcenter_C
 
 
-  !> C wrapper for procedure to compute a grid object given extents and fullgrid reference point
+  !> C wrapper for procedure to compute a grid object given extents and fullgrid reference point.  The class
+  !    pointed to by xC must already have been allocated and assigned the correct fortran dynamic type.  
   subroutine grid_from_extents_C(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,xtype,xC) bind(C,name='grid_from_extents_C')
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
