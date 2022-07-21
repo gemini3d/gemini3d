@@ -71,7 +71,6 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     std::cerr << "electrovars failed malloc, worker: " << myid << std::endl;
     return 1;
   }
-
   gemini_alloc_C(&cfgC,&intvars);
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
 
@@ -83,13 +82,24 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG,&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
+<<<<<<< HEAD
+  std::cout << " Initializing electric field input data..." << std::endl;
+  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&intvars,&ymd[0],&UTsec);
+=======
   init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
+>>>>>>> 2ad31659 (reorg alloc calls in main.cpp)
   pot2perpfield_C(&xtype,&xC,&electrovars);
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
+<<<<<<< HEAD
+  std::cout << " Initialize precipitation input data..." << std::endl;
+  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&ymd[0],&UTsec,&intvars);
+  std::cout << " Initialize neutral background and input files..." << std::endl;
+=======
   init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+>>>>>>> 2ad31659 (reorg alloc calls in main.cpp)
   msisinit_C(&cfgC);
-  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
+  init_neutralBG_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
   init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
