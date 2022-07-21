@@ -36,6 +36,10 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* Command line and config structure setup */
   // cli_config_gridsize_C(ps, plid2in, plid3in, &cfgC);    // handling of input data, create internal fortran type with parameters for run
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //  Allocations happen in this block
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   gemini_cfg_alloc_C(&cfgC);
   cli_in_C(ps,plid2in,plid3in,&cfgC);
   read_config_in_C(ps,&cfgC);
@@ -73,6 +77,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   }
   gemini_alloc_C(&cfgC,&intvars);
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /* Get input grid from file */
   read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
