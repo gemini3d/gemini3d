@@ -185,7 +185,7 @@ contains
 
 
   !> deallocate state variables
-  subroutine gemini_dealloc_C(cfgC,intvarsC) bind(C, name='gemini_dealloc_C')
+  subroutine gemini_work_dealloc_C(cfgC,intvarsC) bind(C, name='gemini_work_dealloc_C')
     type(c_ptr), intent(in) :: cfgC
     type(c_ptr), intent(inout) :: intvarsC
 
@@ -202,7 +202,7 @@ contains
     !    when passed back and forth with C so only deallocate the derived types
     !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
-  end subroutine gemini_dealloc_C
+  end subroutine gemini_work_dealloc_C
 
 
   !> C wrapper for procedure to get the center location of the grid from its input file

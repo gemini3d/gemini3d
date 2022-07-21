@@ -36,6 +36,7 @@ extern void help_gemini_bin();
 
 /* interfaces to libgemini */
 extern void gemini_cfg_alloc_C(void**);
+extern void gemini_cfg_dealloc_C(void**);
 extern void cli_in_C(struct params*, int*, int*, void**);
 extern void read_config_in_C(struct params*, void**);
 extern void grid_size_in_C(void**);
@@ -51,7 +52,7 @@ extern void init_neutralBG_C(void**, int*, void**, double*, double*, int*, doubl
 extern void set_update_cadence_C(int*);
 extern void neutral_atmos_winds_C(void**, int*, void**, int*, double*, void**);
 extern void check_finite_output_C(void**, double**, double**, double*);
-extern void gemini_dealloc_C(void**, void**);
+extern void gemini_work_dealloc_C(void**, void**);
 extern void get_solar_indices_C(void**, double*, double*);
 extern void v12rhov1_C(double**, double**);
 extern void T2rhoe_C(double**, double**);
