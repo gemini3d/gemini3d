@@ -30,7 +30,8 @@ use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
 
-use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter
+use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
+                  grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -273,13 +274,6 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
     type(gemini_work), pointer, intent(inout) :: intvars
 
-!    !> one contiguous block for overall simulation data
-!    allocate(fluidvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,5*lsp))
-!    !> fluid momentum and energy density variables
-!    allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
-!    !> electrodynamic state variables (lx1,lx2,lx3)
-!    allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
-
     !> allocate floating point arrays
     call gemini_double_alloc(fluidvars,fluidauxvars,electrovars)
 
@@ -313,6 +307,56 @@ contains
     deallocate(fluidauxvars)
     deallocate(electrovars)
   end subroutine gemini_double_dealloc
+
+
+  !> sequence of calls to allocate space for grid object and internal variables (analogous to gemini_work_alloc)
+  subroutine gemini_grid_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC)
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+    class(curvmesh), intent(inout), pointer :: x
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    integer :: ix1,ix2,ix3
+    real(wp), dimension(:), allocatable :: x1,x2,x3
+    real(wp) :: glonctr,glatctr
+
+    ! retrieve data from grid module
+    call get_gridcenter(glonctr,glatctr)
+
+    ! error checking
+    if (glatctr<-90._wp .or. glatctr>90._wp) then
+      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
+                   module variables glonctr,glatctr'
+    end if
+
+    ! create temp space
+    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
+
+    ! make uniformly spaced coordinate arrays
+    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+    x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
+    x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
+
+    ! allocate mesh class and create a C pointer to it
+    call meshobj_alloc(x1,x2,x3,x,xtype,xC)
+
+    ! allocate grid internal data arrays/structs
+    call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
+
+    ! get rid of temp. arrays
+    deallocate(x1,x2,x3)
+  end subroutine gemini_grid_alloc
+
+
+  !> deallocate grid data
+  subroutine gemini_grid_dealloc(x,xtype,xC)
+    class(curvmesh), pointer, intent(inout) :: x
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+
+    call grid_internaldata_ungenerate(x)    ! this both ungenerates and also deallocates data
+    call meshobj_dealloc(x,xtype,xC)
+  end subroutine gemini_grid_dealloc
 
 
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
