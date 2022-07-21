@@ -41,7 +41,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
-            cli_in
+            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc
 
 implicit none (type, external)
 
@@ -220,6 +220,7 @@ contains
   end subroutine read_fullsize_gridcenter_C
 
 
+  ! FIXME: obviated needs to get rid of this here and in header file
   !> C wrapper for procedure to compute a grid object given extents and fullgrid reference point.  The class
   !    pointed to by xC must already have been allocated and assigned the correct fortran dynamic type.  
   subroutine grid_from_extents_C(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,xtype,xC) bind(C,name='grid_from_extents_C')
@@ -234,6 +235,40 @@ contains
     ! as an extra step we need to also assign a type to the grid
     xtype=detect_gridtype(x%x1,x%x2,x%x3)
   end subroutine grid_from_extents_C
+
+
+  !> C wrapper to allocate grid
+  subroutine gemini_grid_alloc_C(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,xtype,xC) bind(C,name='gemini_grid_alloc_C')
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
+    integer, intent(in) :: lx1wg,lx2wg,lx3wg
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    class(curvmesh), pointer :: x
+
+    call gemini_grid_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC) 
+  end subroutine gemini_grid_alloc_C
+
+
+  !> C wrapper to deallocate grid
+  subroutine gemini_grid_dealloc_C(xtype,xC) bind(C, name='gemini_grid_dealloc_C')
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype,xC)
+    call gemini_grid_dealloc(x,xtype,xC)
+  end subroutine gemini_grid_dealloc_C
+
+
+  !> C wrapper to force generate of grid internal data quantities
+  subroutine gemini_grid_generate_C(xtype,xC) bind(C, name='gemini_grid_generate_C')
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype,xC)
+    call gemini_grid_generate(x)
+  end subroutine gemini_grid_generate_C
 
 
   !> C wrapper for procedure that reads full data from input file and interpolates to loca worker subgrid

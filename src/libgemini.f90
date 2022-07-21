@@ -31,7 +31,8 @@ use collisions, only: conductivities
 use filesystem, only : expanduser
 
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
-                  grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc
+                  grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
+                  grid_internaldata_generate
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -55,7 +56,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             fluidauxvar_pointers, electrovar_pointers, gemini_work, & 
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
-            grid_size_in, gemini_double_alloc, gemini_double_dealloc
+            grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
+            gemini_grid_generate
 
 
 !! temp file used by MSIS 2.0
@@ -346,6 +348,14 @@ contains
     ! get rid of temp. arrays
     deallocate(x1,x2,x3)
   end subroutine gemini_grid_alloc
+
+
+  !> subroutine to force generate of grid internal objects (grid must already be allocated)
+  subroutine gemini_grid_generate(x)
+    class(curvmesh), intent(inout) :: x
+
+    call grid_internaldata_generate(x)
+  end subroutine gemini_grid_generate
 
 
   !> deallocate grid data

@@ -73,6 +73,9 @@ extern void dateinc_C(double*, int*, double*);
 extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
 extern void read_fullsize_gridcenter_C(void**);
 extern void grid_from_extents_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
+extern void gemini_grid_alloc_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
+extern void gemini_grid_dealloc_C(int*,void**);
+extern void gemini_grid_generate_C(int*, void**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
