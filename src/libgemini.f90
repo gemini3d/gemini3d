@@ -57,8 +57,10 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
-            gemini_grid_generate
+            gemini_grid_generate, setv2v3, v2grid, v3grid
 
+
+real(wp), protected :: v2grid,v3grid
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
@@ -365,6 +367,15 @@ contains
   end subroutine gemini_grid_dealloc
 
 
+  !> force a value for the lagrangian grid drift
+  subroutine setv2v3(v2gridin,v3gridin)
+    real(wp), intent(in) :: v2gridin,v3gridin
+
+    v2grid=v2gridin
+    v3grid=v3gridin
+  end subroutine setv2v3
+
+
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
   !!   This will be called any time a gemini library procedures needs to access individual state variables.
   subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -518,15 +529,16 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
+  subroutine init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt,cfg,ymd,UTsec,x,intvars%eprecip)
+    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
 
 
@@ -563,15 +575,16 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
+    real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
   end subroutine init_neutralBG_in
 
 

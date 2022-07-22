@@ -103,8 +103,6 @@ contains
     !> Temporary variable for toggling full vs. other output
     integer :: flagoutput
     real(wp) :: tmilestone = 0
-    !> Describing Lagrangian grid (if used)
-    real(wp) :: v2grid,v3grid
     integer :: lx1,lx2,lx3,lx2all,lx3all,lsp
     logical :: flagneuBG
     integer :: flagdneu
@@ -178,23 +176,23 @@ contains
 
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
+    call init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
 
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
     call pot2perpfield_in(x,electrovars)
 
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
-    call BGfield_Lagrangian(cfg,x,electrovars,intvars,v2grid,v3grid)
+    call BGfield_Lagrangian(cfg,x,electrovars,intvars)
 
     !> Precipitation input setup
     if(myid==0) print*, 'Priming precipitation input'
-    call init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
+    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call msisinit_in(cfg)
-    call init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
@@ -211,7 +209,7 @@ contains
       if ( it/=1 .and. flagneuBG .and. t>tneuBG) then              !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
         call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
-        call neutral_atmos_wind_update(intvars,v2grid,v3grid)      ! apply to variables in this program unit
+        call neutral_atmos_wind_update(intvars)      ! apply to variables in this program unit
         tneuBG=tneuBG+dtneuBG
         if (myid==0) then
           call cpu_time(tfin)
@@ -222,7 +220,7 @@ contains
       !> get neutral perturbations
       if (flagdneu==1) then
         call cpu_time(tstart)
-        call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec,v2grid,v3grid)
+        call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
         if (myid==0 .and. debug) then
           call cpu_time(tfin)
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart

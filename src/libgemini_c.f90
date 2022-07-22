@@ -41,7 +41,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
-            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc
+            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3
 
 implicit none (type, external)
 
@@ -195,6 +195,9 @@ contains
     type(c_ptr), intent(inout) :: intvarsC
 
     type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
@@ -230,7 +233,7 @@ contains
     x=>set_gridpointer_dyntype(xtype,xC)
     call grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     ! as an extra step we need to also assign a type to the grid
-    xtype=detect_gridtype(x%x2)
+    xtype=detect_gridtype(x%x1,x%x2,x%x3)
   end subroutine grid_from_extents_C
 
 
@@ -288,6 +291,14 @@ contains
   end subroutine interp_file2subgrid_C
 
 
+  !> wrapper for forcing a particular value for the grid drift velocity
+  subroutine setv2v3_C(v2gridin,v3gridin) bind(C,name='setv2v3_C')
+    real(wp), intent(in) :: v2gridin,v3gridin
+
+    call setv2v3(v2gridin,v3gridin)
+  end subroutine setv2v3_C
+
+
   !> set start values for some variables.
   !    some case is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays
@@ -310,11 +321,12 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(cfgC,xtype,xC,dt,ymd,UTsec,intvarsC) bind(C, name='init_precipinput_C')
+  subroutine init_precipinput_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_precipinput_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: intvarsC
@@ -326,7 +338,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
+    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
   end subroutine init_precipinput_C
 
 
@@ -341,13 +353,13 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(cfgC,xtype,xC,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C, name='init_neutralBG_C')
+  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_neutralBG_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt,t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
     type(c_ptr), intent(inout) :: intvarsC
 
     type(gemini_cfg), pointer :: cfg
@@ -357,7 +369,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
   end subroutine init_neutralBG_C
 
 
