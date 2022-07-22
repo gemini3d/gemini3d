@@ -76,6 +76,7 @@ extern void grid_from_extents_C(double*,double*,double*,double*,double*,int*,int
 extern void gemini_grid_alloc_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
 extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
+extern void setv2v3_C(double*, double*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
