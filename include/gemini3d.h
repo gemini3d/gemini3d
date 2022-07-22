@@ -46,6 +46,7 @@ extern void get_subgrid_size_C(int*, int*, int*);
 extern void get_species_size_C(int*);
 extern void gemini_work_alloc_C(void**,void**);
 extern void gemini_work_dealloc_C(void**, void**);
+extern void gemini_grid_alloc_C();
 //extern void memblock_from_C(double**, double**, double**);
 extern void set_start_values_C(int*, double*, double*, double*, double*, int*, void**, double**);
 extern void msisinit_C(void**);
@@ -53,7 +54,6 @@ extern void init_neutralBG_C(void**, int*, void**, double*, double*, int*, doubl
 extern void set_update_cadence_C(int*);
 extern void neutral_atmos_winds_C(void**, int*, void**, int*, double*, void**);
 extern void check_finite_output_C(void**, double**, double**, double*);
-extern void gemini_work_dealloc_C(void**, void**);
 extern void get_solar_indices_C(void**, double*, double*);
 extern void v12rhov1_C(double**, double**);
 extern void T2rhoe_C(double**, double**);

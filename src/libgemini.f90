@@ -364,7 +364,7 @@ contains
     integer, intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
 
-    call grid_internaldata_ungenerate(x)    ! this both ungenerates and also deallocates data
+    call grid_internaldata_ungenerate(x)    ! this both ungenerates and also deallocates data stored in grid object
     call meshobj_dealloc(x,xtype,xC)
   end subroutine gemini_grid_dealloc
 
