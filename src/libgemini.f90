@@ -57,11 +57,12 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
-            gemini_grid_generate
+            gemini_grid_generate, setv2v3, v2grid, v3grid
 
 
 !! temp file used by MSIS 2.0
 character(*), parameter :: msis2_param_file = "msis20.parm"
+real(wp), protected :: v2grid,v3grid
 
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
@@ -369,6 +370,15 @@ contains
   end subroutine gemini_grid_dealloc
 
 
+  !> force a value for the lagrangian grid drift
+  subroutine setv2v3(v2gridin,v3gridin)
+    real(wp), intent(in) :: v2gridin,v3gridin
+
+    v2grid=v2gridin
+    v3grid=v3gridin
+  end subroutine setv2v3
+
+
   !> take a block of memory and assign pointers to various pieces representing different fluid, etc. state variables
   !!   This will be called any time a gemini library procedures needs to access individual state variables.
   subroutine fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -551,13 +561,12 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
     type(gemini_work), intent(inout) :: intvars
 
     call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)

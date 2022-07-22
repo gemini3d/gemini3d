@@ -154,13 +154,12 @@ contains
   end subroutine check_dryrun_C
 
 
-  subroutine BGfield_Lagrangian_C(cfgC, xtype,xC, electrovarsC,intvarsC,v2grid,v3grid) bind(C, name='BGfield_Lagrangian_C')
+  subroutine BGfield_Lagrangian_C(cfgC, xtype,xC, electrovarsC,intvarsC) bind(C, name='BGfield_Lagrangian_C')
     type(C_PTR), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC
     type(c_ptr), intent(inout) :: electrovarsC
     type(C_PTR), intent(inout) :: intvarsC
-    real(wp), intent(inout) :: v2grid,v3grid
   
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
@@ -173,7 +172,7 @@ contains
   
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
   
-    call BGfield_Lagrangian(cfg, x, electrovars, intvars, v2grid, v3grid)
+    call BGfield_Lagrangian(cfg, x, electrovars, intvars)
   end subroutine BGfield_Lagrangian_C
 
 
@@ -290,18 +289,17 @@ contains
   end subroutine dt_select_C
 
 
-  subroutine neutral_atmos_wind_update_C(intvarsC,v2grid,v3grid) bind(C, name='neutral_atmos_wind_update_C')
+  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
     type(C_PTR), intent(inout) :: intvarsC
-    real(wp), intent(in) :: v2grid,v3grid
   
     type(gemini_work), pointer :: intvars
   
     call c_f_pointer(intvarsC,intvars)
-    call neutral_atmos_wind_update(intvars, v2grid, v3grid)
+    call neutral_atmos_wind_update(intvars)
   end subroutine neutral_atmos_wind_update_C
 
 
-  subroutine neutral_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec,v2grid,v3grid) bind(C, name='neutral_perturb_C')
+  subroutine neutral_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='neutral_perturb_C')
     type(C_PTR), intent(in) :: cfgC
     type(C_PTR), intent(inout) :: intvarsC
     integer(C_INT), intent(in) :: xtype
@@ -309,7 +307,6 @@ contains
     real(wp), intent(in) :: dt,t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
   
     type(gemini_cfg), pointer :: cfg
     type(gemini_work), pointer :: intvars
@@ -319,7 +316,7 @@ contains
     call c_f_pointer(intvarsC,intvars)
     x=>set_gridpointer_dyntype(xtype, xC)
   
-    call neutral_perturb_in(cfg, intvars, x, dt, t, ymd, UTsec, v2grid, v3grid)
+    call neutral_perturb_in(cfg, intvars, x, dt, t, ymd, UTsec)
   end subroutine neutral_perturb_C
 
 
