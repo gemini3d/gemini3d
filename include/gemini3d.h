@@ -46,7 +46,6 @@ extern void get_subgrid_size_C(int*, int*, int*);
 extern void get_species_size_C(int*);
 extern void gemini_work_alloc_C(void**,void**);
 extern void gemini_work_dealloc_C(void**, void**);
-extern void gemini_grid_alloc_C();
 //extern void memblock_from_C(double**, double**, double**);
 extern void set_start_values_C(int*, double*, double*, double*, double*, int*, void**, double**);
 extern void msisinit_C(void**);
