@@ -79,7 +79,7 @@ eqdir = 'test_data/test3d_eq'
 ! (optional - default off) Include neutral atmospheric perturbation inputs from another model/dataset
 &neutral_perturb
 flagdneu = 1                       ! on/off for neutral perturbations:  0 - off; 1 - on
-interptype = 3                     ! how to treat the input neutral data:  0 - 2D Cartesian; 1 - 2D axisymmetric; 3 - 3D Cartesian
+interptype = 3                     ! how to treat the input neutral data:  0 - 2D Cartesian; 1 - 2D axisymmetric; 3 - 3D Cartesian geomagnetic; 4 - 3D Cartesian geographic
 sourcemlat = 44.9397d0             ! magnetic latitude of the source location
 sourcemlon = 328.7981d0            ! magnetic longitude of the source location
 dtneu = 6d0                        ! time step between neutral file inputs
