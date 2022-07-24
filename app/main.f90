@@ -340,7 +340,7 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Old haloing code; almost certainly more efficient since this only haloes one ghost cell
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
+    ! call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
 
     ! This code is more general but does waste time haloing unneeded parameters and ghost cells
     call halo_fluidvars_in(x,fluidvars,fluidauxvars)
