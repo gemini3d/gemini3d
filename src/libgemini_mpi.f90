@@ -4,7 +4,7 @@ module gemini3d_mpi
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: iso_c_binding, only : c_ptr
 use phys_consts, only: wp,debug
-use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown, mpisetup
+use mpimod, only: mpi_manualgrid, process_grid_auto, mpi_cfg, mpibreakdown, mpisetup, tag=>gemini_mpi, halo
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
@@ -18,8 +18,8 @@ use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neu
 use temporal, only : dt_comm
 use sanity_check, only : check_finite_pertub, check_finite_output
 use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
-use multifluid_mpi, only: halo_allparams
-use sources_mpi, only: RK2_prep_mpi_allspec
+use multifluid_mpi, only: halo_allparams, halo_fluidvars
+use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work, v2grid, v3grid, setv2v3
@@ -31,7 +31,8 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             get_initial_drifts, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
             halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, halo_allparams_in, &
-            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in
+            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
+            RK2_global_boundary_allspec_in, halo_fluidvars_in
 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
@@ -463,7 +464,8 @@ contains
     call check_finite_output(cfg%outdir,t,mpi_cfg%myid,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
   end subroutine check_finite_output_in
 
-
+  ! FIXME:  deprecated; is easier/better just to halo all params prior to advection and interface vels
+  !           calculation...
   !> haloing for computing cell interface velocities
   subroutine halo_interface_vels_allspec_in(x,fluidvars,lsp)
     class(curvmesh), intent(in) :: x
@@ -498,7 +500,7 @@ contains
   end subroutine set_global_boundaries_allspec_in
 
 
-  !> halo all advected parameters
+  !> halo all ***advected*** parameters
   subroutine halo_allparams_in(x,fluidvars,fluidauxvars)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
@@ -517,16 +519,49 @@ contains
   end subroutine halo_allparams_in
 
 
-  !> prepare/halo data for compression substep
-  subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
-    class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+  !> halo all parameters
+   subroutine halo_fluidvars_in(x,fluidvars,fluidauxvars)
+     class(curvmesh), intent(in) :: x
+     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
 
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
-  end subroutine RK2_prep_mpi_allspec_in
+     ! bind pointers
+     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+
+     ! halo all fluid parameters
+     call halo_fluidvars(ns,rhovs1,rhoes,vs2,vs3,x%flagper)
+   end subroutine halo_fluidvars_in
+
+
+  !> prepare and then halo data for compression substep
+   subroutine RK2_prep_mpi_allspec_in(x,fluidvars)
+     class(curvmesh), intent(in) :: x
+     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+     real(wp), dimension(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2) :: param
+     integer :: isp,lsp
+
+     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+     lsp=size(ns,4)
+     call RK2_prep_mpi_allspec(vs1,vs2,vs3,x%flagper)
+   end subroutine RK2_prep_mpi_allspec_in
+
+
+  !> prepare data for compression substep deal with global boundaries
+   subroutine RK2_global_boundary_allspec_in(x,fluidvars)
+     class(curvmesh), intent(in) :: x
+     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+
+     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+     call RK2_global_boundary_allspec(vs1,vs2,vs3,x%flagper)
+   end subroutine RK2_global_boundary_allspec_in
 
 
   !> agree on average value of gravity and exospheric temp

@@ -101,7 +101,9 @@ extern void clear_dneu_C(void**);
 extern void halo_interface_vels_allspec_C(int*, void**, double**, int*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
 extern void halo_allparams_C(int*, void**, double**, double**);
+extern void halo_fluidvars_C(int*, void**, double**, double**);
 extern void RK2_prep_mpi_allspec_C(int*, void**, double**);
+extern void RK2_global_boundary_allspec_C(int*, void**, double**);
 extern void dt_select_C(void**, int*, void**, double**, double**, int*, double*, double*, double*, double*);
 extern void check_fileoutput_C(void**, double**, double**, void**, double*, double*, double*, double*, int*, int*, double*);
 

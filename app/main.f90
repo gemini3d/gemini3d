@@ -38,7 +38,8 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
                           set_global_boundaries_allspec_in, halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in
+                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
+                          RK2_global_boundary_allspec_in
 
 implicit none (type, external)
 external :: mpi_init,mpi_finalize,mpi_comm_rank
@@ -303,10 +304,21 @@ contains
 
     ! advection substep for all species
     call cpu_time(tstart)
-    call halo_interface_vels_allspec_in(x,fluidvars,lsp)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Old haloing code; possibly more efficient as it only haloes one ghost cell for interface velocities
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! call halo_interface_vels_allspec_in(x,fluidvars,lsp)
+    ! call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    ! call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    ! call halo_allparams_in(x,fluidvars,fluidauxvars)
+
+    ! New haloing code; probably very little performance penalty here
+    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
-    call halo_allparams_in(x,fluidvars,fluidauxvars)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
@@ -324,7 +336,17 @@ contains
     ! Compute artifical viscosity and then execute compression calculation
     call cpu_time(tstart)
     call VNRicht_artvisc_in(fluidvars,intvars)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Old haloing code; almost certainly more efficient since this only haloes one ghost cell
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     call RK2_prep_mpi_allspec_in(x,fluidvars)     ! halos velocity so we can take a divergence without artifacts
+
+    ! This code is more general but does waste time haloing unneeded parameters and ghost cells
+    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    call RK2_global_boundary_allspec_in(x,fluidvars)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     call compression_in(fluidvars,fluidauxvars,intvars,x,dt)   ! this applies compression substep and then converts back to temperature
     call rhoe2T_in(fluidvars,fluidauxvars)
     call clean_param_in(3,x,fluidvars)
