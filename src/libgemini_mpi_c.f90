@@ -32,7 +32,8 @@ use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  BGfield_Lagrangian, get_initial_drifts, init_procgrid, init_Efieldinput_in, pot2perpfield_in, &
  init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
  electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, &
- halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_dneu_in, calc_subgrid_size_in
+ halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_dneu_in, calc_subgrid_size_in, &
+ RK2_global_boundary_allspec_in, halo_fluidvars_in
 use gemini3d_C, only : set_gridpointer_dyntype
 
 implicit none (type, external)
@@ -40,7 +41,7 @@ implicit none (type, external)
 public
 
 contains
-  subroutine mpisetup_C() bind(C, name="mpisetup_C")
+  subroutine mpisetup_C() bind(C, name='mpisetup_C')
     call mpisetup_in()
   end subroutine mpisetup_C
 
@@ -420,6 +421,21 @@ contains
   end subroutine halo_allparams_C
 
 
+  subroutine halo_fluidvars_C(xtype,xC, fluidvarsC,fluidauxvarsC) bind(C, name='halo_fluidvars_C')
+    integer(C_INT), intent(in) :: xtype
+    type(C_PTR), intent(in) :: xC
+    type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+
+    call halo_fluidvars_in(x, fluidvars, fluidauxvars)
+  end subroutine halo_fluidvars_C
+
+
   subroutine RK2_prep_mpi_allspec_C(xtype,xC, fluidvarsC) bind(C, name='RK2_prep_mpi_allspec_C')
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC
@@ -428,11 +444,24 @@ contains
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
   
-      x=>set_gridpointer_dyntype(xtype, xC)
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
   
     call RK2_prep_mpi_allspec_in(x, fluidvars)
   end subroutine RK2_prep_mpi_allspec_C
+
+
+  subroutine RK2_global_boundary_allspec_C(xtype,xC,fluidvarsC) bind(C, name='RK2_global_boundary_allspec_C')
+     integer(C_INT), intent(in) :: xtype
+     type(C_PTR), intent(in) :: xC
+     type(C_PTR), intent(inout) :: fluidvarsC
+     class(curvmesh), pointer :: x
+     real(wp), dimension(:,:,:,:), pointer :: fluidvars
+
+     x=>set_gridpointer_dyntype(xtype, xC)
+     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+     call RK2_global_boundary_allspec_in(x, fluidvars)
+   end subroutine RK2_global_boundary_allspec_C
 
 
   subroutine get_gavg_Tinf_C(intvarsC, gavg,Tninf) bind(C, name='get_gavg_Tinf_C')
