@@ -18,7 +18,7 @@ use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
-use temporal, only : dt_comm
+use temporal_mpi, only : dt_comm
 use sanity_check, only : check_finite_pertub, check_finite_output
 use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams
