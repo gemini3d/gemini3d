@@ -100,7 +100,7 @@ multifluid
 multifluid_mpi
 neutral_perturbations
 PDEparabolic gbsv
-precipBCs reader sanity_check errors sources sources_mpi temporal timeutils
+precipBCs reader sanity_check errors sources sources_mpi temporal_mpi timeutils
 exe_frontend
 grid grid_mpi io
 PDEelliptic potential mumps_interface
