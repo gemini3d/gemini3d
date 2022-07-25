@@ -217,7 +217,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
   get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
   /* Sources substep and finalize solution for this time step */
-  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
+  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
   clean_param_C(&three, pxtype, &xC, &fluidvars);
   clean_param_C(&two, pxtype, &xC, &fluidvars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);
