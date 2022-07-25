@@ -519,7 +519,7 @@ contains
   end subroutine halo_allparams_in
 
 
-  !> halo all parameters
+  !> halo all parameters, including velocities
    subroutine halo_fluidvars_in(x,fluidvars,fluidauxvars)
      class(curvmesh), intent(in) :: x
      real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
