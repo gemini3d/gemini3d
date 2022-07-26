@@ -14,7 +14,7 @@ TIMEOUT 10
 if(f2018assumed_rank)
   add_library(debug_dump OBJECT debug_dump.f90)
   target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
-  set_target_properties(debug_dump PROPERTIES EXCLUDE_FROM_ALL true)
+  set_property(TARGET debug_dump PROPERTY EXCLUDE_FROM_ALL true)
 endif()
 
 add_executable(test_dump_write test_dump_write.f90)

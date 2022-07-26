@@ -58,9 +58,7 @@ list(REMOVE_DUPLICATES dll_mod)
 if(dll_mod)
   message(VERBOSE "environment_modification ${dll_mod} for ${test_names}")
 
-  set_tests_properties(${test_names} PROPERTIES
-  ENVIRONMENT_MODIFICATION "${dll_mod}"
-  )
+  set_property(TEST ${test_names} PROPERTY ENVIRONMENT_MODIFICATION "${dll_mod}")
 else()
   message(VERBOSE "no environment_modification for ${test_names}")
 endif()

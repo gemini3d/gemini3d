@@ -36,9 +36,9 @@ TIMEOUT 10
 get_property(test_names DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(${test_names} PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET ${test_names} PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(${test_names} PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET ${test_names} PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 dll_test_path(ffilesystem::filesystem "${test_names}")

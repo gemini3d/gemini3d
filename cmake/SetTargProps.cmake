@@ -8,7 +8,7 @@ foreach(t ${ARGV})
   target_include_directories(${t} INTERFACE
   $<BUILD_INTERFACE:${_bin}/include>
   $<INSTALL_INTERFACE:include>)
-  set_target_properties(${t} PROPERTIES Fortran_MODULE_DIRECTORY ${_bin}/include)
+  set_property(TARGET ${t} PROPERTY Fortran_MODULE_DIRECTORY ${_bin}/include)
 endforeach()
 
 endfunction(set_targ_props)

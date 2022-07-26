@@ -55,11 +55,9 @@ ffilesystem::filesystem
 
 add_library(gemini3d_mpi libgemini_mpi.f90)
 
-set_target_properties(gemini3d gemini3d_mpi PROPERTIES
-ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-)
+set_property(TARGET gemini3d gemini3d_mpi PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini3d gemini3d_mpi PROPERTY LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini3d gemini3d_mpi PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 set(gemini_internal_mods
 advec
@@ -111,11 +109,9 @@ autogrid
 
 # --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin ${PROJECT_SOURCE_DIR}/app/main.f90)
-set_target_properties(gemini.bin PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-RELWITHDEBINFO_POSTFIX .debug
-DEBUG_POSTFIX .debug
-)
+set_property(TARGET gemini.bin PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini.bin PROPERTY RELWITHDEBINFO_POSTFIX .debug)
+set_property(TARGET gemini.bin PROPERTY DEBUG_POSTFIX .debug)
 target_link_libraries(gemini.bin PRIVATE
 gemini3d_mpi
 gemini3d
@@ -127,9 +123,9 @@ $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET gemini.bin PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET gemini.bin PROPERTY LINKER_LANGUAGE CXX)
 endif()
 # MSIS WORKAROUND
 target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
@@ -224,12 +220,9 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 #$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 
 add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
-set_target_properties(gemini_c.bin PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-#LINKER_LANGUAGE CXX
-RELWITHDEBINFO_POSTFIX .debug
-DEBUG_POSTFIX .debug
-)
+set_property(TARGET gemini_c.bin PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini_c.bin PROPERTY RELWITHDEBINFO_POSTFIX .debug)
+set_property(TARGET gemini_c.bin PROPERTY DEBUG_POSTFIX .debug)
 target_include_directories(gemini_c.bin PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>

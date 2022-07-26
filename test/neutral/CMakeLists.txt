@@ -19,9 +19,9 @@ msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET test_proj PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET test_proj PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 set(_cmd $<TARGET_FILE:test_proj>)
