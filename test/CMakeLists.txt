@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS unit)
+set_property(DIRECTORY PROPERTY  LABELS unit)
 
 if(matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)

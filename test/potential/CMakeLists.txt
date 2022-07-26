@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS potential)
+set_property(DIRECTORY PROPERTY  LABELS potential)
 
 # --- potential 2D test
 

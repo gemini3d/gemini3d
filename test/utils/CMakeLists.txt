@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS utils)
+set_property(DIRECTORY PROPERTY  LABELS utils)
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE

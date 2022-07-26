@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS potential)
+set_property(DIRECTORY PROPERTY  LABELS potential)
 
 # make mumps usage precision-agnostic
 # this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax

@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS interpolation)
+set_property(DIRECTORY PROPERTY  LABELS interpolation)
 
 # --- tests
 add_executable(test_interp1 testinterp1.f90)
@@ -19,7 +19,6 @@ set(_testfile_interp3 ${CMAKE_CURRENT_BINARY_DIR}/output3d.h5)
 
 add_executable(test_interp2 testinterp2.f90)
 target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_test(NAME interp2
@@ -36,7 +35,6 @@ FIXTURES_SETUP gemini_interp2_fxt
 
 add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_test(NAME interp3

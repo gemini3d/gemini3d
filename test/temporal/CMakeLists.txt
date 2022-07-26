@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS temporal)
+set_property(DIRECTORY PROPERTY  LABELS temporal)
 
 add_executable(test_formats test_formats.f90)
 target_link_libraries(test_formats PRIVATE timeutils const)

@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS io)
+set_property(DIRECTORY PROPERTY  LABELS io)
 
 add_library(logging OBJECT logging.f90)
 
