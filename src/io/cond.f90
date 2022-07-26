@@ -27,7 +27,7 @@ character(:), allocatable :: outdir_cond
 
 outdir_cond = outdir // '/conductivity'
 
-if(.not. is_dir(outdir_cond)) call mkdir(outdir_cond)
+call mkdir(outdir_cond)
 
 if (mpi_cfg%myid == 0) then
   call output_cond_root(date_filename(outdir, ymd, UTsec), sig0, sigP, sigH, out_format)

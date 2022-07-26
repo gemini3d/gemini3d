@@ -55,7 +55,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
 
 
-!! temp file used by MSIS 2.0
+!! data file used by MSIS 2.x
 character(*), parameter :: msis2_param_file = "msis21.parm"
 
 

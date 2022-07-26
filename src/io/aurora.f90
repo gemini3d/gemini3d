@@ -1,21 +1,12 @@
 submodule (io) io_aurora
 
 use filesystem, only : mkdir, is_dir
+use h5fortran, only : hdf5_file
 use timeutils, only : date_filename
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 implicit none (type, external)
-
-interface ! aurora_*.f90
-
-module subroutine output_aur_root_hdf5(filename,flagglow,iver)
-character(*), intent(in) :: filename
-integer, intent(in) :: flagglow
-real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine
-
-end interface
 
 contains
 
@@ -27,64 +18,46 @@ module procedure output_aur
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
 character(:), allocatable :: outdir_aur
+type(hdf5_file) :: h
+character(:), allocatable :: filename
+integer :: ix2(2), ix3(2)
 
 outdir_aur = outdir // '/aurmaps'
 
-if(.not. is_dir(outdir_aur)) call mkdir(outdir_aur)
+call mkdir(outdir_aur)
 
-if (mpi_cfg%myid == 0) then
-  call output_aur_root(date_filename(outdir_aur, ymd, UTsec), flagglow,iver, out_format)
-else
-  call output_aur_workers(iver)
-end if
+!! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
+!! NO GHOST CELLS (I HOPE)
 
-end procedure output_aur
+!! output array in the order scripts expect
 
+filename = date_filename(outdir_aur, ymd, UTsec) // ".h5"
 
-subroutine output_aur_root(stem, flagglow, iver, out_format)
+print *, 'GEMINI3D:write aurora:  ',filename
 
-character(*), intent(in) :: stem, out_format
-integer, intent(in) :: flagglow
-real(wp), dimension(:,:,:), intent(in) :: iver
+call h%open(filename, action='w', comp_lvl=comp_lvl, mpi=.true.)
 
-select case (out_format)
-case ('h5')
-  call output_aur_root_hdf5(stem // ".h5", flagglow, iver)
-case default
-  error stop 'ERROR:aurora:output_aur_root: unknown grid format' // out_format
-end select
+ix2 = [mpi_cfg%myid*lx2+1, (mpi_cfg%myid+1)*lx2]
+ix3 = [mpi_cfg%myid*lx3+1, (mpi_cfg%myid+1)*lx3]
+if(lx2 == 1) then
+  ix2 = [1, 1]
+elseif(lx3 == 1) then
+  ix3 = [1, 1]
+endif
+
+! print *, "TRACE:gemini3d:output_aur: lx2all,lx3all,lwave,lx2,lx3",lx2all,lx3all,lwave,lx2,lx3
+! print *, "TRACE:gemini3d:output_aur: myid: ", mpi_cfg%myid, " istart: ", [ix2(1), ix3(1), 1], " iend: ", [ix2(2), ix3(2), lwave]
+
+call h%write('/aurora/iverout', real(iver), &
+  dset_dims=[lx2all, lx3all, lwave], &
+  istart=[ix2(1), ix3(1), 1], &
+  iend=[ix2(2), ix3(2), lwave])
+
+call h%close()
 
 if(.not. all(ieee_is_finite(iver))) error stop 'ERROR: iverout: non-finite value(s)'
 
-end subroutine output_aur_root
-
-
-subroutine output_aur_workers(iver)
-real(wp), dimension(:,:,:), intent(in) :: iver
-!! SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
-!! NO GHOST CELLS (I HOPE)
-!! The mpi'd dimensions are 2 and 3 so lwave needs to be permuted
-!! to the first dimension for the canned routines to work.
-
-!real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
-integer :: iwave
-real(wp), dimension(1:lx2,1:lx3) :: emistmp
-
-
-!!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-!ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
-!
-!!------- SEND AURORA PARAMETERS TO ROOT
-!call gather_send(ivertmp,tagAur)
-
-do iwave=1,lwave
-  emistmp=iver(:,:,iwave)
-  call gather_send(emistmp,tag%Aur)
-end do
-
-
-end subroutine output_aur_workers
+end procedure output_aur
 
 
 end submodule io_aurora
