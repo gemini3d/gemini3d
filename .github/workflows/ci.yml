@@ -45,10 +45,11 @@ jobs:
     steps:
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: gemini3d/external
         path: gemext
+        ref: h5d
 
     - name: Install CMake ${{ env.cmake_version }}
       if: runner.os == 'Linux'
@@ -82,7 +83,7 @@ jobs:
       with:
         python-version: '3.8'
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Configure multi
       run: cmake --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }} -Dmsis2:BOOL=${{ matrix.msis2 }} -Dhwm14:BOOL=${{ matrix.hwm14 }}

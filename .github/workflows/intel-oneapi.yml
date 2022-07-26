@@ -39,7 +39,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     # this must be before oneAPI script commands else the scripts do not exist on the image
 
     - name: cache install oneAPI
@@ -71,10 +71,11 @@ jobs:
 #  "build/HDF5-prefix/src/HDF5-build/bin/static/Debug/h5fortran_types.mod":
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: gemini3d/external
         path: gemext
+        ref: h5d
 
     - name: Install numeric libraries
       timeout-minutes: 15

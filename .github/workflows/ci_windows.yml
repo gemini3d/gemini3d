@@ -40,10 +40,11 @@ jobs:
       run: echo "${{ runner.temp }}/msys64/mingw64/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: gemini3d/external
         path: gemext
+        ref: h5d
 
     - name: Install numeric libraries
       timeout-minutes: 8
@@ -52,7 +53,7 @@ jobs:
         cmake --build gemext/build --target ffilesystem glow iniparser msis mumps
         cmake --install gemext/build
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Configure multi
       run: cmake -Dmpi=no --preset multi -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
