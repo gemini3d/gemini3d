@@ -4,21 +4,18 @@ gemini_compare.f90 compare.f90 compare_grid_h5.f90 compare_out_h5.f90 compare_in
 )
 target_link_libraries(gemini3d.compare PRIVATE
 assert gemini3d_config reader timeutils const gemini3d_sysinfo
-h5fortran::h5fortran
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
+h5fortran::h5fortran
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET gemini3d.compare PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(gemini3d.compare PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET gemini3d.compare PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
-set_target_properties(gemini3d.compare PROPERTIES
-RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-DEBUG_POSTFIX .debug
-RELWITHDEBINFO_POSTFIX .debug
-)
+set_property(TARGET gemini3d.compare PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini3d.compare PROPERTY DEBUG_POSTFIX .debug)
+set_property(TARGET gemini3d.compare PROPERTY RELWITHDEBINFO_POSTFIX .debug)
 
 # --- Install
 

@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS unit)
+set_property(DIRECTORY PROPERTY LABELS unit)
 
 if(matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
@@ -7,7 +7,7 @@ endif(matlab)
 include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
 
 if(mpi)
-# keep this if(mpi) because these tests truly use MPI -- don't work with MPI stub
+# keep this if(mpi) because these tests truly use MPI -- they don't work with MPI stub
 
 add_executable(test_mpi test_mpi.f90)
 target_link_libraries(test_mpi PRIVATE MPI::MPI_Fortran)

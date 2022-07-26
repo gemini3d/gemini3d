@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS temporal)
+set_property(DIRECTORY PROPERTY LABELS temporal)
 
 add_library(timeutils OBJECT timeutils.f90)
 target_link_libraries(timeutils PRIVATE const)

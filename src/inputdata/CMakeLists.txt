@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS inputdata)
+set_property(DIRECTORY PROPERTY LABELS inputdata)
 
 add_library(inputdata OBJECT inputdataobj.f90)
 target_link_libraries(inputdata PRIVATE const gemini3d_config meshobj meshobj_dipole interp timeutils)

@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS diffusion)
+set_property(DIRECTORY PROPERTY LABELS diffusion)
 
 add_library(PDEparabolic OBJECT PDEparabolic.f90)
 target_link_libraries(PDEparabolic PRIVATE const gbsv)

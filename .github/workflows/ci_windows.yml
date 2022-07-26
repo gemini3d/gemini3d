@@ -33,6 +33,7 @@ jobs:
           mingw-w64-x86_64-gcc-fortran
           mingw-w64-x86_64-hdf5
           mingw-w64-x86_64-lapack
+          mingw-w64-x86_64-msmpi
 
 
     - name: Put MSYS2_MinGW64 on PATH
@@ -47,8 +48,8 @@ jobs:
     - name: Install numeric libraries
       timeout-minutes: 8
       run: |
-        cmake -S gemext -B gemext/build -Dfind:BOOL=true -Dusempi:BOOL=no -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        cmake --build gemext/build --target ffilesystem glow iniparser msis mumps mpi_scalapack_stub
+        cmake -S gemext -B gemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
+        cmake --build gemext/build --target ffilesystem glow iniparser msis mumps
         cmake --install gemext/build
 
     - uses: actions/checkout@v2

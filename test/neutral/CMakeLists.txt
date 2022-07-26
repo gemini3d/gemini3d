@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABEL neutral)
+set_property(DIRECTORY PROPERTY LABEL neutral)
 
 add_executable(test_proj test_proj.f90
 )

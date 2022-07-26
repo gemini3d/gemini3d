@@ -15,20 +15,11 @@ sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
-endif()
-target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
-)
 
 # --- gemini3d.run Fortran front end
 
 string(JOIN " " gemini_features
 REALBITS:${realbits}
-$<$<BOOL:${mpi}>:MPI>
 $<$<BOOL:${glow}>:GLOW>
 $<$<BOOL:${msis2}>:MSIS2>
 $<$<BOOL:${hwm14}>:HWM14>
@@ -52,14 +43,8 @@ $<TARGET_OBJECTS:exe_frontend>
 target_link_libraries(gemini3d.run PRIVATE
 const gemini3d_config timeutils autogrid reader gemini3d_sysinfo
 h5fortran::h5fortran
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE Fortran)
-else()
-  set_target_properties(gemini3d.run PROPERTIES LINKER_LANGUAGE CXX)
-endif()
 
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90
@@ -68,28 +53,23 @@ $<TARGET_OBJECTS:exe_frontend>
 target_link_libraries(magcalc.run PRIVATE
 autogrid reader gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
-$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 ffilesystem::filesystem
 )
+
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET gemini3d.run magcalc.run magcalc.bin PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(magcalc.run PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET gemini3d.run magcalc.run magcalc.bin PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)
 
 
-set_property(TARGET gemini3d.run magcalc.bin magcalc.run
-PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-)
-set_property(TARGET gemini3d.run magcalc.bin magcalc.run
-PROPERTY DEBUG_POSTFIX .debug
-)
-set_property(TARGET gemini3d.run magcalc.bin magcalc.run
-PROPERTY RELWITHDEBINFO_POSTFIX .debug
-)
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run PROPERTY DEBUG_POSTFIX .debug)
+set_property(TARGET gemini3d.run magcalc.bin magcalc.run PROPERTY RELWITHDEBINFO_POSTFIX .debug)
 
 # --- Install
 

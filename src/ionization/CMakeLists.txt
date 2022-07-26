@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS ionization)
+set_property(DIRECTORY PROPERTY LABELS ionization)
 
 add_library(fang OBJECT fang.f90)
 target_link_libraries(fang PRIVATE const)

@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABEL neutral)
+set_property(DIRECTORY PROPERTY LABEL neutral)
 
 add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90
 $<$<NOT:$<BOOL:${hwm14}>>:${PROJECT_SOURCE_DIR}/src/vendor/hwm14_dummy.f90>
