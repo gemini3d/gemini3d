@@ -304,6 +304,10 @@ do isp=1,lsp
   sigHgrav=sigHgrav+rho*muH(:,:,:,isp)
 end do
 
+
+! Use sigP and sigH to compute sigNCP sigNCH
+
+
 end subroutine conductivities
 
 

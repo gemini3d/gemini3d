@@ -462,7 +462,7 @@ ieLT=0
 do isp=1,lsp
   !ION-NEUTRAL
   do isp2=1,ln
-    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)    ! isp=7 is electrons
 
     !HEAT TRANSFER
     fact=2*nu/(ms(isp)+mn(isp2))
@@ -521,11 +521,19 @@ fact=sfact*5.196e-13_wp*nn(:,:,:,3)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700
 iePT=iePT-max(fact,0._wp);
 
 
+!! This would be the place to include FBI heating probably just add to iePT
+! iePT=iePT+FBIheating()
+
+
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
 Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
+
+
+! function FBIheating()...
+
 
 
 end module sources
