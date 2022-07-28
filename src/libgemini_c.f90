@@ -41,7 +41,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
-            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3
+            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in
 
 implicit none (type, external)
 
@@ -655,6 +655,22 @@ contains
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,logical(first),gavg,Tninf)
   end subroutine source_loss_allparams_C
+
+
+  !> interface for computing cfl number
+  subroutine maxcfl_C(fluidvarsC,xC,xtype,dt,maxcfl) bind(C, name="maxcfl_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+    real(wp), intent(inout) :: maxcfl
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call maxcfl_in(fluidvars,x,dt,maxcfl)
+  end subroutine maxcfl_C
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

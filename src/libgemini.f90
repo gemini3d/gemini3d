@@ -29,7 +29,7 @@ use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
-
+use temporal, only: cflcalc
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
                   grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
                   grid_internaldata_generate
@@ -57,7 +57,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
-            gemini_grid_generate, setv2v3, v2grid, v3grid
+            gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in
 
 
 !! temp file used by MSIS 2.0
@@ -824,6 +824,19 @@ contains
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
                                      intvars%iver,gavg,Tninf,intvars%eprecip)
   end subroutine source_loss_allparams_in
+
+
+  !> return the maximum cfl over the grid
+  subroutine maxcfl_in(fluidvars,x,dt,maxcfl)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    class(curvmesh), pointer :: x
+    real(wp), intent(in) :: dt
+    real(wp), intent(inout) :: maxcfl
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call cflcalc(Ts,vs1,vs2,vs3,x%dl1i,x%dl2i,x%dl3i,dt,maxcfl)
+  end subroutine
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

@@ -7,13 +7,13 @@ public :: cflcalc
 
 contains
   !> Compute the max cfl number of the entirety of the worker grid
-  subroutine cflcalc(Ts,vs1,vs2,vs3,dx1i,dx2i,dx3i,dt,cfl)
+  subroutine cflcalc(Ts,vs1,vs2,vs3,dx1i,dx2i,dx3i,dt,maxcfl)
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts,vs1,vs2,vs3
     real(wp), dimension(:,:,:), intent(in) :: dx1i
     real(wp), dimension(:,:,:), intent(in) :: dx2i
     real(wp), dimension(:,:,:), intent(in) :: dx3i
     real(wp), intent(in) :: dt
-    real(wp), intent(out) :: cfl
+    real(wp), intent(out) :: maxcfl
     real(wp) :: vsnd
     integer :: lx1,lx2,lx3,ix1,ix2,ix3,isp
     real(wp) :: cfltmp
@@ -23,7 +23,7 @@ contains
     lx3=size(Ts,3)-4
     
     !EVALUATE TIME STEP AGAINST LOCAL SOUND SPEED AND ADVECTION
-    cfl=0._wp
+    maxcfl=0._wp
     do isp=1,lsp
       do ix3=1,lx3
         do ix2=1,lx2
@@ -35,11 +35,11 @@ contains
             end if
     
             cfltmp=dt*(vsnd+abs(vs1(ix1,ix2,ix3,isp)))/dx1i(ix1,ix2,ix3)
-            if (cfltmp>cfl) cfl=cfltmp
+            if (cfltmp>maxcfl) maxcfl=cfltmp
             cfltmp=dt*abs(vs2(ix1,ix2,ix3,isp))/dx2i(ix1,ix2,ix3)
-            if (cfltmp>cfl) cfl=cfltmp
+            if (cfltmp>maxcfl) maxcfl=cfltmp
             cfltmp=dt*abs(vs3(ix1,ix2,ix3,isp))/dx3i(ix1,ix2,ix3)
-            if (cfltmp>cfl) cfl=cfltmp
+            if (cfltmp>maxcfl) maxcfl=cfltmp
           end do
         end do
       end do

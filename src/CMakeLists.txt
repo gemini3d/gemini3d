@@ -74,7 +74,7 @@ neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neut
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 PDEparabolic gbsv
-precipBCs reader sanity_check errors sources timeutils
+precipBCs reader sanity_check errors sources temporal timeutils
 exe_frontend
 grid
 mpimod
