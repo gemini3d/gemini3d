@@ -56,7 +56,7 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
 
 
 !! temp file used by MSIS 2.0
-character(*), parameter :: msis2_param_file = "msis20.parm"
+character(*), parameter :: msis2_param_file = "msis21.parm"
 
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
@@ -371,17 +371,17 @@ contains
   !    with each location of the mesh.  This will be obtained from the input cfg file in cases where we are
   !    generating a grid from extents.  Note that this is distinctly different from the situation where we
   !    are using read_grid() to input a grid from a file - in that case the parameters glonctr and glatctr
-  !    are expected to be kept within that file.  
+  !    are expected to be kept within that file.
   subroutine grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     class(curvmesh), intent(inout) :: x
 
-    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
+    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
   end subroutine grid_from_extents_in
 
 
-  !> set start values for some variables not specified by the input files.  
+  !> set start values for some variables not specified by the input files.
   !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
