@@ -17,7 +17,7 @@ program Gemini3D_main
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
-use mpi, only: MPI_COMM_WORLD
+use mpimod, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
 
 !> type definitions
 use meshobj, only: curvmesh
@@ -39,7 +39,6 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           clear_dneu_in,mpisetup_in,mpiparms
 
 implicit none (type, external)
-external :: mpi_init,mpi_finalize,mpi_comm_rank
 
 integer(c_int) :: lid2in, lid3in
 character(8) :: date

@@ -6,26 +6,27 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
 use autogrid, only : grid_auto
 
-use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
+use mpi, only: mpi_comm_rank, mpi_comm_size, MPI_COMM_WORLD, &
   mpi_integer,mpi_sum, &
   mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
   mpi_realprec=>@mpi_realprec@
 
 implicit none (type, external)
 private
-public :: gemini_mpi, gemini_mpi_config, mpi_cfg, &
-  mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, id2grid, grid2id, slabinds, &
+public :: mpi_init, mpi_finalize, MPI_COMM_WORLD, mpi_comm_rank, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall, &
+  mpi_status_ignore, mpi_integer, mpi_sum, mpi_reduce, &
+  gemini_mpi, gemini_mpi_config, mpi_cfg, &
+  mpi_realprec, &
+  mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, id2grid, grid2id, slabinds, &
   bcast_send,  bcast_send1d_2, bcast_send1d_3, bcast_send3d_x2i, bcast_send3d_x3i, bcast_send3d_ghost, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
   gather_send, gather_recv, &
   halo, halo_end, &
-  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i, &
   gather_recv3D_ghost,gather_recv3d_x2i,gather_recv3d_x3i
 
-external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
-
-
+external :: mpi_init, mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall, mpi_reduce
+!!  "use mpi_f08"is not yet available on Windows GCC due to MS-MPI.
 type :: gemini_mpi_tags
 
 integer :: ns=2, vs1=3, Ts=4

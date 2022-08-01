@@ -6,6 +6,13 @@ else()
   set(mpi_realprec mpi_double_precision)
 endif()
 
+# doesn't work due to different mpi_f08 procedure API
+# if(MPI_Fortran_HAVE_F08_MODULE)
+#   set(mpi_use "use mpi, only : ${mpi_mods}")
+# else()
+#   set(mpi_ext "external :: ${mpi_mods}")
+# endif()
+
 configure_file(mpimod.in.f90 mpimod.f90 @ONLY)
 
 add_library(mpimod OBJECT

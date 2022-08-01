@@ -15,12 +15,12 @@ use gemini3d_config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
-mpi_cfg, mpi_realprec, tag=>gemini_mpi
+mpi_cfg, mpi_realprec, tag=>gemini_mpi, &
+mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce
 use h5fortran, only : hdf5_file
 use filesystem, only : suffix
 
 implicit none (type, external)
-external :: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce
 
 !> VARIABLES READ IN FROM CONFIG FILE
 

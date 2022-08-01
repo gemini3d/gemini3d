@@ -8,14 +8,14 @@ use neutraldataobj, only: neutraldata
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
-use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
+use mpimod, only : mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec, mpi_recv, mpi_send
+use mpimod, only : mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use filesystem, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
-external :: mpi_send,mpi_recv
 public :: neutraldata3D
 
 !> type definition for 3D neutral data
