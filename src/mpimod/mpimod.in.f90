@@ -49,8 +49,7 @@ integer :: x1=27,x2=28
 
 !> IN THE GRID MODULE
 integer :: h1=29,h2=30,h3=31
-integer :: glat=32,glon=33,alt=34
-integer :: lx1=35,lx2=36,lx3=37,lx3all=38
+integer :: glon=33,alt=34
 integer :: Bmag=39,inc=40,null=41
 integer :: eunit1=42,eunit2=43,eunit3=44,er=45,etheta=46,ephi=47
 integer :: r=56,theta=57,phi=58
@@ -58,10 +57,6 @@ integer :: r=56,theta=57,phi=58
 !> IN THE NEUTRAL MODULE
 integer :: lrho=48,lz=49
 integer :: dnO=50,dnN2=51,dnO2=52,dTn=53,dvnrho=54,dvnz=55
-integer :: ly=69
-
-!> FOR DEALING WITH PRECIPITATION BOUNDARY CONDITIONS MODULE
-integer :: llat=59,llon=60,mlat=61,mlon=62,Qp=63,E0p=64
 
 !> FOR DEALING WITH THE ELECTRIC FIELD BOUNDARY CONDITIONS
 integer :: E0xp=65,E0yp=66,E0xi=67,E0yi=68
@@ -71,19 +66,7 @@ integer :: src=69,SigPint2=70,SigPint3=71,SigHint=72,incapint=73,v2electro=74,v3
 integer :: E01=76,E02=77,E03=78,Vminx1=79,Vmaxx1=80
 
 !> THESE ARE USED IN MAGCALC.F90 PROGRAM
-integer :: Br=81,Btheta=82, Bphi=83
 integer :: dV=84,Jx=85,Jy=86,Rx=87,Ry=88,Rz=89,Rcubed=90,Jz=91
-
-!> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
-integer :: swap=92
-
-!> FOR SENDING THE FULL X2 GRID SIZE
-integer :: lx2all=93
-integer :: x2all=94
-integer :: x3all=95
-
-!> AURORAL (S)
-integer :: Aur=96
 
 !> conductivity file write
 integer :: io_sig0 = 116, io_sigP = 117, io_sigH = 118
