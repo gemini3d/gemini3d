@@ -40,7 +40,7 @@ COMMAND ${test_cmd} -dryrun
 )
 
 set_tests_properties(gemini:${name}:dryrun PROPERTIES
-TIMEOUT 60
+TIMEOUT 20
 FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 )
