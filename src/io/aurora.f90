@@ -1,6 +1,6 @@
 submodule (io) io_aurora
 
-use filesystem, only : mkdir, is_dir
+use filesystem, only : mkdir
 use h5fortran, only : hdf5_file
 use timeutils, only : date_filename
 
