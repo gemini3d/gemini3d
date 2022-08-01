@@ -136,15 +136,7 @@ contains
     real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
     real(wp) :: glonctr,glatctr
 
-    character(:), allocatable :: fmt
-
-    fmt = path(index(path, '.', back=.true.) : len(path))
-    select case (fmt)
-      case ('.h5')
-        call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
-      case default
-        error stop 'grid:read:get_grid3: unknown grid format: ' // fmt
-    end select
+    call get_grid3_coords_hdf5(path, x1,x2all,x3all,glonctr,glatctr)
 
     if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'
     if(size(x2all) < 1) error stop 'grid:get_grid3_coords: size(x2all) must be strictly positive'
