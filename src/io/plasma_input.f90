@@ -1,35 +1,13 @@
 submodule (io) plasma_input
 
-use h5fortran, only : hdf5_file
+use h5fortran, only : hdf5_file, HSIZE_T
 use timeutils, only : date_filename
 use reader, only : get_simsize3
-use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 use interpolation, only : interp3
 use grid, only : get_grid3_coords_hdf5
 
 implicit none (type, external)
-
-interface ! plasma_input_*.f90
-
-  module subroutine input_root_mpi_hdf5(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-    real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
-    character(*), intent(in) :: indatsize, indatfile
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-    !! intent(out)
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
-    !! intent(out)
-  end subroutine
-
-  module subroutine getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-    character(*), intent(in) :: indatsize, indatfile
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: nsall,vs1all,Tsall
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
-  end subroutine
-
-end interface
 
 contains
 
@@ -43,11 +21,10 @@ character(:), allocatable :: filenamefull
 type(hdf5_file) :: hf
 
 integer, dimension(3) :: i0, i1
-integer, dimension(2) :: ix1, ix2, ix3
+integer, dimension(2) :: ix2, ix3
 !! HDF5-MPI partitioning
 
 
-ix1 = [1, lx1]
 ix2 = [mpi_cfg%myid*lx2+1, (mpi_cfg%myid+1)*lx2]
 ix3 = [mpi_cfg%myid*lx3+1, (mpi_cfg%myid+1)*lx3]
 if(lx2 == 1) then
@@ -56,8 +33,8 @@ elseif(lx3 == 1) then
   ix3 = [1, 1]
 endif
 
-i0 = [ix1(1), ix2(1), ix3(1)]
-i1 = [ix1(2), ix2(2), ix3(2)]
+i0 = [1, ix2(1), ix3(1)]
+i1 = [lx1, ix2(2), ix3(2)]
 
 !>  CHECK TO MAKE SURE WE ACTUALLY HAVE THE DATA WE NEED TO DO THE MAG COMPUTATIONS.
 if (flagoutput==3) then
@@ -89,36 +66,134 @@ end procedure input_plasma_currents
 
 
 module procedure input_plasma
-  ! subroutine input_plasma(x1,x2,x3all,indatsize,indatfile, ns,vs1,Ts)
-  !! A BASIC WRAPPER FOR THE ROOT AND WORKER INPUT FUNCTIONS
-  !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
-  !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
+! subroutine input_plasma(x1,x2,x3all,indatsize,indatfile, ns,vs1,Ts)
+!! A BASIC WRAPPER FOR THE ROOT AND WORKER INPUT FUNCTIONS
+!! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
+!! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
-  if (mpi_cfg%myid==0) then
-    !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-    select case (suffix(indatsize))
-      case ('.h5')
-        call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-      case default
-        error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
-    end select
+!! READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.
+!! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS.
 
-    !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
-    !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
-    print '(/,A,/,A)', 'Initial conditions (root):','------------------------'
-    print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(1:lx1,1:lx2,1:lx3,7)),  maxval(ns(1:lx1,1:lx2,1:lx3,7))
-    print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(1:lx1,1:lx2,1:lx3,1:lsp)), maxval(vs1(1:lx1,1:lx2,1:lx3,1:lsp))
-    print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(1:lx1,1:lx2,1:lx3,1:lsp)),  maxval(Ts(1:lx1,1:lx2,1:lx3,1:lsp))
-    print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(1:lx1,1:lx2,1:lx3)),  maxval(Phi(1:lx1,1:lx2,1:lx3))
-    print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(1:lx1,1:lx2all,1:lx3all)),  &
-                         maxval(Phiall(1:lx1,1:lx2all,1:lx3all))
+!> zero initialize to avoid having garbage in ghost cells
+ns = 0
+vs1 = 0
+Ts = 0
 
-    call check_finite_plasma(out_dir, ns, vs1, Ts)
-  else
-    !! WORKERS RECEIVE THE IC DATA FROM ROOT
-    call input_workers_mpi(ns,vs1,Ts,Phi)
-  end if
+!> read in the full initial conditions files
+
+call get_initial_cond(indatsize, indatfile, ns, vs1, Ts, Phiall)
+
+
+if (mpi_cfg%myid==0) then
+
+  !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
+  !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
+  print '(/,A,/,A)', 'Initial conditions (root):','------------------------'
+  print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(1:lx1,1:lx2,1:lx3,7)),  maxval(ns(1:lx1,1:lx2,1:lx3,7))
+  print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(1:lx1,1:lx2,1:lx3,1:lsp)), maxval(vs1(1:lx1,1:lx2,1:lx3,1:lsp))
+  print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(1:lx1,1:lx2,1:lx3,1:lsp)),  maxval(Ts(1:lx1,1:lx2,1:lx3,1:lsp))
+  print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(1:lx1,1:lx2,1:lx3)),  maxval(Phi(1:lx1,1:lx2,1:lx3))
+  print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(1:lx1,1:lx2all,1:lx3all)),  &
+                        maxval(Phiall(1:lx1,1:lx2all,1:lx3all))
+
+  call check_finite_plasma(out_dir, ns, vs1, Ts)
+endif
+
 end procedure input_plasma
+
+
+subroutine get_initial_cond(indatsize, indatfile, ns, vs1, Ts, Phiall)
+
+character(*), intent(in) :: indatsize, indatfile
+real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns, vs1, Ts
+real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phiall
+
+type(hdf5_file) :: hf
+integer :: lx1in,lx2in,lx3in
+real(wp), dimension(:,:), allocatable :: Phislab
+real(wp), allocatable :: tmpPhi(:)
+
+integer, dimension(4) :: i0, i1
+integer, dimension(2) :: ix2, ix3
+!! HDF5-MPI partitioning
+! integer(HSIZE_T), allocatable :: dims(:)
+
+ix2(1) = mpi_cfg%myid2 * lx2 + 1
+ix2(2) = ix2(1) + lx2 - 1
+ix3(1) = mpi_cfg%myid3 * lx3 + 1
+ix3(2) = ix3(1) + lx3 - 1
+
+i0 = [1, ix2(1), ix3(1), 1]
+i1 = [lx1, ix2(2), ix3(2), lsp]
+
+allocate(Phislab(1:lx2all, 1:lx3all))
+!! EFL potential
+Phislab = 0
+
+!> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
+call get_simsize3(indatsize, lx1in, lx2in, lx3in)
+
+if (mpi_cfg%myid==0) then
+  print '(2A,i0,1x,i0,1x,i0)', indatsize,' input dimensions:',lx1in,lx2in,lx3in
+  print '(A,i0,1x,i0,1x,i0)', 'Target (output) grid structure dimensions:',lx1, lx2all, lx3all
+endif
+
+if ((lx1/=lx1in .or. lx2all/=lx2in .or. lx3all/=lx3in)) then
+  error stop 'ERROR:gemini3d: The input data must be the same size as the grid which you are running the simulation on' // &
+        '- use a script to interpolate up/down to the simulation grid'
+end if
+
+! print '(a,i0,1x,i0,1x,i0,a,i0,1x,i0,a,i0,1x,i0,a,i0,1x,i0,1x,i0,1x,i0,a,i0,1x,i0,1x,i0,1x,i0)', &
+!   "TRACE:get_initial_cond: myid, myid2, myid3: ", &
+!   mpi_cfg%myid, mpi_cfg%myid2, mpi_cfg%myid3, &
+!   " dx2, dx3: ", dx2, dx3, " lx2, lx3: ", lx2, lx3, &
+!   " i0:", i0, " i1:", i1
+
+call hf%open(indatfile, action='r', mpi=.true.)
+
+! if(mpi_cfg%myid==0) then
+!   call hf%shape("/nsall", dims)
+!   print '(a,i0,1x,i0,1x,i0,1x,i0)', "TRACE:get_initial_cond: nsall dims:", dims
+! endif
+
+call hf%read('/nsall',  ns(1:lx1, 1:lx2, 1:lx3, 1:lsp), istart=i0, iend=i1)
+call hf%read('/vs1all', vs1(1:lx1, 1:lx2, 1:lx3, 1:lsp), istart=i0, iend=i1)
+call hf%read('/Tsall',  Ts(1:lx1, 1:lx2, 1:lx3, 1:lsp), istart=i0, iend=i1)
+
+call hf%close()
+
+if(mpi_cfg%myid /= 0) return
+
+call hf%open(indatfile, action='r', mpi=.false.)
+
+if (hf%exist('/Phiall')) then
+  if (hf%ndim('/Phiall') == 1) then
+    if (lx2all==1) then
+      allocate(tmpPhi(lx3all))
+    else
+      allocate(tmpPhi(lx2all))
+    end if
+
+    call hf%read('/Phiall', tmpPhi)
+
+    if (lx2all==1) then
+      Phislab(1,:) = tmpPhi
+    else
+      Phislab(:,1) = tmpPhi
+    end if
+  else
+    call hf%read('/Phiall', Phislab)
+  endif
+end if
+
+call hf%close()
+
+!> Apply EFL approx to compute full grid potential
+Phiall(1:lx1,1:lx2all,1:lx3all) = spread(Phislab(1:lx2all,1:lx3all), dim=1, ncopies=lx1)
+
+deallocate(Phislab)    ! explicitly get rid of allocated storage
+
+end subroutine get_initial_cond
 
 
 !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
@@ -150,12 +225,8 @@ module procedure interp_file2subgrid
   allocate(parmflat(lx1*lx2*lx3))
 
   ! get the input grid coordinates
-  select case (suffix(indatsize))
-    case ('.h5')
-      call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
-    case default
-      error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
-  end select
+  call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+
 
   ! we must make sure that the target coordinates do not range outside the input file coordinates
   if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
@@ -169,12 +240,7 @@ module procedure interp_file2subgrid
   end if
 
   ! read in the input initial conditions, only hdf5 files are support for this functionality
-  select case (suffix(indatsize))
-    case ('.h5')
-      call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-    case default
-      error stop 'Input interpolation only supported for hdf5 files'
-  end select
+  call get_initial_cond(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
   ! interpolation input data to mesh sites; do not interpolate to ghost cells
   do isp=1,lsp
@@ -194,32 +260,6 @@ module procedure interp_file2subgrid
 
   deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
 end procedure interp_file2subgrid
-
-
-subroutine input_workers_mpi(ns,vs1,Ts,Phi)
-  !------------------------------------------------------------
-  !-------RECEIVE INITIAL CONDITIONS FROM ROOT PROCESS
-  !------------------------------------------------------------
-
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
-  !! intent(out)
-
-  real(wp), dimension(-1:,-1:,-1:) :: Phi
-
-  ns=0
-  vs1=0
-  Ts=0
-
-  call bcast_recv(ns,tag%ns)
-  call bcast_recv(vs1,tag%vs1)
-  call bcast_recv(Ts,tag%Ts)
-  call bcast_recv3D_ghost(Phi,tag%Phi)
-
-  ! print*, mpi_cfg%myid
-  ! print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
-  ! print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
-  ! print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
-end subroutine input_workers_mpi
 
 
 end submodule plasma_input

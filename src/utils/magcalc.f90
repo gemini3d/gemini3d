@@ -344,7 +344,7 @@ main : do while (t < cfg%tdur)
   dt=cfg%dtout    !only compute magnetic field at times when we've done output
 
   !READ IN THE FULL PLASMA AND FIELD DATA FROM THE OUTPUT FILE (NOTE THAT WE NEED TO KNOW OUTPUT TYPE DONE)
-  call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
+  call input_plasma_currents(cfg%outdir, cfg%flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
   !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
   call fixJ(J1,J2,J3)

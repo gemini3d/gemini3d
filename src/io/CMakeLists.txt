@@ -23,7 +23,7 @@ add_library(io OBJECT io.f90 ${CMAKE_CURRENT_BINARY_DIR}/output.f90
 aurora.f90
 cond.f90
 mag.f90
-plasma_input.f90 plasma_input_hdf5.f90
+plasma_input.f90
 plasma_output.f90
 milestone.f90
 $<TARGET_OBJECTS:grid>

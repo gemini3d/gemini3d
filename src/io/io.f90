@@ -26,7 +26,7 @@ interface !< aurora.f90
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:), intent(in) :: iver
-  end subroutine output_aur
+  end subroutine
 end interface
 
 
@@ -36,7 +36,7 @@ interface !< cond.f90
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:), intent(in) :: sig0, sigP, sigH
-  end subroutine output_cond
+  end subroutine
 end interface
 
 
@@ -44,14 +44,14 @@ interface !< mag.f90
   module subroutine create_outdir_mag(outdir,fieldpointfile)
     character(*), intent(in) :: outdir
     character(*), intent(in) :: fieldpointfile
-  end subroutine create_outdir_mag
+  end subroutine
 
   module subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
-  end subroutine output_magfields
+  end subroutine
 end interface
 
 
@@ -66,16 +66,16 @@ interface !< plasma.f90
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
     !! intent(out)
-  end subroutine input_plasma
+  end subroutine
 
-  module subroutine input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)
-    character(*), intent(in) :: outdir, out_format
+  module subroutine input_plasma_currents(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
+    character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
-  end subroutine input_plasma_currents
+  end subroutine
 
   module subroutine interp_file2subgrid(indatsize,indatfile,out_dir,x1,x2,x3,ns,vs1,Ts,Phi)
     character(*), intent(in) :: indatsize,indatfile,out_dir
@@ -84,7 +84,7 @@ interface !< plasma.f90
     real(wp), dimension(-1:) :: x3
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-  end subroutine interp_file2subgrid
+  end subroutine
 
   module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
     character(*), intent(in) :: outdir, out_format
@@ -94,14 +94,14 @@ interface !< plasma.f90
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-  end subroutine output_plasma
+  end subroutine
 end interface
 
 
 interface !< output.f90
   module subroutine create_outdir(cfg)
     class(gemini_cfg), intent(in) :: cfg
-  end subroutine create_outdir
+  end subroutine
 end interface
 
 
@@ -113,7 +113,7 @@ interface !< milestone.f90
     integer, dimension(3), intent(out) :: ymdmile
     real(wp), intent(out) :: UTsecmile
     character(:), allocatable, intent(out) :: filemile
-  end subroutine find_milestone
+  end subroutine
 end interface
 
 end module io
