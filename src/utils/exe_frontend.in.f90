@@ -7,10 +7,11 @@ use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
 use filesystem, only : parent, file_name, assert_is_dir, expanduser, suffix
 use timeutils, only : date_filename,dateinc
+use h5fortran, only : hdf5_file
 
 implicit none (type, external)
 private
-public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
+public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run, get_simsize3
 
 interface
 integer(c_int) function cpu_count_c() bind(c, name="cpu_count")
@@ -239,6 +240,42 @@ endif
 if(.not.allocated(mpiexec)) mpiexec = "mpiexec"
 
 end function find_mpiexec
+
+
+subroutine get_simsize3(path, lx1, lx2all, lx3all)
+character(*), intent(in) :: path
+integer, intent(out) :: lx1, lx2all, lx3all
+!! get x1, x2, x3 dimension sizes
+!! sizes include Ghost Cells
+type(hdf5_file) :: hf
+
+integer :: lx(3)
+
+call hf%open(path, action='r', mpi=.false.)
+
+if (hf%exist("/lx1")) then
+  call hf%read('/lx1', lx1)
+  call hf%read('/lx2', lx2all)
+  call hf%read('/lx3', lx3all)
+  call hf%close()
+  return
+endif
+
+if (hf%exist("/lxs")) then
+  call hf%read("/lxs", lx)
+elseif (hf%exist("/lx")) then
+  call hf%read("/lx", lx)
+else
+  error stop path // " did not contain expected lx variables"
+endif
+
+call hf%close()
+
+lx1 = lx(1)
+lx2all = lx(2)
+lx3all = lx(3)
+
+end subroutine get_simsize3
 
 
 logical function check_mpiexec(exe) result(ok)

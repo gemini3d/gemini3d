@@ -56,17 +56,21 @@ if (hf%exist("/lx1")) then
   call hf%read('/lx1', lx1)
   call hf%read('/lx2', lx2all)
   if (present(lx3all)) call hf%read('/lx3', lx3all)
-elseif (hf%exist("/lxs")) then
+  call hf%close()
+  return
+endif
+
+if (hf%exist("/lxs")) then
   call hf%read("/lxs", lx)
-  lx1 = lx(1)
-  lx2all = lx(2)
-  if (present(lx3all)) lx3all = lx(3)
 elseif (hf%exist("/lx")) then
   call hf%read("/lx", lx)
-  lx1 = lx(1)
-  lx2all = lx(2)
-  if (present(lx3all)) lx3all = lx(3)
+else
+  error stop path // " did not contain expected lx variables"
 endif
+
+lx1 = lx(1)
+lx2all = lx(2)
+if (present(lx3all)) lx3all = lx(3)
 
 call hf%close()
 

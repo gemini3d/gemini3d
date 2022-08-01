@@ -2,8 +2,7 @@ program magcalc_run
 !! for use from terminal/CMake, computes optimal MPI count
 !! for a particular simulation
 
-use exe_frontend, only : cli_parser, get_Ncpu
-use reader, only: get_simsize3
+use exe_frontend, only : cli_parser, get_Ncpu, get_simsize3
 use autogrid, only : grid_auto, max_mpi
 
 implicit none (type, external)
@@ -18,7 +17,7 @@ call cli_parser(plan, Ncpu, path, exe, mpiexec, extra)
 Ncpu = get_Ncpu(Ncpu)
 
 !> setup run
-call get_simsize3(path // '/inputs', lx1, lx2all, lx3all)
+call get_simsize3(path // '/inputs/simsize.h5', lx1, lx2all, lx3all)
 
 if(Ncpu > 1) then
   lid = max_mpi(lx2all, lx3all, Ncpu)
