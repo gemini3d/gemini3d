@@ -31,7 +31,7 @@ file(GENERATE OUTPUT exe_frontend.f90
 INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
 )
 
-add_library(exe_frontend OBJECT cpu/cpu.cpp ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
+add_library(exe_frontend OBJECT cpu_count.cpp ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
 target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const
 ffilesystem::filesystem
 )

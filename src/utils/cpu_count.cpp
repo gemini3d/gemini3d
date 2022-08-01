@@ -6,6 +6,9 @@
 // MacOS (g++, clang++, icpc)
 // Linux (g++, clang++, icpx)
 
+// Compiler OS-detection macros
+// https://sourceforge.net/p/predef/wiki/OperatingSystems/
+
 #include <vector>
 #include <cassert>
 #include <bitset>
@@ -16,20 +19,57 @@
 #include <thread>
 
 #ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #elif defined (__APPLE__)
 #include <sys/sysctl.h>
-#else
+#elif __has_include(<unistd.h>)
 #include <unistd.h>
 #endif
 
-extern "C" unsigned int cpu_count();
+unsigned int CPUCountWindows();
+unsigned int ParseSysCtl();
+unsigned int RetrieveInformationFromCpuInfoFile();
+unsigned int QueryProcessorBySysconf();
+unsigned int QueryThreads();
 
 std::string ExtractValueFromCpuInfoFile(std::string buffer, const char* word,
   size_t& CurrentPositionInFile, size_t init = 0);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 unsigned int cpu_count(){
+
+  unsigned int NumberOfPhysicalCPU = 0;
+
+#if defined (_WIN32)
+  NumberOfPhysicalCPU = CPUCountWindows();
+#elif defined (__APPLE__)
+  NumberOfPhysicalCPU = ParseSysCtl();
+#elif defined (__unix__)
+  NumberOfPhysicalCPU = RetrieveInformationFromCpuInfoFile();
+#endif
+
+  if (NumberOfPhysicalCPU == 0)
+    NumberOfPhysicalCPU = QueryProcessorBySysconf();
+
+  if (NumberOfPhysicalCPU == 0)
+    NumberOfPhysicalCPU = QueryThreads();
+
+  return NumberOfPhysicalCPU;
+
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+
+unsigned int CPUCountWindows(){
 
   unsigned int NumberOfPhysicalCPU = 0;
   unsigned int NumberOfLogicalCPU = 0;
@@ -50,11 +90,13 @@ unsigned int cpu_count(){
   {
     DWORD Length = 0;
     DWORD rc = pGetLogicalProcessorInformation(nullptr, &Length);
-    assert(FALSE == rc);
+    assert(rc == 0);
+    (void)rc; // Silence unused variable warning
     assert(GetLastError() == ERROR_INSUFFICIENT_BUFFER);
     ProcInfo.resize(Length / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
     rc = pGetLogicalProcessorInformation(&ProcInfo[0], &Length);
-    assert(rc != FALSE);
+    assert(rc != 0);
+    (void)rc; // Silence unused variable warning
   }
 
   typedef std::vector<SYSTEM_LOGICAL_PROCESSOR_INFORMATION>::iterator
@@ -73,11 +115,19 @@ unsigned int cpu_count(){
     }
     NumberOfPhysicalCPU++;
     NumberOfLogicalCPU += (unsigned int)count;
-    unsigned int LogicalProcessorsPerPhysical = count;
   }
 
-#elif defined(__linux)
+#endif
 
+  return NumberOfPhysicalCPU;
+
+}
+
+
+unsigned int RetrieveInformationFromCpuInfoFile(){
+
+  unsigned int NumberOfLogicalCPU = 0;
+  unsigned int NumberOfPhysicalCPU = 0;
   std::string buffer;
 
   FILE* fd = fopen("/proc/cpuinfo", "r");
@@ -110,9 +160,8 @@ unsigned int cpu_count(){
   }
 
   uint64_t NumberOfSockets = PhysicalIDs.size();
-  NumberOfSockets = std::max(NumberOfSockets, (uint64_t)1);
   // Physical ids returned by Linux don't distinguish cores.
-  // We want to record the total number of cores in this->NumberOfPhysicalCPU
+  // We want to record the total number of cores in NumberOfPhysicalCPU
   // (checking only the first proc)
   std::string Cores = ExtractValueFromCpuInfoFile(buffer, "cpu cores", CurrentPositionInFile);
   if (Cores.empty()) {
@@ -123,27 +172,60 @@ unsigned int cpu_count(){
   NumberOfCoresPerSocket = std::max(NumberOfCoresPerSocket, 1u);
   NumberOfPhysicalCPU = NumberOfCoresPerSocket * (unsigned int)NumberOfSockets;
 
-#elif defined(__APPLE__)
+  return NumberOfPhysicalCPU;
+
+}
+
+unsigned int ParseSysCtl(){
+
+  unsigned int NumberOfPhysicalCPU = 0;
+
+#ifdef __APPLE__
 
   int N;
   size_t size = sizeof(N);
 
-  if (sysctlbyname("hw.physicalcpu", &N, &size, nullptr, 0) == 0)
+  if (sysctlbyname("hw.perflevel0.physicalcpu", &N, &size, nullptr, 0) == 0) {
+    // Apple Silicon performance core count
     NumberOfPhysicalCPU = N;
+  }
+  else if (sysctlbyname("hw.physicalcpu", &N, &size, nullptr, 0) == 0) {
+    // assumes heterogenous cores e.g. Intel Mac
+    NumberOfPhysicalCPU = N;
+  }
 
-#elif defined(_SC_NPROCESSORS_ONLN)
-
- long N = sysconf(_SC_NPROCESSORS_ONLN);
- if (N > 0)
-    NumberOfPhysicalCPU = static_cast<unsigned int>(N);
-
-#else
-  NumberOfPhysicalCPU = std::thread::hardware_concurrency();
 #endif
 
-   return NumberOfPhysicalCPU;
+  return NumberOfPhysicalCPU;
 
 }
+
+unsigned int QueryProcessorBySysconf(){
+
+unsigned int NumberOfPhysicalCPU = 0;
+
+#if defined(_SC_NPROCESSORS_ONLN)
+
+ long c = sysconf(_SC_NPROCESSORS_ONLN);
+ if (c > 0)
+    NumberOfPhysicalCPU = static_cast<unsigned int>(c);
+
+#endif
+
+return NumberOfPhysicalCPU;
+
+}
+
+unsigned int QueryThreads(){
+  // fallback, doesn't consider hyperthreading
+
+  unsigned int NumberOfLogicalCPU = std::thread::hardware_concurrency();
+  unsigned int NumberOfPhysicalCPU = NumberOfLogicalCPU;
+
+  return NumberOfPhysicalCPU;
+
+}
+
 
 /** Extract a value from the CPUInfo file */
 std::string ExtractValueFromCpuInfoFile(std::string buffer, const char* word,
