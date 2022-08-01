@@ -24,7 +24,7 @@ integer :: ix2(2), ix3(2)
 
 outdir_aur = outdir // '/aurmaps'
 
-call mkdir(outdir_aur)
+if(mpi_cfg%myid == 0) call mkdir(outdir_aur)
 
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
@@ -33,7 +33,7 @@ call mkdir(outdir_aur)
 
 filename = date_filename(outdir_aur, ymd, UTsec) // ".h5"
 
-print *, 'GEMINI3D:write aurora:  ',filename
+if(mpi_cfg%myid == 0) print *, 'GEMINI3D:write aurora:  ',filename
 
 call h%open(filename, action='w', comp_lvl=comp_lvl, mpi=.true.)
 

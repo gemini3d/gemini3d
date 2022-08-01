@@ -28,7 +28,7 @@ character(:), allocatable :: filename
 type(hdf5_file) :: h
 
 filename = date_filename(outdir // '/magfields', ymd, UTsec) // '.h5'
-print *, '  Output file name (magnetic fields):  ',filename
+if(mpi_cfg%myid == 0) print *, '  Output file name (magnetic fields):  ',filename
 
 call h%open(filename, action='rw', comp_lvl=comp_lvl, mpi=.false.)
 

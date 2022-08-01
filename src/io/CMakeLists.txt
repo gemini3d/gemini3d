@@ -24,7 +24,7 @@ aurora.f90
 cond.f90
 mag.f90
 plasma_input.f90 plasma_input_hdf5.f90
-plasma_output.f90 plasma_output_hdf5.f90
+plasma_output.f90
 milestone.f90
 $<TARGET_OBJECTS:grid>
 )

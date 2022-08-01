@@ -1,152 +1,150 @@
 submodule (io) plasma_output
 
+use timeutils, only : date_filename
+use h5fortran, only : hdf5_file
+
 implicit none (type, external)
 
-interface ! plasma_output_*.f90
-
-module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                              Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-  character(*), intent(in) :: outdir
-  integer, intent(in) :: flagoutput
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
-  real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
-  real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
-  real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-end subroutine
-
-end interface
-
 contains
-
-subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
-
-!------------------------------------------------------------
-!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
-!-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
-!------- This is the same regardless of what type of output is
-!------- being done.
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-integer :: isp
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
-real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp
-
-
-!ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
-v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
-v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
-
-
-!SEND MY GRID DATA TO THE ROOT PROCESS
-call gather_send(v2avg,tag%v2)
-call gather_send(v3avg,tag%v3)
-call gather_send(ns,tag%ns)
-call gather_send(vs1,tag%vs1)
-call gather_send(Ts,tag%Ts)
-
-
-!------- SEND ELECTRODYNAMIC PARAMETERS TO ROOT
-Jtmp=J1(1:lx1,1:lx2,1:lx3)
-call gather_send(Jtmp,tag%J1)
-Jtmp=J2(1:lx1,1:lx2,1:lx3)
-call gather_send(Jtmp,tag%J2)
-Jtmp=J3(1:lx1,1:lx2,1:lx3)
-call gather_send(Jtmp,tag%J3)
-
-end subroutine output_workers_mpi
-
 
 module procedure output_plasma
 
 ! subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-!! A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
-if (mpi_cfg%myid == 0) then
-  call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
-else
-  call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
-end if
+!! STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
+!! This is the same regardless of what type of output is being done.
 
-end procedure output_plasma
-
-
-subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
-!------------------------------------------------------------
-!------- Root needs to gather data and pass to subroutine to
-!------- write to disk in the appropriate format.
-!------------------------------------------------------------
-character(*), intent(in) :: outdir
-character(*), intent(in) :: out_format
-integer, intent(in) :: flagoutput
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
 integer :: isp
-real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
-real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
-real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
-real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp
-real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all
+real(wp), dimension(lx1, lx2, lx3) :: v2avg,v3avg,v1avg,Tavg, ne, Te
+
+character(:), allocatable :: filenamefull
+type(hdf5_file) :: h
+
+integer, dimension(4) :: dims4, i0_4, i1_4
+integer, dimension(3) :: dims, i0, i1
+integer, dimension(2) :: ix1, ix2, ix3
+!! HDF5-MPI partitioning
 
 
-print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
+if(mpi_cfg%myid == 0) print '(a,i0,1x,i0,1x,i0)', 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
 !ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
-v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
-v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
+v2avg = sum(ns(1:lx1, 1:lx2, 1:lx3, 1:lsp-1)*vs2(1:lx1, 1:lx2, 1:lx3, 1:lsp-1),4)
+v2avg = v2avg / ns(1:lx1, 1:lx2, 1:lx3, lsp)
+!! compute averages for output.
 
-!GET THE SUBGRID DATA FORM THE WORKERS
-call gather_recv(v2avg,tag%v2,v2avgall)
-call gather_recv(v3avg,tag%v3,v3avgall)
-call gather_recv(ns,tag%ns,nsall)
-call gather_recv(vs1,tag%vs1,vs1all)
-call gather_recv(Ts,tag%Ts,Tsall)
-
-!> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMETERS FROM WORKERS
-Jtmp=J1(1:lx1,1:lx2,1:lx3)
-call gather_recv(Jtmp,tag%J1,J1all)
-Jtmp=J2(1:lx1,1:lx2,1:lx3)
-call gather_recv(Jtmp,tag%J2,J2all)
-Jtmp=J3(1:lx1,1:lx2,1:lx3)
-call gather_recv(Jtmp,tag%J3,J3all)
+v3avg = sum(ns(1:lx1, 1:lx2, 1:lx3, 1:lsp-1)*vs3(1:lx1, 1:lx2, 1:lx3, 1:lsp-1),4)
+v3avg=v3avg/ns(1:lx1, 1:lx2, 1:lx3, lsp)
 
 !COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
 !> possible bottleneck; should have workers help?
 !> also only compute these if they are actually being output
 if (flagoutput==2 .or. flagoutput==3) then
-  neall=nsall(1:lx1,1:lx2all,1:lx3all,lsp)
+  ne = ns(1:lx1, 1:lx2, 1:lx3, lsp)
 end if
+
 if (flagoutput==2) then
-  v1avgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-  v1avgall=v1avgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-  Tavgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-  Tavgall=Tavgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-  Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
+  v1avg = sum(ns(1:lx1, 1:lx2, 1:lx3, 1:lsp-1) * vs1(1:lx1, 1:lx2, 1:lx3, 1:lsp-1), dim=4)
+  v1avg = v1avg / ns(1:lx1, 1:lx2, 1:lx3, lsp)
+  !! compute averages for output.
+
+  Tavg = sum(ns(1:lx1, 1:lx2, 1:lx3, 1:lsp-1) * Ts(1:lx1, 1:lx2, 1:lx3, 1:lsp-1), dim=4)
+  Tavg = Tavg / ns(1:lx1, 1:lx2, 1:lx3, lsp)
+  !! compute averages for output.
+  Te = Ts(1:lx1, 1:lx2, 1:lx3, lsp)
 end if
 
 
-!> Now figure out which type of file we write to
-select case (out_format)
-case ('h5')
-  call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                     Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
-case default
-  error stop 'plasma_output:output_root_stream_api: unknown format' // out_format
+!! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE
+!! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
+
+dims = [lx1, lx2all, lx3all]
+dims4(:3) = dims
+dims4(4) = lsp
+
+ix1 = [1, lx1]
+ix2 = [mpi_cfg%myid*lx2+1, (mpi_cfg%myid+1)*lx2]
+ix3 = [mpi_cfg%myid*lx3+1, (mpi_cfg%myid+1)*lx3]
+if(lx2 == 1) then
+  ix2 = [1, 1]
+elseif(lx3 == 1) then
+  ix3 = [1, 1]
+endif
+
+i0 = [ix1(1), ix2(1), ix3(1)]
+i1 = [ix1(2), ix2(2), ix3(2)]
+
+i0_4(:3) = i0
+i0_4(4) = 1
+i1_4(:3) = i1
+i1_4(4) = lsp
+
+! print '(a,5i4)', "TRACE:gemini3d:output_plasma: lx2all,lx3all,lx2,lx3",lx2all,lx3all,lx2,lx3
+! print '(a,i0,a,i0,1x,i0,1x,i0,a,i0,1x,i0,1x,i0)', "TRACE:gemini3d:output_plasma: myid: ", mpi_cfg%myid,&
+!  " istart: ", i0, " iend: ", i1
+! print *, "ns: shape, lbound, ubound ", shape(ns), lbound(ns), ubound(ns)
+
+
+filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
+if(mpi_cfg%myid == 0) print *, 'GEMINI3D: plasma file name: ', filenamefull
+
+call h%open(filenamefull, action='w', comp_lvl=comp_lvl, mpi=.true.)
+
+call h%write("/flagoutput", flagoutput)
+
+call h%write('/time/ymd', ymd)
+call h%write('/time/UThour',   real(UTsec/3600))
+
+select case (flagoutput)
+  case (2)    !output ISR-like average parameters
+    call h%write('neall',    real(ne), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('v1avgall', real(v1avg), dset_dims=dims, istart=i0, iend=i1)
+    !output of ISR-like parameters (ne,Ti,Te,v1,etc.)
+    call h%write('Tavgall',  real(Tavg), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('TEall',    real(Te), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('J1all',    real(J1(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('J2all',    real(J2(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('J3all',    real(J3(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('v2avgall', real(v2avg), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('v3avgall', real(v3avg), dset_dims=dims, istart=i0, iend=i1)
+  case (3)     !just electron density
+    if(mpi_cfg%myid == 0) print *, 'GEMINI3D: electron density only output, make sure this is what you really want!'
+    call h%write('neall',    real(ne), dset_dims=dims, istart=i0, iend=i1)
+  case default    !output everything
+    if(mpi_cfg%myid == 0) print *, 'GEMINI3D: full output or milestones, large files may result!'
+    call h%write('nsall',    real(ns(1:lx1, 1:lx2, 1:lx3, :)), dset_dims=dims4, istart=i0_4, iend=i1_4)
+    call h%write('vs1all',   real(vs1(1:lx1, 1:lx2, 1:lx3, :)), dset_dims=dims4, istart=i0_4, iend=i1_4)
+    !this is full output of all parameters in 3D
+    call h%write('Tsall',    real(Ts(1:lx1, 1:lx2, 1:lx3, :)), dset_dims=dims4, istart=i0_4, iend=i1_4)
+
+    call h%write('J1all',    real(J1(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('J2all',    real(J2(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('J3all',    real(J3(1:lx1, 1:lx2, 1:lx3)), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('v2avgall', real(v2avg), dset_dims=dims, istart=i0, iend=i1)
+    call h%write('v3avgall', real(v3avg), dset_dims=dims, istart=i0, iend=i1)
 end select
 
+call h%close()
 
-end subroutine output_root_stream_mpi
+
+if(mpi_cfg%myid == 0) then
+
+  call h%open(filenamefull, action='a', comp_lvl=comp_lvl, mpi=.false.)
+
+  if (gridflag==1) then
+    print *, 'Writing topside boundary conditions for inverted-type grid...'
+    call h%write('Phiall',   real(Phiall(1, 1:lx2all, 1:lx3all)))
+  else
+    print *, 'Writing topside boundary conditions for non-inverted-type grid...'
+    call h%write('Phiall',   real(Phiall(lx1, 1:lx2all, 1:lx3all)))
+  end if
+
+  call h%close()
+
+endif
+
+
+end procedure output_plasma
 
 end submodule plasma_output

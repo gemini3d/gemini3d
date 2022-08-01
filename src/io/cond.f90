@@ -27,11 +27,11 @@ integer, dimension(2) :: ix1, ix2, ix3
 
 outdir_cond = outdir // '/conductivity'
 
-call mkdir(outdir_cond)
+if(mpi_cfg%myid == 0) call mkdir(outdir_cond)
 
 filename = date_filename(outdir_cond, ymd, UTsec) // ".h5"
 
-print *, 'Output file name (conductivity):  ',filename
+if(mpi_cfg%myid == 0) print *, 'Output file name (conductivity):  ',filename
 
 dims = [lx1, lx2all, lx3all]
 
