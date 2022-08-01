@@ -1,6 +1,5 @@
 module gemini3d_config
 
-use filesystem, only : suffix
 use phys_consts, only : wp
 
 implicit none (type, external)

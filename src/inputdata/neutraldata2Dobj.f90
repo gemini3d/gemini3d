@@ -10,7 +10,6 @@ use gemini3d_config, only: gemini_cfg
 use reader, only: get_grid2,get_neutral2
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use filesystem, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)

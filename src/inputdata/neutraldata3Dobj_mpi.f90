@@ -11,7 +11,7 @@ use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use filesystem, only: suffix, get_filename
+use filesystem, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
@@ -542,13 +542,11 @@ contains
       !print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
 
       fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
-      fn=get_filename(fn)
+      fn = get_filename(fn, suffixes=['.h5'])
       if (debug) print *, 'READ neutral 3D data from file: ',fn
-      if (suffix(fn) == '.h5') then
-        call hf%open(fn, action='r')
-      else
-        error stop '3D neutral input only supported for hdf5 files; please regenerate input'
-      end if
+      if (fn == '') error stop '3D neutral input only supported for hdf5 files; please regenerate input'
+
+      call hf%open(fn, action='r')
 
       call hf%read('/dn0all', paramall)
       if (.not. all(ieee_is_finite(paramall))) error stop 'dnOall: non-finite value(s)'

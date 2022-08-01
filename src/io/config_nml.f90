@@ -3,7 +3,7 @@ submodule(gemini3d_config) config_nml
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
-use filesystem, only : make_absolute
+use filesystem, only : make_absolute, suffix
 
 implicit none (type, external)
 
