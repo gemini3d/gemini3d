@@ -55,7 +55,7 @@ call h%write('/aurora/iverout', real(iver), &
 
 call h%close()
 
-if(.not. all(ieee_is_finite(iver))) error stop 'ERROR: iverout: non-finite value(s)'
+if(.not. all(ieee_is_finite(iver))) error stop 'ERROR:GEMINI3D:output_aur: non-finite value(s)'
 
 end procedure output_aur
 
