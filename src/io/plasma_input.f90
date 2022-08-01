@@ -114,17 +114,11 @@ real(wp), dimension(:,:), allocatable :: Phislab
 real(wp), allocatable :: tmpPhi(:)
 
 integer, dimension(4) :: i0, i1
-integer, dimension(2) :: ix2, ix3
 !! HDF5-MPI partitioning
 ! integer(HSIZE_T), allocatable :: dims(:)
 
-ix2(1) = mpi_cfg%myid2 * lx2 + 1
-ix2(2) = ix2(1) + lx2 - 1
-ix3(1) = mpi_cfg%myid3 * lx3 + 1
-ix3(2) = ix3(1) + lx3 - 1
-
-i0 = [1, ix2(1), ix3(1), 1]
-i1 = [lx1, ix2(2), ix3(2), lsp]
+i0 = [1, mpi_cfg%myid2 * lx2 + 1, mpi_cfg%myid3 * lx3 + 1, 1]
+i1 = [lx1, i0(2) + lx2 - 1, i0(3) + lx3 - 1, lsp]
 
 allocate(Phislab(1:lx2all, 1:lx3all))
 !! EFL potential
