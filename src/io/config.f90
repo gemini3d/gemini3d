@@ -93,9 +93,6 @@ interface
     class(gemini_cfg), intent(inout) :: cfg
     logical, intent(in), optional :: verbose
   end subroutine read_nml
-  module subroutine read_ini(cfg)
-    class(gemini_cfg), intent(inout) :: cfg
-  end subroutine read_ini
 end interface
 
 contains
@@ -107,16 +104,7 @@ contains
     real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
 
     !> READ CONFIG FILE FOR THIS SIMULATION
-    !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
-
-    select case (suffix(cfg%infile))
-    case ('.nml')
-      call read_nml(cfg, verbose)
-    case ('.ini')
-      call read_ini(cfg)
-    case default
-      error stop 'ERROR:gemini3d:config: not sure how to read Gemini3D configuration file: ' // cfg%infile
-    end select
+    call read_nml(cfg, verbose)
 
   end subroutine read_configfile
 
