@@ -4,8 +4,8 @@
 #
 # NOTE: your Cray system may have different versions/paths, treat this like a template.
 #
-# NOTE: to specify install directory, run like:
-#   cmake -DCMAKE_INSTALL_PREFIX=<install_dir> -P cray.cmake
+# Copy this file to a convenient location like ~ directory, and use with any project on Cray like:
+#  cmake --toolchain ~/cray.cmake -B build
 
 cmake_minimum_required(VERSION 3.20.2)
 
