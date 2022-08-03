@@ -15,6 +15,7 @@ on:
       - ".github/workflows/ci_windows.yml"
 # paths ignore starting with "!"
       - "!docs/**"
+      - "!cray.cmake"
 
 jobs:
 

@@ -25,6 +25,7 @@ on:
       - ".github/workflows/intel-oneapi.yml"
 # paths ignore starting with "!"
       - "!docs/**"
+      - "!cray.cmake"
 
 jobs:
 
