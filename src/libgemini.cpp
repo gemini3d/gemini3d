@@ -179,9 +179,9 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   // halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
 
   // Probably very little drawback to doing things this more general way
+  set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);
   halo_fluidvars_C(pxtype, &xC, &fluidvars, &fluidauxvars);
   interface_vels_allspec_C(&fluidvars,&intvars,plsp);
-  set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   sweep3_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
