@@ -32,12 +32,12 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
-                      gemini_work_dealloc
+                      gemini_work_dealloc, set_global_boundaries_allspec_in
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_Efieldinput_in,pot2perpfield_in, &
                           init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
-                          set_global_boundaries_allspec_in, halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
+                          halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
                           clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in
 

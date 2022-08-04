@@ -3,15 +3,177 @@ module advec
 !> this module contains advection-related procedures that are independent on mpi library calls
 
 use phys_consts, only: lsp,ms,wp
-use grid, only : gridflag
+use grid, only : gridflag, x1lims,x2alllims,x3alllims
 use meshobj, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
 
 implicit none (type, external)
 private
-public :: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
+public :: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec,set_global_boundaries_allspec
 
 contains
+  !> set values in global boundary ghost cells based on extrapolation, can be done by each worker
+  !    without input from the root process; does not require mpi.  This does require the inteferface
+  !    velocities from the x1 direction so in sense it must be preceded by an mpi call of some sort.
+  !    This function works for a single species "isp".  It does need information about the mpi image
+  !    organization and as such is considered part of the advec_mpi module.
+  subroutine set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,x)
+    integer, intent(in) :: isp
+    logical, intent(in) :: isperiodic
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(in) :: v1i
+    class(curvmesh), intent(in) :: x
+    !    real(wp), parameter :: vellim=2000.0
+    !    real(wp), parameter :: vellim=0.0
+    real(wp) :: coeff
+    integer :: ix2,ix3,lx1,lx2,lx3
+    integer :: idleft,idright,idup,iddown
+    real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
+    real(wp) :: tstart,tfini
+    logical :: flagupedge,flagdownedge,flagleftedge,flagrightedge
+    
+    lx1=size(vs1,1)-4
+    lx2=size(vs1,2)-4
+    lx3=size(vs1,3)-4
+    
+    !> GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
+    do ix3=1,lx3
+      do ix2=1,lx2
+        !> logical bottom
+        coeff=ns(2,ix2,ix3,isp)/ns(3,ix2,ix3,isp)
+        ns(0,ix2,ix3,isp)=min(coeff*ns(1,ix2,ix3,isp),ns(1,ix2,ix3,isp))
+        ns(-1,ix2,ix3,isp)=min(coeff*ns(0,ix2,ix3,isp),ns(0,ix2,ix3,isp))
+    
+        !> logical top
+        coeff=ns(lx1-1,ix2,ix3,isp)/ns(lx1-2,ix2,ix3,isp)
+        ns(lx1+1,ix2,ix3,isp)=min(coeff*ns(lx1,ix2,ix3,isp),ns(lx1,ix2,ix3,isp))
+        ns(lx1+2,ix2,ix3,isp)=min(coeff*ns(lx1+1,ix2,ix3,isp),ns(lx1+1,ix2,ix3,isp))
+      end do
+    end do
+    
+    !FOR X1 MOMENTUM DENSITY
+    rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
+    !! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway for a fully dimensionally split advection method; unsplit methods will need to reconsider.  
+    rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
+    rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
+    rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)
+    
+    rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
+    !! now convert to momentum density
+    rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
+    
+    !> FOR INTERNAL ENERGY
+    rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
+    rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
+    rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
+    rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! What follows requires determining where we are on with respect to the edges of the global grid
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
+    ! determine x2 edge status for this worker/patch
+!    iddown=mpi_cfg%myid2-1
+!    idup=mpi_cfg%myid2+1
+!    flagdownedge=iddown==-1
+!    flagupedge=idup==mpi_cfg%lid2
+
+    ! this needs to be a detection relative to local patch/worker grid data...
+    if ( abs(x%x2(1)-x2alllims(1)) < abs(x%x2(2)-x%x2(1)) ) then     ! we are closer to global edge than next nearest cell
+      flagdownedge=.true.
+    else
+      flagdownedge=.false.
+    end if
+    if ( abs(x%x2(lx2)-x2alllims(2)) < abs(x%x2(lx2)-x%x2(lx2-1)) ) then
+      flagupedge=.true.
+    else
+      flagupedge=.false.
+    end if
+
+    !> SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.
+    !> THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
+    if (flagdownedge) then
+      vs2(:,0,:,isp)=vs2(:,1,:,isp)
+    
+      ns(:,0,:,isp)=ns(:,1,:,isp)
+      ns(:,-1,:,isp)=ns(:,1,:,isp)
+      rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp)
+      rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp)
+      rhoes(:,0,:,isp)=rhoes(:,1,:,isp)
+      rhoes(:,-1,:,isp)=rhoes(:,1,:,isp)
+    end if
+    if (flagupedge) then
+      vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
+    
+      ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
+      ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+      rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp)
+      rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp)
+      rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp)
+      rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp)
+    end if
+    
+    !> NOW DEAL WITH ADVECTION ALONG X3
+    ! determine edge status along x3 for this worker/patch
+!    idleft=mpi_cfg%myid3-1
+!    idright=mpi_cfg%myid3+1
+!    flagleftedge=idleft==-1
+!    flagrightedge=idright==mpi_cfg%lid3
+    if ( abs(x%x3(1)-x3alllims(1)) < abs(x%x3(2)-x%x3(1)) ) then     ! we are closer to global edge than next nearest cell
+      flagleftedge=.true.
+    else
+      flagleftedge=.false.
+    end if
+    if ( abs(x%x3(lx3)-x3alllims(2)) < abs(x%x3(lx3)-x%x3(lx3-1)) ) then
+      flagrightedge=.true.
+    else
+      flagrightedge=.false.
+    end if
+
+    !> SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
+    if (.not. isperiodic) then
+      if (flagleftedge) then
+        !! left side is at global boundary, assume haloing won't overwrite
+        vs3(:,:,0,isp)=vs3(:,:,1,isp)
+        !! copy first cell to first ghost (vs3 not advected so only need only ghost)
+    
+        ns(:,:,0,isp)=ns(:,:,1,isp)
+        ns(:,:,-1,isp)=ns(:,:,1,isp)
+        rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp)
+        rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp)
+        rhoes(:,:,0,isp)=rhoes(:,:,1,isp)
+        rhoes(:,:,-1,isp)=rhoes(:,:,1,isp)
+      end if
+      if (flagrightedge) then    !my right boundary is the global boundary, assume haloing won't overwrite
+        vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
+    
+        ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
+        ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
+        rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp)
+        rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp)
+        rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp)
+        rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp)
+      end if
+    end if
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  end subroutine set_global_boundaries
+  
+  
+  !> set global boundaries for all species
+  subroutine set_global_boundaries_allspec(isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i,lsp,x)
+    logical, intent(in) :: isperiodic
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,1:size(vs1,4)), intent(in) :: vs1i
+    integer, intent(in) :: lsp
+    class(curvmesh), intent(in) :: x
+    integer :: isp
+  
+    if (lsp>size(vs1,4)) error stop 'number of global boundaries must be less than or equal to total species number'
+    do isp=1,lsp
+      call set_global_boundaries(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,vs1i(:,:,:,isp),x)
+    end do
+  end subroutine set_global_boundaries_allspec
+
+
   !> do averaging to compute cell interface velocities; requires pre-haloing in order for cells
   !    to have updated boundary info from ghost cells.  Single species only, "isp"; does not require
   !    any knowledge about the mpi image configuration(s).
