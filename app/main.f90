@@ -314,9 +314,9 @@ contains
     ! call halo_allparams_in(x,fluidvars,fluidauxvars)
 
     ! New haloing code; probably very little performance penalty here
+    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     call halo_fluidvars_in(x,fluidvars,fluidauxvars)
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
-    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
