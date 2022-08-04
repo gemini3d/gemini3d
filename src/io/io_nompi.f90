@@ -177,6 +177,8 @@ contains
   end subroutine plasma_output_nompi
 
 
+  !> This may only differ by variable names from what is in read_hdf, but I needed a copy in a file
+  !    that doesn't depend on mpi libs
   subroutine getICs_hdf5_nompi(indatsize,indatfile,ns,vs1,Ts,Phi)
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
