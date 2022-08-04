@@ -84,6 +84,7 @@ contains
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
     allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
+    ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.
     deallocate(x1,x2all,x3all)
   end subroutine read_size_gridcenter
 
