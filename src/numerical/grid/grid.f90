@@ -66,7 +66,7 @@ contains
   end subroutine set_size_gridcenter
 
 
-  !> retriece the grid center location from module
+  !> retrieve the grid center location from module
   subroutine get_gridcenter(glonctrout,glatctrout)
     real(wp), intent(inout) :: glonctrout,glatctrout
 
@@ -84,7 +84,8 @@ contains
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
     allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
-    ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.
+    ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
+    !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.  
     deallocate(x1,x2all,x3all)
   end subroutine read_size_gridcenter
 
