@@ -79,6 +79,7 @@ extern void gemini_grid_alloc_C(double*,double*,double*,double*,double*,int*,int
 extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
 extern void setv2v3_C(double*, double*);
+extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
@@ -101,7 +102,6 @@ extern void electrodynamics_C(void**, double**, double**, double**, void**, int*
 extern void get_gavg_Tinf_C(void**, double*, double*);
 extern void clear_dneu_C(void**);
 extern void halo_interface_vels_allspec_C(int*, void**, double**, int*);
-extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
 extern void halo_allparams_C(int*, void**, double**, double**);
 extern void halo_fluidvars_C(int*, void**, double**, double**);
 extern void RK2_prep_mpi_allspec_C(int*, void**, double**);
