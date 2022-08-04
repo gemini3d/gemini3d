@@ -17,7 +17,7 @@ use potential_comm,only : pot2perpfield, electrodynamics
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal_mpi, only : dt_comm
 use sanity_check, only : check_finite_pertub, check_finite_output
-use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
+use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
@@ -30,7 +30,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
-            halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, halo_allparams_in, &
+            halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
             RK2_global_boundary_allspec_in, halo_fluidvars_in
 
@@ -477,27 +477,6 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call halo_interface_vels_allspec(x%flagper,vs2,vs3,lsp)
   end subroutine halo_interface_vels_allspec_in
-
-
-  !> enforce global boundary conditions
-  subroutine set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
-    class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
-    type(gemini_work), intent(inout) :: intvars
-    integer, intent(in) :: lsp
-
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
-
-    ! bind pointers
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-
-    ! fix global boundaries, as needed
-    call set_global_boundaries_allspec(x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,intvars%vs1i,lsp)
-  end subroutine set_global_boundaries_allspec_in
 
 
   !> halo all ***advected*** parameters

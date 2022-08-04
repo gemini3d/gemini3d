@@ -16,6 +16,7 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
+real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
 
 private
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
@@ -24,7 +25,8 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
-             meshobj_alloc, get_gridcenter, meshobj_dealloc !, generate_worker_grid
+             meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
+             x1lims,x2alllims,x3alllims !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -85,9 +87,22 @@ contains
     allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
-    !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.  
+    !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
+    call set_fullgrid_lims(x1,x2all,x3all)
     deallocate(x1,x2all,x3all)
   end subroutine read_size_gridcenter
+
+
+  !> set the fullgrid limit variables in the model, e.g. for detecting if we are on a global boundary
+  subroutine set_fullgrid_lims(x1,x2all,x3all)
+    real(wp), dimension(-1:) :: x1
+    real(wp), dimension(-1:) :: x2all
+    real(wp), dimension(-1:) :: x3all
+
+    x1lims=[x1(1),x1(lx1)]
+    x2alllims=[x2all(1),x2all(lx2all)]
+    x3alllims=[x3all(1),x3all(lx3all)]
+  end subroutine set_fullgrid_lims
 
 
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input

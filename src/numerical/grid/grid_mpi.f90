@@ -16,7 +16,7 @@ use mpimod, only :  mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
 use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag, &
                 get_grid3_coords, detect_gridtype, meshobj_alloc, grid_internaldata_alloc, &
-                grid_internaldata_generate!, generate_worker_grid
+                grid_internaldata_generate, set_fullgrid_lims!, generate_worker_grid
 
 use mpi_f08, only : mpi_recv, mpi_send, mpi_comm_world, mpi_status_ignore
 
@@ -78,6 +78,7 @@ contains
     allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
     !! tmp space for coords from file
     call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
+    call set_fullgrid_lims(x1,x2all,x3all)
     !! read the grid coordinates in from a file only need ctr location for certain grid types
   
     !> each worker needs to set their specific subgrid coordinates
