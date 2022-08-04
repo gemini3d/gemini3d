@@ -20,7 +20,7 @@ use potential_comm,only : pot2perpfield, electrodynamics
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal_mpi, only : dt_comm
 use sanity_check, only : check_finite_pertub, check_finite_output
-use advec_mpi, only: set_global_boundaries_allspec, halo_interface_vels_allspec
+use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
@@ -31,7 +31,7 @@ use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  outdir_fullgridvaralloc, get_initial_state, check_fileoutput, check_dryrun, &
  BGfield_Lagrangian, get_initial_drifts, init_procgrid, init_Efieldinput_in, pot2perpfield_in, &
  init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
- electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, set_global_boundaries_allspec_in, &
+ electrodynamics_in, check_finite_output_in, halo_interface_vels_allspec_in, &
  halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_dneu_in, calc_subgrid_size_in, &
  RK2_global_boundary_allspec_in, halo_fluidvars_in
 use gemini3d_C, only : set_gridpointer_dyntype
@@ -382,27 +382,6 @@ contains
   
     call halo_interface_vels_allspec_in(x, fluidvars, lsp)
   end subroutine halo_interface_vels_allspec_C
-
-
-  subroutine set_global_boundaries_allspec_C(xtype,xC, fluidvarsC,fluidauxvarsC, intvarsC, &
-      lsp) bind(C, name='set_global_boundaries_allspec_C')
-    integer(C_INT), intent(in) :: xtype
-    type(C_PTR), intent(in) :: xC
-    type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
-    type(C_PTR), intent(inout) :: intvarsC
-    integer, intent(in) :: lsp
-  
-    class(curvmesh), pointer :: x
-    real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
-    type(gemini_work), pointer :: intvars
-  
-    x=>set_gridpointer_dyntype(xtype, xC)
-    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(intvarsC,intvars)
-  
-    call set_global_boundaries_allspec_in(x, fluidvars, fluidauxvars, intvars, lsp)
-  end subroutine set_global_boundaries_allspec_C
 
 
   subroutine halo_allparams_C(xtype,xC, fluidvarsC,fluidauxvarsC) bind(C, name='halo_allparams_C')
