@@ -20,7 +20,7 @@ contains
   !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
   !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
   !    and then overriding the interp to space-only.
-  module subroutine interp_file2subgrid(indatsize,indatfile,out_dir,x1,x2,x3,ns,vs1,Ts,Phi)
+  subroutine interp_file2subgrid(indatsize,indatfile,out_dir,x1,x2,x3,ns,vs1,Ts,Phi)
     character(*), intent(in) :: indatsize,indatfile,out_dir
     real(wp), dimension(-1:) :: x1
     real(wp), dimension(-1:) :: x2
