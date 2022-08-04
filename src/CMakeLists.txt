@@ -81,6 +81,7 @@ exe_frontend
 grid io
 mpimod
 autogrid
+io_nompi
 )
 
 set(gemini_mpi_internal_mods
