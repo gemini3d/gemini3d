@@ -41,7 +41,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
-            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in
+            cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in
 
 implicit none (type, external)
 
@@ -289,6 +289,24 @@ contains
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call interp_file2subgrid_in(cfg,x,fluidvars,electrovars)
   end subroutine interp_file2subgrid_C
+
+
+  !> wrapper to have a worker dump their state var data to a file
+  subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC)
+    type(c_ptr), intent(in) :: cfgC
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: electrovarsC
+    type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+
+    call c_f_pointer(cfgC,cfg)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars)
+  end subroutine plasma_output_nompi_C
 
 
   !> wrapper for forcing a particular value for the grid drift velocity
