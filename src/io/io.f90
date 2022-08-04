@@ -16,7 +16,7 @@ public :: create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
   output_aur, output_cond, &
-  find_milestone, interp_file2subgrid
+  find_milestone
 
 
 interface !< aurora.f90
@@ -76,15 +76,6 @@ interface !< plasma.f90
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
     !! intent(out)
   end subroutine input_plasma_currents
-
-  module subroutine interp_file2subgrid(indatsize,indatfile,out_dir,x1,x2,x3,ns,vs1,Ts,Phi)
-    character(*), intent(in) :: indatsize,indatfile,out_dir
-    real(wp), dimension(-1:) :: x1
-    real(wp), dimension(-1:) :: x2
-    real(wp), dimension(-1:) :: x3
-    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
-    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-  end subroutine interp_file2subgrid
 
   module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
     character(*), intent(in) :: outdir, out_format

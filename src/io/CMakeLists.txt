@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS io)
+set_property(DIRECTORY PROPERTY LABELS io)
 
 add_library(logging OBJECT logging.f90)
 
@@ -30,7 +30,14 @@ $<TARGET_OBJECTS:grid>
 )
 
 target_link_libraries(io PRIVATE
-calculus gemini3d_config const interp reader mpimod sanity_check timeutils
+calculus gemini3d_config const reader grid mpimod sanity_check timeutils
+h5fortran::h5fortran
+ffilesystem::filesystem
+)
+
+# --- io_nompi
+add_library(io_nompi OBJECT io_nompi.f90)
+target_link_libraries(io_nompi PRIVATE grid interp const timeutils reader 
 h5fortran::h5fortran
 ffilesystem::filesystem
 )

@@ -42,7 +42,7 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
             rhov12v1,v12rhov1
 use advec, only: interface_vels_allspec
 use timeutils, only: dateinc
-use io, only: interp_file2subgrid
+use io_nompi, only: interp_file2subgrid
 
 implicit none (type, external)
 private
