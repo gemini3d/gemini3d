@@ -12,7 +12,7 @@ interface ! plasma_output_*.f90
     real(wp), dimension(:,:,:), intent(in) :: v2avgall,v3avgall
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: nsall,vs1all,Tsall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
-    real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
+    real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all   ! tricky/confusing - J1,2,3 have ghost cells but these do not!
     real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
   end subroutine
 end interface

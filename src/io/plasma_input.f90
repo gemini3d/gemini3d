@@ -3,7 +3,6 @@ submodule (io) plasma_input
 use reader, only : get_simsize3
 use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
-use interpolation, only : interp3
 use grid, only : get_grid3_coords_hdf5
 
 implicit none (type, external)
@@ -84,81 +83,6 @@ contains
       call input_workers_mpi(ns,vs1,Ts,Phi)
     end if
   end procedure input_plasma
-  
-  
-  !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
-  !    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
-  !    custom arrangement.  The entire input file will be read by each worker calling this procedure.
-  !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
-  !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
-  !    and then overriding the interp to space-only.
-  module procedure interp_file2subgrid
-    real(wp), dimension(:,:,:,:), allocatable :: nsall,vs1all,Tsall
-    real(wp), dimension(:,:,:), allocatable :: Phiall
-    real(wp), dimension(:), allocatable :: parmflat
-    integer :: lx1,lx2,lx3
-    integer :: lx1in,lx2in,lx3in
-    real(wp), dimension(:), allocatable :: x1in,x2in,x3in
-    real(wp) :: glatctr=0._wp, glonctr=0._wp
-    integer :: isp
-  
-    ! convenience
-    lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
-  
-    ! read in the ICs size and allocate data
-    call get_simsize3(out_dir,lx1in,lx2in,lx3in)
-    allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
-    allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
-    allocate(parmflat(lx1*lx2*lx3))
-  
-    ! get the input grid coordinates
-    select case (suffix(indatsize))
-      case ('.h5')
-        call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
-      case default
-        error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
-    end select
-  
-    ! we must make sure that the target coordinates do not range outside the input file coordinates
-    if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
-      error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
-    end if
-    if(x2(1)<x2in(1) .or. x2(lx2)>x2in(lx2in)) then
-      error stop 'interp_file2grid: x2 target coordinates beyond input grid coords'
-    end if
-    if(x3(1)<x3in(1) .or. x3(lx3)>x3in(lx3in)) then
-      error stop 'interp_file2grid: x3 target coordinates beyond input grid coords'
-    end if
-  
-    ! read in the input initial conditions, only hdf5 files are support for this functionality
-    select case (suffix(indatsize))
-      case ('.h5')
-        call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-      case default
-        error stop 'Input interpolation only supported for hdf5 files'
-    end select
-  
-    ! interpolation input data to mesh sites; do not interpolate to ghost cells
-    do isp=1,lsp
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
-      ns(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),vs1all(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
-      vs1(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
-      Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-    end do
-    parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
-                       x1(1:lx1),x2(1:lx2),x3(1:lx3))
-    Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
-  
-    deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
-  end procedure interp_file2subgrid
   
   
   module procedure input_plasma_currents

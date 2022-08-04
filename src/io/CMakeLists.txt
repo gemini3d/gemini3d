@@ -29,7 +29,14 @@ milestone.f90
 )
 
 target_link_libraries(io PRIVATE
-calculus gemini3d_config const interp reader grid mpimod sanity_check timeutils
+calculus gemini3d_config const reader grid mpimod sanity_check timeutils
+h5fortran::h5fortran
+ffilesystem::filesystem
+)
+
+# --- io_nompi
+add_library(io_nompi OBJECT io_nompi.f90)
+target_link_libraries(io_nompi PRIVATE grid interp const timeutils reader 
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
