@@ -212,7 +212,7 @@ contains
 
 
   !> C wrapper for procedure to get the center location of the grid from its input file
-  subroutine read_fullsize_gridcenter_C(cfgC) bind(C,name='set_fullsize_gridcenter_C')
+  subroutine read_fullsize_gridcenter_C(cfgC) bind(C,name='read_fullsize_gridcenter_C')
     type(c_ptr), intent(in) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
@@ -698,7 +698,7 @@ contains
 
 
   !> interface for computing cfl number
-  subroutine maxcfl_C(fluidvarsC,xC,xtype,dt,maxcfl) bind(C, name="maxcfl_C")
+  subroutine maxcfl_C(fluidvarsC,xtype,xC,dt,maxcfl) bind(C, name="maxcfl_C")
     type(c_ptr), intent(inout) :: fluidvarsC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
