@@ -72,7 +72,7 @@ extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**,
 extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
                                       double*, double*, int*, double*, double*, double*, bool*, double*, double*);
 extern void check_dryrun_C(void**);
-extern void maxcfl_C(void**, void**, int*, double*);
+extern void maxcfl_C(double**, int*, void**, double*, double*);
 extern void dateinc_C(double*, int*, double*);
 extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
 extern void plasma_output_nompi_C(void**, int*, double*, double**, double**);
