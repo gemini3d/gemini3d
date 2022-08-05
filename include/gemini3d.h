@@ -1,6 +1,9 @@
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
+// needed when compiling C files???
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
