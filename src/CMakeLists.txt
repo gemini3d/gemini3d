@@ -78,7 +78,7 @@ multifluid
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
 exe_frontend
-grid
+grid io
 mpimod
 autogrid
 )
