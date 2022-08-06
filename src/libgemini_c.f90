@@ -32,7 +32,8 @@ use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
-            set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            set_start_values_timevars, set_start_values_auxvars, &
+            init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
@@ -319,14 +320,12 @@ contains
 
 
   !> set start values for some variables.
-  !    some case is required here because the state variable pointers are mapped;
+  !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays
   !    are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill
   !    computational cells (not ghost)
-  subroutine set_start_values_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC) bind(C, name='set_start_values_C')
-    integer(C_INT), intent(inout) :: it
-    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+  subroutine set_start_values_auxvars_C(xtype,xC,fluidauxvarsC) bind(C, name='set_start_values_auxvars_C')
     type(c_ptr), intent(inout) :: xC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     integer(C_INT), intent(in) :: xtype
@@ -335,8 +334,22 @@ contains
 
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
-  end subroutine set_start_values_C
+    call set_start_values_auxvars(x,fluidauxvars)
+  end subroutine set_start_values_auxvars_C
+
+
+  subroutine set_start_values_timevars_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC)  &
+                        bind(C, name='set_start_values_timevars_C')
+    integer(C_INT), intent(inout) :: it
+    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+    type(c_ptr), intent(inout) :: xC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    integer(C_INT), intent(in) :: xtype
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+
+    call set_start_values_timevars(it,t,tout,tglowout,tneuBG)
+  end subroutine set_start_values_timevars_C
 
 
   !> Wrapper for initialization of electron precipitation data
