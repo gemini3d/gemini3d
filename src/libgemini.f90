@@ -47,7 +47,8 @@ use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 implicit none (type, external)
 private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
-            set_start_values, init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            set_start_values_timevars, set_start_values_auxvars, init_neutralBG_in, &
+            set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
@@ -509,13 +510,20 @@ contains
   end subroutine grid_from_extents_in
 
 
+  subroutine set_start_values_timevars(it,t,tout,tglowout,tneuBG)
+    integer, intent(inout) :: it
+    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+
+    !> Initialize some variables need for time stepping and output
+    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
+  end subroutine set_start_values_timevars
+
+
   !> set start values for some variables not specified by the input files.  
   !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
-  subroutine set_start_values(it,t,tout,tglowout,tneuBG,x,fluidauxvars)
-    integer, intent(inout) :: it
-    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+  subroutine set_start_values_auxvars(x,fluidauxvars)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
@@ -523,9 +531,6 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-
-    !> Initialize some variables need for time stepping and output
-    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
 
     !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
     !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -543,7 +548,7 @@ contains
     B1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max) = x%Bmag(1:lx1,1:lx2,1:lx3)
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
-  end subroutine set_start_values
+  end subroutine set_start_values_auxvars
 
 
   !> Wrapper for initialization of electron precipitation data

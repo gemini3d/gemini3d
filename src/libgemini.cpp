@@ -83,7 +83,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* initialize state variables from input file */
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
-  set_start_values_C(&it,&t,&tout,&tglowout,&tneuBG,&xtype,&xC,&fluidauxvars);
+  set_start_values_timevars_C(&it,&t,&tout,&tglowout,&tneuBG);
+  set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
   init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
