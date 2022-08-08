@@ -39,12 +39,12 @@ add_library(gemini3d libgemini.f90 gemini_init.f90
 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 )
 target_include_directories(gemini3d PUBLIC
-$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include;${MPI_Fortran_INCLUDE_DIRS}>"
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
-MPI::MPI_Fortran
+${MPI_Fortran_LIBRARIES}
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>

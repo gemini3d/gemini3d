@@ -16,6 +16,10 @@ h5fortran::h5fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 ffilesystem::filesystem
 )
+if(mpi AND NOT "${HDF5_HAVE_PARALLEL}")
+  # avoid double-linking out of order, link failure
+  target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
+endif()
 
 # --- gemini3d.run Fortran front end
 
