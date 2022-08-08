@@ -4,7 +4,7 @@
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 
 # --- IMPORTANT
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-Werror=array-bounds;-fcheck=all>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
 # --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
 
@@ -19,7 +19,7 @@ endif(dev)
 add_compile_options($<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-fno-backtrace>)
 
 # Wdo-subscript is known to warn on obvious non-problems
-check_compiler_flag(Fortran -Wdo-subscript dosubflag)
+check_fortran_compiler_flag(-Wdo-subscript dosubflag)
 if(dosubflag)
   add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-do-subscript>)
 endif()
@@ -31,7 +31,7 @@ endif()
 # lot of spurious warnings on allocatable scalar character
 add_compile_options($<$<Fortran_COMPILER_VERSION:9.3.0>:-Wno-maybe-uninitialized>)
 
-check_compiler_flag(Fortran -fallow-argument-mismatch allow_mismatch_args)
+check_fortran_compiler_flag(-fallow-argument-mismatch allow_mismatch_args)
 if(allow_mismatch_args)
   set(gfortran_opts $<$<COMPILE_LANGUAGE:Fortran>:-fallow-argument-mismatch>)
 endif()
