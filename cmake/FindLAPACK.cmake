@@ -236,7 +236,9 @@ function(find_mkl_libs)
 # https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
 set(_mkl_libs ${ARGV})
-if((UNIX AND NOT APPLE) AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
+  CMAKE_Fortran_COMPILER_ID STREQUAL "GNU"
+)
   list(PREPEND _mkl_libs mkl_gf_${_mkl_bitflag}lp64)
 else()
   if(WIN32 AND BUILD_SHARED_LIBS)
@@ -303,12 +305,6 @@ if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-
-  if(BUILD_SHARED_LIBS)
-    set(_mkltype dynamic)
-  else()
-    set(_mkltype static)
-  endif()
 
   if(MKL64 IN_LIST LAPACK_FIND_COMPONENTS)
     set(_mkl_bitflag i)
@@ -397,21 +393,29 @@ set(CMAKE_REQUIRED_LINK_OPTIONS)
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
 
-foreach(i s d)
-  check_source_compiles(Fortran
-  "program check_lapack
-  implicit none (type, external)
-  external :: ${i}isnan
-  end program" LAPACK_${i}_links)
+check_source_compiles(Fortran
+"program check_lapack
+use, intrinsic :: iso_fortran_env, only : real32
+implicit none (type, external)
+real(real32), external :: snrm2
+print *, snrm2(1, [0._real32], 1)
+end program"
+LAPACK_s_FOUND
+)
 
-  if(LAPACK_${i}_links)
-    set(LAPACK_${i}_FOUND true PARENT_SCOPE)
-    set(LAPACK_links true)
-  endif()
+check_source_compiles(Fortran
+"program check_lapack
+use, intrinsic :: iso_fortran_env, only : real64
+implicit none (type, external)
+real(real64), external :: dnrm2
+print *, dnrm2(1, [0._real64], 1)
+end program"
+LAPACK_d_FOUND
+)
 
-endforeach()
-
-set(LAPACK_links ${LAPACK_links} PARENT_SCOPE)
+if(LAPACK_s_FOUND OR LAPACK_d_FOUND)
+  set(LAPACK_links true PARENT_SCOPE)
+endif()
 
 endfunction(lapack_check)
 
@@ -443,17 +447,13 @@ if(LAPACK_FOUND)
 # need if _FOUND guard as can't overwrite imported target even if bad
   if(NOT TARGET BLAS::BLAS)
     add_library(BLAS::BLAS INTERFACE IMPORTED)
-    set_target_properties(BLAS::BLAS PROPERTIES
-    INTERFACE_LINK_LIBRARIES "${BLAS_LIBRARY}"
-    )
+    set_property(TARGET BLAS::BLAS PROPERTY INTERFACE_LINK_LIBRARIES "${BLAS_LIBRARY}")
   endif()
 
   if(NOT TARGET LAPACK::LAPACK)
     add_library(LAPACK::LAPACK INTERFACE IMPORTED)
-    set_target_properties(LAPACK::LAPACK PROPERTIES
-    INTERFACE_LINK_LIBRARIES "${LAPACK_LIBRARY}"
-    INTERFACE_INCLUDE_DIRECTORIES "${LAPACK_INCLUDE_DIR}"
-    )
+    set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK_LIBRARY}")
+    set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK_INCLUDE_DIR}")
   endif()
 
   if(LAPACK_LAPACK95_FOUND)
@@ -462,10 +462,8 @@ if(LAPACK_FOUND)
 
     if(NOT TARGET LAPACK::LAPACK95)
       add_library(LAPACK::LAPACK95 INTERFACE IMPORTED)
-      set_target_properties(LAPACK::LAPACK95 PROPERTIES
-      INTERFACE_LINK_LIBRARIES "${LAPACK95_LIBRARY}"
-      INTERFACE_INCLUDE_DIRECTORIES "${LAPACK95_INCLUDE_DIR}"
-      )
+      set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK95_LIBRARY}")
+      set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK95_INCLUDE_DIR}")
     endif()
   endif()
 endif()
