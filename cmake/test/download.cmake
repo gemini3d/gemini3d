@@ -22,6 +22,7 @@ function(gemini_download_ref_data name refroot arc_json_file)
 
 # --- download reference data JSON file (for previously generated data)
 if(NOT EXISTS ${arc_json_file})
+
   file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries.json _libj)
 
   string(JSON url GET ${_libj} ref_data url)
