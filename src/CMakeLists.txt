@@ -45,7 +45,6 @@ $<INSTALL_INTERFACE:include>
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
 ${MPI_Fortran_LIBRARIES}
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 msis::msis_ifc
@@ -122,7 +121,6 @@ gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>

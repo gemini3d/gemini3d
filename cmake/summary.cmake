@@ -57,7 +57,6 @@ PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
 # --- options
 
 add_feature_info(DevMode dev "Gemini developer mode")
-add_feature_info(MPI mpi "GEMINI MPI-2 standard parallelization")
 
 add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HWM14 hwm14 "HWM14 neutral winds model")

@@ -22,8 +22,6 @@ option(dev "Gemini developer mode")
 
 option(cpp "also build Gemini3D C++ frontend prototype" on)
 
-option(mpi "Use MPI parallelization" on)
-
 option(glow "use NCAR GLOW airglow / aurora model" on)
 
 option(hwm14 "use HWM14 neutral winds model")

@@ -13,10 +13,9 @@ $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io> $<TARGET_OBJECTS:interp>
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
 sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 ffilesystem::filesystem
 )
-if(mpi AND NOT "${HDF5_HAVE_PARALLEL}")
+if(NOT "${HDF5_HAVE_PARALLEL}")
   # avoid double-linking out of order, link failure
   target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
 endif()

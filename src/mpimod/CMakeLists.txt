@@ -15,6 +15,5 @@ mpisend.f90 mpirecv.f90 mpihalo.f90
 )
 target_link_libraries(mpimod PRIVATE const
 MPI::MPI_Fortran
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
 # MPI-1 Fortran 77 linking in MUMPS--easy way to avoid symbol clashes

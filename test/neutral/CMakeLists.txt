@@ -24,13 +24,9 @@ else()
   set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 
-set(_cmd $<TARGET_FILE:test_proj>)
-if(mpi)
-  list(PREPEND _cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2)
-endif()
 
 add_test(NAME Projection
-COMMAND ${_cmd}
+COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_proj>
 )
 set_tests_properties(Projection PROPERTIES
 TIMEOUT 90

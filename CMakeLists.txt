@@ -58,11 +58,7 @@ if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "GN
   set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
 endif()
 
-if(mpi)
-  find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
-else()
-  find_package(mpi_scalapack_stub CONFIG REQUIRED)
-endif()
+find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 
 find_package(h5fortran CONFIG REQUIRED)
 
@@ -70,11 +66,8 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
-if(mpi)
-  find_package(MUMPS REQUIRED COMPONENTS d)
-else()
-  find_package(MUMPS REQUIRED COMPONENTS d mpiseq)
-endif()
+
+find_package(MUMPS REQUIRED COMPONENTS d)
 
 # --- climate models
 if(glow)

@@ -29,11 +29,7 @@ if(name MATCHES "_cpp$")
 else()
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini.bin>)
 endif()
-if(mpi)
-  list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
-else()
-  list(APPEND test_cmd -n 1)
-endif()
+list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
 
 add_test(NAME gemini:${name}:dryrun
 COMMAND ${test_cmd} -dryrun
