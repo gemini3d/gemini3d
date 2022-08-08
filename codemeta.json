@@ -8,7 +8,6 @@
     "downloadUrl": "https://github.com/gemini3d/gemini/releases",
     "issueTracker": "https://github.com/gemini3d/gemini/issues",
     "name": "Gemini3D",
-    "version": "1.6.1",
     "identifier": "10.5281/zenodo.3813224",
     "description": "Ionospheric fluid electrodynamic model",
     "applicationCategory": "Simulation",

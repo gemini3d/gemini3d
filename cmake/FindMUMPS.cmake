@@ -32,7 +32,7 @@ MUMPS_HAVE_Scotch
 set(MUMPS_LIBRARY)  # don't endlessly append
 set(CMAKE_REQUIRED_FLAGS)
 
-include(CheckSourceCompiles)
+include(CheckFortranSourceCompiles)
 
 # --- functions
 
@@ -48,7 +48,7 @@ if(OpenMP_FOUND)
   list(APPEND CMAKE_REQUIRED_LIBRARIES ${OpenMP_Fortran_LIBRARIES} ${OpenMP_C_LIBRARIES})
 endif()
 
-check_source_compiles(Fortran
+check_fortran_source_compiles(
 "program test_omp
 implicit none (type, external)
 external :: mumps_ana_omp_return, MUMPS_ICOPY_32TO64_64C
@@ -56,6 +56,7 @@ call mumps_ana_omp_return()
 call MUMPS_ICOPY_32TO64_64C()
 end program"
 MUMPS_HAVE_OPENMP
+SRC_EXT f90
 )
 
 endfunction(mumps_openmp_check)
@@ -77,13 +78,14 @@ endif()
 list(APPEND CMAKE_REQUIRED_INCLUDES ${Scotch_INCLUDE_DIRS} ${METIS_INCLUDE_DIRS})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${Scotch_LIBRARIES} ${METIS_LIBRARIES})
 
-check_source_compiles(Fortran
+check_fortran_source_compiles(
 "program test_scotch
 implicit none (type, external)
 external :: mumps_scotch
 call mumps_scotch()
 end program"
 MUMPS_HAVE_Scotch
+SRC_EXT f90
 )
 
 endfunction(mumps_scotch_check)
@@ -119,7 +121,7 @@ foreach(c IN LISTS MUMPS_FIND_COMPONENTS)
     continue()
   endif()
 
-  check_source_compiles(Fortran
+  check_fortran_source_compiles(
   "program test_mumps
   implicit none (type, external)
   include '${c}mumps_struc.h'
@@ -127,6 +129,7 @@ foreach(c IN LISTS MUMPS_FIND_COMPONENTS)
   type(${c}mumps_struc) :: mumps_par
   end program"
   MUMPS_${c}_links
+  SRC_EXT f90
   )
 
   if(NOT MUMPS_${c}_links)
@@ -292,7 +295,6 @@ find_package_handle_standard_args(MUMPS
 REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR MUMPS_links
 VERSION_VAR MUMPS_VERSION
 HANDLE_COMPONENTS
-HANDLE_VERSION_RANGE
 )
 
 if(MUMPS_FOUND)

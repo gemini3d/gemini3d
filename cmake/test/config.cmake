@@ -20,6 +20,7 @@ FIXTURES_SETUP ${name}:download_fxt
 RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
 TIMEOUT 180
+DISABLED $<VERSION_LESS:${CMAKE_VERSION},3.19>
 )
 
 # construct command
