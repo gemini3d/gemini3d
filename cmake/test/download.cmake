@@ -52,7 +52,7 @@ string(JSON url GET ${_refj} tests ${url_name} url)
 string(JSON archive_name GET ${_refj} tests ${url_name} archive)
 string(JSON hash GET ${_refj} tests ${url_name} sha256)
 
-cmake_path(SET archive ${refroot}/${archive_name})
+set(archive ${refroot}/${archive_name})
 
 # check if extracted data exists and is up to date
 if(EXISTS ${ref_dir}/sha256sum.txt)
@@ -89,7 +89,7 @@ endfunction(gemini_download_ref_data)
 
 # scripted part, needs to be in this order
 
-cmake_path(SET ref_dir ${refroot}/${name})
+set(ref_dir ${refroot}/${name})
 
 gemini_download_ref_data(${name} ${refroot} ${arc_json_file})
 

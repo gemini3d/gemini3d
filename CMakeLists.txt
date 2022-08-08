@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20...3.25)
+cmake_minimum_required(VERSION 3.19...3.25)
 # CMake presets require >= 3.21
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/codemeta.json _j)
@@ -83,7 +83,11 @@ find_package(msis CONFIG REQUIRED)
 # WORKAROUND: MSIS shared Rpath fail
 # Rpath is defined in MSIS, but ld fails to use it
 get_target_property(msis_loc msis::msis_ifc LOCATION)
-cmake_path(GET msis_loc PARENT_PATH msis_dir)
+if(CMAKE_VERSION VERSION_LESS 3.20)
+  get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
+else()
+  cmake_path(GET msis_loc PARENT_PATH msis_dir)
+endif()
 # END WORKAROUND
 
 

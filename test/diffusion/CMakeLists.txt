@@ -1,6 +1,6 @@
 set_property(DIRECTORY PROPERTY LABELS diffusion)
 
-cmake_path(SET _tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
+set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
 add_executable(test_diffusion1d test_diffusion1D.f90)
 # lapack needed for MacOS

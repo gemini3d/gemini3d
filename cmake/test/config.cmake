@@ -1,10 +1,10 @@
 function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
-cmake_path(SET out_dir ${PROJECT_BINARY_DIR}/${name})
-cmake_path(SET ref_root ${PROJECT_SOURCE_DIR}/test_data/compare)
-cmake_path(SET ref_dir ${ref_root}/${name})
-cmake_path(SET arc_json_file ${PROJECT_BINARY_DIR}/ref_data.json)
+set(out_dir ${PROJECT_BINARY_DIR}/${name})
+set(ref_root ${PROJECT_SOURCE_DIR}/test_data/compare)
+set(ref_dir ${ref_root}/${name})
+set(arc_json_file ${PROJECT_BINARY_DIR}/ref_data.json)
 
 add_test(NAME ${name}:download
 COMMAND ${CMAKE_COMMAND}
@@ -67,7 +67,7 @@ endfunction(setup_gemini_test)
 
 function(setup_magcalc_test name)
 
-cmake_path(SET out_dir ${PROJECT_BINARY_DIR}/${name})
+set(out_dir ${PROJECT_BINARY_DIR}/${name})
 
 add_test(NAME magcalc:${name}:setup
 COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
