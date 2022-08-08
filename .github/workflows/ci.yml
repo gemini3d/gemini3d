@@ -34,7 +34,7 @@ jobs:
         # TODO: temp workaround for fclaw_prep3
         img: [{os: ubuntu-latest, cc: gcc-8, cxx: g++-8, fc: gfortran-8},
               {os: ubuntu-latest, cc: gcc, cxx: g++, fc: gfortran},
-              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-11}]
+              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran}]
 
     env:
       CC: ${{ matrix.img.cc }}
@@ -71,6 +71,7 @@ jobs:
       run: |
         $(cmake -P gemext/scripts/requirements.cmake)
         brew install ninja scalapack
+        brew reinstall gcc
 
     - name: Install model libraries
       timeout-minutes: 15
