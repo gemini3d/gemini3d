@@ -221,12 +221,12 @@ contains
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
     !! this read must be done repeatedly through simulation so have only root do file io
-    print*, '  date and time:  ',ymdtmp,UTsectmp
-    print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+    !print*, '  date and time:  ',ymdtmp,UTsectmp
+    !print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     ! read in the data for the "next" frame from file
     call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
 
-    print*, ' precip data succesfully input...'
+    !print*, ' precip data succesfully input...'
   end subroutine load_data_precip
 
 
