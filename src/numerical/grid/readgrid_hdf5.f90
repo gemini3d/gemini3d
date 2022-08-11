@@ -9,7 +9,6 @@ contains
 
 
 module procedure get_grid3_coords_hdf5
-
   type(hdf5_file) :: hf
   character(:), allocatable :: fn
 
@@ -36,7 +35,6 @@ module procedure get_grid3_coords_hdf5
   call hf%read('/glatctr',glatctr)
 
   call hf%close()
-
 end procedure get_grid3_coords_hdf5
 
 
