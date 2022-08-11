@@ -79,13 +79,13 @@ contains
 
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
   !    generation of Cartesian meshes and put in in a module-scope variable.
-  subroutine read_size_gridcenter(indatsize,outdir)
-    character(*), intent(in) :: indatsize,outdir
+  subroutine read_size_gridcenter(indatsize,indatgrid)
+    character(*), intent(in) :: indatsize,indatgrid
     real(wp), dimension(:), allocatable :: x1,x2all,x3all
 
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
-    allocate(x1(-1:lx2all+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
-    call get_grid3_coords(outdir,x1,x2all,x3all,glonctr,glatctr)
+    allocate(x1(-1:lx1+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+    call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
     !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
     call set_fullgrid_lims(x1,x2all,x3all)
@@ -290,7 +290,7 @@ contains
       case ('.h5')
         call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
       case default
-        error stop 'grid:read:get_grid3: unknown grid format: ' // fmt
+        error stop 'grid:get_grid3_coords: unknown grid format: ' // fmt
     end select
 
     if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'

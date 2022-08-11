@@ -490,7 +490,7 @@ contains
   subroutine read_fullsize_gridcenter_in(cfg)
     type(gemini_cfg), intent(in) :: cfg
 
-    call read_size_gridcenter(cfg%indatsize,cfg%outdir)
+    call read_size_gridcenter(cfg%indatsize,cfg%indatgrid)
   end subroutine read_fullsize_gridcenter_in
 
 
