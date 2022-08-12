@@ -32,7 +32,7 @@ use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
-            set_start_values_timevars, set_start_values_auxvars, &
+            set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
             init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
@@ -338,8 +338,9 @@ contains
   end subroutine set_start_values_auxvars_C
 
 
-  subroutine set_start_values_timevars_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC)  &
-                        bind(C, name='set_start_values_timevars_C')
+  !> initialize some auxiliary time variables used internally in gemini
+  subroutine set_start_values_auxtimevars_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC)  &
+                        bind(C, name='set_start_values_auxtimevars_C')
     integer(C_INT), intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
     type(c_ptr), intent(inout) :: xC
@@ -348,8 +349,21 @@ contains
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
 
-    call set_start_values_timevars(it,t,tout,tglowout,tneuBG)
-  end subroutine set_start_values_timevars_C
+    call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
+  end subroutine set_start_values_auxtimevars_C
+
+
+  !> Assign start time variables based on information in the cfg structure
+  subroutine set_start_timefromcfg_C(cfgC,ymd,UTsec,tdur) bind(C, name="set_start_timefromcfg_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), dimension(3), intent(inout) :: ymd
+    real(wp), intent(inout) :: UTsec
+    real(wp), intent(inout) :: tdur
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call set_start_timefromcfg(cfg,ymd,UTsec,tdur)
+  end subroutine set_start_timefromcfg_C
 
 
   !> Wrapper for initialization of electron precipitation data

@@ -25,7 +25,7 @@ use gemini3d_config, only: gemini_cfg
 
 !> main gemini libraries
 use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
-                      set_start_values_timevars, set_start_values_auxvars, init_neutralBG_in, &
+                      set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_in, &
                       set_update_cadence, neutral_atmos_winds, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, sweep3_allparams_in, &
                       sweep1_allparams_in, sweep2_allparams_in, &
@@ -175,7 +175,7 @@ contains
     call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
 
     !> initialize time stepping and some aux variables
-    call set_start_values_timevars(it,t,tout,tglowout,tneuBG)
+    call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
     call set_start_values_auxvars(x,fluidauxvars)
 
     !> Electric field input setup

@@ -22,7 +22,8 @@ use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
-use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work, v2grid, v3grid, setv2v3
+use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
+                      v2grid, v3grid, setv2v3, set_start_timefromcfg
 
 implicit none (type, external)
 private
@@ -84,7 +85,7 @@ contains
   end subroutine calc_subgrid_size_in
 
 
-  !> load initial conditions
+  !> load initial conditions and check if this is a restart run; set time variables accordingly
   subroutine get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
     type(gemini_cfg), intent(inout) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
@@ -127,9 +128,10 @@ contains
       cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)
     else !! start at the beginning
-      UTsec = cfg%UTsec0
-      ymd = cfg%ymd0
-      tdur = cfg%tdur
+      ! UTsec = cfg%UTsec0
+      ! ymd = cfg%ymd0
+      ! tdur = cfg%tdur
+      call set_start_timefromcfg(cfg,ymd,UTsec,tdur)
 
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
       print*, 'Starting from beginning of simulation...'

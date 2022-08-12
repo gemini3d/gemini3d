@@ -47,7 +47,7 @@ use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 implicit none (type, external)
 private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
-            set_start_values_timevars, set_start_values_auxvars, init_neutralBG_in, &
+            set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_in, &
             set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
             sweep1_allparams_in, sweep2_allparams_in, &
@@ -510,13 +510,27 @@ contains
   end subroutine grid_from_extents_in
 
 
-  subroutine set_start_values_timevars(it,t,tout,tglowout,tneuBG)
+  !> assign initial values on some auxiliary time variables.  
+  subroutine set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
 
     !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
-  end subroutine set_start_values_timevars
+  end subroutine set_start_values_auxtimevars
+
+
+  !> Force time values to a specific date/time and set duration based on cfg argument fields
+  subroutine set_start_timefromcfg(cfg,ymd,UTsec,tdur)
+    type(gemini_cfg), intent(in) :: cfg
+    integer, dimension(3), intent(inout) :: ymd
+    real(wp), intent(inout) :: UTsec
+    real(wp), intent(inout) :: tdur
+
+    UTsec = cfg%UTsec0
+    ymd = cfg%ymd0
+    tdur = cfg%tdur
+  end subroutine set_start_timefromcfg
 
 
   !> set start values for some variables not specified by the input files.  
