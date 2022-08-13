@@ -254,6 +254,9 @@ contains
     real(wp), intent(in) :: glonctr,glatctr
     class(curvmesh), intent(inout) :: x
 
+    lx1=size(x1)-4
+    lx2=size(x2)-4
+    lx3=size(x3)-4
     call x%set_center(glonctr,glatctr)         ! set center location for grid (in case used, e.g. for Cartesian)
     call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
     call x%init()                              ! allocate space for subgrid variables
