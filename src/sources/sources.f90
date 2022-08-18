@@ -429,7 +429,7 @@ end do
 end subroutine srcsMomentum_curv
 
 
-subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)
 
 !------------------------------------------------------------
 !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
@@ -439,6 +439,9 @@ subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3
+class(curvmesh), intent(in) :: x !Added for FBI, need BMAG
+
 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Pr,Lo
 !! intent(out)
@@ -446,6 +449,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact,iePT,ieLT,f,g    !work arrays
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: iePTFBI,ieLTFBI    !FBI array
 real(wp) :: sfact
 
 lx1=size(Ts,1)-4
@@ -523,6 +527,10 @@ iePT=iePT-max(fact,0._wp);
 
 !! This would be the place to include FBI heating probably just add to iePT
 ! iePT=iePT+FBIheating()
+call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,IeLTFBI)
+iePT=iePT+iePTFBI
+ieLT=ieLT*ieLTFBI 
+!now, here is have questions, since I do not how really what this terms does (loss factor), where to apply it, or if this is the right place
 
 
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
@@ -532,8 +540,136 @@ Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 end subroutine srcsEnergy
 
 
-! function FBIheating()...
 
+
+subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,ieLTFBI)
+
+!! Inputs Needed
+real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
+class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
+
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: iePTFBI,ieLTFBI ! Two terms, one is heating and the other one is a factor for cooling. 
+
+!!Internal Arrays
+integer :: isp,isp2
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omega, ki, ke, phi
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
+
+!I have a lot of internal variables, some might be redundant
+!nsuAvg= Collision frequencies for each species averaged over all neutrals
+!nuAvg= Collision frequencies for ions (:,:,:,1) averaged over al species and electrons (:,:,:,2)
+!msAvg= Average ion mass (:,:,:,1), wieghted by the density at each pixel. Electron mass is also included (:,:,:,2). No Ghost cells
+!TsAvg= Average ion temperature (:,:,:,1), wieghted by the density at each pixel. Electron temperature is also included (:,:,:,2) No Ghost cells
+!Bmagnitude= Magnitude of the magnetic field WITHOUT ghost cells
+!nu= Output of maxwell_coll, used inside a loop
+!nsAvg= Average density of each pixel, currently it assumes qneutrality, could be wrong. 
+!omega= Plasma parameter omega, calculated for ki
+!ki and ke=Omega diveded by collision frequency, used in FBI heating equation
+!phi= Inverse of the product between ki and ke, used in FBI heating equation
+!Ethresholdnum= Numeretor of the Ethreshold equation, done this way to avoid mistakes
+!Ethresholden= Denominator of the Ethreshold equation, done this way to avoid mistakes
+!Ethreshold= Threshold at which FBI should appear (this might be a redundant thing, could eliminate the two from above if works correctly)
+!Emagnitude= Magnitude of the electric field WITHOUT ghost cells
+!heatingfirst= First term of the FBI heating equation
+!heatingsecond= Second term of the FBI heating equation
+!heatingtotal= Multiplication of both terms from above, again can be made into just one variuable if this works.
+!Lossfactor= Factor used to reduce supertherman electron velocities, ergo reduced electron cooling rate.  
+
+
+Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
+!!Indices for stuff
+lx1=size(Ts,1)-4
+lx2=size(Ts,2)-4
+lx3=size(Ts,3)-4
+
+!!Initialize arrays a 0s and loss as 1s
+nuAvg=0.0
+nsuAvg=0.0
+msAvg=0.0
+nsAvg=0.0
+TsAvg=0.0
+iePTFBI=0.0
+ieLTFBI=0.0
+lossfactor=1.0
+
+!! Find average collision frequencies. Loop over all neutrals, store ion and electric collision frequencies. Use average?
+!! Just store all of them, decide later. 
+
+do isp=1,lsp
+  !ION-NEUTRAL
+  do isp2=1,ln
+    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)   
+    nsuAvg(:,:,:,isp)=nu(:,:,:)+nsuAvg(:,:,:,isp) !Store the collision frequencies in an array by just addind them
+  end do
+  nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/ln !! Average, could be this or weighted by the neutral density???
+end do
+
+!!Average over ions
+nuAvg(:,:,:,1)=sum(nsuAvg(:,:,:,1:lsp-1),dim=4)/(lsp-1) !!again, a better way would be to do a weighted average? 
+
+!!Electrons do not need averaging
+nuAvg(:,:,:,2)=nsuAvg(:,:,:,lst)
+
+!!Average mass, I will do the weighted average here to test. ms is defined at the top of sources.f90
+do isp=1,lsp-1
+  msAvg(:,:,:,1)=msAvg(:,:,:,1)+ms(isp)*ns(1:lx1:,1:lx2,1:lx3,isp) !! Add the product of mass times density of ions
+end do
+msAvg(:,:,:,1)=msAvg(:,:,:,1)/sum(ns(1:lx1:,1:lx2,1:lx3,1:lsp-1), dim=4) !! Divice by the total density at each pixel
+msAvg(:,:,:,2)=ms(lst) !! Electron mass
+
+!! Average density
+nsAvg=ns(:,:,:,lst) !! Assume qneutrality, could be wrong
+
+!! ki value
+omega=elchrg*Bmagnitude(:,:,:)/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
+ki=omega(:,:,:)/nuAvg(:,:,:,1) !! Could do ABS to be sure of the sign
+!! ke value
+omega=elchrg*Bmagnitude(:,:,:)/msAvg(:,:,:,2) 
+ke=omega(:,:,:)/nuAvg(:,:,:,2)
+
+!!Phi value 1/(ki*ke)
+phi=1/(ke(:,:,:)*ki(:,:,:))
+
+!!Average ion temperature??? Do I do this weighted but density too? So many questions
+do isp=1,lsp-1
+  TsAvg(:,:,:,1)=TsAvg(:,:,:,1)+Ts(1:lx1:,1:lx2,1:lx3,isp)*ns(1:lx1:,1:lx2,1:lx3,isp)
+end do
+TsAvg(:,:,:,1)=TsAvg(:,:,:,1)/sum(ns(1:lx1:,1:lx2,1:lx3,1:lsp-1), dim=4) 
+TsAvg(:,:,:,2)=Ts(1:lx1:,1:lx2,1:lx3,lsp)
+
+!!Ethreshold
+Ethresholdnum=(1+phi(:,:,:))*SQRT(kB*(1+ki(:,:,:)**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagitud(:,:,:))
+Ethresholdden=sqrt((1-ki(:,:,:)**2)*msAvg(:,:,:,1)) 
+
+Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
+
+!!First term of heating equation, have to check the Emagnitude part
+heatingfirst=(msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg(:,:,:,2)*(ki**2)*(Emagnitude(:,:,:)-Ethreshold(:,:,:))**2)/((1+ki**2)*Bmagnitude(:,:,:)**2)
+heatingsecond=(Emagnitude(:,:,:)*(1+phi(:,:,:))/Ethreshold(:,:,:)-1)
+
+!heating total as if FBI was everywhere
+heatingtotal=heatingfirst(:,:,:)*heatingsecond(:,:,:)
+
+!Loss factor a every pixel, as if FBI was everywhere
+lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
+
+where (Emagnitude<Ethreshold) !Enything without a sufficiente E field gets back to normal.
+  heatingtotal=0.0
+  lossfactor=1.0
+end where
+
+iePTFBI=heatingtotal
+ieLTFBI=lossfactor
+
+end subroutine FBIheating
 
 
 end module sources
