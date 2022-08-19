@@ -121,7 +121,6 @@ gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
@@ -211,7 +210,6 @@ gemini3d_c
 h5fortran::h5fortran
 MUMPS::MUMPS
 MPI::MPI_CXX
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
 iniparser::iniparser
 ffilesystem::filesystem

@@ -36,7 +36,6 @@ FIXTURES_SETUP scalapack_fxt
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps PRIVATE mumps_interface
 MUMPS::MUMPS
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 )
 # same link logic applied to gemini.bin
 

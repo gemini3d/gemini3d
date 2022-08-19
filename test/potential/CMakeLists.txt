@@ -6,9 +6,7 @@ set(_potential2d_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2d.f90 $<TARGET_OBJECTS:PDEelliptic>)
 set_target_properties(test_potential2d PROPERTIES LABELS "unit")
-target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-)
+target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS)
 
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
@@ -52,9 +50,7 @@ set(_potential3d_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential3d.h5)
 
 add_executable(test_potential3d test_potential3d.f90 $<TARGET_OBJECTS:PDEelliptic>)
 set_target_properties(test_potential3d PROPERTIES LABELS "unit")
-target_link_libraries(test_potential3d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-)
+target_link_libraries(test_potential3d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS)
 
 set(_cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential3d> ${_potential3d_testfile})
 
