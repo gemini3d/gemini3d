@@ -36,6 +36,7 @@ if(CRAY)
   endif()
 
   if(NOT EXISTS ${CMAKE_TOOLCHAIN_FILE})
-    message(FATAL_ERROR ${need_gemext})
+    message(FATAL_ERROR "Toolchain file ${CMAKE_TOOLCHAIN_FILE} not found.
+    ${need_gemext}")
   endif()
 endif()
