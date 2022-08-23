@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.17...3.25)
 # CMake presets require >= 3.21
+# full test capabilities required >= 3.22
 
 # --- CMAKE_BUILD_TYPE default
 # Normally we shouldn't set a default like this, but the simulations are 10x slower
@@ -9,6 +10,9 @@ get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
 endif()
+
+# --- auto toolchain for Cray
+include(cmake/toolchain.cmake)
 
 # --- main Gemini3D build
 
