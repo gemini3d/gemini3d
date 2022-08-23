@@ -15,12 +15,10 @@ COMMAND ${CMAKE_COMMAND}
   -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
-FIXTURES_REQUIRED internet_fxt
 FIXTURES_SETUP ${name}:download_fxt
 RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
 TIMEOUT 180
-DISABLED $<VERSION_LESS:${CMAKE_VERSION},3.19>
 )
 
 # construct command
@@ -93,9 +91,7 @@ dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 endfunction(setup_magcalc_test)
 
 
-add_test(NAME internetConnectivity
-COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
-set_tests_properties(internetConnectivity PROPERTIES
-TIMEOUT 10
-FIXTURES_SETUP internet_fxt
-)
+# add_test(NAME internetConnectivity
+# COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
+# set_property(TEST internetConnectivity PROPERTY TIMEOUT 10)
+# set_property(TEST internetConnectivity PROPERTY FIXTURES_SETUP internet_fxt)
