@@ -27,8 +27,6 @@ VERSION 1.6.1
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
-message(STATUS "Gemini3D: CMake ${CMAKE_VERSION}")
-
 if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
 endif()
@@ -88,11 +86,8 @@ find_package(msis CONFIG REQUIRED)
 # WORKAROUND: MSIS shared Rpath fail
 # Rpath is defined in MSIS, but ld fails to use it
 get_target_property(msis_loc msis::msis_ifc LOCATION)
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
-else()
-  cmake_path(GET msis_loc PARENT_PATH msis_dir)
-endif()
+get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
+
 # END WORKAROUND
 
 
