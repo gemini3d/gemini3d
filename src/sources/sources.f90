@@ -557,22 +557,24 @@ real(wp), dimension(:,:,:), intent(inout) :: iePTFBI,ieLTFBI ! Two terms, one is
 !!Internal Arrays
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omega, ki, ke, phi
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirsta,heatingfirstb,heatingfirstc,heatingfirstd !For debbuging something
-
 
 !I have a lot of internal variables, some might be redundant
 !nsuAvg= Collision frequencies for each species averaged over all neutrals
+!nuW+ MassDensity Weight for averaging
 !nuAvg= Collision frequencies for ions (:,:,:,1) averaged over al species and electrons (:,:,:,2)
 !msAvg= Average ion mass (:,:,:,1), wieghted by the density at each pixel. Electron mass is also included (:,:,:,2). No Ghost cells
 !TsAvg= Average ion temperature (:,:,:,1), wieghted by the density at each pixel. Electron temperature is also included (:,:,:,2) No Ghost cells
 !Bmagnitude= Magnitude of the magnetic field WITHOUT ghost cells
 !nu= Output of maxwell_coll, used inside a loop
 !nsAvg= Average density of each pixel, currently it assumes qneutrality, could be wrong. 
-!omega= Plasma parameter omega, calculated for ki
+!omegai= Plasma parameter omega for ions
+!omegai= Plasma parameter omega for electrons
 !ki and ke=Omega diveded by collision frequency, used in FBI heating equation
 !phi= Inverse of the product between ki and ke, used in FBI heating equation
 !Ethresholdnum= Numeretor of the Ethreshold equation, done this way to avoid mistakes
@@ -605,65 +607,74 @@ lossfactor=1.0
 !! Find average collision frequencies. Loop over all neutrals, store ion and electric collision frequencies. Use average?
 !! Just store all of them, decide later. 
 
-do isp=1,lsp
-  !ION-NEUTRAL
-  do isp2=1,ln
-    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)   
-    nsuAvg(:,:,:,isp)=nu(:,:,:)+nsuAvg(:,:,:,isp) !Store the collision frequencies in an array by just addind them
-  end do
-  nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/ln !! Average, could be this or weighted by the neutral density???
+!MassDensity Weight of Neutrals
+do isp2=1,ln
+    nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Wieght of the neutrals
 end do
 
-!!Average over ions
-nuAvg(:,:,:,1)=sum(nsuAvg(:,:,:,1:lsp-1),dim=4)/(lsp-1) !!again, a better way would be to do a weighted average? 
+!!MassDensity Weight of ions
+do isp=1,lsp-1
+  niW(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)
+end do
+
+!! Average Collusuons frequencies: loop for doing average of collisions frequencies, first averaging over neutrals
+do isp=1,lsp
+  do isp2=1,ln
+    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+    nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)+nu*nuW(:,:,:,isp2) !Store the collision frequencies weighted by massdensity
+  end do
+  nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
+end do
+
+!!Loop for average over ions
+do isp=1,lsp-1
+  nuAvg(:,:,:,1)=nuAvg(:,:,:,1)+nsuAvg(:,:,:,isp)*niW(:,:,:,isp) !! Store summation of collision frequencies weighted by MassDensity
+end do
+nuAvg(:,:,:,1)=nuAvg(:,:,:,1)/sum(niW,dim=4) !! Average over all ions weighted by MassDensity
 
 !!Electrons do not need averaging
 nuAvg(:,:,:,2)=nsuAvg(:,:,:,lsp)
 
-!!Average mass, I will do the weighted average here to test. ms is defined at the top of sources.f90
-do isp=1,lsp-1
-  msAvg(:,:,:,1)=msAvg(:,:,:,1)+ms(isp)*ns(1:lx1,1:lx2,1:lx3,isp) !! Add the product of mass times density of ions
+!! Average mass of ions, also weighted by MassDensity
+do isp=1:lsp-1
+  msAvg(:,:,:,1)=msAvg(:,:,:,1)+ms(isp)*niW(:,:,:,isp)
 end do
-msAvg(:,:,:,1)=msAvg(:,:,:,1)/sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1), dim=4) !! Divice by the total density at each pixel
+msAvg(:,:,:,1)=msAvg(:,:,:,1)/(lsp-1)/sum(niW,dim=4)
+
 msAvg(:,:,:,2)=ms(lsp) !! Electron mass
 
 !! Average density
 nsAvg=ns(:,:,:,lsp) !! Assume qneutrality, could be wrong
 
 !! ki value
-omega=elchrg*Bmagnitude(:,:,:)/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
-ki=omega(:,:,:)/nuAvg(:,:,:,1) !! Could do ABS to be sure of the sign
+omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
+ki=omegai/nuAvg(:,:,:,1) !! Could do ABS to be sure of the sign
 !! ke value
-omega=elchrg*Bmagnitude(:,:,:)/msAvg(:,:,:,2) 
-ke=omega(:,:,:)/nuAvg(:,:,:,2)
+omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
+ke=omegae/nuAvg(:,:,:,2)
 
 !!Phi value 1/(ki*ke)
-phi=1/(ke(:,:,:)*ki(:,:,:))
+phi=1/(ke*ki)
 
-!!Average ion temperature??? Do I do this weighted but density too? So many questions
+!!Average ion temperature
 do isp=1,lsp-1
-  TsAvg(:,:,:,1)=TsAvg(:,:,:,1)+Ts(1:lx1,1:lx2,1:lx3,isp)*ns(1:lx1,1:lx2,1:lx3,isp)
+  TsAvg(:,:,:,1)=TsAvg(:,:,:,1)+Ts(1:lx1,1:lx2,1:lx3,isp)*niW(:,:,:,isp)
 end do
-TsAvg(:,:,:,1)=TsAvg(:,:,:,1)/sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1), dim=4) 
+TsAvg(:,:,:,1)=TsAvg(:,:,:,1)/sum(niW,dim=4) 
 TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 
 !!Ethreshold
-Ethresholdnum=(1+phi(:,:,:))*SQRT(kB*(1+ki(:,:,:)**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagnitude(:,:,:))
-Ethresholdden=sqrt((1-ki(:,:,:)**2)*msAvg(:,:,:,1)) 
+Ethresholdnum=(1+phi)*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagnitude)
+Ethresholdden=sqrt((1-ki**2)*msAvg(:,:,:,1)) 
 
 Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
 
 !!First term of heating equation, have to check the Emagnitude part
-!heatingfirst=(msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg(:,:,:,2)*(ki**2)*(Emagnitude-Ethreshold)**2)!!/((1+ki**2)*Bmagnitude**2)
-heatingfirsta=msAvg(:,:,:,1)*nuAvg(:,:,:,1)
-heatingfirstb=nsAvg*(ki**2)
-heatingfirstc=(Emagnitude-Ethreshold)**2
-heatingfirstd=((1+ki**2)*Bmagnitude**2)
-heatingfirst=heatingfirsta*heatingfirstb*heatingfirstc*heatingfirstd
+heatingfirst=msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2/((1+ki**2)*Bmagnitude**2)
 heatingsecond=(Emagnitude*(1+phi)/Ethreshold-1)
 
 !heating total as if FBI was everywhere
-heatingtotal=heatingfirst(:,:,:)*heatingsecond(:,:,:)
+heatingtotal=heatingfirst*heatingsecond
 
 !Loss factor a every pixel, as if FBI was everywhere
 lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
