@@ -24,17 +24,18 @@ endif()
 
 string(JOIN " " gemini_features
 REALBITS:${realbits}
-$<$<BOOL:${mpi}>:MPI>
-$<$<BOOL:${glow}>:GLOW>
-$<$<BOOL:${msis2}>:MSIS2>
-$<$<BOOL:${hwm14}>:HWM14>
-$<$<BOOL:${scotch}>:SCOTCH>
-$<$<BOOL:${openmp}>:OPENMP>
+MPI
 )
-configure_file(exe_frontend.in.f90 exe_frontend.f90.in @ONLY)
-file(GENERATE OUTPUT exe_frontend.f90
-INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
-)
+if(glow)
+  string(APPEND gemini_features " GLOW")
+endif()
+if(msis2)
+  string(APPEND gemini_features " MSIS2")
+endif()
+if(hwm14)
+  string(APPEND gemini_features " HWM14")
+endif()
+configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)
 
 add_library(exe_frontend cpu_count.cpp ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
 target_compile_features(exe_frontend PRIVATE cxx_std_11)
