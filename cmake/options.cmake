@@ -46,8 +46,8 @@ if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
   file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
 endif()
 
-# --- default install directory under build/local
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  # will not take effect without FORCE
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH "Install top-level directory" FORCE)
+# ensure we have a directory for gemini3d/external that is reachable
+if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})
+  set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
 endif()
+get_filename_component(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ABSOLUTE)

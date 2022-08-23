@@ -54,7 +54,7 @@ Requirements:
   * GCC 8 and newer
   * Clang 7 and newer
   * Intel oneAPI
-  * Cray with GCC backend
+  * Cray with GCC or Intel oneAPI backend
 * Python and/or MATLAB for scripting front- and back-ends
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.

@@ -32,28 +32,32 @@ endif()
 include(cmake/package/git_rev.cmake)
 include(cmake/options.cmake)
 
-# Fortran filesystem library "ffilesystem"
-find_package(ffilesystem CONFIG)
-# this is the first package to find, so make a special error message for users
-if(NOT ffilesystem_FOUND OR ffilesystem_VERSION VERSION_LESS 3.3.0)
-  message(FATAL_ERROR "
-Gemini3D requires several external libraries that are one-time installed via this procedure. 'gemini_libs' directory is an arbitrary location.
+# check that gemini3d/external libraries are installed
+set(need_gemext "
+Gemini3D requires several external libraries that are one-time installed via this procedure.
+'~/libgem' directory is an arbitrary location.
 
   git clone https://github.com/gemini3d/external
-  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/gemini_libs
+  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
   cmake --build external/build
 
 Now, configure and build Gemini3D (from gemini3d/ directory) like this:
 
-  cmake -B build -DCMAKE_PREFIX_PATH=~/gemini_libs
+  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
   cmake --build build --parallel
 ")
+
+if(NOT IS_DIRECTORY ${CMAKE_PREFIX_PATH}/cmake)
+  message(FATAL_ERROR ${need_gemext})
 endif()
-if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
-  #target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
-  # function target_link_libraries() should work, but doesn't (CMake bug)
-  set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
+
+# Fortran filesystem library "ffilesystem"
+find_package(ffilesystem CONFIG)
+# this is the first package to find, so make a special error message for users
+if(NOT ffilesystem_FOUND)
+  message(FATAL_ERROR ${need_gemext})
 endif()
+
 
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 
