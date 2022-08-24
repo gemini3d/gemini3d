@@ -45,17 +45,21 @@ ffilesystem::filesystem
 )
 
 # --- gemini3d.run
-add_executable(gemini3d.run gemini3d_run.f90)
+add_executable(gemini3d.run gemini3d_run.f90
+$<TARGET_OBJECTS:exe_frontend>
+)
 target_link_libraries(gemini3d.run PRIVATE
-const gemini3d_config timeutils autogrid reader exe_frontend gemini3d_sysinfo
+const gemini3d_config timeutils autogrid reader gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
 
 # --- magcalc.run
-add_executable(magcalc.run magcalc_run.f90)
+add_executable(magcalc.run magcalc_run.f90
+$<TARGET_OBJECTS:exe_frontend>
+)
 target_link_libraries(magcalc.run PRIVATE
-autogrid reader gemini3d_config timeutils const exe_frontend gemini3d_sysinfo
+autogrid reader gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
