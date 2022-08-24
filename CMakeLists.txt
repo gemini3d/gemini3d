@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.17...3.25)
-# CMake presets require >= 3.21
-# full test capabilities required >= 3.22
+cmake_minimum_required(VERSION 3.15...3.25)
 
 # --- CMAKE_BUILD_TYPE default
 # Normally we shouldn't set a default like this, but the simulations are 10x slower

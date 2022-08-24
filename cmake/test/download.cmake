@@ -25,7 +25,7 @@ function(gemini_download_ref_data name refroot arc_json_file)
 # --- download reference data JSON file (for previously generated data)
 if(NOT EXISTS ${arc_json_file})
 
-  file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../libraries.json _libj)
+  file(READ ${CMAKE_CURRENT_LIST_DIR}/../libraries.json _libj)
 
   if(CMAKE_VERSION VERSION_LESS 3.19)
     sbeParseJson(meta _libj)
