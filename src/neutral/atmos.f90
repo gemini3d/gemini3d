@@ -12,7 +12,7 @@ contains
 !     arrays but does not directly assign them to any "output" variables as it used to - this avoids the need, strictly
 !     spreaking to have this procedure call another procedure that is dependend on mpi.  At the same time it does require
 !     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
-!     program for neutral parameters.  
+!     program for neutral parameters.
 module procedure neutral_atmos
   integer :: ix1,ix2,ix3,lx1,lx2,lx3
   integer :: doy
@@ -46,18 +46,17 @@ module procedure neutral_atmos
         end if
 
         if(msis_version == 0) then
+          !! MSISE00
           call msis_gtd7(doy=doy, UTsec=UTsecd, &
             alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             d=d, T=t, use_meters=.true.)
-        elseif(msis_version == 20) then
+        else
+          !! MSIS 2.x
           call msis_gtd8(doy=doy, UTsec=UTsecd, &
             alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             Dn=d, Tn=t)
-        else
-          write(stderr,*) 'ERROR:neutral_atmos: unknown msis version',msis_version,' expected 0 (MSISE00) or 20 (MSIS 2.0)'
-          error stop
         end if
 
         atmos%nnmsis(ix1,ix2,ix3,1)= d(2)

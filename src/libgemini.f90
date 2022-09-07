@@ -55,10 +55,6 @@ public :: c_params, cli_config_gridsize, gemini_alloc, gemini_dealloc, init_prec
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in
 
 
-!! temp file used by MSIS 2.0
-character(*), parameter :: msis2_param_file = "msis20.parm"
-
-
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
 !    doesn't conform to simple array shapes.
@@ -371,17 +367,17 @@ contains
   !    with each location of the mesh.  This will be obtained from the input cfg file in cases where we are
   !    generating a grid from extents.  Note that this is distinctly different from the situation where we
   !    are using read_grid() to input a grid from a file - in that case the parameters glonctr and glatctr
-  !    are expected to be kept within that file.  
+  !    are expected to be kept within that file.
   subroutine grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
     class(curvmesh), intent(inout) :: x
 
-    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
+    call grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
   end subroutine grid_from_extents_in
 
 
-  !> set start values for some variables not specified by the input files.  
+  !> set start values for some variables not specified by the input files.
   !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
@@ -437,12 +433,33 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     logical :: exists
 
-    if(cfg%msis_version == 20) then
+    character(len=11), parameter :: &
+     msis20_name = "msis20.parm", &
+     msis21_name = "msis21.parm"
+
+    character(len=11) :: msis2_param_file
+
+    select case (cfg%msis_version)
+    case(0)
+      !! MSISE00
+      return
+    case(20)
+      msis2_param_file = "msis20.parm"
+    case(21)
+      msis2_param_file = "msis21.parm"
+    case default
+      !! new or unknown version of MSIS, default MSIS 2.x parameter file
+      msis2_param_file = ""
+    end select
+
+    if(len_trim(msis2_param_file) > 0) then
       inquire(file=msis2_param_file, exist=exists)
       if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
         ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
         'This limitation comes from how MSIS 2.x is coded internally.'
       call msisinit(parmfile=msis2_param_file)
+    else
+      call msisinit()
     end if
   end subroutine msisinit_in
 

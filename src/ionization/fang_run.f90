@@ -26,10 +26,8 @@ Ap7 = Ap
 
 if(msis_version==0) then
   call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
-elseif(msis_version==20) then
-  error stop 'TODO: MSIS 2.0 for Fang unit tests'
 else
-  error stop 'expected msis_version == {0,20}'
+  error stop 'TODO: MSIS 2.x for Fang unit tests'
 endif
 
 massden_gcm3 = d(6)  ! [g cm^-3]
@@ -53,10 +51,8 @@ Ap7 = Ap
 
 if(msis_version==0) then
   call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
-elseif(msis_version==20) then
-  error stop 'TODO: MSIS 2.0 for Fang unit tests'
 else
-  error stop 'expected msis_version == {0,20}'
+  error stop 'TODO: MSIS 2.x for Fang unit tests'
 endif
 
 massden_gcm3 = d(6)  ! [g cm^-3]
