@@ -92,20 +92,14 @@ Disable GLOW by:
 cmake -B build -Dglow=off
 ```
 
-### MSIS 2.0
+### MSIS 2.x
 
 The neutral atmosphere model MSISE00 is used by default.
-To use the newer MSIS 2.0:
-
-```sh
-cmake -B build -Dmsis2=yes
-```
-
-Additionally, the simulation config.nml must specify the following to actually use MSIS 2.0:
+To use the newer MSIS 2.x, the simulation config.nml must specify the following to actually use MSIS 2.x:
 
 ```ini
 &neutral_BG
-msis_version = 20
+msis_version = 21  ! MSIS version multiplied by 10 e.g. 21 is MSIS 2.1
 /
 ```
 

@@ -35,7 +35,6 @@ jobs:
 
     # strategy:
     #   matrix:
-    #     msis2: [true, false]
     #     hwm14: [true, false]
 
     steps:

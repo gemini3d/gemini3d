@@ -29,7 +29,6 @@ option(cpp "also build Gemini3D C++ frontend prototype" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
 
 option(hwm14 "use HWM14 neutral winds model")
-option(msis2 "use MSIS 2.x neutral atmosphere model")
 
 option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more

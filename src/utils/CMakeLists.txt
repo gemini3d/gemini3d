@@ -25,12 +25,10 @@ endif()
 string(JOIN " " gemini_features
 REALBITS:${realbits}
 MPI
+MSIS2
 )
 if(glow)
   string(APPEND gemini_features " GLOW")
-endif()
-if(msis2)
-  string(APPEND gemini_features " MSIS2")
 endif()
 if(hwm14)
   string(APPEND gemini_features " HWM14")
