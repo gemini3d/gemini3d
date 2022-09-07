@@ -3,8 +3,6 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  cmake_version: "3.21.7"
-# CMake presets require >= 3.21
 
 on:
   push:
@@ -50,13 +48,6 @@ jobs:
       with:
         repository: gemini3d/external
         path: gemext
-
-    - name: Install CMake ${{ env.cmake_version }}
-      if: runner.os == 'Linux'
-      timeout-minutes: 2
-      run: |
-        cmake -S gemext/scripts/install_cmake -B ${{ runner.temp }}/install_cmake/build -Dversion=${{ env.cmake_version }} -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        echo "${{ runner.temp }}/cmake-${{ env.cmake_version }}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages (Linux)
       if: runner.os == 'Linux'
