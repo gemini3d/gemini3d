@@ -56,7 +56,7 @@ add_feature_info(DevMode dev "Gemini developer mode")
 
 add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HWM14 hwm14 "HWM14 neutral winds model")
-add_feature_info(MSIS2.0 msis2 "NRL MSIS 2.x neutral atmosphere model")
+add_feature_info(MSIS2.x msis2 "NRL MSIS 2.x neutral atmosphere model")
 
 add_feature_info(PyGemini python "simulation generation, HPC script generator and plotting")
 add_feature_info(MatGemini matlab "checks not as extensive as Python, and slow")

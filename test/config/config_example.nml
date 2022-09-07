@@ -41,6 +41,10 @@ Efield_lonwidth = 0.142857
 eqdir = '../test2d_eq'
 /
 
+&neutral_BG
+msis_version = 21
+/
+
 &precip
 dtprec = 5.0
 prec_dir = 'inputs/prec_inputs/'

@@ -86,10 +86,10 @@ if (mpi_cfg%myid==0) then
     print *, "GLOW disabled"
   end if
 
-  if (cfg%msis_version==20) then
-    print *, 'MSIS 2.0 enabled for neutral atmosphere calculations.'
+  if (cfg%msis_version > 0) then
+    print '(A,f3.1,A)', 'MSIS ', real(cfg%msis_version)/10, 'enabled for neutral atmosphere calculations.'
   else
-    print *, "MSISE00 enabled for neutral atmosphere calculations."
+    print '(A)', "MSISE00 enabled for neutral atmosphere calculations."
   end if
 
   if (cfg%flagEIA) then

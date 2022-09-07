@@ -433,10 +433,6 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     logical :: exists
 
-    character(len=11), parameter :: &
-     msis20_name = "msis20.parm", &
-     msis21_name = "msis21.parm"
-
     character(len=11) :: msis2_param_file
 
     select case (cfg%msis_version)
