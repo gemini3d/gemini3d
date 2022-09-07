@@ -15,10 +15,8 @@ sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
-if(NOT "${HDF5_HAVE_PARALLEL}")
-  # avoid double-linking out of order, link failure
-  target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
-endif()
+# avoid double-linking out of order, link failure
+target_link_libraries(magcalc.bin PRIVATE $<$<NOT:$<BOOL:${HDF5_HAVE_PARALLEL}>>:MPI::MPI_Fortran>)
 
 # --- gemini3d.run Fortran front end
 
