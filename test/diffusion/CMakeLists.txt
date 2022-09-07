@@ -21,14 +21,13 @@ FIXTURES_SETUP gemini_diffusion_fxt
 )
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" diffusion1)
 
-if(H5PY_FOUND)
-  add_test(NAME diffusion1:python
-  COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
-  )
-  set_tests_properties(diffusion1:python PROPERTIES
-  TIMEOUT 10
-  LABELS "unit;python"
-  REQUIRED_FILES ${_tmpdifffn}
-  FIXTURES_REQUIRED gemini_diffusion_fxt
-  )
-endif()
+add_test(NAME diffusion1:python
+COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
+)
+set_tests_properties(diffusion1:python PROPERTIES
+TIMEOUT 10
+LABELS "unit;python"
+REQUIRED_FILES ${_tmpdifffn}
+FIXTURES_REQUIRED gemini_diffusion_fxt
+DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
+)

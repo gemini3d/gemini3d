@@ -51,8 +51,6 @@ FIXTURES_SETUP gemini_interp3_fxt
 dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "interp2;interp3")
 
 
-if(H5PY_FOUND)
-
 add_test(NAME interp2:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
 )
@@ -61,6 +59,7 @@ REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
 TIMEOUT 30
 LABELS "unit;python"
 FIXTURES_REQUIRED gemini_interp2_fxt
+DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 )
 
 add_test(NAME interp3:python
@@ -72,6 +71,5 @@ TIMEOUT 30
 LABELS "unit;python"
 RESOURCE_LOCK cpu_ram
 FIXTURES_REQUIRED gemini_interp3_fxt
+DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 )
-
-endif()
