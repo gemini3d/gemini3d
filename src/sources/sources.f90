@@ -636,9 +636,10 @@ nuAvg(:,:,:,1)=nuAvg(:,:,:,1)/sum(niW,dim=4) !! Average over all ions weighted b
 nuAvg(:,:,:,2)=nsuAvg(:,:,:,lsp)
 
 !! Average mass of ions, also weighted by MassDensity
-do isp=1:lsp-1
+do isp=1,lsp-1
   msAvg(:,:,:,1)=msAvg(:,:,:,1)+ms(isp)*niW(:,:,:,isp)
 end do
+
 msAvg(:,:,:,1)=msAvg(:,:,:,1)/(lsp-1)/sum(niW,dim=4)
 
 msAvg(:,:,:,2)=ms(lsp) !! Electron mass
@@ -648,10 +649,10 @@ nsAvg=ns(:,:,:,lsp) !! Assume qneutrality, could be wrong
 
 !! ki value
 omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
-ki=omegai/nuAvg(:,:,:,1) !! Could do ABS to be sure of the sign
+ki=abs(omegai/nuAvg(:,:,:,1)) !! Could do ABS to be sure of the sign
 !! ke value
 omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
-ke=omegae/nuAvg(:,:,:,2)
+ke=abs(omegae/nuAvg(:,:,:,2))
 
 !!Phi value 1/(ki*ke)
 phi=1/(ke*ki)
@@ -679,7 +680,12 @@ heatingtotal=heatingfirst*heatingsecond
 !Loss factor a every pixel, as if FBI was everywhere
 lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
 
-where (Emagnitude<Ethreshold) !Enything without a sufficiente E field gets back to normal.
+where (Emagnitude<Ethreshold) !Anything without a sufficiente E field gets back to normal.
+  heatingtotal=0.0
+  lossfactor=1.0
+end where
+
+where (ki>=1) !Anything where ions are magnetized also goes back to normal
   heatingtotal=0.0
   lossfactor=1.0
 end where
