@@ -585,9 +585,13 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, hea
 !heatingsecond= Second term of the FBI heating equation
 !heatingtotal= Multiplication of both terms from above, again can be made into just one variuable if this works.
 !Lossfactor= Factor used to reduce supertherman electron velocities, ergo reduced electron cooling rate.  
+lx1=x%lx1
+lx2=x%lx2
+lx3=x%lx3
 
-
+!Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+print*,shape(E1),shape(E2),shape(E3)
 Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 !!Indices for stuff
 lx1=size(Ts,1)-4
@@ -614,7 +618,7 @@ end do
 
 !!MassDensity Weight of ions
 do isp=1,lsp-1
-  niW(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)
+  niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
 
 !! Average Collusuons frequencies: loop for doing average of collisions frequencies, first averaging over neutrals
@@ -645,7 +649,7 @@ msAvg(:,:,:,1)=msAvg(:,:,:,1)/(lsp-1)/sum(niW,dim=4)
 msAvg(:,:,:,2)=ms(lsp) !! Electron mass
 
 !! Average density
-nsAvg=ns(:,:,:,lsp) !! Assume qneutrality, could be wrong
+nsAvg=ns(1:lx1,1:lx2,1:lx3,lsp) !! Assume qneutrality, could be wrong
 
 !! ki value
 omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
