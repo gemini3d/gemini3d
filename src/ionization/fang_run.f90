@@ -25,9 +25,14 @@ real(wp) :: d(9),T(2), Ap7(7)
 Ap7 = Ap
 
 if(msis_version==0) then
+  !! MSISE00
   call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
 else
-  error stop 'TODO: MSIS 2.x for Fang unit tests'
+  !! MSIS 2.x
+  call msis_gtd8(doy=doy, UTsec=UTsec, &
+  alt_km=alt_km, glat=glat, glon=glon, &
+  f107a=f107a, f107=f107, ap7=Ap7, &
+  Dn=d, Tn=T, use_meters=.false.)
 endif
 
 massden_gcm3 = d(6)  ! [g cm^-3]
@@ -52,7 +57,11 @@ Ap7 = Ap
 if(msis_version==0) then
   call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
 else
-  error stop 'TODO: MSIS 2.x for Fang unit tests'
+  !! MSIS 2.x
+  call msis_gtd8(doy=doy, UTsec=UTsec, &
+  alt_km=alt_km, glat=glat, glon=glon, &
+  f107a=f107a, f107=f107, ap7=Ap7, &
+  Dn=d, Tn=T, use_meters=.false.)
 endif
 
 massden_gcm3 = d(6)  ! [g cm^-3]

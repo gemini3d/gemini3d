@@ -7,11 +7,11 @@ This program is typically used from CMake as a unit test for Fang ionization.
 It can also be used by a human to plot ionization profiles to compare with the original
 Fang 2008 and Fang 2010 papers.
 """
+
 import numpy as np
 import subprocess
 from pathlib import Path
 import shutil
-import sys
 import io
 import argparse
 
@@ -27,8 +27,7 @@ def checker(exe: str, doplot: bool, params: dict = None):
         exe = shutil.which("test_fang", path=str(Rb))
 
     if not shutil.which(exe):
-        print("test_fang executable not found:", exe, file=sys.stderr)
-        raise SystemExit(77)
+        raise FileNotFoundError("test_fang executable not found")
 
     if params:
         ret = subprocess.check_output(
