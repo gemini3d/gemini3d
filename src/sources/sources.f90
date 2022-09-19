@@ -591,7 +591,6 @@ lx3=x%lx3
 
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
-print*,shape(E1),shape(E2),shape(E3)
 Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 !!Indices for stuff
 lx1=size(Ts,1)-4
