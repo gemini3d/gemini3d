@@ -1,7 +1,6 @@
 name: ci
 
 env:
-  CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
@@ -14,10 +13,7 @@ on:
       - "**/CMakeLists.txt"
       - "!cmake/compilers/intel.cmake"
       - ".github/workflows/ci.yml"
-# paths ignore starting with "!"
       - "!docs/**"
-      - "!cray.cmake"
-
 
 jobs:
 
