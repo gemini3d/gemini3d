@@ -528,13 +528,13 @@ iePT=iePT-max(fact,0._wp);
 !! This would be the place to include FBI heating probably just add to iePT
 ! iePT=iePT+FBIheating()
 call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,IeLTFBI)
-iePT=iePT+iePTFBI
+!!iePT=iePT+iePTFBI
 ieLT=ieLT*ieLTFBI 
 !now, here is have questions, since I do not how really what this terms does (loss factor), where to apply it, or if this is the right place
 
 
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePTFBI+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
@@ -669,7 +669,7 @@ TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 
 !!Ethreshold
 Ethresholdnum=(1+phi)*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagnitude)
-Ethresholdden=sqrt((1-ki**2)*msAvg(:,:,:,1)) 
+Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
 
 Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
 
@@ -683,7 +683,7 @@ heatingtotal=heatingfirst*heatingsecond
 !Loss factor a every pixel, as if FBI was everywhere
 lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
 
-where (Emagnitude<Ethreshold) !Anything without a sufficiente E field gets back to normal.
+where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
   heatingtotal=0.0
   lossfactor=1.0
 end where
