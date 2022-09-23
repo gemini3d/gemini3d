@@ -671,7 +671,8 @@ TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 Ethresholdnum=(1+phi)*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagnitude)
 Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
 
-Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
+!Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
+Ethreshold=0.04 !40mV/m
 
 !!First term of heating equation, have to check the Emagnitude part
 heatingfirst=msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2/((1+ki**2)*Bmagnitude**2)
