@@ -536,6 +536,7 @@ call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,IeLTFBI)
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
 Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePTFBI+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT*ieLTFBI 
+!Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
 
@@ -563,6 +564,8 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, T
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
+
 
 !I have a lot of internal variables, some might be redundant
 !nsuAvg= Collision frequencies for each species averaged over all neutrals
@@ -607,15 +610,15 @@ iePTFBI=0.0
 ieLTFBI=0.0
 lossfactor=1.0
 
-!! Find average collision frequencies. Loop over all neutrals, store ion and electric collision frequencies. Use average?
-!! Just store all of them, decide later. 
+!! Find average collision frequencies. Loop over all neutrals, store ion and electric collision frequencies. 
+!! Important change, will use the average between NO+ and O2+, recommended by Meers
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
-    nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Wieght of the neutrals
+    nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Weight of the neutrals
 end do
 
-!!MassDensity Weight of ions
+!!MassDensity Weight of all ions ions
 do isp=1,lsp-1
   niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
@@ -629,26 +632,22 @@ do isp=1,lsp
   nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
 end do
 
-!!Loop for average over ions
-do isp=1,lsp-1
-  nuAvg(:,:,:,1)=nuAvg(:,:,:,1)+nsuAvg(:,:,:,isp)*niW(:,:,:,isp) !! Store summation of collision frequencies weighted by MassDensity
-end do
-nuAvg(:,:,:,1)=nuAvg(:,:,:,1)/sum(niW,dim=4) !! Average over all ions weighted by MassDensity
+!Final ion neutral collision frequency using only NO+ and O2+
+! Store summation of collision frequencies weighted by MassDensity
+nuAvg(:,:,:,1)=(nsuAvg(:,:,:,2)*niW(:,:,:,2)+nsuAvg(:,:,:,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 
 !!Electrons do not need averaging
 nuAvg(:,:,:,2)=nsuAvg(:,:,:,lsp)
 
 !! Average mass of ions, also weighted by MassDensity
-do isp=1,lsp-1
-  msAvg(:,:,:,1)=msAvg(:,:,:,1)+ms(isp)*niW(:,:,:,isp)
-end do
-
-msAvg(:,:,:,1)=msAvg(:,:,:,1)/(lsp-1)/sum(niW,dim=4)
+msAvg(:,:,:,1)=(ms(2)*niW(:,:,:,2)+ms(4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 
 msAvg(:,:,:,2)=ms(lsp) !! Electron mass
 
 !! Average density
-nsAvg=ns(1:lx1,1:lx2,1:lx3,lsp) !! Assume qneutrality, could be wrong
+!nsAvg=ns(1:lx1,1:lx2,1:lx3,lsp) !! Assume qneutrality, could be wrong
+!! Average just O2+ and NO+
+nsAvg=(ns(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+ns(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 
 !! ki value
 omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
@@ -661,18 +660,17 @@ ke=abs(omegae/nuAvg(:,:,:,2))
 phi=1/(ke*ki)
 
 !!Average ion temperature
-do isp=1,lsp-1
-  TsAvg(:,:,:,1)=TsAvg(:,:,:,1)+Ts(1:lx1,1:lx2,1:lx3,isp)*niW(:,:,:,isp)
-end do
-TsAvg(:,:,:,1)=TsAvg(:,:,:,1)/sum(niW,dim=4) 
+
+TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 
 !!Ethreshold
-Ethresholdnum=(1+phi)*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2))*Bmagnitude)
+Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
 Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
 
 Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
-!Ethreshold=0.04 !40mV/m
+
+Ethreshold=60e-3_wp !40mV/m
 
 !!First term of heating equation, have to check the Emagnitude part
 heatingfirst=msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2/((1+ki**2)*Bmagnitude**2)
@@ -684,6 +682,10 @@ heatingtotal=heatingfirst*heatingsecond
 !Loss factor a every pixel, as if FBI was everywhere
 lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
 
+where (TsAvg(:,:,:,2)<=500) !Anywhere Te is smaller than 500 gets no factor
+  lossfactor=1.0
+end where
+
 where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
   heatingtotal=0.0
   lossfactor=1.0
@@ -693,6 +695,9 @@ where (ki>=1) !Anything where ions are magnetized also goes back to normal
   heatingtotal=0.0
   lossfactor=1.0
 end where
+
+!outputtest=heatingtotal
+!print *, outputtest
 
 iePTFBI=heatingtotal
 ieLTFBI=lossfactor
