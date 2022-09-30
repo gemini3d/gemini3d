@@ -449,7 +449,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact,iePT,ieLT,f,g    !work arrays
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: iePTFBI,ieLTFBI    !FBI array
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIproduction,FBIlossfactor    !FBI array
 real(wp) :: sfact
 
 lx1=size(Ts,1)-4
@@ -527,23 +527,23 @@ iePT=iePT-max(fact,0._wp);
 
 !! This would be the place to include FBI heating probably just add to iePT
 ! iePT=iePT+FBIheating()
-call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,IeLTFBI)
-!!iePT=iePT+iePTFBI
-!ieLT=ieLT*ieLTFBI 
+call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
+!!iePT=iePT+FBIproduction
+!ieLT=ieLT*FBIlossfactor 
 !now, here is have questions, since I do not how really what this terms does (loss factor), where to apply it, or if this is the right place
 
 
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePTFBI+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
-Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT*ieLTFBI 
-!Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+!Lo(:,:,:,lsp)=Lo(:,:,:,lsp)*FBIlossfactor+ieLT
+Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
 
 
 
 
-subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,iePTFBI,ieLTFBI)
+subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !! Inputs Needed
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
@@ -553,7 +553,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: iePTFBI,ieLTFBI ! Two terms, one is heating and the other one is a factor for cooling. 
+real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
 
 !!Internal Arrays
 integer :: isp,isp2,lx1,lx2,lx3
@@ -562,7 +562,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
 
@@ -601,29 +601,26 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 !!Initialize arrays a 0s and loss as 1s
-nuAvg=0.0
-nsuAvg=0.0
-msAvg=0.0
-nsAvg=0.0
-TsAvg=0.0
-iePTFBI=0.0
-ieLTFBI=0.0
-lossfactor=1.0
-
-!! Find average collision frequencies. Loop over all neutrals, store ion and electric collision frequencies. 
-!! Important change, will use the average between NO+ and O2+, recommended by Meers
+nuAvg=0.0_wp
+nsuAvg=0.0_wp
+msAvg=0.0_wp
+nsAvg=0.0_wp
+TsAvg=0.0_wp
+FBIproduction=0.0_wp
+FBIlossfactor=0.0_wp
+lossfactor=1.0_wp
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
     nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Weight of the neutrals
 end do
 
-!!MassDensity Weight of all ions ions
+!!MassDensity Weight of all ions
 do isp=1,lsp-1
   niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
 
-!! Average Collusuons frequencies: loop for doing average of collisions frequencies, first averaging over neutrals
+!! Average Collisuons frequencies: first averaging over neutrals
 do isp=1,lsp
   do isp2=1,ln
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
@@ -633,7 +630,7 @@ do isp=1,lsp
 end do
 
 !Final ion neutral collision frequency using only NO+ and O2+
-! Store summation of collision frequencies weighted by MassDensity
+!Store summation of collision frequencies weighted by MassDensity
 nuAvg(:,:,:,1)=(nsuAvg(:,:,:,2)*niW(:,:,:,2)+nsuAvg(:,:,:,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 
 !!Electrons do not need averaging
@@ -657,50 +654,51 @@ omegae=elchrg*Bmagnitude/msAvg(:,:,:,2)
 ke=abs(omegae/nuAvg(:,:,:,2))
 
 !!Phi value 1/(ki*ke)
-phi=1/(ke*ki)
+phi=1.0_wp/(ke*ki)
 
 !!Average ion temperature
-
 TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 
 !!Ethreshold
-Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
-Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
+!Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
+!Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
 
-Ethreshold=Ethresholdnum(:,:,:)/Ethresholdden(:,:,:)
+!doi:10.1029/2011JA016649
+Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
+Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
 
-Ethreshold=60e-3_wp !40mV/m
+!outputtest=phi
+!print *, outputtest
+
+!Ethreshold=60e-3_wp 
 
 !!First term of heating equation, have to check the Emagnitude part
-heatingfirst=msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2/((1+ki**2)*Bmagnitude**2)
-heatingsecond=(Emagnitude*(1+phi)/Ethreshold-1)
+heatingfirst=(msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2)/((1.0_wp+ki**2)*Bmagnitude**2)
+heatingsecond=((Emagnitude/Ethreshold)*(1.0_wp+phi)-1.0_wp)
 
 !heating total as if FBI was everywhere
 heatingtotal=heatingfirst*heatingsecond
 
 !Loss factor a every pixel, as if FBI was everywhere
-lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500))
+lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
 
-where (TsAvg(:,:,:,2)<=500) !Anywhere Te is smaller than 500 gets no factor
-  lossfactor=1.0
+where (TsAvg(:,:,:,2)<=500_wp) !Anywhere Te is smaller than 500 gets no factor
+  lossfactor=1.0_wp
 end where
 
 where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
+  heatingtotal=0.0_wp
+  lossfactor=1.0_wp
+end where
+
+where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
   heatingtotal=0.0
   lossfactor=1.0
 end where
 
-where (ki>=1) !Anything where ions are magnetized also goes back to normal
-  heatingtotal=0.0
-  lossfactor=1.0
-end where
-
-!outputtest=heatingtotal
-!print *, outputtest
-
-iePTFBI=heatingtotal
-ieLTFBI=lossfactor
+FBIproduction=heatingtotal
+FBIlossfactor=lossfactor
 
 end subroutine FBIheating
 
