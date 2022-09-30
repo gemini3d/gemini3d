@@ -668,7 +668,7 @@ TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
 Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
 
-!outputtest=phi
+!outputtest=Ethreshold
 !print *, outputtest
 
 !Ethreshold=60e-3_wp 
