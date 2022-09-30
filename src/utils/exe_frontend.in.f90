@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, 
 use phys_consts, only : wp
 use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
-use filesystem, only : parent, file_name, assert_is_dir, expanduser, suffix
+use filesystem, only : parent, assert_is_dir, expanduser
 use timeutils, only : date_filename,dateinc
 
 implicit none (type, external)
@@ -358,11 +358,11 @@ call read_configfile(cfg)
 ymd = cfg%ymd0
 UTsec = cfg%UTsec0
 
-fn = date_filename(cfg%outdir, ymd, UTsec) // suffix(cfg%indatsize)
+fn = date_filename(cfg%outdir, ymd, UTsec) // ".h5"
 
 do
   !! new filename, add the 1 if it is the first
-  fn = date_filename(cfg%outdir, ymd, UTsec) // suffix(cfg%indatsize)
+  fn = date_filename(cfg%outdir, ymd, UTsec) // ".h5"
 
   inquire(file=fn, exist=exists)
   if ( .not. exists ) exit

@@ -157,7 +157,7 @@ contains
     ! read sizes
     print '(/,A,/,A)', 'Precipitation input:','--------------------'
     print '(A)', 'READ precipitation size from: ' // self%sourcedir
-    call get_simsize2(self%sourcedir, llon=self%llon, llat=self%llat)
+    call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
     print '(A,2I6)', 'Precipitation size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
@@ -178,7 +178,7 @@ contains
     class(precipdata), intent(inout) :: self
 
     ! read grid data
-    call get_grid2(self%sourcedir, self%mlonp, self%mlatp)
+    call get_grid2(self%sourcedir // "/simgrid.h5", self%mlonp, self%mlatp)
 
     print '(A,4F9.3)', 'Precipitation mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
                                                            minval(self%mlatp(:)),maxval(self%mlatp(:))
@@ -224,7 +224,7 @@ contains
     print*, '  date and time:  ',ymdtmp,UTsectmp
     print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     ! read in the data for the "next" frame from file
-    call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
+    call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", self%Qp, self%E0p)
 
     print*, ' precip data succesfully input...'
   end subroutine load_data_precip

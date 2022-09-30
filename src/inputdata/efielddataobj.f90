@@ -211,7 +211,7 @@ contains
     ! read sizes
     print '(/,A,/,A)', 'Electric field input:','--------------------'
     print '(A)', 'READ electric field size from: ' // self%sourcedir
-    call get_simsize2(self%sourcedir, llon=self%llon, llat=self%llat)
+    call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
     print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
@@ -232,7 +232,7 @@ contains
     class(efielddata), intent(inout) :: self
 
     ! read grid data
-    call get_grid2(self%sourcedir, self%mlonp, self%mlatp)
+    call get_grid2(self%sourcedir // "/simgrid.h5", self%mlonp, self%mlatp)
 
     print '(A,4F9.3)', 'Electric field mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
                                                            minval(self%mlatp(:)),maxval(self%mlatp(:))
@@ -323,7 +323,7 @@ contains
     print*, '  date and time:  ',ymdtmp,UTsectmp
     print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
 
-    call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp), &
+    call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp) // ".h5", &
       flagdirich_int,self%E0xp,self%E0yp,self%Vminx1p,self%Vmaxx1p,&
       self%Vminx2pslice,self%Vmaxx2pslice,self%Vminx3pslice,self%Vmaxx3pslice)
     self%flagdirich=real(flagdirich_int,wp)

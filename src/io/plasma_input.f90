@@ -1,7 +1,6 @@
 submodule (io) plasma_input
 !! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for file I/O
 use reader, only : get_simsize3
-use filesystem, only : suffix
 use sanity_check, only : check_finite_current, check_finite_plasma
 use interpolation, only : interp3
 use grid, only : get_grid3_coords_hdf5
@@ -66,12 +65,7 @@ module procedure input_plasma
 
   if (mpi_cfg%myid==0) then
     !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-    select case (suffix(indatsize))
-      case ('.h5')
-        call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
-      case default
-        error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
-    end select
+    call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
 
     !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
     !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
@@ -111,7 +105,7 @@ module procedure interp_file2subgrid
   lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
 
   ! read in the ICs size and allocate data
-  call get_simsize3(out_dir,lx1in,lx2in,lx3in)
+  call get_simsize3(out_dir // "/simsize.h5", lx1in,lx2in,lx3in)
   allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
   allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
             vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -120,12 +114,8 @@ module procedure interp_file2subgrid
   allocate(parmflat(lx1*lx2*lx3))
 
   ! get the input grid coordinates
-  select case (suffix(indatsize))
-    case ('.h5')
-      call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
-    case default
-      error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
-  end select
+  call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+
 
   ! we must make sure that the target coordinates do not range outside the input file coordinates
   if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
@@ -139,12 +129,7 @@ module procedure interp_file2subgrid
   end if
 
   ! read in the input initial conditions, only hdf5 files are support for this functionality
-  select case (suffix(indatsize))
-    case ('.h5')
-      call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-    case default
-      error stop 'Input interpolation only supported for hdf5 files'
-  end select
+  call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
   ! interpolation input data to mesh sites; do not interpolate to ghost cells
   do isp=1,lsp
