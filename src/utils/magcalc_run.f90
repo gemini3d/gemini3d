@@ -18,7 +18,7 @@ call cli_parser(plan, Ncpu, path, exe, mpiexec, extra)
 Ncpu = get_Ncpu(Ncpu)
 
 !> setup run
-call get_simsize3(path // '/inputs', lx1, lx2all, lx3all)
+call get_simsize3(path // '/inputs/simsize.h5', lx1, lx2all, lx3all)
 
 if(Ncpu > 1) then
   lid = max_mpi(lx2all, lx3all, Ncpu)

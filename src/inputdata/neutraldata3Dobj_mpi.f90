@@ -11,7 +11,6 @@ use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use filesystem, only: suffix, get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
@@ -247,7 +246,7 @@ contains
 
     if (mpi_cfg%myid==0) then    !root must establish the size of the grid based on input file and distribute to workers
       print '(A,/,A)', 'READ neutral size from:', self%sourcedir
-      call get_simsize3(self%sourcedir, lx1=self%lxnall, lx2all=self%lynall, lx3all=self%lzn)
+      call get_simsize3(self%sourcedir // "/simsize.h5", lx1=self%lxnall, lx2all=self%lynall, lx3all=self%lzn)
       print *, 'Neutral data has lx,ly,lz size:  ',self%lxnall,self%lynall,self%lzn, &
                    ' with spacing dx,dy,dz',cfg%dxn,cfg%drhon,cfg%dzn
       if (self%lxnall < 1 .or. self%lynall < 1 .or. self%lzn < 1) then
@@ -541,14 +540,10 @@ contains
 
       !print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
 
-      fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
-      fn=get_filename(fn)
+      fn = date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5"
+
       if (debug) print *, 'READ neutral 3D data from file: ',fn
-      if (suffix(fn) == '.h5') then
-        call hf%open(fn, action='r')
-      else
-        error stop '3D neutral input only supported for hdf5 files; please regenerate input'
-      end if
+      call hf%open(fn, action='r')
 
       call hf%read('/dn0all', paramall)
       if (.not. all(ieee_is_finite(paramall))) error stop 'dnOall: non-finite value(s)'

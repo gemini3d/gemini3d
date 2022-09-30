@@ -4,7 +4,7 @@ module reader
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use phys_consts, only: wp, debug
-use filesystem, only : suffix, get_filename
+use filesystem, only : is_file
 
 implicit none (type, external)
 private
@@ -63,17 +63,8 @@ subroutine get_simsize2(path, llon, llat)
 character(*), intent(in) :: path
 integer, intent(out) :: llon, llat
 
-character(:), allocatable :: fn
+call get_simsize2_hdf5(path, llon, llat)
 
-fn = get_filename(path, 'simsize')
-if (len_trim(fn) == 0) error stop "reader:simsize2 No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_simsize2_hdf5(fn, llon, llat)
-case default
-  error stop 'reader:get_simsize2: unknown file suffix on ' // fn
-end select
 end subroutine get_simsize2
 
 
@@ -82,17 +73,8 @@ character(*), intent(in) :: path
 integer, intent(out) :: lx1, lx2all
 integer, intent(out), optional :: lx3all
 
-character(:), allocatable :: fn
+call get_simsize3_hdf5(path, lx1, lx2all, lx3all)
 
-fn = get_filename(path, 'simsize')
-if (len_trim(fn) == 0) error stop "reader:simsize3 No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_simsize3_hdf5(fn, lx1, lx2all, lx3all)
-case default
-  error stop 'ERROR:reader:get_simsize3: unknown file suffix' // fn
-end select
 end subroutine get_simsize3
 
 
@@ -101,17 +83,8 @@ character(*), intent(in) :: path
 real(wp), dimension(:), intent(inout) :: mlonp, mlatp
 !! intent(out)
 
-character(:), allocatable :: fn
+call get_grid2_hdf5(path, mlonp, mlatp)
 
-fn = get_filename(path, 'simgrid')
-if (len_trim(fn) == 0) error stop "reader:grid2 No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_grid2_hdf5(fn, mlonp, mlatp)
-case default
-  error stop 'reader:get_grid2: unknown file suffix on ' // fn
-end select
 end subroutine get_grid2
 
 
@@ -123,17 +96,7 @@ real(wp), dimension(:,:), intent(inout) :: E0xp,E0yp,Vminx1p,Vmaxx1p
 real(wp), dimension(:), intent(inout) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
 !! intent(out)
 
-character(:), allocatable :: fn
-
-fn = get_filename(path)
-if (len_trim(fn) == 0) error stop "reader:Efield No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_Efield_hdf5(fn, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
-case default
-  error stop 'reader:Efield: unknown file suffix on ' // fn
-end select
+call get_Efield_hdf5(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 
 end subroutine get_Efield
 
@@ -145,25 +108,16 @@ real(wp), dimension(:,:), intent(inout) :: Qp, E0p
 !! intent(out)
 
 integer :: i
-character(:), allocatable :: fn, path1
+character(:), allocatable :: fn
 
-path1 = path
-i = len_trim(path1)
+fn = path
+i = len_trim(path)
 
-fn = get_filename(path1)
-if (len_trim(fn) == 0) then
-  !! workaround for old files like *.000001.h5
-  path1(i:i) = '1'
-  fn = get_filename(path1)
-endif
-if (len_trim(fn) == 0) error stop "reader:precip No file found on " // path1
+if (.not.is_file(fn)) fn(i:i) = '1'
+!! workaround for old files like *.000001.h5
+if (.not. is_file(fn)) error stop "reader:precip No file found on " // path
 
-select case (suffix(fn))
-case ('.h5')
-  call get_precip_hdf5(fn, Qp, E0p)
-case default
-  error stop 'reader:get_precip: unknown file suffix on ' // fn
-end select
+call get_precip_hdf5(fn, Qp, E0p)
 
 !> sanity check precipitation input
 if(.not. all(ieee_is_finite(Qp))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be finite'
@@ -186,17 +140,8 @@ character(*), intent(in) :: path
 real(wp), dimension(:,:,:), intent(inout) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
 !! intent(out)
 
-character(:), allocatable :: fn
+call get_neutral2_hdf5(path, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 
-fn = get_filename(path)
-if (len_trim(fn) == 0) error stop "reader:neutral2 No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_neutral2_hdf5(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
-case default
-  error stop 'reader:get_neutral2: unknown file suffix' // suffix(fn)
-end select
 end subroutine get_neutral2
 
 
@@ -205,17 +150,8 @@ character(*), intent(in) :: path
 real(wp), dimension(:,:,:), intent(inout) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
 !! intent(out)
 
-character(:), allocatable :: fn
+call get_neutral3_hdf5(path, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 
-fn = get_filename(path)
-if (len_trim(fn) == 0) error stop "reader:neutral3 No file found on " // path
-
-select case (suffix(fn))
-case ('.h5')
-  call get_neutral3_hdf5(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
-case default
-  error stop 'reader:get_neutral3: unknown file suffix' // suffix(fn)
-end select
 end subroutine get_neutral3
 
 

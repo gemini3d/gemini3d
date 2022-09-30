@@ -10,7 +10,6 @@ use gemini3d_config, only: gemini_cfg
 use reader, only: get_grid2,get_neutral2
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use filesystem, only: get_filename
 use grid, only: gridflag
 
 implicit none (type,external)
@@ -220,7 +219,7 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
 
-    call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
+    call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", &
       self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
 
     if (debug) then
