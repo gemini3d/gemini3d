@@ -32,25 +32,6 @@ endif()
 include(cmake/package/git_rev.cmake)
 include(cmake/options.cmake)
 
-# check that gemini3d/external libraries are installed
-set(need_gemext "
-Gemini3D requires several external libraries that are one-time installed via this procedure.
-'~/libgem' directory is an arbitrary location.
-
-  git clone https://github.com/gemini3d/external
-  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
-  cmake --build external/build
-
-Now, configure and build Gemini3D (from gemini3d/ directory) like this:
-
-  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
-  cmake --build build --parallel
-")
-
-if(NOT IS_DIRECTORY ${CMAKE_PREFIX_PATH}/cmake)
-  message(FATAL_ERROR ${need_gemext})
-endif()
-
 # Fortran filesystem library "ffilesystem"
 find_package(ffilesystem CONFIG)
 # this is the first package to find, so make a special error message for users

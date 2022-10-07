@@ -52,9 +52,45 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
-# allow CMAKE_PREFIX_PATH with ~ expand
+# --- CMAKE_PREFIX_PATH auto-detection
+if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})
+  set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+endif()
+
+if(NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
+  unset(CMAKE_PREFIX_PATH)
+endif()
+
+if(NOT CMAKE_PREFIX_PATH)
+  get_filename_component(home "~" ABSOLUTE)
+  string(TOLOWER ${CMAKE_C_COMPILER_ID} compiler_id)
+
+  if(IS_DIRECTORY ${home}/libgem_${compiler_id})
+    set(CMAKE_PREFIX_PATH ${home}/libgem_${compiler_id} CACHE PATH "prefix path for gemini3d/external libs")
+  endif()
+endif()
+
 if(CMAKE_PREFIX_PATH)
   get_filename_component(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ABSOLUTE)
+endif()
+
+# check that gemini3d/external libraries are installed
+set(need_gemext "
+Gemini3D requires several external libraries that are one-time installed via this procedure.
+'~/libgem' directory is an arbitrary location.
+
+  git clone https://github.com/gemini3d/external
+  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
+  cmake --build external/build
+
+Now, configure and build Gemini3D (from gemini3d/ directory) like this:
+
+  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
+  cmake --build build --parallel
+")
+
+if(NOT IS_DIRECTORY ${CMAKE_PREFIX_PATH}/cmake)
+  message(FATAL_ERROR ${need_gemext})
 endif()
 
 # --- auto-ignore build directory
