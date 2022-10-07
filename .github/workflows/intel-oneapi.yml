@@ -80,7 +80,7 @@ jobs:
       timeout-minutes: 15
       run: |
         cmake -S gemext -B gemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        cmake --build gemext/build --target ffilesystem glow hwm14 iniparser msis mumps
+        cmake --build gemext/build --target ffilesystem glow hwm14 iniparser msis mumps --parallel
         cmake --install gemext/build
 
     - uses: actions/setup-python@v4
