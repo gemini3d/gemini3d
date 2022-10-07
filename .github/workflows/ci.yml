@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - "**.c"
+      - "**.cpp"
       - "**.f90"
       - "**.F90"
       - "**.cmake"
