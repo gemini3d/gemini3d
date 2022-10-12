@@ -15,7 +15,6 @@ COMMAND test_diffusion1d ${_tmpdifffn}
 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 set_tests_properties(diffusion1 PROPERTIES
-TIMEOUT 5
 LABELS unit
 FIXTURES_SETUP gemini_diffusion_fxt
 )
@@ -25,7 +24,6 @@ add_test(NAME diffusion1:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
 )
 set_tests_properties(diffusion1:python PROPERTIES
-TIMEOUT 10
 LABELS "unit;python"
 REQUIRED_FILES ${_tmpdifffn}
 FIXTURES_REQUIRED gemini_diffusion_fxt

@@ -31,7 +31,6 @@ target_link_libraries(neutraldata2Daxisymm PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata neutraldata2D inputdata reader
 h5fortran::h5fortran
 )
-target_compile_options(neutraldata2Daxisymm PRIVATE ${gfortran_opts})
 
 add_library(neutraldata2Dcart OBJECT neutraldata2Dcartobj.f90
 $<TARGET_OBJECTS:grid>
@@ -40,7 +39,6 @@ target_link_libraries(neutraldata2Dcart PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata neutraldata2D inputdata reader
 h5fortran::h5fortran
 )
-target_compile_options(neutraldata2Dcart PRIVATE ${gfortran_opts})
 
 add_library(neutraldata3D_mpi OBJECT neutraldata3Dobj_mpi.f90 neuslab_mpi.f90
 $<TARGET_OBJECTS:grid>
@@ -49,7 +47,6 @@ target_link_libraries(neutraldata3D_mpi PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata inputdata reader
 h5fortran::h5fortran MPI::MPI_Fortran
 )
-target_compile_options(neutraldata3D_mpi PRIVATE ${gfortran_opts})
 
 add_library(neutraldata3D_geom_mpi OBJECT neutraldata3Dobj_geom_mpi.f90
 $<TARGET_OBJECTS:grid>
@@ -58,7 +55,6 @@ target_link_libraries(neutraldata3D_geom_mpi PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader
 h5fortran::h5fortran MPI::MPI_Fortran
 )
-target_compile_options(neutraldata3D_geom_mpi PRIVATE ${gfortran_opts})
 
 add_library(neutraldata3D_geog_mpi OBJECT neutraldata3Dobj_geog_mpi.f90
 $<TARGET_OBJECTS:grid>
@@ -67,4 +63,3 @@ target_link_libraries(neutraldata3D_geog_mpi PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader
 h5fortran::h5fortran MPI::MPI_Fortran
 )
-target_compile_options(neutraldata3D_geog_mpi PRIVATE ${gfortran_opts})

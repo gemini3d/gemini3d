@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS utils)
+set_property(DIRECTORY PROPERTY LABELS utils)
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE
@@ -16,7 +16,6 @@ add_test(NAME CompilerVendor COMMAND test_compiler_vendor)
 set_tests_properties(CompilerVendor PROPERTIES
 PASS_REGULAR_EXPRESSION ${compiler_vendor_reg}
 LABELS unit
-TIMEOUT 10
 )
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
@@ -28,7 +27,6 @@ add_test(NAME ExpandEnvvar COMMAND test_expand_envvar)
 set_tests_properties(ExpandEnvvar PROPERTIES
 ENVIRONMENT test__gem=hello
 LABELS unit
-TIMEOUT 10
 )
 
 # --- test props

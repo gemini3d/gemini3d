@@ -34,7 +34,6 @@ WORKING_DIRECTORY ${matgemini_SOURCE_DIR}
 )
 
 set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
-TIMEOUT 120
 FIXTURES_REQUIRED "${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 ENVIRONMENT "MATLABPATH=${MATLABPATH}"
@@ -50,7 +49,6 @@ add_test(NAME gemini:compare:${name}:python
 COMMAND ${Python_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
 
 set_tests_properties(gemini:compare:${name}:python PROPERTIES
-TIMEOUT 120
 FIXTURES_REQUIRED ${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python"
@@ -66,7 +64,6 @@ add_test(NAME gemini:compare:${name}
 COMMAND gemini3d.compare ${outdir} ${refdir})
 
 set_tests_properties(gemini:compare:${name} PROPERTIES
-TIMEOUT 60
 FIXTURES_REQUIRED ${name}:run_fxt
 RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"

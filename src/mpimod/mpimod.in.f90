@@ -8,7 +8,7 @@ use autogrid, only : grid_auto
 
 use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_integer,mpi_sum, &
-  mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
+  MPI_STATUS_SIZE, MPI_STATUS_IGNORE, MPI_PROC_NULL, &
   mpi_realprec=>@mpi_realprec@
 
 implicit none (type, external)

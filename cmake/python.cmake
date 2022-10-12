@@ -5,7 +5,6 @@ execute_process(COMMAND ${Python_EXECUTABLE} -c "import numpy"
 RESULT_VARIABLE ret
 OUTPUT_VARIABLE out
 ERROR_VARIABLE err
-TIMEOUT 15
 )
 
 if(NOT ret EQUAL 0)
@@ -23,7 +22,6 @@ execute_process(COMMAND ${Python_EXECUTABLE} -c "import h5py,numpy,sys; print(f'
 RESULT_VARIABLE ret
 OUTPUT_VARIABLE out
 ERROR_VARIABLE err
-TIMEOUT 15
 )
 
 if(ret EQUAL 0)
@@ -48,7 +46,6 @@ WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}  # help avoid Intel Windows false import
 RESULT_VARIABLE ret
 OUTPUT_VARIABLE out
 ERROR_VARIABLE err
-TIMEOUT 15
 OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 

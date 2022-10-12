@@ -14,7 +14,6 @@ if(MATGEMINI_FOUND)
 endif()
 
 execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${matgemini_SOURCE_DIR}/setup.m'), stdlib.fileio.expanduser('~');"
-TIMEOUT 90
 RESULT_VARIABLE ret
 ERROR_VARIABLE err
 )
