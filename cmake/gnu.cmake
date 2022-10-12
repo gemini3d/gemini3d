@@ -7,13 +7,15 @@ add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
 # --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
+add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-Wall>)
 
 if(dev)
-  add_compile_options(-Wall -Wextra)
+  add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:-Wextra>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-Wextra>")
   # -Wpedantic makes too many false positives
-else(dev)
+else()
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-function>")
-endif(dev)
+endif()
 
 # avoid backtrace that's unusable without -g
 add_compile_options($<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-fno-backtrace>)
@@ -23,8 +25,6 @@ check_fortran_compiler_flag(-Wdo-subscript dosubflag)
 if(dosubflag)
   add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-do-subscript>)
 endif()
-
-
 
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <cstring>
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
   }
 
   // Prepare Gemini3D struct
-  strncpy(s.out_dir, out_dir.string().c_str(), LMAX);
+  std::strcpy(s.out_dir, out_dir.generic_string().c_str());
 
   s.fortran_cli = false;
   s.debug = false;
