@@ -7,7 +7,6 @@ add_test(NAME Fortran_namelist COMMAND test_namelist ${_test_file})
 set_tests_properties(Fortran_namelist PROPERTIES
 REQUIRED_FILES ${_test_file}
 LABELS unit
-TIMEOUT 10
 )
 
 
@@ -33,7 +32,6 @@ foreach(t root worker input)
   FIXTURES_SETUP gemini:dump_fxt
   WILL_FAIL true
   LABELS unit
-  TIMEOUT 10
   )
 
   add_test(NAME gemini:dump:check:${t} COMMAND test_dump_read testing:${t} ${f})
@@ -41,7 +39,6 @@ foreach(t root worker input)
   FIXTURES_REQUIRED gemini:dump_fxt
   REQUIRED_FILES ${f}
   LABELS unit
-  TIMEOUT 10
   )
 
   dll_test_path("h5fortran::h5fortran;HDF5::HDF5" "gemini:dump:${t};gemini:dump:check:${t}")

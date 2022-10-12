@@ -18,5 +18,3 @@ add_test(NAME Cpp_main COMMAND main_cpp)
 add_executable(main_c main.c $<TARGET_OBJECTS:addone_f>)
 set_property(TARGET main_c PROPERTY LINKER_LANGUAGE C)
 add_test(NAME C_main COMMAND main_c)
-
-set_property(TEST Fortran_main Cpp_main C_main PROPERTY TIMEOUT 10)

@@ -18,7 +18,6 @@ set_tests_properties(${name}:download PROPERTIES
 FIXTURES_SETUP ${name}:download_fxt
 RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
-TIMEOUT 180
 )
 
 # construct command
@@ -35,7 +34,6 @@ COMMAND ${test_cmd} -dryrun
 )
 
 set_tests_properties(gemini:${name}:dryrun PROPERTIES
-TIMEOUT 60
 FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 )
@@ -74,7 +72,6 @@ COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
 set_tests_properties(magcalc:${name}:setup PROPERTIES
 FIXTURES_REQUIRED ${name}:run_fxt
 FIXTURES_SETUP magcalc:${name}:setup
-TIMEOUT 30
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
 
@@ -83,7 +80,6 @@ set_tests_properties(magcalc:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 FIXTURES_REQUIRED magcalc:${name}:setup
 LABELS core
-TIMEOUT 60
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
 dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})

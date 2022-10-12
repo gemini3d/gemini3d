@@ -19,7 +19,7 @@ target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS:
 set(_cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential2d_testfile})
 
 add_test(NAME potential2d COMMAND ${_cmd})
-set_tests_properties(potential2d PROPERTIES TIMEOUT 30
+set_tests_properties(potential2d PROPERTIES
 FIXTURES_REQUIRED mpi_fxt
 FIXTURES_SETUP gemini_potential_fxt
 RESOURCE_LOCK cpu_mpi
@@ -34,7 +34,6 @@ COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_
 )
 set_tests_properties(potential2d:python PROPERTIES
 REQUIRED_FILES ${_potential2d_testfile}
-TIMEOUT 10
 LABELS "unit;python"
 FIXTURES_REQUIRED gemini_potential_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
@@ -52,7 +51,7 @@ target_link_libraries(test_potential3d PRIVATE const h5fortran::h5fortran MUMPS:
 set(_cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential3d> ${_potential3d_testfile})
 
 add_test(NAME potential3d COMMAND ${_cmd})
-set_tests_properties(potential3d PROPERTIES TIMEOUT 30
+set_tests_properties(potential3d PROPERTIES
 FIXTURES_SETUP gemini_potential_fxt
 FIXTURES_REQUIRED mpi_fxt
 RESOURCE_LOCK cpu_mpi
