@@ -30,8 +30,3 @@ endif()
 
 # lot of spurious warnings on allocatable scalar character
 add_compile_options($<$<Fortran_COMPILER_VERSION:9.3.0>:-Wno-maybe-uninitialized>)
-
-check_fortran_compiler_flag(-fallow-argument-mismatch allow_mismatch_args)
-if(allow_mismatch_args)
-  set(gfortran_opts $<$<COMPILE_LANGUAGE:Fortran>:-fallow-argument-mismatch>)
-endif()

@@ -13,9 +13,30 @@ use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use grid, only: gridflag
 
+use mpi, only : MPI_STATUS_SIZE
+
 implicit none (type,external)
-external :: mpi_send,mpi_recv
+
+!external :: MPI_STATUS_SIZE
+
 public :: neutraldata3D
+
+interface
+!! This avoids GGC >= 10 type mismatch warnings for MPI-2
+subroutine mpi_send(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)
+type(*), dimension(..), intent(in) :: BUF
+integer, intent(in) ::  COUNT, DATATYPE, DEST, TAG, COMM
+integer, intent(out) :: IERROR
+end subroutine
+
+subroutine mpi_recv(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR)
+import MPI_STATUS_SIZE
+type(*), dimension(..), intent(in) :: BUF
+integer, intent(in) ::  COUNT, DATATYPE, SOURCE, TAG, COMM
+integer, intent(out) :: STATUS(MPI_STATUS_SIZE), IERROR
+end subroutine
+
+end interface
 
 !> type definition for 3D neutral data
 type, abstract, extends(neutraldata) :: neutraldata3D
