@@ -197,13 +197,6 @@ if(cpp)
 # --- Gemini_c.bin
 # C++ main program just like Fortran gemini.bin
 
-# for gemini_c C++ front end
-find_package(iniparser CONFIG)
-if(NOT iniparser_FOUND)
-  set(cpp false)
-  return()
-endif()
-
 add_library(gemini3d_cpp libgemini.cpp)
 target_include_directories(gemini3d_cpp PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -228,12 +221,6 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 #$<$<BOOL:${MSVC}>:_HAS_ITERATOR_DEBUGGING=1>
 #$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 install(TARGETS gemini3d_cpp EXPORT ${PROJECT_NAME}-targets)
-
-
-if(ffilesystem_VERSION VERSION_LESS 4.0)
-  set(cpp false)
-  return()
-endif()
 
 add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES

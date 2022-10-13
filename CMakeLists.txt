@@ -38,7 +38,7 @@ include(cmake/options.cmake)
 # Fortran filesystem library "ffilesystem"
 find_package(ffilesystem CONFIG)
 # this is the first package to find, so make a special error message for users
-if(NOT ffilesystem_FOUND OR ffilesystem_VERSION VERSION_LESS 3.3.0)
+if(NOT ffilesystem_FOUND)
   message(FATAL_ERROR "
 Gemini3D requires several external libraries that are one-time installed via this procedure. 'gemini_libs' directory is an arbitrary location.
 
@@ -52,17 +52,21 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake --build build --parallel
 ")
 endif()
-if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1.0)
-  #target_link_libraries(ffilesystem::filesystem INTERFACE stdc++fs)
-  # function target_link_libraries() should work, but doesn't (CMake bug)
-  set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
+
+if(ffilesystem_VERSION VERSION_LESS 4.0)
+  message(STATUS "Skipping C++ frontend due to ffilesystem version ${ffilesystem_VERSION} < 4.0")
+  set(cpp false)
 endif()
 
-if(mpi)
-  find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
-else()
-  find_package(mpi_scalapack_stub CONFIG REQUIRED)
+# for gemini_c C++ front end
+if(cpp)
+  find_package(iniparser CONFIG)
+  if(NOT iniparser_FOUND)
+    set(cpp false)
+  endif()
 endif()
+
+find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 
 find_package(h5fortran CONFIG REQUIRED)
 
