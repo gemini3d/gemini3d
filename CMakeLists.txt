@@ -38,7 +38,18 @@ find_package(ffilesystem CONFIG)
 if(NOT ffilesystem_FOUND)
   message(FATAL_ERROR ${need_gemext})
 endif()
+if(ffilesystem_VERSION VERSION_LESS 4.0)
+  message(STATUS "Skipping C++ frontend due to ffilesystem version ${ffilesystem_VERSION} < 4.0")
+  set(cpp false)
+endif()
 
+# for gemini_c C++ front end
+if(cpp)
+  find_package(iniparser CONFIG)
+  if(NOT iniparser_FOUND)
+    set(cpp false)
+  endif()
+endif()
 
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 
