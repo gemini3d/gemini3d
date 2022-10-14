@@ -465,9 +465,10 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
+    print*, 'Initiating tiled/interpolate input...'
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
-    call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%outdir,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
+    call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%indatgrid,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
   end subroutine interp_file2subgrid_in
 
 

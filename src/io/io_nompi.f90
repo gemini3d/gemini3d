@@ -20,8 +20,8 @@ contains
   !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
   !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
   !    and then overriding the interp to space-only.
-  subroutine interp_file2subgrid(indatsize,indatfile,out_dir,x1,x2,x3,ns,vs1,Ts,Phi)
-    character(*), intent(in) :: indatsize,indatfile,out_dir
+  subroutine interp_file2subgrid(indatsize,indatfile,indatgrid,x1,x2,x3,ns,vs1,Ts,Phi)
+    character(*), intent(in) :: indatsize,indatfile,indatgrid
     real(wp), dimension(-1:) :: x1
     real(wp), dimension(-1:) :: x2
     real(wp), dimension(-1:) :: x3
@@ -40,7 +40,8 @@ contains
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
   
     ! read in the ICs size and allocate data
-    call get_simsize3(out_dir,lx1in,lx2in,lx3in)
+    print*, 'indatsize;  ',indatsize
+    call get_simsize3(indatsize,lx1in,lx2in,lx3in)
     allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
     allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -49,14 +50,20 @@ contains
     allocate(parmflat(lx1*lx2*lx3))
   
     ! get the input grid coordinates
+    print*, 'indatgrid:  ',indatgrid
     select case (suffix(indatsize))
       case ('.h5')
-        call get_grid3_coords_hdf5(out_dir,x1in,x2in,x3in,glonctr,glatctr)
+        call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
       case default
         error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
     end select
   
     ! we must make sure that the target coordinates do not range outside the input file coordinates
+    print*, x1(1),x1in(1),x1(lx1),x1in(lx1in),lx1,lx1in
+    print*, x2(1),x2in(1),x2(lx2),x2in(lx2in),lx2,lx2in
+    print*, x3(1),x3in(1),x3(lx3),x3in(lx3in),lx3,lx3in
+    print*, x2(1:lx2)
+    print*, x3(1:lx3)
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
       error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
     end if
