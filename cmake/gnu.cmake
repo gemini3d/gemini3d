@@ -7,10 +7,16 @@ add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
 # --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
-add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-Wall>)
+add_compile_options(
+$<$<COMPILE_LANGUAGE:C>:-Wall>
+$<$<COMPILE_LANGUAGE:CXX>:-Wall>
+)
 
 if(dev)
-  add_compile_options("$<$<COMPILE_LANGUAGE:C,CXX>:-Wextra>")
+  add_compile_options(
+  $<$<COMPILE_LANGUAGE:C>:-Wextra>
+  $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
+  )
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-Wextra>")
   # -Wpedantic makes too many false positives
 else()

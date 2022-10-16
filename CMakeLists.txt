@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.25)
+cmake_minimum_required(VERSION 3.14...3.25)
 
 # --- CMAKE_BUILD_TYPE default
 # Normally we shouldn't set a default like this, but the simulations are 10x slower
