@@ -84,7 +84,6 @@ autogrid
 )
 
 set(gemini_mpi_internal_mods
-gemini3d
 advec
 advec_mpi
 calculus gemini3d_config
@@ -182,6 +181,8 @@ foreach(l IN LISTS gemini_internal_mods)
     target_sources(${t} PRIVATE $<TARGET_OBJECTS:${l}>)
   endforeach()
 endforeach()
+
+target_link_libraries(gemini3d_mpi PRIVATE gemini3d)
 
 foreach(l IN LISTS gemini_mpi_internal_mods)
   target_sources(gemini3d_mpi PRIVATE $<TARGET_OBJECTS:${l}>)
