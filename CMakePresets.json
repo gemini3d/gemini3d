@@ -3,38 +3,24 @@
 
 "configurePresets": [
 {
-  "name": "release",
-  "displayName": "Turns on Release flags",
+  "name": "default",
+  "binaryDir": "${sourceDir}/build",
   "cacheVariables": {
-    "CMAKE_BUILD_TYPE": "Release"
+    "CMAKE_BUILD_TYPE": "Release",
+    "CMAKE_COMPILE_WARNING_AS_ERROR": true
   }
 },
 {
-  "name": "reldebug",
-  "displayName": "Turns on release and debug flags, including array bounds check.",
-  "description": "Runs slower than release",
-  "cacheVariables": {
-    "CMAKE_BUILD_TYPE": "RelWithDebInfo"
-    }
-},
-{
-  "name": "debug",
-  "displayName": "Turns on debug flags, including array bounds check.",
-  "cacheVariables": {
-    "CMAKE_BUILD_TYPE": "Debug"
-    }
-},
-{
-  "name": "multi",
-  "displayName": "Ninja Multi config",
-  "generator": "Ninja Multi-Config",
-  "binaryDir": "${sourceDir}/build"
-},
-{
-  "name": "phony"
+  "name": "multi", "inherits": "default",
+  "displayName": "Ninja Multi-Config",
+  "generator": "Ninja Multi-Config"
 }
 ],
 "buildPresets": [
+  {
+    "name": "default",
+    "configurePreset": "default"
+  },
   {
     "name": "release",
     "configurePreset": "multi",
@@ -43,23 +29,19 @@
   {
     "name": "reldebug",
     "configurePreset": "multi",
-    "configuration": "RelWithDebInfo"
+    "configuration": "RelWithDebInfo",
+    "displayName": "Release with Debug Info"
   },
   {
     "name": "debug",
     "configurePreset": "multi",
     "configuration": "Debug"
-  },
-  {
-    "name": "core",
-    "configurePreset": "phony",
-    "targets": ["gemini.bin", "gemini3d.run", "gemini3d.compare"]
   }
 ],
 "testPresets": [
 {
   "name": "default",
-  "configurePreset": "phony",
+  "configurePreset": "default",
   "output": {
     "outputOnFailure": true,
     "verbosity": "default"
@@ -88,19 +70,17 @@
 },
 {
   "name": "release", "inherits": "default",
-  "displayName": "Ninja MultiConfig: Release",
   "configurePreset": "multi",
   "configuration": "Release"
 },
 {
   "name": "reldebug", "inherits": "default",
-  "displayName": "Ninja MultiConfig: RelWithDebInfo",
   "configurePreset": "multi",
-  "configuration": "RelWithDebInfo"
+  "configuration": "RelWithDebInfo",
+  "displayName": "Release with Debug Info"
 },
 {
   "name": "debug", "inherits": "default",
-  "displayName": "Ninja MultiConfig: Debug",
   "configurePreset": "multi",
   "configuration": "Debug"
 }

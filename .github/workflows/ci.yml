@@ -67,9 +67,10 @@ jobs:
     - name: Install model libraries
       timeout-minutes: 15
       run: |
-        cmake -Sgemext -Bgemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        cmake --build gemext/build --target ffilesystem glow hwm14 iniparser msis mumps --parallel
-        cmake --install gemext/build
+        cmake -Bbuild -GNinja -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
+        cmake --build build
+        cmake --install build
+      working-directory: gemext
 
     - uses: actions/setup-python@v4
       with:
@@ -82,10 +83,9 @@ jobs:
         cmake --preset multi
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
         -Dhwm14:BOOL=${{ matrix.hwm14 }}
-        -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=ON
 
     - name: Debug build
-      run: cmake --build --parallel --preset debug
+      run: cmake --build --preset debug
 
     - name: Debug unit test
       run: ctest --preset debug -L unit
@@ -95,7 +95,7 @@ jobs:
 
 
     - name: Release build
-      run: cmake --build --parallel --preset release
+      run: cmake --build --preset release
 
     - name: Release unit test
       run: ctest --preset release -L unit

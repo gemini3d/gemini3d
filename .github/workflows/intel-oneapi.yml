@@ -88,19 +88,20 @@ jobs:
         python-version: '3.8'
 
     - name: CMake Configure Ninja Multi-config
-      run: cmake --preset multi || cmake --preset multi --debug-find
+      run: cmake --preset multi -DCMAKE_COMPILE_WARNING_AS_ERROR=false
+      # waiting for CMake 3.24.3 to fix warning as error
       env:
         CMAKE_PREFIX_PATH: ${{ runner.temp }}
 
     - name: DEBUG build
-      run: cmake --build --parallel --preset debug
+      run: cmake --build --preset debug
     - name: DEBUG unit test
       run: ctest --preset debug -L unit
     - name: DEBUG test core
       run: ctest --preset debug -LE unit -E 3d
 
     - name: RELEASE build
-      run: cmake --build --parallel --preset release
+      run: cmake --build --preset release
     - name: RELEASE unit test
       run: ctest --preset release -L unit
     - name: RELEASE test core
