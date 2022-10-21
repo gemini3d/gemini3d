@@ -54,8 +54,7 @@ end interface
 
 contains
   !> initializes neutral atmosphere by:
-  !    1)  allocating storage space
-  !    2)  establishing initial background for density, temperature, and winds
+  !    1)  establishing initial background for density, temperature, and winds
   !! Arguably this should be called for init and for neutral updates, except for the allocation part...
   subroutine init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
     real(wp), intent(in) :: dt,t
@@ -201,7 +200,7 @@ contains
     allocate(atmos%nn(lx1,lx2,lx3,lnchem),atmos%Tn(lx1,lx2,lx3),atmos%vn1(lx1,lx2,lx3), &
                atmos%vn2(lx1,lx2,lx3),atmos%vn3(lx1,lx2,lx3))
 
-    ! allocate and compute plasma grid z,rho locations and space to save neutral perturbation variables and projection factors
+    ! allocate space for background atmospheric state
     allocate(atmos%nnmsis(lx1,lx2,lx3,lnchem),atmos%Tnmsis(lx1,lx2,lx3), &
                atmos%vn1base(lx1,lx2,lx3),atmos%vn2base(lx1,lx2,lx3),atmos%vn3base(lx1,lx2,lx3))
 
@@ -217,6 +216,7 @@ contains
     atmos%vn2base = 0
     atmos%vn3base = 0
 
+    ! projection factors for geographic rotations
     allocate(atmos%proj_ealt_e1(lx1,lx2,lx3),atmos%proj_eglat_e1(lx1,lx2,lx3),atmos%proj_eglon_e1(lx1,lx2,lx3))
     allocate(atmos%proj_ealt_e2(lx1,lx2,lx3),atmos%proj_eglat_e2(lx1,lx2,lx3),atmos%proj_eglon_e2(lx1,lx2,lx3))
     allocate(atmos%proj_ealt_e3(lx1,lx2,lx3),atmos%proj_eglat_e3(lx1,lx2,lx3),atmos%proj_eglon_e3(lx1,lx2,lx3))
