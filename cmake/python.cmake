@@ -27,7 +27,7 @@ ERROR_VARIABLE err
 if(ret EQUAL 0)
   set(H5PY_FOUND true CACHE BOOL "Python h5py Found")
 else()
-  message(STATUS "Problem with Python h5py:
+  message(VERBOSE "Problem with Python h5py:
   ${ret}
   ${out}
   ${err}"
