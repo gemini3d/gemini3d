@@ -294,7 +294,7 @@ contains
 
 
   !> wrapper to have a worker dump their state var data to a file
-  subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC)
+  subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC) bind(C,name="plasma_output_nompi_C")
     type(c_ptr), intent(in) :: cfgC
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
