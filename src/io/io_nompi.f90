@@ -102,22 +102,6 @@ contains
     end select
     print*, 'interp_file2subgrid:  error checking complete...' 
 
-    print*, 'ICs sizes:  ',lx1in,lx2in,lx3in
-    print*, 'target array sizes:  ',lx1,lx2,lx3
-    print*, shape(x1in)
-    print*, shape(x2in)
-    print*, shape(x3in)
-    print*, shape(x1)
-    print*, shape(x2)
-    print*, shape(x3)
-
-    print*, shape(nsall)
-    print*, shape(vs1all)
-    print*, shape(Tsall)
-    print*, minval(nsall),maxval(nsall)
-    print*, minval(vs1all),maxval(vs1all)
-    print*, minval(Tsall),maxval(Tsall)
-
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
       parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
