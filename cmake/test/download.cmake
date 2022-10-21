@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.15...3.25)
+# .zst requires CMake 3.15+
+
 if(CMAKE_VERSION VERSION_LESS 3.19)
   include(${CMAKE_CURRENT_LIST_DIR}/../Modules/JsonParse.cmake)
 endif()
@@ -95,7 +98,23 @@ endif()
 
 # extract archive
 message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
-file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
+if(CMAKE_VERSION VERSION_LESS 3.18)
+  file(MAKE_DIRECTORY ${ref_dir})
+
+  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${archive}
+  WORKING_DIRECTORY ${ref_dir}
+  RESULT_VARIABLE ret
+  )
+  if(NOT ret EQUAL 0)
+    message(FATAL_ERROR "${name}: extract ${archive} => ${ref_dir}    ${ret}")
+  endif()
+else()
+  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
+endif()
+
+if(NOT IS_DIRECTORY ${ref_dir}/inputs)
+  message(FATAL_ERROR "${name}: missing ${ref_dir}/inputs directory, it appears ${archive} failed to extract.")
+endif()
 
 file(SHA256 ${archive} _hash)
 file(WRITE ${ref_dir}/sha256sum.txt ${_hash})
