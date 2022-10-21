@@ -111,7 +111,7 @@ Build the Gemini3D code
 Non-default [build options](./docs/Readme_cmake.md) may be used.
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
-To verify your GEMINI build, run the self-tests:
+To verify your GEMINI build, run the self-tests.
 
 ```sh
 ctest --test-dir build

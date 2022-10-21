@@ -1,8 +1,6 @@
 # this file defines simulation tests.
 # The names of these must match those in ref_data.json
 
-set(sim_timeout 1800)  # seconds to allow simulation tests to run
-
 # --- setup tests
 # NOTE: cpp just 2d is only to save test time. Works fine with 3d also.
 
@@ -36,7 +34,7 @@ endif()
 
 
 foreach(_s ${gemini_test_sim_names})
-  setup_gemini_test(${_s} ${sim_timeout})
+  setup_gemini_test(${_s})
 
   if(python)
     setup_magcalc_test(${_s})

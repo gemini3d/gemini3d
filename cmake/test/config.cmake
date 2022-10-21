@@ -1,4 +1,4 @@
-function(setup_gemini_test name TIMEOUT)
+function(setup_gemini_test name)
 
 # --- setup test
 set(out_dir ${PROJECT_BINARY_DIR}/${name})
@@ -42,7 +42,6 @@ FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 add_test(NAME gemini:${name} COMMAND ${test_cmd})
 
 set_tests_properties(gemini:${name} PROPERTIES
-TIMEOUT ${TIMEOUT}
 FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
 )
