@@ -3,6 +3,7 @@ module collisions
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 use gemini3d_config, only: gemini_cfg
+use meshobj, only : curvmesh
 
 implicit none (type, external)
 private
@@ -309,6 +310,119 @@ end do
 
 
 end subroutine conductivities
+
+subroutine NLConductivity(nn,Tn,ns,Ts,E1,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
+!! Inputs Needed
+real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
+real(wp), dimension(:,:,:), intent(in) :: sigP,sigH !linear conductivities
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
+class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
+
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: sigNCP,sigNCH  
+
+!!Internal Arrays
+integer :: isp,isp2,lx1,lx2,lx3
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude, commonfactor
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
+
+!!Start
+lx1=x%lx1
+lx2=x%lx2
+lx3=x%lx3
+Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
+
+!!Initialize arrays as 0s
+nuAvg=0.0_wp
+nsuAvg=0.0_wp
+msAvg=0.0_wp
+nsAvg=0.0_wp
+TsAvg=0.0_wp
+sigNCH=0.0_wp
+sigNCP=0.0_wp
+
+!MassDensity Weight of Neutrals
+do isp2=1,ln
+    nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Weight of the neutrals
+end do
+
+!!MassDensity Weight of all ions
+do isp=1,lsp-1
+  niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
+end do
+
+!! Average Collisuons frequencies: first averaging over neutrals
+do isp=1,lsp
+  do isp2=1,ln
+    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+    nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)+nu*nuW(:,:,:,isp2) !Store the collision frequencies weighted by massdensity
+  end do
+  nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
+end do
+
+!Final ion neutral collision frequency using only NO+ and O2+
+!Store summation of collision frequencies weighted by MassDensity
+nuAvg(:,:,:,1)=(nsuAvg(:,:,:,2)*niW(:,:,:,2)+nsuAvg(:,:,:,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
+
+!!Electrons do not need averaging
+nuAvg(:,:,:,2)=nsuAvg(:,:,:,lsp)
+
+!! Average mass of ions, also weighted by MassDensity
+msAvg(:,:,:,1)=(ms(2)*niW(:,:,:,2)+ms(4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
+
+msAvg(:,:,:,2)=ms(lsp) !! Electron mass
+
+!! Average density
+!! Average just O2+ and NO+
+nsAvg=(ns(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+ns(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
+
+!! ki value
+omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
+ki=abs(omegai/nuAvg(:,:,:,1)) !! Could do ABS to be sure of the sign
+!! ke value
+omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
+ke=abs(omegae/nuAvg(:,:,:,2)) !!Not sure anymore about the ABS, have to ask Meers
+
+!!Phi value 1/(ki*ke)
+phi=1.0_wp/(ke*ki)
+
+!!Average ion temperature
+TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
+TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
+
+!!Ethreshold
+!Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
+!Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
+
+!doi:10.1029/2011JA016649
+Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
+Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
+
+commonfactor=(Emagnitude/Ethreshold-1)*(1-Ethreshold/Emagnitude)
+
+sigNCP=(1-ki**2)*commonfactor*sigP/(1+ki**2)
+sigNCH=-(2*ki)*(1+phi)*commonfactor*sigH/(1+ki**2)
+
+where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
+  sigNCP=0.0_wp
+  sigNCH=0.0_wp
+end where
+
+where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
+  sigNCP=0.0_wp
+  sigNCH=0.0_wp
+end where
+
+
+end subroutine NLConductivity
 
 
 subroutine capacitance(ns,B1,cfg,incap)

@@ -588,6 +588,8 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
 !heatingsecond= Second term of the FBI heating equation
 !heatingtotal= Multiplication of both terms from above, again can be made into just one variuable if this works.
 !Lossfactor= Factor used to reduce supertherman electron velocities, ergo reduced electron cooling rate.  
+
+
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
@@ -595,10 +597,7 @@ lx3=x%lx3
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
-!!Indices for stuff
-lx1=size(Ts,1)-4
-lx2=size(Ts,2)-4
-lx3=size(Ts,3)-4
+
 
 !!Initialize arrays a 0s and loss as 1s
 nuAvg=0.0_wp
