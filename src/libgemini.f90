@@ -212,6 +212,12 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     type(gemini_work), pointer :: intvars
 
+    !> none of this can be done unless the size variables in the grid module are set
+    if (lx1<=0 .or. lx2<=0 .or. lx3<=0 .or. lx2all<=0 .or. lx3all<=0) then
+      print*,  '  Malformed grid size from module:  ',lx1,lx2,lx3,lx2all,lx3all
+      error stop
+    end if
+
     allocate(intvars)
 
     !> neutral variables (never need to be haloed, etc.)
@@ -233,7 +239,7 @@ contains
 
     allocate(intvars%eprecip)
     allocate(intvars%efield)
-    ! neutral stuff allocated elsewhere...
+    ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
   end function gemini_work_alloc
 
 

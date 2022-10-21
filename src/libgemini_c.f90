@@ -287,7 +287,7 @@ contains
 
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
-    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call interp_file2subgrid_in(cfg,x,fluidvars,electrovars)
   end subroutine interp_file2subgrid_C
@@ -305,7 +305,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
 
     call c_f_pointer(cfgC,cfg)
-    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars)
   end subroutine plasma_output_nompi_C

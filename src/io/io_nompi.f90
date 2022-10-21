@@ -35,7 +35,10 @@ contains
     real(wp), dimension(:), allocatable :: x1in,x2in,x3in
     real(wp) :: glatctr=0._wp, glonctr=0._wp
     integer :: isp
-  
+    real(wp), dimension(:,:,:), allocatable :: x1imat,x2imat,x3imat    ! variables for interpolation sites
+    real(wp), dimension(:), allocatable :: x1i,x2i,x3i    ! variables for interpolation sites
+    integer :: ix1,ix2,ix3
+ 
     ! convenience
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
   
@@ -48,6 +51,25 @@ contains
               Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
     allocate(parmflat(lx1*lx2*lx3))
+
+    ! allocate space for the target coordinates
+    allocate(x1imat(lx1,lx2,lx3))
+    allocate(x2imat,x3imat,mold=x1imat)
+    allocate(x1i(lx1*lx2*lx3))
+    allocate(x2i,x3i,mold=x1i)
+    do ix3=1,lx3
+      do ix2=1,lx2
+         do ix1=1,lx3
+           x1imat(ix1,ix2,ix3)=x1(ix1)
+           x2imat(ix1,ix2,ix3)=x2(ix2)
+           x3imat(ix1,ix2,ix3)=x3(ix3)
+         end do
+      end do
+    end do
+    x1i=pack(x1imat,.true.)
+    x2i=pack(x2imat,.true.)
+    x3i=pack(x3imat,.true.)
+    deallocate(x1imat,x2imat,x3imat)
   
     ! get the input grid coordinates
     print*, 'indatgrid:  ',indatgrid
@@ -59,11 +81,7 @@ contains
     end select
   
     ! we must make sure that the target coordinates do not range outside the input file coordinates
-    print*, x1(1),x1in(1),x1(lx1),x1in(lx1in),lx1,lx1in
-    print*, x2(1),x2in(1),x2(lx2),x2in(lx2in),lx2,lx2in
-    print*, x3(1),x3in(1),x3(lx3),x3in(lx3in),lx3,lx3in
-    print*, x2(1:lx2)
-    print*, x3(1:lx3)
+    print*, 'check grid extents'
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
       error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
     end if
@@ -75,30 +93,50 @@ contains
     end if
   
     ! read in the input initial conditions, only hdf5 files are support for this functionality
+    print*, 'read file'
     select case (suffix(indatsize))
       case ('.h5')
         call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
       case default
         error stop 'Input interpolation only supported for hdf5 files'
     end select
-  
+    print*, 'interp_file2subgrid:  error checking complete...' 
+
+    print*, 'ICs sizes:  ',lx1in,lx2in,lx3in
+    print*, 'target array sizes:  ',lx1,lx2,lx3
+    print*, shape(x1in)
+    print*, shape(x2in)
+    print*, shape(x3in)
+    print*, shape(x1)
+    print*, shape(x2)
+    print*, shape(x3)
+
+    print*, shape(nsall)
+    print*, shape(vs1all)
+    print*, shape(Tsall)
+    print*, minval(nsall),maxval(nsall)
+    print*, minval(vs1all),maxval(vs1all)
+    print*, minval(Tsall),maxval(Tsall)
+
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
       parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
+                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       ns(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
       parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),vs1all(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
+                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       vs1(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
       parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1(1:lx1),x2(1:lx2),x3(1:lx3))
+                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
     end do
     parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
-                       x1(1:lx1),x2(1:lx2),x3(1:lx3))
+                       x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
-  
+    print*, 'interp_file2subgrid:  interplations complete...'
+ 
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
+    deallocate(x1i,x2i,x3i)
   end subroutine interp_file2subgrid
 
 
@@ -197,6 +235,9 @@ contains
     real(wp), dimension(:,:), allocatable :: Phislab
     real(wp), allocatable :: tmp(:,:,:,:), tmpPhi(:), tmpPhi2(:,:)
 
+    !integer ix2,ix3
+    !real(wp), dimension(:,:,:,:), allocatable :: tmpread
+
     !> so that random values (including NaN) don't show up in Ghost cells
 
     !> SYSTEM SIZES
@@ -216,11 +257,47 @@ contains
            '- use a script to interpolate up/down to the simulation grid'
     end if
 
+    print*, 'opening hdf5 file...'
     call hf%open(indatfile, action='r')
 
+!    print*, 'test setting values...'
+!    do ix1=-1,lx1+2
+!      do ix2=-1,lx2+2
+!        do ix3=-1,lx3+2
+!          do isp=1,lsp
+!            ns(ix1,ix2,ix3,isp)=-1.0
+!            vs1(ix1,ix2,ix3,isp)=-2.0
+!            Ts(ix1,ix2,ix3,isp)=-3.0
+!          end do
+!        end do
+!      end do
+!    end do
+!    Phislab=0.0
+!    print*, shape(ns)
+!    print*, shape(vs1)
+!    print*, shape(Ts)
+!    print*, maxval(abs(ns))
+!    print*, maxval(abs(vs1))
+!    print*, maxval(-1.0*abs(Ts))
+!    print*, minval(Ts),maxval(Ts)
+
+!    allocate(tmpread(1:lx1,1:lx2,1:lx3,1:lsp))
+!    print*, 'tmp reading in fluid data 1'
+!    call hf%read('/nsall', tmpread)
+!    print*, 'tmp reading in fluid data 2'
+!    call hf%read('/vs1all', tmpread)
+!    print*, 'tmp reading in fluid data 3'
+!    call hf%read('/Tsall', tmpread)
+!    deallocate(tmpread)
+
+    print*, 'reading in fluid data 1'
     call hf%read('/nsall', ns(1:lx1,1:lx2,1:lx3,1:lsp))
+    print*, 'reading in fluid data 2'
     call hf%read('/vs1all', vs1(1:lx1,1:lx2,1:lx3,1:lsp))
+    print*, 'reading in fluid data 3'
     call hf%read('/Tsall', Ts(1:lx1,1:lx2,1:lx3,1:lsp))
+
+    print*, 'reading in potential...'
     if (hf%exist('/Phiall')) then
       if (hf%ndim('/Phiall') == 1) then
         if (lx2==1) then
@@ -246,9 +323,11 @@ contains
       Phislab = 0
     end if
 
+    print*, 'closing hdf5 file...'
     call hf%close()
 
     !> Apply EFL approx to compute full grid potential
+    print*, 'apply EFL approximation...'
     do ix1=1,lx1
       Phi(ix1,1:lx2,1:lx3)=Phislab(1:lx2,1:lx3)
     end do
