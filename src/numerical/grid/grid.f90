@@ -22,14 +22,14 @@ logical, protected :: flaglims=.false.
 !!^ These variables will be shared between all workers/patches so they can be module-scope variables.  
 
 private
-public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
+public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
              get_grid3_coords_hdf5, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
              grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
-             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims !, generate_worker_grid
+             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims, alloc_x1coords !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -80,6 +80,13 @@ contains
   end subroutine get_gridcenter
 
 
+  subroutine alloc_x1coords(lx1)
+    integer, intent(in) :: lx1
+
+    allocate(x1(-1:lx1+2))
+  end subroutine alloc_x1coords
+
+
   !> retrieve the x1 coordinate array from module
   subroutine get_x1coords(x1out)
     real(wp), dimension(:), pointer, intent(inout) :: x1out
@@ -99,7 +106,7 @@ contains
     real(wp), dimension(:), allocatable :: x2all,x3all
 
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
-    allocate(x1(-1:lx1+2))    ! module-scope
+    call alloc_x1coords(lx1)    ! module-scope
     allocate(x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need

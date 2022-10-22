@@ -14,10 +14,10 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
-use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
+use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag, &
                 get_grid3_coords, detect_gridtype, meshobj_alloc, grid_internaldata_alloc, &
-                grid_internaldata_generate, set_fullgrid_lims!, generate_worker_grid
+                grid_internaldata_generate, set_fullgrid_lims, alloc_x1coords !, generate_worker_grid
 
 implicit none (type, external)
 private
@@ -57,7 +57,7 @@ contains
     integer(C_INT), intent(inout), optional :: xtype
     type(C_PTR), intent(inout), optional :: xC
   
-    real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
+    real(wp), dimension(:), allocatable :: x2,x3,x2all,x3all
     integer :: islstart,islfin
     integer, dimension(2) :: indsgrid
     integer iid
@@ -75,11 +75,11 @@ contains
     !call calc_subgrid_size(lx2all,lx3all)
     !! everyone computes what the size of their subgrid should be
     !^ this is now done as a separate step from the main application through libgemini_mpi calls
-
-    allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
+    call alloc_x1coords(lx1)
+    allocate(x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
     !! tmp space for coords from file
     call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
-    call set_fullgrid_lims(x1,x2all,x3all)
+    call set_fullgrid_lims(x2all,x3all)
     !! read the grid coordinates in from a file only need ctr location for certain grid types
   
     !> each worker needs to set their specific subgrid coordinates
@@ -107,7 +107,7 @@ contains
     call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
 
     !> just to be careful explicitly deallocate temp arrays
-    deallocate(x1,x2,x3,x2all,x3all)
+    deallocate(x2,x3,x2all,x3all)
   end subroutine read_grid
   
   
