@@ -59,7 +59,7 @@ contains
     allocate(x2i,x3i,mold=x1i)
     do ix3=1,lx3
       do ix2=1,lx2
-         do ix1=1,lx3
+         do ix1=1,lx1
            x1imat(ix1,ix2,ix3)=x1(ix1)
            x2imat(ix1,ix2,ix3)=x2(ix2)
            x3imat(ix1,ix2,ix3)=x3(ix3)
@@ -79,6 +79,10 @@ contains
       case default
         error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
     end select
+
+    !print*, x1in(1:lx1in)
+    !print*, '====================================================================================='
+    !print*, x1(1:lx1)
   
     ! we must make sure that the target coordinates do not range outside the input file coordinates
     print*, 'check grid extents'
@@ -118,6 +122,10 @@ contains
                        x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
     print*, 'interp_file2subgrid:  interplations complete...'
+
+    !print*, '====================================================================================='
+    !print*, ns(:,1,1,7)
+    !print*, '====================================================================================='
  
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)

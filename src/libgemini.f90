@@ -342,7 +342,7 @@ contains
     ! create temp space
     allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
 
-    ! make uniformly spaced coordinate arrays
+    ! make uniformly spaced coordinate arrays; unless a x1 array was already provided by user
     x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]

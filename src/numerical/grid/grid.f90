@@ -108,7 +108,8 @@ contains
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
-  !    the grid type/class already be defined
+  !    the grid type/class already be defined.  As an option the final argument will overwrite the x1
+  !    direction and force that particular array to be adopted for the x1 coordinate.  
   subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
@@ -126,7 +127,7 @@ contains
     allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
 
     ! make uniformly spaced coordinate arrays
-    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]    ! usually x1 is nonuniform...
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
