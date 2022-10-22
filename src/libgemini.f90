@@ -32,7 +32,7 @@ use filesystem, only : expanduser
 use temporal, only: cflcalc
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
                   grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
-                  grid_internaldata_generate
+                  grid_internaldata_generate, get_x1coords
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -327,7 +327,8 @@ contains
     integer, intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     integer :: ix1,ix2,ix3
-    real(wp), dimension(:), allocatable :: x1,x2,x3
+    real(wp), dimension(:), allocatable :: x2,x3
+    real(wp), dimension(:), pointer :: x1
     real(wp) :: glonctr,glatctr
 
     ! retrieve data from grid module
@@ -340,10 +341,11 @@ contains
     end if
 
     ! create temp space
-    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
+    allocate(x2(lx2wg),x3(lx3wg))
 
     ! make uniformly spaced coordinate arrays; unless a x1 array was already provided by user
-    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
+    call get_x1coords(x1)
+    !x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
@@ -354,7 +356,7 @@ contains
     call grid_internaldata_alloc(x1,x2,x3,x2,x3,glonctr,glatctr,x)
 
     ! get rid of temp. arrays
-    deallocate(x1,x2,x3)
+    deallocate(x2,x3)
   end subroutine gemini_grid_alloc
 
 
