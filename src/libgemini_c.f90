@@ -265,6 +265,7 @@ contains
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
+    print*, 'gemini_grid_dealloc_C:  ',xtype
     x=>set_gridpointer_dyntype(xtype,xC)
     call gemini_grid_dealloc(x,xtype,xC)
   end subroutine gemini_grid_dealloc_C

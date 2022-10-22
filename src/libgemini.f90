@@ -258,16 +258,19 @@ contains
     type(gemini_work), pointer, intent(inout) :: intvars
 
     !> neutral variables (never need to be haloed, etc.)
+    print*, 'Deallocating atmospheric state variables used in GEMINI...'
     call neutral_info_dealloc(intvars%atmos)
     deallocate(intvars%atmos)
 
-     !> space for integrated volume emission rates (lx2,lx3,lwave)
+    !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
+      print*, 'Deallocating glow data:  '
       deallocate(intvars%iver)
     end if
 
     !> allocate space for some arrays needed for fluid solves, note that these arrays are not haloed; they
     !    are computed from haloed vs1,2,3 arrays
+    print*, 'Deallocating internal variables for GEMINI...'
     deallocate(intvars%vs1i)
     deallocate(intvars%vs2i)
     deallocate(intvars%vs3i)

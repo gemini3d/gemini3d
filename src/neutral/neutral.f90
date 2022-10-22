@@ -234,11 +234,9 @@ contains
     deallocate(atmos%nnmsis,atmos%Tnmsis,atmos%vn1base,atmos%vn2base,atmos%vn3base)
 
     ! rotations of neutral winds
-    if (atmos%flagprojections) then
-      deallocate(atmos%proj_ealt_e1,atmos%proj_eglat_e1,atmos%proj_eglon_e1)
-      deallocate(atmos%proj_ealt_e2,atmos%proj_eglat_e2,atmos%proj_eglon_e2)
-      deallocate(atmos%proj_ealt_e3,atmos%proj_eglat_e3,atmos%proj_eglon_e3)
-      atmos%flagprojections=.false.
-    end if
+    deallocate(atmos%proj_ealt_e1,atmos%proj_eglat_e1,atmos%proj_eglon_e1)
+    deallocate(atmos%proj_ealt_e2,atmos%proj_eglat_e2,atmos%proj_eglon_e2)
+    deallocate(atmos%proj_ealt_e3,atmos%proj_eglat_e3,atmos%proj_eglon_e3)
+    atmos%flagprojections=.false.
   end subroutine neutral_info_dealloc
 end module neutral
