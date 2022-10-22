@@ -1,14 +1,9 @@
 # GCC on Windows
 
-The simplest method of using GCC is via Windows Subsystem for Linux.
-[Install WSL](https://docs.microsoft.com/en-us/windows/wsl/install#install-wsl-command)
-by typing in Windows Terminal:
-
-```sh
-wsl --install
-```
-
-and then use [Linux GCC](./Linux_gcc.md) procedure.
+The simplest method of using GCC is via Windows Subsystem for Linux (WSL).
+[Install WSL](https://www.microsoft.com/store/productId/9P9TQF7MRM4R)
+from Microsoft Store.
+Then use [Linux GCC](./Linux_gcc.md) procedure.
 
 ---
 
