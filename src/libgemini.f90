@@ -32,7 +32,7 @@ use filesystem, only : expanduser
 use temporal, only: cflcalc
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
                   grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
-                  grid_internaldata_generate, get_x1coords
+                  grid_internaldata_generate, get_x1coords, get_fullgrid_lims
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
@@ -58,7 +58,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
-            gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in
+            gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
+            get_fullgrid_lims_in
 
 
 !! temp file used by MSIS 2.0
@@ -186,6 +187,14 @@ contains
 
     lspout=lsp
   end subroutine get_species_size
+
+
+  !> return the limits of the grid to caller
+  subroutine get_fullgrid_lims_in(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax)
+    real(wp), intent(inout) :: x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax
+
+    call get_fullgrid_lims(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax)
+  end subroutine get_fullgrid_lims_in
 
 
   !> allocate space for config struct, and return a pointer

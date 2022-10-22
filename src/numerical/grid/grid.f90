@@ -28,7 +28,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
-             x1lims,x2alllims,x3alllims,get_x1coords !, generate_worker_grid
+             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -117,6 +117,17 @@ contains
     x2alllims=[x2all(1),x2all(lx2all)]
     x3alllims=[x3all(1),x3all(lx3all)]
   end subroutine set_fullgrid_lims
+
+
+  !> return the extents of the FULL GRID
+  subroutine get_fullgrid_lims(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax)
+    real(wp), intent(inout) :: x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax
+
+    x1min=x1lims(1); x1max=x1lims(2);
+    x2allmin=x2alllims(1); x2allmax=x2alllims(2);
+    x3allmin=x3alllims(1); x3allmax=x3alllims(2);
+  end subroutine get_fullgrid_lims
+
 
   !! FIXME: deprecated?
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
