@@ -18,6 +18,7 @@ integer, protected :: gridflag
 real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
 real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
 real(wp), dimension(:), pointer, protected :: x1=>null()
+logical, protected :: flaglims=.false.
 !!^ These variables will be shared between all workers/patches so they can be module-scope variables.  
 
 private
@@ -116,6 +117,7 @@ contains
     x1lims=[x1(1),x1(lx1)]
     x2alllims=[x2all(1),x2all(lx2all)]
     x3alllims=[x3all(1),x3all(lx3all)]
+    flaglims=.true.
   end subroutine set_fullgrid_lims
 
 
@@ -123,9 +125,13 @@ contains
   subroutine get_fullgrid_lims(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax)
     real(wp), intent(inout) :: x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax
 
-    x1min=x1lims(1); x1max=x1lims(2);
-    x2allmin=x2alllims(1); x2allmax=x2alllims(2);
-    x3allmin=x3alllims(1); x3allmax=x3alllims(2);
+    if (flaglims) then
+      x1min=x1lims(1); x1max=x1lims(2);
+      x2allmin=x2alllims(1); x2allmax=x2alllims(2);
+      x3allmin=x3alllims(1); x3allmax=x3alllims(2);
+    else
+      error stop 'grid:get_fullgrid_lims - attempt to retrieve grid limits when not set...'
+    end if
   end subroutine get_fullgrid_lims
 
 
