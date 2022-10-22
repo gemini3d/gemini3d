@@ -17,6 +17,8 @@ integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
 real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
+real(wp), dimension(:), pointer, protected :: x1=>null()
+!!^ These variables will be shared between all workers/patches so they can be module-scope variables.  
 
 private
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
@@ -26,7 +28,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
-             x1lims,x2alllims,x3alllims !, generate_worker_grid
+             x1lims,x2alllims,x3alllims,get_x1coords !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -77,25 +79,37 @@ contains
   end subroutine get_gridcenter
 
 
+  !> retrieve the x1 coordinate array from module
+  subroutine get_x1coords(x1out)
+    real(wp), dimension(:), pointer, intent(inout) :: x1out
+
+    if (associated(x1)) then
+      x1out=>x1
+    else
+      print*, 'WARNING - grid:get_x1coords - x1 variable is not allocated/set, check call sequence.'
+    end if
+  end subroutine get_x1coords
+
+
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
   !    generation of Cartesian meshes and put in in a module-scope variable.
   subroutine read_size_gridcenter(indatsize,indatgrid)
     character(*), intent(in) :: indatsize,indatgrid
-    real(wp), dimension(:), allocatable :: x1,x2all,x3all
+    real(wp), dimension(:), allocatable :: x2all,x3all
 
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
-    allocate(x1(-1:lx1+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+    allocate(x1(-1:lx1+2))    ! module-scope
+    allocate(x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
     !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
-    call set_fullgrid_lims(x1,x2all,x3all)
-    deallocate(x1,x2all,x3all)
+    call set_fullgrid_lims(x2all,x3all)
+    deallocate(x2all,x3all)
   end subroutine read_size_gridcenter
 
 
   !> set the fullgrid limit variables in the model, e.g. for detecting if we are on a global boundary
-  subroutine set_fullgrid_lims(x1,x2all,x3all)
-    real(wp), dimension(-1:) :: x1
+  subroutine set_fullgrid_lims(x2all,x3all)
     real(wp), dimension(-1:) :: x2all
     real(wp), dimension(-1:) :: x3all
 
@@ -104,12 +118,11 @@ contains
     x3alllims=[x3all(1),x3all(lx3all)]
   end subroutine set_fullgrid_lims
 
-
+  !! FIXME: deprecated?
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
-  !    the grid type/class already be defined.  As an option the final argument will overwrite the x1
-  !    direction and force that particular array to be adopted for the x1 coordinate.  
+  !    the grid type/class already be defined.
   subroutine grid_from_extents(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     integer, intent(in) :: lx1wg,lx2wg,lx3wg
@@ -124,10 +137,15 @@ contains
     end if
 
     ! create temp space
-    allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
+    !allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
 
+    ! see if we need to allocate x1 module variable or if it is already set up
+    if (.not. allocated(x1)) then
+      allocate(x1(lx1wg))
+      x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]    ! usually x1 is nonuniform and already set up here but if not allocate and set using uniform forcing.  If already allocated then the limits will be ignored.
+    end if
     ! make uniformly spaced coordinate arrays
-    x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]    ! usually x1 is nonuniform...
+    allocate(x2(lx2wg),x3(lx3wg))
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
     x3=[(x3lims(1) + (x3lims(2)-x3lims(1))/(lx3wg-1)*(ix3-1),ix3=1,lx3wg)]
 
@@ -136,8 +154,9 @@ contains
     call grid_internaldata_generate(x)
 
     ! get rid of temp. arrays
-    deallocate(x1,x2,x3)
+    deallocate(x2,x3)
   end subroutine grid_from_extents
+
 
 !  ! FIXME: split into grid_alloc and generate_worker_grid; add interfaces for both to libgemini and C
 !  !> this version additionally allocates the input argument, which is now a pointer
