@@ -43,7 +43,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in
 
 implicit none (type, external)
 
@@ -173,6 +173,14 @@ contains
 
     call get_species_size(lspout)
   end subroutine get_species_size_C
+
+
+  !> return grid limits (full grid) from module
+  subroutine get_fullgrid_lims_C(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax) bind(C,name='get_fullgrid_lims_C')
+    real(wp), intent(inout) :: x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax
+
+    call get_fullgrid_lims_in(x1min,x1max,x2allmin,x2allmax,x3allmin,x3allmax)
+  end subroutine get_fullgrid_lims_C
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory specifically internal variables
