@@ -134,7 +134,7 @@ contains
 
   !> output just a the local subgrid data to a file
   subroutine plasma_output_nompi(outdir,flagoutput,ymd,UTsec,ns,vs1,vs2,vs3,Ts, &
-                                                Phi,J1,J2,J3)
+                                                Phi,J1,J2,J3,identifier)
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -142,8 +142,10 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phi   ! okay to have ghost cells b/c already resides on root.
     real(wp), dimension(1:,1:,1:), intent(in) :: J1,J2,J3
+    integer, intent(in), optional :: identifier
 
     character(:), allocatable :: filenamefull
+    character(1) :: IDstr
     integer :: isp
     type(hdf5_file) :: hout
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg,v1avg,Tavg,ne,Te
@@ -165,7 +167,14 @@ contains
     end if
  
     !> get filename
-    filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
+    if (.not. present(identifier)) then
+      filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
+    else
+      print*, 'int identifier:  ',identifier
+      write(IDstr,'(I1.1)') identifier
+      print*, 'Appending global_num to filename:  ',IDstr
+      filenamefull = date_filename(outdir,ymd,UTsec) // '_' // IDstr // '.h5'
+    end if
     print *, 'HDF5 Output file name:  ', filenamefull
   
     call hout%open(filenamefull, action='w',comp_lvl=comp_lvl)

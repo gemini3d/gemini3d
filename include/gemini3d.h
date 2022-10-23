@@ -78,7 +78,7 @@ extern void check_dryrun_C(void**);
 extern void maxcfl_C(double**, int*, void**, double*, double*);
 extern void dateinc_C(double*, int*, double*);
 extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
-extern void plasma_output_nompi_C(void**, int*, double*, double**, double**);
+extern void plasma_output_nompi_C(void**, int*, double*, double**, double**, int*);
 extern void read_fullsize_gridcenter_C(void**);
 extern void grid_from_extents_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
 extern void gemini_grid_alloc_C(double*,double*,double*,int*,int*,int*,int*,void**);
