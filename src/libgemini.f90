@@ -316,6 +316,11 @@ contains
     allocate(fluidauxvars(-1:lx1+2,-1:lx2+2,-1:lx3+2,2*lsp+9))
     !> electrodynamic state variables (lx1,lx2,lx3)
     allocate(electrovars(-1:lx1+2,-1:lx2+2,-1:lx3+2,7))
+
+    !> this is a safety bit of code to make sure everything starts to zero; apparently some things are not getting initialized in some cases
+    fluidvars=0._wp
+    fluidauxvars=0._wp
+    electrovars=0._wp
   end subroutine gemini_double_alloc
 
 

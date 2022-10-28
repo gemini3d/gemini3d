@@ -220,21 +220,29 @@ subroutine VNRicht_artvisc(ns,vs1,Q)
   integer :: isp,lsp
 
   lsp=size(ns,4)
-  !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
-  ! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
+
+  !print*, shape(vs1)
+  !print*, shape(ns)
+
+   !print*, 'viscous:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
+
+!  !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
+!  ! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
   do isp=1,lsp-1
     v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
     dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
     Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
   end do
   Q(:,:,:,lsp) = 0
+   !Q=0.0
 end subroutine VNRicht_artvisc
 
 
 !> Adiabatic compression term, including (precomputed) artifical viscosity.  All velocities must be haloed a single
 !    point prior to calling this procedure.  Upon entering this procedure the specific internal energy density contains
-!    the most recent updated state, while the temperature may or mat not.  Upon exit both the energy density and temp.
-!    can be considered fully updated.
+!    the most recent updated state, while the temperature may or mat not.  Upon exit only the energy density is updated.
 subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -244,6 +252,10 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
   real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
   integer :: isp,lsp
+
+   !print*, 'compression:  ',  shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
 
   lsp=size(vs1,4)
   do isp=1,lsp
@@ -466,6 +478,10 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
   integer :: isp,lsp
 
+   !print*, 'vs1 source/loss begin:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
+
   lsp=size(rhovs1,4)
   do isp=1,lsp-1
     paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
@@ -473,6 +489,10 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
     rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
   end do
+
+   !print*, 'vs1 source/loss middle:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
 
   ! Update velocity and momentum for electrons
   ! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
@@ -483,6 +503,20 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
   vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
   rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)              ! update electron momentum in case it is ever used
+
+   !print*, 'vs1 source/loss end:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
+   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
+
+   if (maxval(abs(vs1(1:lx1,1:lx2,1:lx3,:))) > 1e5) then
+     print*, 'Data corrupted in momentum source solve!'
+     print*, vs1(1:lx1,lx2,lx3,6)
+     print*, 'Data corrupted in momentum source solve!'
+     print*, vs1(1:lx1,lx2-1,lx3-1,6)
+     print*, 'Data corrupted in momentum source solve!'
+     print*, vs1(1:lx1,lx2-2,lx3-2,6)
+     error stop
+   end if
 end subroutine momentum_source_loss
 
 
