@@ -314,8 +314,6 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
 
-    print*, 'F global_num:  ',identifier
-
     call c_f_pointer(cfgC,cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])

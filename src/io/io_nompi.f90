@@ -38,6 +38,12 @@ contains
     real(wp), dimension(:,:,:), allocatable :: x1imat,x2imat,x3imat    ! variables for interpolation sites
     real(wp), dimension(:), allocatable :: x1i,x2i,x3i    ! variables for interpolation sites
     integer :: ix1,ix2,ix3
+
+    ! set initially to zero to cover ghost cell data so that it is initialized with random junk
+    ns=0._wp
+    vs1=0._wp
+    Ts=0._wp
+    Phi=0._wp
  
     ! convenience
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
@@ -170,9 +176,7 @@ contains
     if (.not. present(identifier)) then
       filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
     else
-      print*, 'int identifier:  ',identifier
       write(IDstr,'(I1.1)') identifier
-      print*, 'Appending global_num to filename:  ',IDstr
       filenamefull = date_filename(outdir,ymd,UTsec) // '_' // IDstr // '.h5'
     end if
     print *, 'HDF5 Output file name:  ', filenamefull
