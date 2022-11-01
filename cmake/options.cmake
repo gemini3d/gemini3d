@@ -22,7 +22,7 @@ else()
   set(arith d)
 endif()
 
-option(dev "Gemini developer mode")
+option(dev "developer mode: extra compile warnings")
 
 option(cpp "also build Gemini3D C++ frontend prototype" on)
 
@@ -30,9 +30,9 @@ option(glow "use NCAR GLOW airglow / aurora model" on)
 
 option(hwm14 "use HWM14 neutral winds model")
 
-option(python "PyGemini checks")
+option(python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
-option(matlab "Matlab checks")
+option(matlab "Matlab-based self-checks")
 
 set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
