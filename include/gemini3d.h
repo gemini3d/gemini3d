@@ -86,6 +86,7 @@ extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
 extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
+extern void checkE1_C(double**, double**, double**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
