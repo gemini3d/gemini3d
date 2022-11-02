@@ -424,7 +424,7 @@ do isp=1,lsp
                 +geom &
                 +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*x%g1
 
-!  print*, minval(E1filt),maxval(E1filt),minval(E1),maxval(E1)
+  print*, minval(E1filt),maxval(E1filt),minval(E1),maxval(E1)
 !  Pr(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1filt+Epol1) &
 !                -pressure*gradlp1 &
 !                -gradQ &
