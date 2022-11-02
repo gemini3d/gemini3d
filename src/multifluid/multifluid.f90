@@ -110,6 +110,9 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   integer :: iprec
   real(wp) :: tstart,tfin
 
+  !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
+
+
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
     call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
@@ -130,6 +133,8 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
   !end if
+
+  !print*, 'After energy substep:  ',minval(E1),maxval(E1)
 
   !ALL VELOCITY SOURCES
   call cpu_time(tstart)

@@ -59,7 +59,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in
+            get_fullgrid_lims_in,checkE1
 
 
 !! temp file used by MSIS 2.0
@@ -907,6 +907,26 @@ contains
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
                                      intvars%iver,gavg,Tninf,intvars%eprecip)
   end subroutine source_loss_allparams_in
+
+
+  !> print out min/max values for variables
+  subroutine checkE1(fluidvars,fluidauxvars,electrovars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    print*, 'min/max E1:  ',minval(E1),maxval(E1)
+  end subroutine checkE1
+
+
 
 
   !> return the maximum cfl over the grid

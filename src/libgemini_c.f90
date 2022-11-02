@@ -43,7 +43,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1
 
 implicit none (type, external)
 
@@ -732,6 +732,23 @@ contains
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,logical(first),gavg,Tninf)
   end subroutine source_loss_allparams_C
+
+
+  !> echo print variable min/max for checking
+  subroutine checkE1_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="checkE1_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call checkE1(fluidvars,fluidauxvars,electrovars)
+  end subroutine checkE1_C
+
 
 
   !> interface for computing cfl number
