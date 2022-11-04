@@ -2,7 +2,7 @@
 !    mpi-agnostic
 module io_nompi
 
-use phys_consts, only : lsp,wp,comp_lvl
+use phys_consts, only : lsp,wp,comp_lvl,mindens
 use interpolation, only : interp3
 use grid, only : gridflag,lx1,lx2,lx3,get_grid3_coords_hdf5
 use timeutils, only : date_filename
@@ -75,7 +75,7 @@ contains
     x1i=pack(x1imat,.true.)
     x2i=pack(x2imat,.true.)
     x3i=pack(x3imat,.true.)
-    deallocate(x1imat,x2imat,x3imat)
+    deallocate(x1imat,x2imat,x3imat)    ! nuke these as soon as we are done with them
   
     ! get the input grid coordinates
     print*, 'indatgrid:  ',indatgrid
@@ -83,7 +83,7 @@ contains
       case ('.h5')
         call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
       case default
-        error stop 'input_plasma: unknown grid format: ' // suffix(indatsize)
+        error stop 'input_plasma: only hdf5 files supported: ' // suffix(indatsize)
     end select
 
     !print*, x1in(1:lx1in)
@@ -127,12 +127,29 @@ contains
     parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
                        x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
-    print*, 'interp_file2subgrid:  interplations complete...'
+    print*, 'interp_file2subgrid:  interpolations complete...'
 
-    !print*, '====================================================================================='
-    !print*, ns(:,1,1,7)
-    !print*, '====================================================================================='
- 
+    ! at this point to be totally safe we should set the ghost cells
+    ns(-1:0,:,:,:)=mindens
+    ns(:,-1:0,:,:)=mindens
+    ns(:,:,-1:0,:)=mindens
+    ns(lx1+1:lx1+2,:,:,:)=mindens
+    ns(:,lx2+1:lx2+2,:,:)=mindens
+    ns(:,:,lx3+1:lx3+2,:)=mindens
+    vs1(-1:0,:,:,:)=0
+    vs1(:,-1:0,:,:)=0
+    vs1(:,:,-1:0,:)=0
+    vs1(lx1+1:lx1+2,:,:,:)=0
+    vs1(:,lx2+1:lx2+2,:,:)=0
+    vs1(:,:,lx3+1:lx3+2,:)=0 
+    Ts(-1:0,:,:,:)=100
+    Ts(:,-1:0,:,:)=100
+    Ts(:,:,-1:0,:)=100
+    Ts(lx1+1:lx1+2,:,:,:)=100
+    Ts(:,lx2+1:lx2+2,:,:)=100
+    Ts(:,:,lx3+1:lx3+2,:)=100
+
+    ! get rid of local vars 
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)
   end subroutine interp_file2subgrid

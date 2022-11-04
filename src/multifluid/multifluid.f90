@@ -53,6 +53,7 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
 
   call sweep3_allspec(ns,vs3i,dt,x,0,6)
+  !print*, 'sweep3 min/max ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
   call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
   call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
 end subroutine sweep3_allparams
@@ -483,9 +484,16 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
   integer :: isp,lsp
 
-   !print*, 'vs1 source/loss begin:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
+!   if (maxval(abs(vs1(1:lx1,1:lx2,1:lx3,:))) > 1e4) then
+!     print*, maxloc(abs(vs1(1:lx1,1:lx2,1:lx3,:)))
+!     print*, 'Data corrupted before momentum source solve!'
+!     print*, vs1(1:lx1,lx2,lx3,6)
+!     print*, 'Data corrupted before momentum source solve!'
+!     print*, vs1(1:lx1,lx2-1,lx3-1,6)
+!     print*, 'Data corrupted before momentum source solve!'
+!     print*, vs1(1:lx1,lx2-2,lx3-2,6)
+!     error stop
+!   end if
 
   lsp=size(rhovs1,4)
   do isp=1,lsp-1
@@ -512,16 +520,6 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
    !print*, 'vs1 source/loss end:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
    !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
    !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
-
-   if (maxval(abs(vs1(1:lx1,1:lx2,1:lx3,:))) > 1e5) then
-     print*, 'Data corrupted in momentum source solve!'
-     print*, vs1(1:lx1,lx2,lx3,6)
-     print*, 'Data corrupted in momentum source solve!'
-     print*, vs1(1:lx1,lx2-1,lx3-1,6)
-     print*, 'Data corrupted in momentum source solve!'
-     print*, vs1(1:lx1,lx2-2,lx3-2,6)
-     error stop
-   end if
 end subroutine momentum_source_loss
 
 
