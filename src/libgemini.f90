@@ -498,6 +498,14 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%indatgrid,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
 
+    ! it's important to note that the file input *does not specify* vs2,vs3 so we need to set some initial
+    !   values here, otherwise we may just get existing garbage in memory.
+    vs2=0._wp; vs3=0._wp;
+
+    ! the input code also does not assign electrodynamic variables
+    E1=0._wp; E2=0._wp; E3=0._wp; J1=0._wp; J2=0._wp; J3=0._wp;
+
+    ! this is a good time to do some error checking since each patch only calls this code once per simulation
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     Tlower=0; Tupper=20000;
