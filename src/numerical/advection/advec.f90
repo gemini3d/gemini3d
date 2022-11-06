@@ -31,6 +31,7 @@ contains
     real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
     real(wp) :: tstart,tfini
     logical :: flagupedge,flagdownedge,flagleftedge,flagrightedge
+    real(wp), dimension(-1:size(ns,2)-2,-1:size(ns,3)-2) :: Tbndry
     
     lx1=size(vs1,1)-4
     lx2=size(vs1,2)-4
@@ -62,11 +63,18 @@ contains
     !! now convert to momentum density
     rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
     
-    !> FOR INTERNAL ENERGY
-    rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
-    rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
-    rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
-    rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
+    !> FOR INTERNAL ENERGY, note that x1 boundaries need to assume constant *temperature* not constant specific internal energy density
+    Tbndry=rhoes(1,:,:,isp)/ns(1,:,:,isp)    ! proportional to temperature :)
+    !rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
+    !rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
+    rhoes(0,:,:,isp)=Tbndry*ns(0,:,:,isp)
+    rhoes(-1,:,:,isp)=Tbndry*ns(-1,:,:,isp)
+    Tbndry=rhoes(lx1,:,:,isp)/ns(lx1,:,:,isp)
+    !rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
+    !rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
+    rhoes(lx1+1,:,:,isp)=Tbndry*ns(lx1+1,:,:,isp)
+    rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
+
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! What follows requires determining where we are on with respect to the edges of the global grid
@@ -219,7 +227,7 @@ contains
     !      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:)      !cleans up large current situations
     !    end if
   
-    !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
+    !> AFTER HALOING CAN COMPUTE THE X2,X3 INTERFACE VELOCITIES NORMALLY
     v2i(:,1:lx2+1,:)=0.5_wp*(vs2(1:lx1,0:lx2,1:lx3,isp)+vs2(1:lx1,1:lx2+1,1:lx3,isp))
     v3i(:,:,1:lx3+1)=0.5_wp*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
   end subroutine interface_vels
