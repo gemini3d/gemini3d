@@ -303,13 +303,15 @@ contains
 
 
   !> wrapper to have a worker dump their state var data to a file
-  subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC,identifier) bind(C,name="plasma_output_nompi_C")
+  subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC, &
+                                     identifier,x1lims,x2lims,x3lims) bind(C,name="plasma_output_nompi_C")
     type(c_ptr), intent(in) :: cfgC
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: electrovarsC
     integer, intent(in) :: identifier
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
@@ -317,7 +319,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
-    call plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars,identifier)
+    call plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars,identifier,x1lims,x2lims,x3lims)
   end subroutine plasma_output_nompi_C
 
 

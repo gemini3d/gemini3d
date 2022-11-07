@@ -519,7 +519,7 @@ contains
 
 
   !> Basic utility to have each worker dump state variable contents to a file
-  subroutine plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars,identifier)
+  subroutine plasma_output_nompi_in(cfg,ymd,UTsec,fluidvars,electrovars,identifier,x1lims,x2lims,x3lims)
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -527,11 +527,13 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     integer, intent(in) :: identifier
+    real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call plasma_output_nompi(cfg%outdir,cfg%flagoutput,ymd,UTsec,ns, &
-                               vs1,vs2,vs3,Ts,Phi,J1,J2,J3,identifier)
+                               vs1,vs2,vs3,Ts,Phi,J1,J2,J3, &
+                               identifier,x1lims,x2lims,x3lims)
   end subroutine plasma_output_nompi_in
 
 
