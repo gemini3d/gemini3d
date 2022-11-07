@@ -157,7 +157,7 @@ contains
 
   !> output just a the local subgrid data to a file
   subroutine plasma_output_nompi(outdir,flagoutput,ymd,UTsec,ns,vs1,vs2,vs3,Ts, &
-                                                Phi,J1,J2,J3,identifier)
+                                                Phi,J1,J2,J3,identifier,x1lims,x2lims,x3lims)
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -166,9 +166,10 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phi   ! okay to have ghost cells b/c already resides on root.
     real(wp), dimension(1:,1:,1:), intent(in) :: J1,J2,J3
     integer, intent(in), optional :: identifier
+    real(wp), dimension(2), intent(in), optional :: x1lims,x2lims,x3lims
 
     character(:), allocatable :: filenamefull
-    character(1) :: IDstr
+    character(10) :: IDstr
     integer :: isp
     type(hdf5_file) :: hout
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg,v1avg,Tavg,ne,Te
@@ -193,8 +194,8 @@ contains
     if (.not. present(identifier)) then
       filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
     else
-      write(IDstr,'(I1.1)') identifier
-      filenamefull = date_filename(outdir,ymd,UTsec) // '_' // IDstr // '.h5'
+      write(IDstr,'(I0)') identifier
+      filenamefull = date_filename(outdir,ymd,UTsec) // '_' // trim(IDstr) // '.h5'
     end if
     print *, 'HDF5 Output file name:  ', filenamefull
   
@@ -202,6 +203,10 @@ contains
     call hout%write("/flagoutput", flagoutput)
     call hout%write('/time/ymd', ymd)
     call hout%write('/time/UThour',   real(UTsec/3600.))
+    if (present(x1lims)) call hout%write('/x1lims',real(x1lims))
+    if (present(x2lims)) call hout%write('/x2lims',real(x2lims))
+    if (present(x3lims)) call hout%write('/x3lims',real(x3lims))
+    if (present(identifier)) call hout%write('/patchID',identifier)
 
     select case (flagoutput)
       case (2)    !output ISR-like average parameters
