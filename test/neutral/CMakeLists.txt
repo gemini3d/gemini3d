@@ -32,3 +32,5 @@ set_tests_properties(Projection PROPERTIES
 LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
+
+dll_test_path("ffilesystem::filesystem" Projection)
