@@ -201,7 +201,7 @@ end if
 end subroutine thermal_conduct
 
 
-subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav,E1,E2,E3,x)
 !! COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
 !! VARS. INCLUDE GHOST CELLS
 
@@ -218,6 +218,9 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(in
 !! defined for each ion species, summed over neutral species
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: sigPgrav,sigHgrav
 !! intent(out)
+!! From NLC conductivities
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
+class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
 
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs

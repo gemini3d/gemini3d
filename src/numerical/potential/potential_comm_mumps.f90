@@ -152,7 +152,7 @@ contains
 
     !> update conductivities and mobilities
     call cpu_time(tstart)
-    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+    call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav,E1,E2,E3,x)
     call cpu_time(tfin)
     if (mpi_cfg%myid==0) then
       if (cfg%flagcap/=0) then
