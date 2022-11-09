@@ -54,7 +54,7 @@ extern void gemini_work_dealloc_C(void**, void**);
 extern void set_start_values_auxtimevars_C(int*, double*, double*, double*, double*);
 extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
-extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*);
+extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*,int*);
 extern void msisinit_C(void**);
 extern void init_neutralBG_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void set_update_cadence_C(int*);
@@ -87,7 +87,7 @@ extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
 extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
-extern void checkE1_C(double**, double**, double**);
+extern void checkE1_C(double**, double**, double**, int*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
