@@ -161,13 +161,13 @@ contains
         flagoutput=1    !force a full output at the milestone
         call output_plasma(cfg%outdir,flagoutput,ymd, &
           UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
-          cfg%out_format)
+          cfg%out_format,intvars%sigP,intvars%sigH)
         tmilestone = t + cfg%dtout * cfg%mcadence
         if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
       else
         call output_plasma(cfg%outdir,flagoutput,ymd, &
           UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
-          cfg%out_format)
+          cfg%out_format,intvars%sigP,intvars%sigH)
       end if
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
@@ -271,7 +271,7 @@ contains
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
-    call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav,E1,E2,E3,x)
+    call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)!Don't need NLC, since muP and muH are passed
     call velocities(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
@@ -434,7 +434,7 @@ contains
     ! E&M solves
     call electrodynamics(it,t,dt,intvars%atmos%nn,intvars%atmos%vn2,intvars%atmos%vn3,intvars%atmos%Tn, &
                            cfg,ns,Ts,vs1,B1,vs2,vs3,x,intvars%efield,E1,E2,E3,J1,J2,J3, &
-                           intvars%Phiall,ymd,UTsec)
+                           intvars%Phiall,ymd,UTsec,intvars%sigP,intvars%sigH)
   end subroutine electrodynamics_in
 
 

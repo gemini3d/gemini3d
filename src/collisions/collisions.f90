@@ -1,13 +1,13 @@
 module collisions
 
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
-use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
+use phys_consts, only: wp, lsp, ln, ms, mn, kb, pi, elchrg, qs, debug
 use gemini3d_config, only: gemini_cfg
 use meshobj, only : curvmesh
 
 implicit none (type, external)
 private
-public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
+public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln, NLConductivity
 
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( [ real(wp) :: &
@@ -201,7 +201,7 @@ end if
 end subroutine thermal_conduct
 
 
-subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav,E1,E2,E3,x)
+subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 !! COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
 !! VARS. INCLUDE GHOST CELLS
 
@@ -218,9 +218,7 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(in
 !! defined for each ion species, summed over neutral species
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: sigPgrav,sigHgrav
 !! intent(out)
-!! From NLC conductivities
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
-class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
+
 
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs

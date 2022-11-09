@@ -86,7 +86,7 @@ interface !< plasma.f90
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
   end subroutine interp_file2subgrid
 
-  module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
+  module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format,sigP,sigH)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -94,6 +94,7 @@ interface !< plasma.f90
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
+    real(wp), dimension(:,:,:), intent(in) :: sigP, sigH
   end subroutine output_plasma
 end interface
 

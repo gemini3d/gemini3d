@@ -5,7 +5,7 @@ implicit none (type, external)
 interface ! plasma_output_*.f90
 
 module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                              Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
+                                              Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,sigPall,sigHall)
   character(*), intent(in) :: outdir
   integer, intent(in) :: flagoutput
   integer, dimension(3), intent(in) :: ymd
@@ -15,13 +15,15 @@ module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avga
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
   real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all
   real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
+  real(wp), dimension(:,:,:), intent(in) :: sigPall, sigHall
+
 end subroutine
 
 end interface
 
 contains
 
-subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
+subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,sigP,sigH)
 
 !------------------------------------------------------------
 !-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
@@ -32,6 +34,8 @@ subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
+real(wp), dimension(:,:,:), intent(in) :: sigP, sigH
+
 integer :: isp
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp
@@ -60,6 +64,11 @@ call gather_send(Jtmp,tag%J2)
 Jtmp=J3(1:lx1,1:lx2,1:lx3)
 call gather_send(Jtmp,tag%J3)
 
+!> SEND CONDUCTIVITIES
+call gather_send(sigP,tag%sigP)
+call gather_send(sigH,tag%sigH)
+
+
 end subroutine output_workers_mpi
 
 
@@ -71,15 +80,15 @@ module procedure output_plasma
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
 if (mpi_cfg%myid == 0) then
-  call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
+  call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,sigP,sigH)
 else
-  call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
+  call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,sigP,sigH)
 end if
 
 end procedure output_plasma
 
 
-subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
+subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,sigP,sigH)
 !------------------------------------------------------------
 !------- Root needs to gather data and pass to subroutine to
 !------- write to disk in the appropriate format.
@@ -92,12 +101,14 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
+real(wp), dimension(:,:,:), intent(in) :: sigP, sigH
+
 integer :: isp
 real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
 real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
 real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
 real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp
-real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all
+real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all, sigPall, sigHall
 
 
 print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
@@ -122,6 +133,11 @@ call gather_recv(Jtmp,tag%J2,J2all)
 Jtmp=J3(1:lx1,1:lx2,1:lx3)
 call gather_recv(Jtmp,tag%J3,J3all)
 
+!> ADD CONDUCTIVITIES
+call gather_recv(sigP,tag%sigP,sigPall)
+call gather_recv(sigH,tag%sigH,sigHall)
+
+
 !COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
 !> possible bottleneck; should have workers help?
 !> also only compute these if they are actually being output
@@ -141,7 +157,7 @@ end if
 select case (out_format)
 case ('h5')
   call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                     Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
+                                     Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,sigPall,sigHall)
 case default
   error stop 'plasma_output:output_root_stream_api: unknown format' // out_format
 end select

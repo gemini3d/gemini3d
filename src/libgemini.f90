@@ -71,6 +71,8 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: vs2i
   real(wp), dimension(:,:,:,:), pointer :: vs3i
   real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
+  real(wp), dimension(:,:,:), pointer :: sigP
+  real(wp), dimension(:,:,:), pointer :: sigH
 
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos
@@ -223,6 +225,8 @@ contains
     allocate(intvars%vs2i(1:lx1,1:lx2+1,1:lx3,1:lsp))
     allocate(intvars%vs3i(1:lx1,1:lx2,1:lx3+1,1:lsp))
     allocate(intvars%Q(1:lx1,1:lx2,1:lx3,1:lsp))
+    allocate(intvars%sigP(1:lx1,1:lx2,1:lx3))
+    allocate(intvars%sigH(1:lx1,1:lx2,1:lx3))
 
     allocate(intvars%eprecip)
     allocate(intvars%efield)
@@ -336,6 +340,8 @@ contains
     deallocate(intvars%vs2i)
     deallocate(intvars%vs3i)
     deallocate(intvars%Q)
+    deallocate(intvars%sigP)
+    deallocate(intvars%sigH)
 
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
