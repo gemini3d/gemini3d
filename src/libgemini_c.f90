@@ -365,16 +365,18 @@ contains
   end subroutine set_start_values_auxtimevars_C
 
 
-  subroutine get_cfg_timevars_C(cfgC,tmilestone,flagneuBG,dtneuBG,flagdneu) bind(C, name='get_cfg_timevars_C')
+  subroutine get_cfg_timevars_C(cfgC,tmilestone,flagneuBG,dtneuBG,flagdneu,flagoutput) &
+                      bind(C, name='get_cfg_timevars_C')
     type(C_PTR), intent(in) :: cfgC
     real(wp), intent(inout) :: tmilestone
     logical, intent(inout) :: flagneuBG
     real(wp), intent(inout) :: dtneuBG
     integer, intent(inout) :: flagdneu
+    integer, intent(inout) :: flagoutput
     type(gemini_cfg), pointer :: cfg
 
     call c_f_pointer(cfgC,cfg)
-    call get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu)
+    call get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu,flagoutput)
   end subroutine get_cfg_timevars_C
 
 
@@ -750,10 +752,11 @@ contains
 
 
   !> echo print variable min/max for checking
-  subroutine checkE1_C(fluidvarsC,fluidauxvarsC,electrovarsC) bind(C, name="checkE1_C")
+  subroutine checkE1_C(fluidvarsC,fluidauxvarsC,electrovarsC,locID) bind(C, name="checkE1_C")
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
     type(c_ptr), intent(in) :: electrovarsC
+    integer, intent(in) :: locID
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars
@@ -761,7 +764,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
-    call checkE1(fluidvars,fluidauxvars,electrovars)
+    call checkE1(fluidvars,fluidauxvars,electrovars,locID)
   end subroutine checkE1_C
 
 
