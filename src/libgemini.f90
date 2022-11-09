@@ -99,6 +99,11 @@ type, bind(C) :: c_params
 end type c_params
 
 
+interface checkarray
+  procedure :: checkarray3D,checkarray4D
+end interface checkarray
+
+
 contains
   !> interface subroutine from which we can read in ONLY the grid sizes
   subroutine grid_size_in(cfg)
@@ -510,9 +515,9 @@ contains
     vlower=-1e4; vupper=1e4;
     Tlower=0; Tupper=20000;
     print*, 'In fortran file i/o...'
-    errflag=errflag .or. checkarray(ns,nlower,nupper,'>>> Full density corrupted:  ')
-    errflag=errflag .or. checkarray(vs1,vlower,vupper,'>>> Full velocity corrupted:  ')
-    errflag=errflag .or. checkarray(Ts,Tlower,Tupper,'>>> Full temperature corrupted:  ')
+    errflag=errflag .or. checkarray(ns,nlower,nupper,'>>> Full density corrupted:  ',0)
+    errflag=errflag .or. checkarray(vs1,vlower,vupper,'>>> Full velocity corrupted:  ',0)
+    errflag=errflag .or. checkarray(Ts,Tlower,Tupper,'>>> Full temperature corrupted:  ',0)
     if (errflag) error stop
     print*, 'Exiting fortran file i/o...'
   end subroutine interp_file2subgrid_in
@@ -572,17 +577,19 @@ contains
 
 
   ! pull relevant time variables from the cfg structure
-  subroutine get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu)
+  subroutine get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu,flagoutput)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(inout) :: tmilestone
     logical, intent(inout) :: flagneuBG
     real(wp), intent(inout) :: dtneuBG
     integer, intent(inout) :: flagdneu
+    integer, intent(inout) :: flagoutput
 
     tmilestone=0._wp   ! make sure first output is a milestone
     flagneuBG=cfg%flagneuBG
     dtneuBG=cfg%dtneuBG
     flagdneu=cfg%flagdneu
+    flagoutput=cfg%flagoutput
   end subroutine get_cfg_timevars
 
 
@@ -965,142 +972,334 @@ contains
 
 
   !> print out min/max values for variables
-  subroutine checkE1(fluidvars,fluidauxvars,electrovars)
+  subroutine checkE1(fluidvars,fluidauxvars,electrovars,locID)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    integer, intent(in) :: locID
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
     real(wp) :: nlower,nupper,vlower,vupper,Tlower,Tupper
+    real(wp) :: Eparlower,Eparupper,Elower,Eupper,Jlower,Jupper,Philower,Phiupper
+    real(wp) :: rhovlower,rhovupper,rhoeslower,rhoesupper,Blower,Bupper
     logical :: errflag=.false.
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Check main variables
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! force a check on the interior cells of the domain
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     Tlower=0; Tupper=20000;
 
-    ! force a check on the interior cells of the domain
     errflag=errflag .or. checkarray(ns(3:lx1+2,3:lx2+2,3:lx3+2,:),nlower,nupper, &
-                                     '>>> Interior density data corrupted:  ')
+                                     '>>> Interior density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:),vlower,vupper, &
-                                     '>>> Interior velocity data corrupted:  ')
+                                     '>>> Interior velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:),Tlower,Tupper, &
-                                     '>>> Interior temperature data corrupted:  ')
+                                     '>>> Interior temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:),vlower,vupper, &
+                                     '>>> Interior v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:),vlower,vupper, &
+                                     '>>> Interior v3 data corrupted:  ',locID)
  
     ! now check the bottom ghost cells
     errflag=errflag .or. checkarray(ns(1:2,:,:,:),nlower,nupper, &
-                                     '>>> Bottom density data corrupted:  ')
+                                     '>>> Bottom density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(1:2,:,:,:),vlower,vupper, &
-                                     '>>> Bottom velocity data corrupted:  ')
+                                     '>>> Bottom velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(1:2,:,:,:),Tlower,Tupper, &
-                                     '>>> Bottom temperature data corrupted:  ')
+                                     '>>> Bottom temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(1:2,:,:,:),vlower,vupper, &
+                                     '>>> Bottom v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(1:2,:,:,:),vlower,vupper, &
+                                     '>>> Bottom v3 data corrupted:  ',locID)
  
     ! check top
     errflag=errflag .or. checkarray(ns(lx1+3:lx1+4,:,:,:),nlower,nupper, &
-                                     '>>> Top density data corrupted:  ')
+                                     '>>> Top density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(lx1+3:lx1+4,:,:,:),vlower,vupper, &
-                                     '>>> Top velocity data corrupted:  ')
+                                     '>>> Top velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(lx1+3:lx1+4,:,:,:),Tlower,Tupper, &
-                                     '>>> Top temperature data corrupted:  ')
+                                     '>>> Top temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(lx1+3:lx1+4,:,:,:),vlower,vupper, &
+                                     '>>> Top v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(lx1+3:lx1+4,:,:,:),vlower,vupper, &
+                                     '>>> Top v3 data corrupted:  ',locID)
  
     ! check left
     errflag=errflag .or. checkarray(ns(:,1:2,:,:),nlower,nupper, &
-                                     '>>> Left density data corrupted:  ')
+                                     '>>> Left density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(:,1:2,:,:),vlower,vupper, &
-                                     '>>> Left velocity data corrupted:  ')
+                                     '>>> Left velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,1:2,:,:),Tlower,Tupper, &
-                                     '>>> Left temperature data corrupted:  ')
+                                     '>>> Left temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(:,1:2,:,:),vlower,vupper, &
+                                     '>>> Left v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(:,1:2,:,:),vlower,vupper, &
+                                     '>>> Left v3 data corrupted:  ',locID)
  
     ! check right
     errflag=errflag .or. checkarray(ns(:,lx2+3:lx2+4,:,:),nlower,nupper, &
-                                     '>>> Right density data corrupted:  ')
+                                     '>>> Right density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(:,lx2+3:lx2+4,:,:),vlower,vupper, &
-                                     '>>> Right velocity data corrupted:  ')
+                                     '>>> Right velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,lx2+3:lx2+4,:,:),Tlower,Tupper, &
-                                     '>>> Right temperature data corrupted:  ')
+                                     '>>> Right temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(:,lx2+3:lx2+4,:,:),vlower,vupper, &
+                                     '>>> Right v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(:,lx2+3:lx2+4,:,:),vlower,vupper, &
+                                     '>>> Right v3 data corrupted:  ',locID)
  
     ! check bwd
     errflag=errflag .or. checkarray(ns(:,:,1:2,:),nlower,nupper, &
-                                     '>>> Bwd density data corrupted:  ')
+                                     '>>> Bwd density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(:,:,1:2,:),vlower,vupper, &
-                                     '>>> Bwd velocity data corrupted:  ')
+                                     '>>> Bwd velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,:,1:2,:),Tlower,Tupper, &
-                                     '>>> Bwd temperature data corrupted:  ')
+                                     '>>> Bwd temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(:,:,1:2,:),vlower,vupper, &
+                                     '>>> Bwd v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(:,:,1:2,:),vlower,vupper, &
+                                     '>>> Bwd v3 data corrupted:  ',locID)
  
     ! check fwd
     errflag=errflag .or. checkarray(ns(:,:,lx3+3:lx3+4,:),nlower,nupper, &
-                                     '>>> Fwd density data corrupted:  ')
+                                     '>>> Fwd density data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs1(:,:,lx3+3:lx3+4,:),vlower,vupper, &
-                                     '>>> Fwd velocity data corrupted:  ')
+                                     '>>> Fwd velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,:,lx3+3:lx3+4,:),Tlower,Tupper, &
-                                     '>>> Fwd temperature data corrupted:  ')
- 
+                                     '>>> Fwd temperature data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs2(:,:,lx3+3:lx3+4,:),vlower,vupper, &
+                                     '>>> Fwd v2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(vs3(:,:,lx3+3:lx3+4,:),vlower,vupper, &
+                                     '>>> Fwd v3 data corrupted:  ',locID)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Check electro variables
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Eparlower=-1e-4; Eparupper=1e-4;
+    Elower=-0.5; Eupper=0.5;
+    Jlower=-1e-3; Jupper=1e-3;
+    Philower=-1e5; Phiupper=1e5;
+
+    errflag=errflag .or. checkarray(E1(3:lx1+2,3:lx2+2,3:lx3+2),Eparlower,Eparupper, &
+                                     '>>> Interior E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(3:lx1+2,3:lx2+2,3:lx3+2),Elower,Eupper, &
+                                     '>>> Interior E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(3:lx1+2,3:lx2+2,3:lx3+2),Elower,Eupper, &
+                                     '>>> Interior E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(3:lx1+2,3:lx2+2,3:lx3+2),Jlower,Jupper, &
+                                     '>>> Interior J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(3:lx1+2,3:lx2+2,3:lx3+2),Jlower,Jupper, &
+                                     '>>> Interior J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(3:lx1+2,3:lx2+2,3:lx3+2),Jlower,Jupper, &
+                                     '>>> Interior J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(3:lx1+2,3:lx2+2,3:lx3+2),Philower,Phiupper, &
+                                     '>>> Interior Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(1:2,:,:),Eparlower,Eparupper, &
+                                     '>>> Bottom E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(1:2,:,:),Elower,Eupper, &
+                                     '>>> Bottom E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(1:2,:,:),Elower,Eupper, &
+                                     '>>> Bottom E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(1:2,:,:),Jlower,Jupper, &
+                                     '>>> Bottom J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(1:2,:,:),Jlower,Jupper, &
+                                     '>>> Bottom J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(1:2,:,:),Jlower,Jupper, &
+                                     '>>> Bottom J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(1:2,:,:),Philower,Phiupper, &
+                                     '>>> Bottom Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(lx1+3:lx1+4,:,:),Eparlower,Eparupper, &
+                                     '>>> Top E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(lx1+3:lx1+4,:,:),Elower,Eupper, &
+                                     '>>> Top E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(lx1+3:lx1+4,:,:),Elower,Eupper, &
+                                     '>>> Top E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(lx1+3:lx1+4,:,:),Jlower,Jupper, &
+                                     '>>> Top J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(lx1+3:lx1+4,:,:),Jlower,Jupper, &
+                                     '>>> Top J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(lx1+3:lx1+4,:,:),Jlower,Jupper, &
+                                     '>>> Top J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(lx1+3:lx1+4,:,:),Philower,Phiupper, &
+                                     '>>> Top Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(:,1:2,:),Eparlower,Eparupper, &
+                                     '>>> Left E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(:,1:2,:),Elower,Eupper, &
+                                     '>>> Left E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(:,1:2,:),Elower,Eupper, &
+                                     '>>> Left E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(:,1:2,:),Jlower,Jupper, &
+                                     '>>> Left J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(:,1:2,:),Jlower,Jupper, &
+                                     '>>> Left J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(:,1:2,:),Jlower,Jupper, &
+                                     '>>> Left J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(:,1:2,:),Philower,Phiupper, &
+                                     '>>> Left Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(:,lx2+3:lx2+4,:),Eparlower,Eparupper, &
+                                     '>>> Right E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(:,lx2+3:lx2+4,:),Elower,Eupper, &
+                                     '>>> Right E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(:,lx2+3:lx2+4,:),Elower,Eupper, &
+                                     '>>> Right E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(:,lx2+3:lx2+4,:),Jlower,Jupper, &
+                                     '>>> Right J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(:,lx2+3:lx2+4,:),Jlower,Jupper, &
+                                     '>>> Right J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(:,lx2+3:lx2+4,:),Jlower,Jupper, &
+                                     '>>> Right J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(:,lx2+3:lx2+4,:),Philower,Phiupper, &
+                                     '>>> Right Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(:,:,1:2),Eparlower,Eparupper, &
+                                     '>>> Bwd E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(:,:,1:2),Elower,Eupper, &
+                                     '>>> Bwd E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(:,:,1:2),Elower,Eupper, &
+                                     '>>> Bwd E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(:,:,1:2),Jlower,Jupper, &
+                                     '>>> Bwd J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(:,:,1:2),Jlower,Jupper, &
+                                     '>>> Bwd J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(:,:,1:2),Jlower,Jupper, &
+                                     '>>> Bwd J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(:,:,1:2),Philower,Phiupper, &
+                                     '>>> Bwd Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(:,:,lx3+3:lx3+4),Eparlower,Eparupper, &
+                                     '>>> Fwd E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(:,:,lx3+3:lx3+4),Elower,Eupper, &
+                                     '>>> Fwd E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(:,:,lx3+3:lx3+4),Elower,Eupper, &
+                                     '>>> Fwd E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd Phi data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(E1(:,:,lx3+3:lx3+4),Eparlower,Eparupper, &
+                                     '>>> Fwd E1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E2(:,:,lx3+3:lx3+4),Elower,Eupper, &
+                                     '>>> Fwd E2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(E3(:,:,lx3+3:lx3+4),Elower,Eupper, &
+                                     '>>> Fwd E3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J1(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J2(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J2 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(J3(:,:,lx3+3:lx3+4),Jlower,Jupper, &
+                                     '>>> Fwd J3 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(Phi(:,:,lx3+3:lx3+4),Philower,Phiupper, &
+                                     '>>> Fwd Phi data corrupted:  ',locID)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Check aux variables
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    rhoeslower=0; rhoesupper=1;
+    rhovlower=-1; rhovupper=1;
+    Blower=-100000e-9; Bupper=100000e-9;
+
+    errflag=errflag .or. checkarray(rhovs1(3:lx1+2,3:lx2+2,3:lx3+2,:),rhovlower,rhovupper, &
+                                     '>>> Interior rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(3:lx1+2,3:lx2+2,3:lx3+2,:),rhoeslower,rhoesupper, &
+                                     '>>> Interior rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(3:lx1+2,3:lx2+2,3:lx3+2),Blower,Bupper, &
+                                     '>>> Interior B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(1:2,:,:,:),rhovlower,rhovupper, &
+                                     '>>> Bottom rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(1:2,:,:,:),rhoeslower,rhoesupper, &
+                                     '>>> Bottom rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(1:2,:,:),Blower,Bupper, &
+                                     '>>> Bottom B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(lx1+3:lx1+4,:,:,:),rhovlower,rhovupper, &
+                                     '>>> Top rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(lx1+3:lx1+4,:,:,:),rhoeslower,rhoesupper, &
+                                     '>>> Top rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(lx1+3:lx1+4,:,:),Blower,Bupper, &
+                                     '>>> Top B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(:,1:2,:,:),rhovlower,rhovupper, &
+                                     '>>> Left rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(:,1:2,:,:),rhoeslower,rhoesupper, &
+                                     '>>> Left rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(:,1:2,:),Blower,Bupper, &
+                                     '>>> Left B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(:,lx2+3:lx2+4,:,:),rhovlower,rhovupper, &
+                                     '>>> Right rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(:,lx2+3:lx2+4,:,:),rhoeslower,rhoesupper, &
+                                     '>>> Right rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(:,lx2+3:lx2+4,:),Blower,Bupper, &
+                                     '>>> Right B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(:,:,1:2,:),rhovlower,rhovupper, &
+                                     '>>> Bwd rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(:,:,1:2,:),rhoeslower,rhoesupper, &
+                                     '>>> Bwd rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(:,:,1:2),Blower,Bupper, &
+                                     '>>> Bwd B1 data corrupted:  ',locID)
+
+    errflag=errflag .or. checkarray(rhovs1(:,:,lx3+3:lx3+4,:),rhovlower,rhovupper, &
+                                     '>>> Fwd rhovs1 data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(rhoes(:,:,lx3+3:lx3+4,:),rhoeslower,rhoesupper, &
+                                     '>>> Fwd rhoes data corrupted:  ',locID)
+    errflag=errflag .or. checkarray(B1(:,:,lx3+3:lx3+4),Blower,Bupper, &
+                                     '>>> Fwd B1 data corrupted:  ',locID)
+
     if (errflag) error stop
-
-!   if (minval(ns(1:lx1,1:lx2,1:lx3,:)) < nlower .or. maxval(ns(1:lx1,1:lx2,1:lx3,:)) > nupper) then
-!     print*, 'min/max ns:  ',minval(ns(1:lx1,1:lx2,1:lx3,:)),maxval(ns(1:lx1,1:lx2,1:lx3,:)), &
-!                             minloc(ns(1:lx1,1:lx2,1:lx3,:)),maxloc(ns(1:lx1,1:lx2,1:lx3,:))
-!     print*, '>>> Interior density data corrupted:  '
-!     errflag=.true.
-!   end if
-!   if (maxval(abs(vs1(1:lx1,1:lx2,1:lx3,:))) > vmag) then
-!     print*, 'min/max vs1:  ',minval(vs1(1:lx1,1:lx2,1:lx3,:)),maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-!                              minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
-!     print*, '>>> Interior velocity data corrupted!'
-!     errflag=.true.
-!   end if
-!   if (minval(Ts(1:lx1,1:lx2,1:lx3,:)) < Tlower .or. maxval(Ts(1:lx1,1:lx2,1:lx3,:)) > Tupper) then
-!     print*, 'min/max Ts:  ',minval(Ts(1:lx1,1:lx2,1:lx3,:)),maxval(Ts(1:lx1,1:lx2,1:lx3,:)), &
-!                             minloc(Ts(1:lx1,1:lx2,1:lx3,:)),maxloc(Ts(1:lx1,1:lx2,1:lx3,:))
-!     print*, '>>> Interior temperature data corrupted!'
-!     errflag=.true.
-!   end if
-
-!   ! check the bottom ghost cells
-!   if (minval(ns(-1:0,:,:,:)) < nlower .or. maxval(ns(-1:0,:,:,:)) > nupper) then
-!     
-!   end if
-
-!     ns(-1:0,:,:,:)=mindens
-!     vs1(-1:0,:,:,:)=0
-!     Ts(-1:0,:,:,:)=100
-!
-!    ns(:,-1:0,:,:)=mindens
-!    ns(:,:,-1:0,:)=mindens
-!    ns(lx1+1:lx1+2,:,:,:)=mindens
-!    ns(:,lx2+1:lx2+2,:,:)=mindens
-!    ns(:,:,lx3+1:lx3+2,:)=mindens
-!    vs1(:,-1:0,:,:)=0
-!    vs1(:,:,-1:0,:)=0
-!    vs1(lx1+1:lx1+2,:,:,:)=0
-!    vs1(:,lx2+1:lx2+2,:,:)=0
-!    vs1(:,:,lx3+1:lx3+2,:)=0 
-!    Ts(:,-1:0,:,:)=100
-!    Ts(:,:,-1:0,:)=100
-!    Ts(lx1+1:lx1+2,:,:,:)=100
-!    Ts(:,lx2+1:lx2+2,:,:)=100
-!    Ts(:,:,lx3+1:lx3+2,:)=100
   end subroutine checkE1
 
 
   !> utility procedure to check that array values are in a certain bounds
-  logical function checkarray(array,lower,upper,errmsg) result(errflag)
+  logical function checkarray4D(array,lower,upper,errmsg,locID) result(errflag)
     real(wp), dimension(:,:,:,:), intent(in) :: array
     real(wp), intent(in) :: lower,upper
     character(*), intent(in) :: errmsg
+    integer, intent(in) :: locID
 
     if (minval(array) < lower .or. maxval(array) > upper) then
-      print*, errmsg,minval(array),maxval(array),minloc(array),maxloc(array)
+      print*, locID,' ',errmsg,minval(array),maxval(array),minloc(array),maxloc(array)
       errflag=.true.
     else
       errflag=.false.
     end if
-  end function checkarray
+  end function checkarray4D
+
+
+  logical function checkarray3D(array,lower,upper,errmsg,locID) result(errflag)
+    real(wp), dimension(:,:,:), intent(in) :: array
+    real(wp), intent(in) :: lower,upper
+    character(*), intent(in) :: errmsg
+    integer, intent(in) :: locID
+
+    if (minval(array) < lower .or. maxval(array) > upper) then
+      print*, locID,' ',errmsg,minval(array),maxval(array),minloc(array),maxloc(array)
+      errflag=.true.
+    else
+      errflag=.false.
+    end if
+  end function checkarray3D
 
 
   !> return the maximum cfl over the grid
