@@ -7,7 +7,6 @@ use interpolation, only : interp3
 use grid, only : gridflag,lx1,lx2,lx3,get_grid3_coords_hdf5
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
-use filesystem, only : suffix
 use reader, only : get_simsize3
 
 private
@@ -44,10 +43,10 @@ contains
     vs1=0._wp
     Ts=0._wp
     Phi=0._wp
- 
+
     ! convenience
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
-  
+
     ! read in the ICs size and allocate data
     print*, 'indatsize;  ',indatsize
     call get_simsize3(indatsize,lx1in,lx2in,lx3in)
@@ -76,20 +75,15 @@ contains
     x2i=pack(x2imat,.true.)
     x3i=pack(x3imat,.true.)
     deallocate(x1imat,x2imat,x3imat)    ! nuke these as soon as we are done with them
-  
+
     ! get the input grid coordinates
     print*, 'indatgrid:  ',indatgrid
-    select case (suffix(indatsize))
-      case ('.h5')
-        call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
-      case default
-        error stop 'input_plasma: only hdf5 files supported: ' // suffix(indatsize)
-    end select
+    call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
 
     !print*, x1in(1:lx1in)
     !print*, '====================================================================================='
     !print*, x1(1:lx1)
-  
+
     ! we must make sure that the target coordinates do not range outside the input file coordinates
     print*, 'check grid extents'
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
@@ -101,16 +95,12 @@ contains
     if(x3(1)<x3in(1) .or. x3(lx3)>x3in(lx3in)) then
       error stop 'interp_file2grid: x3 target coordinates beyond input grid coords'
     end if
-  
+
     ! read in the input initial conditions, only hdf5 files are support for this functionality
     print*, 'read file'
-    select case (suffix(indatsize))
-      case ('.h5')
-        call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-      case default
-        error stop 'Input interpolation only supported for hdf5 files'
-    end select
-    print*, 'interp_file2subgrid:  error checking complete...' 
+    call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+
+    print*, 'interp_file2subgrid:  error checking complete...'
 
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
@@ -141,7 +131,7 @@ contains
     vs1(:,:,-1:0,:)=0
     vs1(lx1+1:lx1+2,:,:,:)=0
     vs1(:,lx2+1:lx2+2,:,:)=0
-    vs1(:,:,lx3+1:lx3+2,:)=0 
+    vs1(:,:,lx3+1:lx3+2,:)=0
     Ts(-1:0,:,:,:)=100
     Ts(:,-1:0,:,:)=100
     Ts(:,:,-1:0,:)=100
@@ -149,7 +139,7 @@ contains
     Ts(:,lx2+1:lx2+2,:,:)=100
     Ts(:,:,lx3+1:lx3+2,:)=100
 
-    ! get rid of local vars 
+    ! get rid of local vars
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)
   end subroutine interp_file2subgrid
@@ -189,7 +179,7 @@ contains
       Tavg=Tavg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
       Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
     end if
- 
+
     !> get filename
     if (.not. present(identifier)) then
       filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
@@ -198,7 +188,7 @@ contains
       filenamefull = date_filename(outdir,ymd,UTsec) // '_' // trim(IDstr) // '.h5'
     end if
     print *, 'HDF5 Output file name:  ', filenamefull
-  
+
     call hout%open(filenamefull, action='w',comp_lvl=comp_lvl)
     call hout%write("/flagoutput", flagoutput)
     call hout%write('/time/ymd', ymd)
@@ -229,14 +219,14 @@ contains
         call hout%write('vs1all',   real(vs1(1:lx1,1:lx2,1:lx3,:)))
         !this is full output of all parameters in 3D
         call hout%write('Tsall',    real(Ts(1:lx1,1:lx2,1:lx3,:)))
-  
+
         call hout%write('J1all',    real(J1(1:lx1,1:lx2,1:lx3)))
         call hout%write('J2all',    real(J2(1:lx1,1:lx2,1:lx3)))
         call hout%write('J3all',    real(J3(1:lx1,1:lx2,1:lx3)))
         call hout%write('v2avgall', real(v2avg(1:lx1,1:lx2,1:lx3)))
         call hout%write('v3avgall', real(v3avg(1:lx1,1:lx2,1:lx3)))
     end select
-  
+
     if (gridflag==1) then
       print *, 'Writing topside boundary conditions for inverted-type grid...'
       call hout%write('Phiall',       real(Phi(1,1:lx2,1:lx3)))
@@ -244,7 +234,7 @@ contains
       print *, 'Writing topside boundary conditions for non-inverted-type grid...'
       call hout%write('Phiall',       real(Phi(lx1,1:lx2,1:lx3)))
     end if
-  
+
     call hout%close()
   end subroutine plasma_output_nompi
 
