@@ -59,7 +59,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,checkE1
+            get_fullgrid_lims_in,checkE1,get_cfg_timevars
 
 
 real(wp), protected :: v2grid,v3grid
@@ -561,7 +561,7 @@ contains
   end subroutine grid_from_extents_in
 
 
-  !> assign initial values on some auxiliary time variables.  
+  !> assign initial values on some auxiliary time variables
   subroutine set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
     integer, intent(inout) :: it
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
@@ -569,6 +569,21 @@ contains
     !> Initialize some variables need for time stepping and output
     it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
   end subroutine set_start_values_auxtimevars
+
+
+  ! pull relevant time variables from the cfg structure
+  subroutine get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(inout) :: tmilestone
+    logical, intent(inout) :: flagneuBG
+    real(wp), intent(inout) :: dtneuBG
+    integer, intent(inout) :: flagdneu
+
+    tmilestone=0._wp   ! make sure first output is a milestone
+    flagneuBG=cfg%flagneuBG
+    dtneuBG=cfg%dtneuBG
+    flagdneu=cfg%flagdneu
+  end subroutine get_cfg_timevars
 
 
   !> Force time values to a specific date/time and set duration based on cfg argument fields

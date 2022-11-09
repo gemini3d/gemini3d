@@ -43,7 +43,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars
 
 implicit none (type, external)
 
@@ -363,6 +363,19 @@ contains
 
     call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
   end subroutine set_start_values_auxtimevars_C
+
+
+  subroutine get_cfg_timevars_C(cfgC,tmilestone,flagneuBG,dtneuBG,flagdneu) bind(C, name='get_cfg_timevars_C')
+    type(C_PTR), intent(in) :: cfgC
+    real(wp), intent(inout) :: tmilestone
+    logical, intent(inout) :: flagneuBG
+    real(wp), intent(inout) :: dtneuBG
+    integer, intent(inout) :: flagdneu
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu)
+  end subroutine get_cfg_timevars_C
 
 
   !> Assign start time variables based on information in the cfg structure
