@@ -55,11 +55,9 @@ external :: mumps_ana_omp_return, MUMPS_ICOPY_32TO64_64C
 call mumps_ana_omp_return()
 call MUMPS_ICOPY_32TO64_64C()
 end program"
-MUMPS_HAVE_OPENMP
+MUMPS_OpenMP_FOUND
 SRC_EXT f90
 )
-
-set(MUMPS_OpenMP_FOUND true PARENT_SCOPE)
 
 endfunction(mumps_openmp_check)
 
@@ -86,11 +84,9 @@ implicit none
 external :: mumps_scotch
 call mumps_scotch()
 end program"
-MUMPS_HAVE_Scotch
+MUMPS_Scotch_FOUND
 SRC_EXT f90
 )
-
-set(MUMPS_Scotch_FOUND true PARENT_SCOPE)
 
 endfunction(mumps_scotch_check)
 
@@ -105,14 +101,26 @@ endif()
 if(NOT SCALAPACK_FOUND)
   find_package(SCALAPACK)
 endif()
+if(NOT SCALAPACK_FOUND)
+  message(VERBOSE "MUMPS: skip checks as SCALAPACK not found")
+  return()
+endif()
 
 if(NOT (MPI_C_FOUND AND MPI_Fortran_FOUND))
   # factory FindMPI re-searches, slowing down configure, especialy when many subprojects use MPI
   find_package(MPI COMPONENTS C Fortran)
 endif()
+if(NOT MPI_FOUND)
+  message(VERBOSE "MUMPS: skip link check as MPI not found")
+  return()
+endif()
 
 if(NOT LAPACK_FOUND)
   find_package(LAPACK)
+endif()
+if(NOT LAPACK_FOUND)
+  message(VERBOSE "MUMPS: skip link check as LAPACK not found")
+  return()
 endif()
 
 set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIR} ${SCALAPACK_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS} ${MPI_C_INCLUDE_DIRS})
