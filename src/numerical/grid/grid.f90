@@ -268,7 +268,7 @@ contains
     deallocate(x)
     x=>null()
     xC=C_NULL_PTR
-    xtype=-1
+    !xtype=-1     ! an issue here is that the grid may be detected as "bad" even though deallocated correctly
   end subroutine meshobj_dealloc
 
 

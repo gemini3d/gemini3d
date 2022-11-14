@@ -244,7 +244,7 @@ contains
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
-    integer :: izn, iid                               ! local copies for root, eventually these need to be stored in object
+    integer :: izn,iid                                  ! local copies for root, eventually these need to be stored in object
     real(wp) :: maxzn
     real(wp), dimension(2) :: xnrange,ynrange                ! these eventually get stored in extents
     integer, dimension(6) :: indices                         ! these eventually get stored in indx
