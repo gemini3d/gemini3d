@@ -80,7 +80,7 @@ else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to 
       T(0,ix2,ix3)=Teinf     !top
     end do
   end do
-  BCtype=[0,0]
+  BCtype=[1,0]
 else                          !non-inverted, standard.  Bottom is logical first element of array...
   do ix3=1,lx3
     do ix2=1,lx2
@@ -89,7 +89,7 @@ else                          !non-inverted, standard.  Bottom is logical first 
       T(lx1+1,ix2,ix3)=Teinf    !top
     end do
   end do
-  BCtype=[0,0]
+  BCtype=[0,1]
 end if
 
 end subroutine diffusion_prep
