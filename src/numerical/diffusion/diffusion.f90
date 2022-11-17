@@ -20,12 +20,12 @@ interface backEuler3D
   module procedure backEuler3D_curv
 end interface backEuler3D
 
-
+integer, dimension(2), protected :: BCtype
 
 contains
 
 
-pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
+impure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
 !! COMPUTE COEFFICIENTS IN DIFFUSION EQUATIONS AND LOAD UP GHOST CELLS
 !!
 !! Note: done on a per species basis. This is never called over the full grid
@@ -71,6 +71,7 @@ if (gridflag==0) then    !closed dipole grid, both ends are thermalized against 
       T(lx1+1,ix2,ix3)=Tn0
     end do
   end do
+  BCtype=[0,0]
 else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to neutrals, top to electrons (possibly heat flow)
   do ix3=1,lx3
     do ix2=1,lx2
@@ -79,6 +80,7 @@ else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to 
       T(0,ix2,ix3)=Teinf     !top
     end do
   end do
+  BCtype=[0,0]
 else                          !non-inverted, standard.  Bottom is logical first element of array...
   do ix3=1,lx3
     do ix2=1,lx2
@@ -87,6 +89,7 @@ else                          !non-inverted, standard.  Bottom is logical first 
       T(lx1+1,ix2,ix3)=Teinf    !top
     end do
   end do
+  BCtype=[0,0]
 end if
 
 end subroutine diffusion_prep
@@ -116,7 +119,7 @@ do ix3=1,lx3
     fx1slice=f(1:lx1,ix2,ix3)
     fx1slice=backEuler1D(fx1slice,A(:,ix2,ix3), &
                   B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
-                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,x%dx1,x%dx1i)
+                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),BCtype,dt,x%dx1,x%dx1i)
     !! inner ghost cells include boundary conditions
     backEuler3D_curv(1:lx1,ix2,ix3)=fx1slice
   end do
@@ -159,7 +162,7 @@ do ix3=1,lx3
     fx1slice=f(1:lx1,ix2,ix3)
     fx1slice=TRBDF21D(fx1slice,A(:,ix2,ix3), &
                   B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
-                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,x%dx1,x%dx1i)
+                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),BCtype,dt,x%dx1,x%dx1i)
     !! inner ghost cells include boundary conditions
     TRBDF23D_curv(1:lx1,ix2,ix3)=fx1slice
   end do

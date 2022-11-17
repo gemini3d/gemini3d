@@ -16,7 +16,7 @@ public :: TRBDF21D, backEuler1D
 contains
 
 
-function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
+function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,BCtype,dt,dx1,dx1i)
 
 !! SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
 !! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
@@ -31,6 +31,7 @@ function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
 real(wp), dimension(:), intent(in) :: A,B,C,D,E
 real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
+integer, dimension(2), intent(in) :: BCtype  !=0 dirichlet; =1 neumann
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
 integer, parameter :: ll=2                   !number of lower diagonals
@@ -57,11 +58,17 @@ Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conducti
 ! ZZZ - check whether diriclet or neumann...
 !> MINX1 BOUNDARY (DIRICHLET)
 ix1=1
-M(ll+3,ix1)=1
-M(ll+2,ix1+1)=0
-M(ll+1,ix1+2)=0
-TR(ix1)=Tsminx1
-
+if (BCtype(1)==0) then
+  M(ll+3,ix1)=1
+  M(ll+2,ix1+1)=0
+  M(ll+1,ix1+2)=0
+  TR(ix1)=Tsminx1
+else
+  M(ll+3,ix1)=1
+  M(ll+2,ix1+1)=-1
+  M(ll+1,ix1+2)=0
+  TR(ix1)=0
+end if
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -129,10 +136,17 @@ TR(ix1)=Ts(ix1)/(dt/2)+E(ix1) &
 ! ZZZ - check whether dirichlet or neumann...
 !> MAXX1 BOUNDARY
 ix1=lx1
-M(ll+5,ix1-2)=0
-M(ll+4,ix1-1)=0
-M(ll+3,ix1)=1
-TR(ix1)=Tsmaxx1
+if (BCtype(2)==0) then
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=0
+  M(ll+3,ix1)=1
+  TR(ix1)=Tsmaxx1
+else
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=-1
+  M(ll+3,ix1)=1
+  TR(ix1)=0
+end if
 
 
 !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
@@ -147,11 +161,17 @@ call gbsv(M,TR,kl=2)
 !ZZZ - check whether D or N
 !> MINX1 BOUNDARY (DIRICHLET)
 ix1=1
-M(ll+3,ix1)=1
-M(ll+2,ix1+1)=0
-M(ll+1,ix1+2)=0
-TRBDF21D(ix1)=Tsminx1
-
+if (BCtype(1)==0) then
+  M(ll+3,ix1)=1
+  M(ll+2,ix1+1)=0
+  M(ll+1,ix1+2)=0
+  TRBDF21D(ix1)=Tsminx1
+else
+  M(ll+3,ix1)=1
+  M(ll+2,ix1+1)=-1
+  M(ll+1,ix1+2)=0
+  TRBDF21D(ix1)=0
+end if
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -202,11 +222,17 @@ TRBDF21D(ix1)=E(ix1) &
 !check whether D or N
 !> MAXX1 BOUNDARY
 ix1=lx1
-M(ll+5,ix1-2)=0
-M(ll+4,ix1-1)=0
-M(ll+3,ix1)=1
-TRBDF21D(ix1)=Tsmaxx1
-
+if (BCtype(2)==0) then
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=0
+  M(ll+3,ix1)=1
+  TRBDF21D(ix1)=Tsmaxx1
+else
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=-1
+  M(ll+3,ix1)=1
+  TRBDF21D(ix1)=0
+end if
 
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
@@ -216,7 +242,7 @@ call gbsv(M,TRBDF21D,kl=2)
 end function TRBDF21D
 
 
-function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i,coeffs,rhs)
+function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,BCtype,dt,dx1,dx1i,coeffs,rhs)
 
 !------------------------------------------------------------
 !-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
@@ -229,6 +255,7 @@ function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i,coeffs,rhs)
 real(wp), dimension(:), intent(in) :: A,B,C,D,E
 real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
+integer, dimension(2), intent(in) :: BCtype
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
 real(wp), dimension(:,:), intent(inout), optional :: coeffs
@@ -254,10 +281,17 @@ backEuler1D(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later.
 ! check whether D or N
 !> MINX1 BOUNDARY, Dirichlet BCS
 ix1=1
-M(ll+3,ix1)=1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-M(ll+2,ix1+1)=0     !1st super diagonal
-M(ll+1,ix1+2)=0     !2nd super diagonal
-backEuler1D(ix1)=Tsminx1
+if (BCtype(1)==0) then
+  M(ll+3,ix1)=1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,ix1+1)=0     !1st super diagonal
+  M(ll+1,ix1+2)=0     !2nd super diagonal
+  backEuler1D(ix1)=Tsminx1
+else
+  M(ll+3,ix1)=1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,ix1+1)=-1    !1st super diagonal
+  M(ll+1,ix1+2)=0     !2nd super diagonal
+  backEuler1D(ix1)=0
+end if
 
 !! if Neumann version, use a 1st order forward...
 !ix1=1
@@ -310,10 +344,18 @@ M(ll+2,ix1+1)=-C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag
 ! check whether D or N
 !> MAXX1 BOUNDARY
 ix1=lx1
-M(ll+5,ix1-2)=0
-M(ll+4,ix1-1)=0
-M(ll+3,ix1)=1
-backEuler1D(ix1)=Tsmaxx1
+if (BCtype(2)==0) then
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=0
+  M(ll+3,ix1)=1
+  backEuler1D(ix1)=Tsmaxx1
+else
+  M(ll+5,ix1-2)=0
+  M(ll+4,ix1-1)=-1
+  M(ll+3,ix1)=1
+  backEuler1D(ix1)=0
+end if
+
 !
 !!Neumann conditions...
 !ix1=lx1
