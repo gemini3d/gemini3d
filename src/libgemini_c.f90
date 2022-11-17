@@ -43,7 +43,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test
 
 implicit none (type, external)
 
@@ -767,6 +767,34 @@ contains
     call checkE1(fluidvars,fluidauxvars,electrovars,locID)
   end subroutine checkE1_C
 
+
+  !> call a routine to generate test
+  subroutine electrodynamics_test_C(cfgC,xtype,xC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) &
+               bind(C, name="electrodynamics_test_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: fluidauxvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    type(c_ptr), intent(in) :: intvarsC
+
+    type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+
+    call electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
+  end subroutine electrodynamics_test_C
 
 
   !> interface for computing cfl number

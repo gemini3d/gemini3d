@@ -101,6 +101,7 @@ contains
     !> THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
     if (flagdownedge) then
       vs2(:,0,:,isp)=vs2(:,1,:,isp)
+      vs2(:,-1,:,isp)=vs2(:,1,:,isp)    ! set both ghost cells just in case used for error checking
     
       ns(:,0,:,isp)=ns(:,1,:,isp)
       ns(:,-1,:,isp)=ns(:,1,:,isp)
@@ -111,6 +112,7 @@ contains
     end if
     if (flagupedge) then
       vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
+      vs2(:,lx2+2,:,isp)=vs2(:,lx2,:,isp)
     
       ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
       ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
@@ -143,6 +145,7 @@ contains
         !! left side is at global boundary, assume haloing won't overwrite
         vs3(:,:,0,isp)=vs3(:,:,1,isp)
         !! copy first cell to first ghost (vs3 not advected so only need only ghost)
+        vs3(:,:,-1,isp)=vs3(:,:,1,isp)
     
         ns(:,:,0,isp)=ns(:,:,1,isp)
         ns(:,:,-1,isp)=ns(:,:,1,isp)
@@ -153,6 +156,7 @@ contains
       end if
       if (flagrightedge) then    !my right boundary is the global boundary, assume haloing won't overwrite
         vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
+        vs3(:,:,lx3+2,isp)=vs3(:,:,lx3,isp)
     
         ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
         ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)

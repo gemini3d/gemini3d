@@ -82,6 +82,7 @@ grid io
 mpimod
 autogrid
 io_nompi
+potential_nompi
 )
 
 set(gemini_mpi_internal_mods

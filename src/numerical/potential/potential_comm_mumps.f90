@@ -198,7 +198,7 @@ contains
       call cpu_time(tstart)
       if (mpi_cfg%myid/=0) then
         !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-         call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
+        call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
                                      vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
                                      Vminx1slab,Vmaxx1slab, &
                                      E1,E2,E3,J1,J2,J3)
@@ -360,12 +360,12 @@ contains
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
       do isp=1,lsp
-         !> this behaves better when we take the gradient of log pressure
-         pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
-         call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-         gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-         gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-         vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+        !> this behaves better when we take the gradient of log pressure
+        pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
+        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+        gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+        gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
                    -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp2(1:lx1,1:lx2,1:lx3) &
                    +muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp3(1:lx1,1:lx2,1:lx3)
         vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
