@@ -43,6 +43,7 @@ use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
+use potential_nompi, only: set_fields_test,velocities_nompi
 
 implicit none (type, external)
 private
@@ -59,7 +60,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,checkE1,get_cfg_timevars
+            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test
 
 
 real(wp), protected :: v2grid,v3grid
@@ -982,6 +983,7 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
     real(wp) :: nlower,nupper,vlower,vupper,Tlower,Tupper
+    real(wp) :: vplower,vpupper
     real(wp) :: Eparlower,Eparupper,Elower,Eupper,Jlower,Jupper,Philower,Phiupper
     real(wp) :: rhovlower,rhovupper,rhoeslower,rhoesupper,Blower,Bupper
     logical :: errflag=.false.
@@ -996,6 +998,7 @@ contains
     ! force a check on the interior cells of the domain
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
+    vplower=-1e-5; vpupper=1e-5;
     Tlower=0; Tupper=20000;
 
     errflag=errflag .or. checkarray(ns(3:lx1+2,3:lx2+2,3:lx3+2,:),nlower,nupper, &
@@ -1004,9 +1007,9 @@ contains
                                      '>>> Interior velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:),Tlower,Tupper, &
                                      '>>> Interior temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:),vplower,vpupper, &
                                      '>>> Interior v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:),vplower,vpupper, &
                                      '>>> Interior v3 data corrupted:  ',locID)
  
     ! now check the bottom ghost cells
@@ -1016,9 +1019,9 @@ contains
                                      '>>> Bottom velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(1:2,:,:,:),Tlower,Tupper, &
                                      '>>> Bottom temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(1:2,:,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(1:2,:,:,:),vplower,vpupper, &
                                      '>>> Bottom v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(1:2,:,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(1:2,:,:,:),vplower,vpupper, &
                                      '>>> Bottom v3 data corrupted:  ',locID)
  
     ! check top
@@ -1028,9 +1031,9 @@ contains
                                      '>>> Top velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(lx1+3:lx1+4,:,:,:),Tlower,Tupper, &
                                      '>>> Top temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(lx1+3:lx1+4,:,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(lx1+3:lx1+4,:,:,:),vplower,vpupper, &
                                      '>>> Top v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(lx1+3:lx1+4,:,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(lx1+3:lx1+4,:,:,:),vplower,vpupper, &
                                      '>>> Top v3 data corrupted:  ',locID)
  
     ! check left
@@ -1040,9 +1043,9 @@ contains
                                      '>>> Left velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,1:2,:,:),Tlower,Tupper, &
                                      '>>> Left temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(:,1:2,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(:,1:2,:,:),vplower,vpupper, &
                                      '>>> Left v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(:,1:2,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(:,1:2,:,:),vplower,vpupper, &
                                      '>>> Left v3 data corrupted:  ',locID)
  
     ! check right
@@ -1052,9 +1055,9 @@ contains
                                      '>>> Right velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,lx2+3:lx2+4,:,:),Tlower,Tupper, &
                                      '>>> Right temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(:,lx2+3:lx2+4,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(:,lx2+3:lx2+4,:,:),vplower,vpupper, &
                                      '>>> Right v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(:,lx2+3:lx2+4,:,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(:,lx2+3:lx2+4,:,:),vplower,vpupper, &
                                      '>>> Right v3 data corrupted:  ',locID)
  
     ! check bwd
@@ -1064,9 +1067,9 @@ contains
                                      '>>> Bwd velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,:,1:2,:),Tlower,Tupper, &
                                      '>>> Bwd temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(:,:,1:2,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(:,:,1:2,:),vplower,vpupper, &
                                      '>>> Bwd v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(:,:,1:2,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(:,:,1:2,:),vplower,vpupper, &
                                      '>>> Bwd v3 data corrupted:  ',locID)
  
     ! check fwd
@@ -1076,9 +1079,9 @@ contains
                                      '>>> Fwd velocity data corrupted:  ',locID)
     errflag=errflag .or. checkarray(Ts(:,:,lx3+3:lx3+4,:),Tlower,Tupper, &
                                      '>>> Fwd temperature data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs2(:,:,lx3+3:lx3+4,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs2(:,:,lx3+3:lx3+4,:),vplower,vpupper, &
                                      '>>> Fwd v2 data corrupted:  ',locID)
-    errflag=errflag .or. checkarray(vs3(:,:,lx3+3:lx3+4,:),vlower,vupper, &
+    errflag=errflag .or. checkarray(vs3(:,:,lx3+3:lx3+4,:),vplower,vpupper, &
                                      '>>> Fwd v3 data corrupted:  ',locID)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1269,6 +1272,35 @@ contains
 
     if (errflag) error stop
   end subroutine checkE1
+
+
+  !> For purposes of testing we just want to set some values for the electric fields and comput drifts.
+  subroutine electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars,fluidauxvars,electrovars
+    type(gemini_work), intent(in) :: intvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+    integer :: lx1,lx2,lx3,lsp
+    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call set_fields_test(x,E1,E2,E3)
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
+    allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
+    allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
+    call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+    call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
+                      cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+    deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+  end subroutine electrodynamics_test
 
 
   !> utility procedure to check that array values are in a certain bounds

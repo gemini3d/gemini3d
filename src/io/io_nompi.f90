@@ -307,14 +307,14 @@ contains
 !    call hf%read('/Tsall', tmpread)
 !    deallocate(tmpread)
 
-    print*, 'reading in fluid data 1'
+    !print*, 'reading in fluid data 1'
     call hf%read('/nsall', ns(1:lx1,1:lx2,1:lx3,1:lsp))
-    print*, 'reading in fluid data 2'
+    !print*, 'reading in fluid data 2'
     call hf%read('/vs1all', vs1(1:lx1,1:lx2,1:lx3,1:lsp))
-    print*, 'reading in fluid data 3'
+    !print*, 'reading in fluid data 3'
     call hf%read('/Tsall', Ts(1:lx1,1:lx2,1:lx3,1:lsp))
 
-    print*, 'reading in potential...'
+    !print*, 'reading in potential...'
     if (hf%exist('/Phiall')) then
       if (hf%ndim('/Phiall') == 1) then
         if (lx2==1) then
@@ -340,11 +340,11 @@ contains
       Phislab = 0
     end if
 
-    print*, 'closing hdf5 file...'
+    !print*, 'closing hdf5 file...'
     call hf%close()
 
     !> Apply EFL approx to compute full grid potential
-    print*, 'apply EFL approximation...'
+    !print*, 'apply EFL approximation...'
     do ix1=1,lx1
       Phi(ix1,1:lx2,1:lx3)=Phislab(1:lx2,1:lx3)
     end do
