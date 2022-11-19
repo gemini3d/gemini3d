@@ -119,30 +119,38 @@ contains
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
     print*, 'interp_file2subgrid:  interpolations complete...'
 
-    ! at this point to be totally safe we should set the ghost cells
-    ns(-1:0,:,:,:)=mindens
-    ns(:,-1:0,:,:)=mindens
-    ns(:,:,-1:0,:)=mindens
-    ns(lx1+1:lx1+2,:,:,:)=mindens
-    ns(:,lx2+1:lx2+2,:,:)=mindens
-    ns(:,:,lx3+1:lx3+2,:)=mindens
-    vs1(-1:0,:,:,:)=0
-    vs1(:,-1:0,:,:)=0
-    vs1(:,:,-1:0,:)=0
-    vs1(lx1+1:lx1+2,:,:,:)=0
-    vs1(:,lx2+1:lx2+2,:,:)=0
-    vs1(:,:,lx3+1:lx3+2,:)=0
-    Ts(-1:0,:,:,:)=100
-    Ts(:,-1:0,:,:)=100
-    Ts(:,:,-1:0,:)=100
-    Ts(lx1+1:lx1+2,:,:,:)=100
-    Ts(:,lx2+1:lx2+2,:,:)=100
-    Ts(:,:,lx3+1:lx3+2,:)=100
+    ! at this point to be totally safe we should set the ghost cells, use a zero-order hold as a total guess
+    call forceinputZOH(ns)
+    call forceinputZOH(vs1)
+    call forceinputZOH(Ts)
 
     ! get rid of local vars
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)
   end subroutine interp_file2subgrid
+
+
+  subroutine forceinputZOH(param)
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
+    integer :: lx1,lx2,lx3
+  
+    lx1=size(param,1)-4; lx2=size(param,2)-4; lx3=size(param,3)-4;
+  
+    param(0,:,:,:)=param(1,:,:,:)
+    param(-1,:,:,:)=param(1,:,:,:)
+    param(lx1+1,:,:,:)=param(lx1,:,:,:)
+    param(lx1+2,:,:,:)=param(lx1,:,:,:)
+  
+    param(:,0,:,:)=param(:,1,:,:)
+    param(:,-1,:,:)=param(:,1,:,:)
+    param(:,lx2+1,:,:)=param(:,lx2,:,:)
+    param(:,lx2+2,:,:)=param(:,lx2,:,:)
+  
+    param(:,:,0,:)=param(:,:,1,:)
+    param(:,:,-1,:)=param(:,:,1,:)
+    param(:,:,lx3+1,:)=param(:,:,lx3,:)
+    param(:,:,lx3+2,:)=param(:,:,lx3,:)
+  end subroutine forceinputZOH
 
 
   !> output just a the local subgrid data to a file
