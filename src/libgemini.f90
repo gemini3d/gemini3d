@@ -60,7 +60,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test
+            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all
 
 
 real(wp), protected :: v2grid,v3grid
@@ -816,6 +816,7 @@ contains
     call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
   end subroutine sweep3_allparams_in
 
+
   subroutine sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
@@ -830,6 +831,7 @@ contains
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
   end subroutine sweep1_allparams_in
+
 
   subroutine sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
@@ -885,6 +887,7 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+
     call compression(dt,x,vs1,vs2,vs3,intvars%Q,rhoes)   ! this applies compression substep
   end subroutine compression_in
 
@@ -999,7 +1002,7 @@ contains
     ! force a check on the interior cells of the domain
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
-    vplower=-1e-5; vpupper=1e-5;
+    vplower=-1e4; vpupper=1e4;
     Tlower=0; Tupper=20000;
 
     errflag=errflag .or. checkarray(ns(3:lx1+2,3:lx2+2,3:lx3+2,:),nlower,nupper, &
@@ -1301,6 +1304,9 @@ contains
     call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+
+    !print*, 'Electric field info:  ',minval(E2),maxval(E2),minval(E3),maxval(E3)
+    !print*, '                      ',minval(vs2),maxval(vs2),minval(vs3),maxval(vs3)
   end subroutine electrodynamics_test
 
 
@@ -1346,6 +1352,44 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call cflcalc(Ts,vs1,vs2,vs3,x%dl1i,x%dl2i,x%dl3i,dt,maxcfl)
   end subroutine
+
+
+  !> just force a zero-order hold for the ghost cells, should probably only be used for debugging purposes
+  subroutine forceZOH(param)
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
+    integer :: lx1,lx2,lx3
+  
+    lx1=size(param,1)-4; lx2=size(param,2)-4; lx3=size(param,3)-4;
+  
+    param(0,:,:,:)=param(1,:,:,:)
+    param(-1,:,:,:)=param(1,:,:,:)
+    param(lx1+1,:,:,:)=param(lx1,:,:,:)
+    param(lx1+2,:,:,:)=param(lx1,:,:,:)
+  
+    param(:,0,:,:)=param(:,1,:,:)
+    param(:,-1,:,:)=param(:,1,:,:)
+    param(:,lx2+1,:,:)=param(:,lx2,:,:)
+    param(:,lx2+2,:,:)=param(:,lx2,:,:)
+  
+    param(:,:,0,:)=param(:,:,1,:)
+    param(:,:,-1,:)=param(:,:,1,:)
+    param(:,:,lx3+1,:)=param(:,:,lx3,:)
+    param(:,:,lx3+2,:)=param(:,:,lx3,:)
+  end subroutine forceZOH
+
+
+  !> force all primary variables to have a zero-order hold extrapolation in ghost cells for testing purposes
+  subroutine forceZOH_all(fluidvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call forceZOH(ns)
+    call forceZOH(vs1)
+    call forceZOH(vs2)
+    call forceZOH(vs3)
+    call forceZOH(Ts)
+  end subroutine forceZOH_all
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

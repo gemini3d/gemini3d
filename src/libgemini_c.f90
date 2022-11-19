@@ -43,7 +43,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all
 
 implicit none (type, external)
 
@@ -571,6 +571,7 @@ contains
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allparams_C
 
+
   subroutine sweep1_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name='sweep1_allparams_C')
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: fluidauxvarsC
@@ -590,6 +591,7 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep1_allparams_C
+
 
   subroutine sweep2_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep2_allparams_C")
     type(c_ptr), intent(inout) :: fluidvarsC
@@ -795,6 +797,16 @@ contains
 
     call electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
   end subroutine electrodynamics_test_C
+
+
+  !> test to force ghost cells to zero-order hold extrapolated value
+  subroutine forceZOH_all_C(fluidvarsC) bind(C,name='forceZOH_all_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call forceZOH_all(fluidvars)
+  end subroutine forceZOH_all_C
 
 
   !> interface for computing cfl number
