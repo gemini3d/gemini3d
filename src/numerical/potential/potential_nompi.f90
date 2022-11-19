@@ -87,7 +87,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3
     integer ix1,ix2,ix3
-    real(wp) :: r0=50e3,sigr=15e3
+    real(wp) :: r0=50e3,sigr=10e3
     real(wp) :: Er,r
     real(wp) :: Eamp=50e-3
     real(wp) :: phiang
@@ -99,7 +99,7 @@ contains
           r=sqrt(x%x2(ix2)**2+x%x3(ix3)**2)
           phiang=atan2(x%x3(ix3),x%x2(ix2))
           Er=Eamp*exp(-(r-r0)**2/2/sigr**2)
-          if (r<10e3) Er=0._wp
+          if (r<10e3 .or. r>90e3) Er=0._wp
 
           E2(ix1,ix2,ix3)=Er*cos(phiang)
           E3(ix1,ix2,ix3)=Er*sin(phiang)
