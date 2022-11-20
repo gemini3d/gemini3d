@@ -60,7 +60,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all
+            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, ipermute_fluidvars
 
 
 real(wp), protected :: v2grid,v3grid
@@ -990,6 +990,7 @@ contains
     real(wp) :: Eparlower,Eparupper,Elower,Eupper,Jlower,Jupper,Philower,Phiupper
     real(wp) :: rhovlower,rhovupper,rhoeslower,rhoesupper,Blower,Bupper
     logical :: errflag=.false.
+    integer :: funit
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -999,7 +1000,7 @@ contains
     ! Check main variables
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! force a check on the interior cells of the domain
-    nlower=0; nupper=1e14;
+    nlower=1e-20; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     vplower=-1e4; vpupper=1e4;
     Tlower=0; Tupper=20000;
@@ -1273,7 +1274,15 @@ contains
     errflag=errflag .or. checkarray(B1(:,:,lx3+3:lx3+4),Blower,Bupper, &
                                      '>>> Fwd B1 data corrupted:  ',locID)
 
-    if (errflag) error stop
+    if (errflag) then 
+      open(newunit=funit,file='error.dat',status='replace',access='stream')
+      write(funit) ns
+      write(funit) vs1
+      write(funit) Ts
+      close(funit)
+
+      error stop
+    end if
   end subroutine checkE1
 
 
@@ -1360,15 +1369,15 @@ contains
   
     lx1=size(param,1)-4; lx2=size(param,2)-4; lx3=size(param,3)-4;
   
-    param(0,:,:,:)=param(1,:,:,:)
-    param(-1,:,:,:)=param(1,:,:,:)
-    param(lx1+1,:,:,:)=param(lx1,:,:,:)
-    param(lx1+2,:,:,:)=param(lx1,:,:,:)
-  
-    param(:,0,:,:)=param(:,1,:,:)
-    param(:,-1,:,:)=param(:,1,:,:)
-    param(:,lx2+1,:,:)=param(:,lx2,:,:)
-    param(:,lx2+2,:,:)=param(:,lx2,:,:)
+!    param(0,:,:,:)=param(1,:,:,:)
+!    param(-1,:,:,:)=param(1,:,:,:)
+!    param(lx1+1,:,:,:)=param(lx1,:,:,:)
+!    param(lx1+2,:,:,:)=param(lx1,:,:,:)
+!  
+!    param(:,0,:,:)=param(:,1,:,:)
+!    param(:,-1,:,:)=param(:,1,:,:)
+!    param(:,lx2+1,:,:)=param(:,lx2,:,:)
+!    param(:,lx2+2,:,:)=param(:,lx2,:,:)
   
     param(:,:,0,:)=param(:,:,1,:)
     param(:,:,-1,:)=param(:,:,1,:)
@@ -1389,6 +1398,62 @@ contains
     call forceZOH(vs3)
     call forceZOH(Ts)
   end subroutine forceZOH_all
+
+
+  !> permute state variables x1,x2,x3 --> x2,x3,x1
+  subroutine permute_fluidvars(fluidvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    integer lx1,lx2,lx3,leqn,ix1,ix2,ix3,ieqn
+    real(wp), dimension(:,:,:,:), allocatable :: fluidvarsT
+
+    ! size and allocate
+    lx1=size(fluidvars,1)-4; lx2=size(fluidvars,2)-4; lx3=size(fluidvars,3)-4; leqn=size(fluidvars,4);
+    allocate(fluidvarsT(-1:lx2+2,-1:lx3+2,-1:lx1+2,leqn))
+
+    ! place data in permuted array
+    do ieqn=1,leqn
+      do ix3=-1,lx3+2
+        do ix2=-1,lx2+2
+          do ix1=-1,lx1+2
+            fluidvarsT(ix2,ix3,ix1,ieqn)=fluidvars(ix1+2,ix2+2,ix3+2,ieqn)
+          end do
+        end do
+      end do
+    end do
+
+    ! reshape the permuted array to match original, copy into state variable array
+    fluidvars=reshape(fluidvarsT,[lx1+4,lx2+4,lx3+4,leqn])
+
+    ! explicitly clear memory
+    deallocate(fluidvarsT)
+  end subroutine permute_fluidvars
+
+
+  ! inverse permute state variables x2,x3,x1 --> x1,x2,x3
+  subroutine ipermute_fluidvars(fluidvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    integer lx1,lx2,lx3,leqn,ix1,ix2,ix3,ieqn
+    real(wp), dimension(:,:,:,:), allocatable :: fluidvarsT
+
+    ! size and allocate, sizes of input array will be correct but data will be shaped wrongly
+    lx1=size(fluidvars,1)-4; lx2=size(fluidvars,2)-4; lx3=size(fluidvars,3)-4; leqn=size(fluidvars,4);
+    allocate(fluidvarsT(-1:lx2+2,-1:lx3+2,-1:lx1+2,leqn))
+    fluidvarsT=reshape(fluidvars,[lx2+4,lx3+4,lx1+4,leqn])
+
+    ! place data in permuted array
+    do ieqn=1,leqn
+      do ix3=-1,lx3+2
+        do ix2=-1,lx2+2
+          do ix1=-1,lx1+2
+            fluidvars(ix1+2,ix2+2,ix3+2,ieqn)=fluidvarsT(ix2,ix3,ix1,ieqn)
+          end do
+        end do
+      end do
+    end do
+
+    ! explicitly clear memory
+    deallocate(fluidvarsT)
+  end subroutine ipermute_fluidvars
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

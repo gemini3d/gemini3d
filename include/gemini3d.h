@@ -90,6 +90,8 @@ extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, vo
 extern void checkE1_C(double**, double**, double**, int*);
 extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**,void**);
 extern void forceZOH_all_C(double**);
+extern void permute_fluidvars_C(double**);
+extern void ipermute_fluidvars_C(double**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
