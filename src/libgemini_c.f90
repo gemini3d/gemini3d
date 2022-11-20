@@ -43,7 +43,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
+            permute_fluidvars, ipermute_fluidvars
 
 implicit none (type, external)
 
@@ -823,6 +824,24 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call maxcfl_in(fluidvars,x,dt,maxcfl)
   end subroutine maxcfl_C
+
+
+  subroutine permute_fluidvars_C(fluidvarsC) bind(C, name='permute_fluidvars_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call permute_fluidvars(fluidvars)
+  end subroutine permute_fluidvars_C
+
+
+  subroutine ipermute_fluidvars_C(fluidvarsC) bind(C, name='ipermute_fluidvars_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call ipermute_fluidvars(fluidvars)
+  end subroutine ipermute_fluidvars_C
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
