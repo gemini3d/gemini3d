@@ -511,6 +511,12 @@ contains
     ! the input code also does not assign electrodynamic variables
     E1=0._wp; E2=0._wp; E3=0._wp; J1=0._wp; J2=0._wp; J3=0._wp;
 
+    ! Clean the input data since it has been interpolated and there is a chance we get unacceptable values
+    !   This appears to sometimes be needed with dipole grid simulations.
+    call clean_param(x,1,fluidvars)
+    call clean_param(x,2,fluidvars)
+    call clean_param(x,3,fluidvars)
+
     ! this is a good time to do some error checking since each patch only calls this code once per simulation
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
