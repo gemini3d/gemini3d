@@ -1310,7 +1310,7 @@ contains
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call set_fields_test(x,E1,E2,E3)
+    !call set_fields_test(x,E1,E2,E3)
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
