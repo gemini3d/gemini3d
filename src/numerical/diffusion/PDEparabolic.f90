@@ -67,8 +67,9 @@ else
   M(ll+3,ix1)=1
   M(ll+2,ix1+1)=-1
   M(ll+1,ix1+2)=0
-  TR(ix1)=0
+  TR(ix1)=Tsminx1 !used to be 0, but we change it since we are doing the difference. 
 end if
+!Need thermal conduictivity and grid structure to set up a flux
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -145,7 +146,7 @@ else
   M(ll+5,ix1-2)=0
   M(ll+4,ix1-1)=-1
   M(ll+3,ix1)=1
-  TR(ix1)=0
+  TR(ix1)=Tsmaxx1
 end if
 
 
@@ -170,7 +171,7 @@ else
   M(ll+3,ix1)=1
   M(ll+2,ix1+1)=-1
   M(ll+1,ix1+2)=0
-  TRBDF21D(ix1)=0
+  TRBDF21D(ix1)=Tsminx1
 end if
 
 !> FIRST INTERIOR GRID POINT
@@ -231,7 +232,7 @@ else
   M(ll+5,ix1-2)=0
   M(ll+4,ix1-1)=-1
   M(ll+3,ix1)=1
-  TRBDF21D(ix1)=0
+  TRBDF21D(ix1)=Tsmaxx1
 end if
 
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
