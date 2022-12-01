@@ -92,6 +92,7 @@ extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**
 extern void forceZOH_all_C(double**);
 extern void permute_fluidvars_C(double**);
 extern void ipermute_fluidvars_C(double**);
+extern void tag4refine_location_C(int*,void**,bool*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw

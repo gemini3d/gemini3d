@@ -21,7 +21,7 @@ module gemini3d
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
-use phys_consts, only: wp,debug,lnchem,lwave,lsp
+use phys_consts, only: wp,debug,lnchem,lwave,lsp,pi
 use meshobj, only: curvmesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
@@ -60,7 +60,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, ipermute_fluidvars
+            get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
+            ipermute_fluidvars, tag4refine_location
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1461,6 +1462,31 @@ contains
     ! explicitly clear memory
     deallocate(fluidvarsT)
   end subroutine ipermute_fluidvars
+
+
+  !> Tag for refinement based on location
+  subroutine tag4refine_location(x,flagrefine)
+    class(curvmesh), intent(in) :: x
+    logical, intent(inout) :: flagrefine
+    integer :: ix1,ix2,ix3    
+    real(wp) :: mlat,mlon,alt
+
+    flagrefine=.false.
+    do ix3=1,x%lx3
+      do ix2=1,x%lx2
+        do ix1=1,x%lx1
+          mlon=x%phi(ix1,ix2,ix3)*180.0/pi
+          mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
+          alt=x%alt(ix1,ix2,ix3)
+          if ( mlon > 209.0 .and. mlon < 211.0 .and. mlat > 28.0 .and. mlat < 30.0 .and. &
+               alt > 80e3 .and. alt < 500e3) then
+            flagrefine=.true.
+            exit
+          end if
+        end do
+      end do
+    end do
+  end subroutine tag4refine_location
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
