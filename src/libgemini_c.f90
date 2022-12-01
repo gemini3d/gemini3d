@@ -44,7 +44,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
-            permute_fluidvars, ipermute_fluidvars
+            permute_fluidvars, ipermute_fluidvars, tag4refine_location
 
 implicit none (type, external)
 
@@ -842,6 +842,18 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call ipermute_fluidvars(fluidvars)
   end subroutine ipermute_fluidvars_C
+
+
+  !> static refinement based on grid location
+  subroutine tag4refine_location_C(xtype,xC,flagrefine) bind(C, name='tag4refine_location_C')
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    logical, intent(inout) :: flagrefine
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call tag4refine_location(x,flagrefine)   
+  end subroutine
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
