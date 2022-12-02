@@ -1477,8 +1477,10 @@ contains
           mlon=x%phi(ix1,ix2,ix3)*180.0/pi
           mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
           alt=x%alt(ix1,ix2,ix3)
-          if ( mlon > 209.0 .and. mlon < 211.0 .and. mlat > 28.0 .and. mlat < 30.0 .and. &
-               alt > 80e3 .and. alt < 500e3) then
+          if ( mlon > 209.5 .and. mlon < 210.5 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
+               alt > 80e3 .and. alt < 300e3) then
+!          if ( mlon > 209.0 .and. mlon < 211.0 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
+!               alt > 80e3 .and. alt < 350e3) then
             flagrefine=.true.
             exit
           end if
