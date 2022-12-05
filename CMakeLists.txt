@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.14...3.25)
 
 # --- CMAKE_BUILD_TYPE default
-# Normally we shouldn't set a default like this, but the simulations are 10x slower
-# if the user lets it default to Debug.
-# for single config generators, set build type to Release
+# The simulations are 10x slower for default to Debug.
+# Thus, for single config generators, set build type to Release
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")

@@ -30,9 +30,9 @@ jobs:
         # hwm14: [true, false]
         hwm14: [false]
         # TODO: temp workaround for fclaw_prep3
-        img: [{os: ubuntu-latest, cc: gcc-8, cxx: g++-8, fc: gfortran-8},
-              {os: ubuntu-latest, cc: gcc, cxx: g++, fc: gfortran},
-              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran}]
+        img: [{os: ubuntu-22.04, cc: gcc-9, cxx: g++-9, fc: gfortran-9},
+              {os: ubuntu-22.04, cc: gcc-10, cxx: g++-10, fc: gfortran-10},
+              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-11}]
 
     env:
       CC: ${{ matrix.img.cc }}
@@ -54,7 +54,6 @@ jobs:
       timeout-minutes: 15
       run: |
         sudo $(cmake -P gemext/scripts/requirements.cmake) ninja-build liblapack-dev libscalapack-mpi-dev
-        sudo apt install --no-install-recommends ${{ matrix.img.cc }} ${{ matrix.img.cxx }} ${{ matrix.img.fc }}
 
     - name: Install packages (MacOS)
       if: runner.os == 'macOS'
@@ -62,7 +61,6 @@ jobs:
       run: |
         $(cmake -P gemext/scripts/requirements.cmake)
         brew install ninja scalapack
-        brew reinstall gcc
 
     - name: Install model libraries
       timeout-minutes: 15
