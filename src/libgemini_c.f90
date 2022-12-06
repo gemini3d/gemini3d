@@ -856,6 +856,22 @@ contains
   end subroutine
 
 
+  !> get c pointers to magnetic coordinates of mesh sites
+  subroutine get_grid_magcoords_C(xtype,xC,mlonC,mlatC,altC) bind(C, name='get_grid_magcoords_C')
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: mlonC,mlatC,altC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+
+    ! for now just use geographic since already stored...
+    mlonC=c_loc(x%glon)
+    mlatC=c_loc(x%glat)
+    altC=c_loc(x%alt)    
+  end subroutine get_grid_magcoords_C
+
+
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
   subroutine dateinc_C(dt,ymd,UTsec) bind(C, name="dateinc_C")
     real(wp), intent(in) :: dt
