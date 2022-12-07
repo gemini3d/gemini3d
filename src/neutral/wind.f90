@@ -12,15 +12,15 @@ contains
 !     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
 !     program for neutral parameters.   
 module procedure neutral_winds
-  real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt
+  real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: Wmeridional, Wzonal, Walt
   integer :: i1,i2,i3, dayOfYear
   real(wp) :: altnow,glonnow,glatnow
   integer :: iinull
   integer :: lx1,lx2,lx3,ix1beg,ix1end
   
-  lx1=size(x%alt,1)
-  lx2=size(x%alt,2)
-  lx3=size(x%alt,3)
+  lx1=x%lx1
+  lx2=x%lx2
+  lx3=x%lx3
 
   dayOfYear = ymd2doy(ymd(1), ymd(2), ymd(3))
  

@@ -142,7 +142,9 @@ subroutine make_cartmesh(self)
   end do
 
   ! now assign structure elements and deallocate unneeded temp variables
-  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
+!  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
+  self%r=r(-1:lz+2,-1:lx+2,-1:ly+2); self%theta=theta(-1:lz+2,-1:lx+2,-1:ly+2); 
+  self%phi=phispher(-1:lz+2,-1:lx+2,-1:ly+2)
   deallocate(r,theta,phispher)
 
   ! compute the geographic coordinates
@@ -212,11 +214,10 @@ end subroutine make_cartmesh
 !> compute gravitational field components
 subroutine calc_grav_cart(self)
   class(cartmesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
-
   ! fixme: error checking?
 
-  self%gz=-Gconst*Me/self%r**2     ! radial component of gravity
+  print*, size(self%r,1),size(self%r,2),size(self%r,3)
+  self%gz=-Gconst*Me/self%r(1:size(self%r,1)-4,1:size(self%r,2)-4,1:size(self%r,3)-4)**2     ! radial component of gravity
   self%gx=0._wp
   self%gy=0._wp
 end subroutine calc_grav_cart

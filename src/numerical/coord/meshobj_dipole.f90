@@ -173,7 +173,9 @@ subroutine make_dipolemesh(self)
   self%hphi(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h3(r,theta,phispher)
 
   ! now assign structure elements and deallocate unneeded temp variables
-  self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)   ! don't need ghost cells!
+  !self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)   ! don't need ghost cells!
+  self%r=r(-1:lq+2,-1:lp+2,-1:lphi+2); self%theta=theta(-1:lq+2,-1:lp+2,-1:lphi+2);    ! keep ghost cells!
+  self%phi=phispher(-1:lq+2,-1:lp+2,-1:lphi+2)
 
   ! compute the geographic coordinates
   print*, 'make_dipolemesh:  geographic coordinates from magnetic...'
