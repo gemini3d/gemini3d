@@ -204,14 +204,14 @@ subroutine gather_grid_root(h1,h2,h3, &
   call gather_recv3D_x3i(h2x3i,tag%h2,h2x3iall)
   call gather_recv3D_x3i(h3x3i,tag%h3,h3x3iall)
 
-  call gather_recv(r,tag%r,rall)
-  call gather_recv(theta,tag%theta,thetaall)
-  call gather_recv(phi,tag%phi,phiall)
+  call gather_recv3D_ghost(r,tag%r,rall)
+  call gather_recv3D_ghost(theta,tag%theta,thetaall)
+  call gather_recv3D_ghost(phi,tag%phi,phiall)
 
-  call gather_recv(alt,tag%alt,altall)
+  call gather_recv3D_ghost(alt,tag%alt,altall)
+  call gather_recv3D_ghost(glon,tag%glon,glonall)
+
   call gather_recv(Bmag,tag%Bmag,Bmagall)
-  call gather_recv(glon,tag%glon,glonall)
-
 end subroutine gather_grid_root
 
 
@@ -245,13 +245,14 @@ subroutine gather_grid_workers(h1,h2,h3, &
   call gather_send3D_x3i(h2x3i,tag%h2)
   call gather_send3D_x3i(h3x3i,tag%h3)
 
-  call gather_send(r,tag%r)
-  call gather_send(theta,tag%theta)
-  call gather_send(phi,tag%phi)
+  call gather_send3D_ghost(r,tag%r)
+  call gather_send3D_ghost(theta,tag%theta)
+  call gather_send3D_ghost(phi,tag%phi)
 
-  call gather_send(alt,tag%alt)
+  call gather_send3D_ghost(alt,tag%alt)
+  call gather_send3D_ghost(glon,tag%glon)
+
   call gather_send(Bmag,tag%Bmag)
-  call gather_send(glon,tag%glon)
 end subroutine gather_grid_workers
 
 end submodule grid_read_mpi

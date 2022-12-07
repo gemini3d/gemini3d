@@ -112,7 +112,7 @@ Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
-bigX=(x%alt+Re)/H          !a reduced altitude
+bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H          !a reduced altitude
 y=sqrt(bigX/2._wp)*abs(cos(chi))
 Chfn=0
 where (chi<pi/2._wp)    !where does work with array corresponding elements provided they are conformable (e.g. bigX and y in this case)
@@ -126,7 +126,7 @@ nOcol=nn(:,:,:,1)*H*Chfn
 
 !N2 COLUMN DENSITY
 H=kB*Tninf/mn(2)/gavg     !all of these temp quantities need to be recomputed for eacb neutral species being ionized
-bigX=(x%alt+Re)/H
+bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H
 y=sqrt(bigX/2._wp)*abs(cos(chi))
 Chfn=0
 where (chi<pi/2._wp)
@@ -139,7 +139,7 @@ nN2col=nn(:,:,:,2)*H*Chfn
 
 !O2 COLUMN DENSITY
 H=kB*Tninf/mn(3)/gavg
-bigX=(x%alt+Re)/H
+bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H
 y=sqrt(bigX/2._wp)*abs(cos(chi))
 Chfn=0
 where (chi<pi/2._wp)    !where does work with array corresponding elements provided they are conformable

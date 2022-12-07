@@ -22,9 +22,9 @@ module procedure neutral_atmos
     !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
   !    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
 
-  lx1=size(alt,1)
-  lx2=size(alt,2)
-  lx3=size(alt,3)
+  lx1=size(atmos%nnmsis,1)
+  lx2=size(atmos%nnmsis,2)
+  lx3=size(atmos%nnmsis,3)
 
   !! CONVERT DATE INFO INTO EXPECTED FORM AND KIND
   ap = activ(3)

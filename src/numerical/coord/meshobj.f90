@@ -408,6 +408,9 @@ contains
     integer :: lx1,lx2,lx3
 
     if (.not. self%dxi_alloc_status .or. .not. self%coord_alloc_status) then
+      print*, self%dxi_alloc_status,self%coord_alloc_status
+      print*, (.not. self%dxi_alloc_status), (.not. self%coord_alloc_status)
+      print*, .not. self%dxi_alloc_status .eqv. self%dxi_alloc_status
       error stop ' attempting to compute differential lengths without interface diffs or metric factors!'
     end if
 
@@ -459,7 +462,12 @@ contains
 
     allocate(self%I(1:lx2,1:lx3))
     allocate(self%Bmag(1:lx1,1:lx2,1:lx3))
-    allocate(self%g1, self%g2, self%g3, self%r, self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%Bmag)
+!    allocate(self%g1, self%g2, self%g3, self%r, self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%Bmag)
+    allocate(self%g1, self%g2, self%g3, mold=self%Bmag)
+
+    ! coordinate-related quantities will retain ghost cells
+    allocate(self%r(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    allocate(self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%r)
 
     self%coord_alloc_status=.true.
   end subroutine init_storage
@@ -494,8 +502,13 @@ contains
     allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1))
     allocate(self%h2x3iall, self%h3x3iall, mold=self%h1x3iall)
 
-    allocate(self%rall(1:lx1,1:lx2all,1:lx3all))
-    allocate(self%thetaall, self%phiall, self%altall, self%Bmagall, self%glonall, mold=self%rall)
+!    allocate(self%rall(1:lx1,1:lx2all,1:lx3all))
+!    allocate(self%thetaall, self%phiall, self%altall, self%Bmagall, self%glonall, mold=self%rall)
+
+    allocate(self%rall(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
+    allocate(self%thetaall, self%phiall, self%altall, self%glonall, mold=self%rall)
+
+    allocate(self%Bmagall(1:lx1,1:lx2all,1:lx3all))
 
     self%coord_alloc_status_root=.true.
   end subroutine init_storage_root
@@ -541,6 +554,7 @@ contains
     class(curvmesh), intent(inout) :: self
     integer :: lx1,lx2,lx3
     integer :: icount,ix1,ix2,ix3
+    real(wp), dimension(:,:,:), allocatable :: alttmp
 
     ! error checking, we require the geographic coords. before this is done
     if (.not. self%geog_set_status) error stop ' attempting to compute null points prior to setting geographic coordinates!'
@@ -551,9 +565,12 @@ contains
     ! set null points for this simulation
     allocate(self%nullpts(1:lx1,1:lx2,1:lx3))
     self%nullpts=.false.
-    where (self%alt < 80e3_wp)
+    allocate(alttmp(lx1,lx2,lx3))
+    alttmp=self%alt(1:lx1,1:lx2,1:lx3)
+    where (alttmp < 80e3_wp)
       self%nullpts=.true.
     end where
+    deallocate(alttmp)
 
     ! count needed storage for null indices
     self%lnull=0;
