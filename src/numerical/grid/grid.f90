@@ -182,6 +182,69 @@ contains
   end subroutine grid_from_extents
 
 
+  !> use a ghostgrid object to retrieve data about ghost cell geographic locations for use, e.g., in generating
+  !    vtu output files for ForestGEMINI.  The output arrays first two dimensions represent the variations with
+  !    location on the boundary whereas the 3rd dim. is the component of position vector ordered at glon,glat,alt
+!  subroutine ghost_location_generate(x,gcoordsx1max,gcoordsx2max,gcoordsx3max)
+!    class(curvmesh), intent(in) :: x
+!    real(wp), dimension(:,:,:), intent(inout) :: gcoordsx1max
+!    real(wp), dimension(:,:,:), intent(inout) :: gcoordsx2max
+!    real(wp), dimension(:,:,:), intent(inout) :: gcoordsx3max
+!    class(curvmesh), allocatable :: xghost
+!    real(wp) :: x1max,x2max,x3max
+! 
+!    ! error check for size
+!    if (.not. (size(gcoordsx1max,1)==x%lx2 .and. size(gcoordsx1max,2)==x%lx3 .and. size(gcoordsx1max,3)==3) ) then
+!      error stop 'ghost_location_generate:  bad array size in gcoordsx1max spec'
+!    end if
+!    if (.not. (size(gcoordsx2max,1)==x%lx1 .and. size(gcoordsx2max,2)==x%lx3 .and. size(gcoordsx2max,3)==3) ) then
+!      error stop 'ghost_location_generate:  bad array size in gcoordsx2max spec'
+!    end if
+!    if (.not. (size(gcoordsx3max,1)==x%lx1 .and. size(gcoordsx3max,2)==x%lx2 .and. size(gcoordsx3max,3)==3) ) then
+!      error stop 'ghost_location_generate:  bad array size in gcoordsx1max spec'
+!    end if
+!
+!    ! create a "ghost grid" object that has internal cells corresponding to ghost locations in actual grid
+!    select type (x)
+!      type is (dipolemesh)
+!        allocate(dipolemesh::xghost)
+!      type is (cartmesh)
+!        allocate(cartmesh::xghost)
+!      default
+!        error stop 'ghost_location_generate:  could not determine type of source mesh'
+!    end select
+!
+!    ! create coordinate for the ghostgrid just corresponding to the 3 slices of ghostcells we need
+!    allocate(x1tmp(5),x2tmp(5),x3tmp(5))
+!    x1tmp=[x%x1(lx1-1),x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2),x%x1(lx1+2)+0.1]
+!    call grid_internaldata_alloc(x1tmp,x%x2,x%x3,x%x2,x%x3,0.0,0.0,xghost)
+!    call grid_internaldata_generate(xghost)
+!    gcoordsx1max(1:lx2,1:lx3,1)=xghost%glon(1,1:lx2,1:lx3)
+!    gcoordsx1max(1:lx2,1:lx3,2)=xghost%glat(1,1:lx2,1:lx3)
+!    gcoordsx1max(1:lx2,1:lx3,3)=xghost%alt(1,1:lx2,1:lx3)
+!    call grid_internaldata_ungenerate(xghost)
+!
+!    x2tmp=[x%x2(lx2-1),x%x2(lx2),x%x2(lx2+1),x%x2(lx2+2),x%x2(lx2+2)+0.1]
+!    call grid_internaldata_alloc(x%x1,x2tmp,x%x3,x2tmp,x%x3,0.0,0.0,xghost)
+!    call grid_internaldata_generate(xghost)
+!    gcoordsx1max(1:lx1,1:lx3,1)=xghost%glon(1:lx1,1,1:lx3)
+!    gcoordsx1max(1:lx1,1:lx3,2)=xghost%glat(1:lx1,1,1:lx3)
+!    gcoordsx1max(1:lx1,1:lx3,3)=xghost%alt(1:lx1,1,1:lx3)
+!    call grid_internaldata_ungenerate(xghost)
+!
+!    x3tmp=[x%x3(lx3-1),x%x3(lx3),x%x3(lx3+1),x%x3(lx3+2),x%x3(lx3+2)+0.1]
+!    call grid_internaldata_alloc(x%x1,x%x2,x3tmp,x%x2,x3tmp,0.0,0.0,xghost)
+!    call grid_internaldata_generate(xghost)
+!    gcoordsx1max(1:lx1,1:lx2,1)=xghost%glon(1:lx1,1:lx2,1)
+!    gcoordsx1max(1:lx1,1:lx2,2)=xghost%glat(1:lx1,1:lx2,1)
+!    gcoordsx1max(1:lx1,1:lx2,3)=xghost%alt(1:lx1,1:lx2,1)
+!    call grid_internaldata_ungenerate(xghost)
+!
+!    deallocate(x1tmp,x2tmp,x3tmp)
+!    deallocate(xghost)
+!  end subroutine ghost_location_generate
+
+
 !  ! FIXME: split into grid_alloc and generate_worker_grid; add interfaces for both to libgemini and C
 !  !> this version additionally allocates the input argument, which is now a pointer
 !  subroutine grid_from_extents_alloc(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x,xtype,xC)
