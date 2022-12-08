@@ -301,30 +301,39 @@ end function calc_hy
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
 subroutine calc_er_spher(self)
   class(cartmesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%er=er_spherical(self%theta,self%phi)
+  self%er=er_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_er_spher
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
 subroutine calc_etheta_spher(self)
   class(cartmesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%etheta=etheta_spherical(self%theta,self%phi)
+  self%etheta=etheta_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_etheta_spher
 
 
 !> azimuth angle unit vector (ECEF cart.)
 subroutine calc_ephi_spher(self)
   class(cartmesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%ephi=ephi_spherical(self%theta,self%phi)
+  self%ephi=ephi_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_ephi_spher
 
 

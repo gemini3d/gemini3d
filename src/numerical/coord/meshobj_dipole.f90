@@ -304,7 +304,7 @@ function calc_hq(coord1,coord2,coord3) result(hval)
 
   ! fixme: error checking
   r=>coord1; theta=>coord2; phi=>coord3;
-  hval=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
+  hval=r**3/Re**2/(sqrt(1+3*cos(theta))**2)
 end function calc_hq
 
 
@@ -318,7 +318,7 @@ function calc_hp(coord1,coord2,coord3) result(hval)
   ! fixme: error checkign
 
   r=>coord1; theta=>coord2; phi=>coord3;
-  hval=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
+  hval=Re*sin(theta)**3/(sqrt(1+3*cos(theta))**2)
 end function calc_hp
 
 
@@ -339,30 +339,39 @@ end function calc_hphi_dip
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
 subroutine calc_er_spher(self)
   class(dipolemesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%er=er_spherical(self%theta,self%phi)
+  self%er=er_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_er_spher
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
 subroutine calc_etheta_spher(self)
   class(dipolemesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%etheta=etheta_spherical(self%theta,self%phi)
+  self%etheta=etheta_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_etheta_spher
 
 
 !> azimuth angle unit vector (ECEF cart.)
 subroutine calc_ephi_spher(self)
   class(dipolemesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%ephi=ephi_spherical(self%theta,self%phi)
+  self%ephi=ephi_spherical(self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 end subroutine calc_ephi_spher
 
 
@@ -370,13 +379,18 @@ end subroutine calc_ephi_spher
 subroutine calc_eq(self)
   class(dipolemesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  denom=sqrt(1+3*cos(self%theta)**2)
-  self%eq(:,:,:,1)=-3*cos(self%theta)*sin(self%theta)*cos(self%phi)/denom
-  self%eq(:,:,:,2)=-3*cos(self%theta)*sin(self%theta)*sin(self%phi)/denom
-  self%eq(:,:,:,3)=(1-3*cos(self%theta)**2)/denom   !simplify?
+  denom=sqrt(1+3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2)
+  self%eq(:,:,:,1)=-3*cos(self%theta(1:lx1,1:lx2,1:lx3))*sin(self%theta(1:lx1,1:lx2,1:lx3))* &
+                        cos(self%phi(1:lx1,1:lx2,1:lx3))/denom
+  self%eq(:,:,:,2)=-3*cos(self%theta(1:lx1,1:lx2,1:lx3))*sin(self%theta(1:lx1,1:lx2,1:lx3))* &
+                        sin(self%phi(1:lx1,1:lx2,1:lx3))/denom
+  self%eq(:,:,:,3)=(1-3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2)/denom   !simplify?
 end subroutine calc_eq
 
 
@@ -384,13 +398,16 @@ end subroutine calc_eq
 subroutine calc_ep(self)
   class(dipolemesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  denom=sqrt(1+3*cos(self%theta)**2)
-  self%ep(:,:,:,1)=(1-3*cos(self%theta)**2)*cos(self%phi)/denom
-  self%ep(:,:,:,2)=(1-3*cos(self%theta)**2)*sin(self%phi)/denom
-  self%ep(:,:,:,3)=3*cos(self%theta)*sin(self%theta)/denom
+  denom=sqrt(1+3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2)
+  self%ep(:,:,:,1)=(1-3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2)*cos(self%phi(1:lx1,1:lx2,1:lx3))/denom
+  self%ep(:,:,:,2)=(1-3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2)*sin(self%phi(1:lx1,1:lx2,1:lx3))/denom
+  self%ep(:,:,:,3)=3*cos(self%theta(1:lx1,1:lx2,1:lx3))*sin(self%theta(1:lx1,1:lx2,1:lx3))/denom
 end subroutine calc_ep
 
 
