@@ -246,12 +246,14 @@ end subroutine make_dipolemesh
 subroutine calc_grav_dipole(self)
 !! compute gravitational field components
   class(dipolemesh), intent(inout) :: self
-
   real(wp), dimension(1:self%lx1, 1:self%lx2, 1:self%lx3) :: gr
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   if(any(shape(gr) < 1)) error stop "meshobj_dipole:calc_grav_dipole: lx1,lx2,lx3 must be strictly positive"
 
-  gr = -Gconst*Me / self%r**2
+  gr = -Gconst*Me / self%r(1:lx1,1:lx2,1:lx3)**2
   !! radial component of gravity
   self%gq = gr*sum(self%er*self%eq, dim=4)
   self%gp = gr*sum(self%er*self%ep, dim=4)
@@ -264,10 +266,13 @@ end subroutine calc_grav_dipole
 !> compute the magnetic field strength
 subroutine calc_Bmag_dipole(self)
   class(dipolemesh), intent(inout) :: self
+  integer :: lx1,lx2,lx3
+
+  lx1=self%lx1; lx2=self%lx2; lx3=self%lx3;
 
   ! fixme: error checking
 
-  self%Bmag=mu0*Mmag/4/pi/self%r**3*sqrt(3*cos(self%theta)**2+1)
+  self%Bmag=mu0*Mmag/4/pi/self%r(1:lx1,1:lx2,1:lx3)**3*sqrt(3*cos(self%theta(1:lx1,1:lx2,1:lx3))**2+1)
 end subroutine calc_Bmag_dipole
 
 

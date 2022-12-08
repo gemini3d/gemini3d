@@ -218,7 +218,8 @@ subroutine calc_grav_cart(self)
   ! fixme: error checking?
 
   print*, size(self%r,1),size(self%r,2),size(self%r,3)
-  self%gz=-Gconst*Me/self%r(1:size(self%r,1)-4,1:size(self%r,2)-4,1:size(self%r,3)-4)**2     ! radial component of gravity
+!  self%gz=-Gconst*Me/self%r(1:size(self%r,1)-4,1:size(self%r,2)-4,1:size(self%r,3)-4)**2     ! radial component of gravity
+  self%gz=-Gconst*Me/self%r(1:self%lx1,1:self%lx2,1:self%lx3)**2     ! radial component of gravity
   self%gx=0
   self%gy=0
 end subroutine calc_grav_cart
