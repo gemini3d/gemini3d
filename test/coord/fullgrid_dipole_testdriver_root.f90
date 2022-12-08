@@ -101,8 +101,8 @@ call x%set_root(tmpghostall,tmpghostall,tmpghostall, &
                 tmpghost1,tmpghost1,tmpghost1, &
                 tmpghost2,tmpghost2,tmpghost2, &
                 tmpghost3,tmpghost3,tmpghost3, &
-                tmp,tmp,tmp, &
-                tmp,tmp,tmp)
+                tmpghostall,tmpghostall,tmpghostall, &
+                tmpghostall,tmp,tmpghostall)
 call x%calc_coord_diffs_root()
 !!!! end grid setup and init
 
