@@ -856,7 +856,7 @@ contains
   end subroutine
 
 
-  !> get c pointers to magnetic coordinates of mesh sites
+  !> get c pointers to magnetic coordinates of mesh sites, note that these include ghost cells
   subroutine get_grid_magcoords_C(xtype,xC,mlonC,mlatC,altC) bind(C, name='get_grid_magcoords_C')
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -865,7 +865,7 @@ contains
 
     x=>set_gridpointer_dyntype(xtype, xC)
 
-    ! for now just use geographic since already stored...
+    ! for now just use geographic since already stored; also note that these do include ghost cells!
     mlonC=c_loc(x%glon)
     mlatC=c_loc(x%glat)
     altC=c_loc(x%alt)    

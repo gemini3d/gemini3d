@@ -81,7 +81,7 @@ contains
 
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
     print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
-    self%zimat=x%alt     !vertical coordinate
+    self%zimat=x%alt(1:x%lx1,1:x%lx2,1:x%lx3)     !vertical coordinate
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
