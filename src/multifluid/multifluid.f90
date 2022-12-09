@@ -390,7 +390,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
         !if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
         PrprecipG=0; QeprecipG=0; iverG=0;
-        call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,1:lx2,1:lx3),x%glon(1,:,:), &
+        call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,1:lx2,1:lx3),x%glon(1,1:lx2,1:lx3), &
                             x%alt(1:lx1,1:lx2,1:lx3),nn,Tn,ns,Ts, &
                             QeprecipG, iverG, PrprecipG)    ! bit messy but this will internally iterate over populations
         PrprecipG=max(PrprecipG, 1e-5_wp)
