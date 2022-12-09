@@ -309,7 +309,7 @@ function calc_hq(coord1,coord2,coord3) result(hval)
 
   ! fixme: error checking
   r=>coord1; theta=>coord2; phi=>coord3;
-  hval=r**3/Re**2/(sqrt(1+3*cos(theta))**2)
+  hval=r**3/Re**2/sqrt(1+3*cos(theta)**2)
 end function calc_hq
 
 
@@ -323,7 +323,7 @@ function calc_hp(coord1,coord2,coord3) result(hval)
   ! fixme: error checkign
 
   r=>coord1; theta=>coord2; phi=>coord3;
-  hval=Re*sin(theta)**3/(sqrt(1+3*cos(theta))**2)
+  hval=Re*sin(theta)**3/sqrt(1+3*cos(theta)**2)
 end function calc_hp
 
 
