@@ -309,7 +309,6 @@ contains
     !  print*, '  Applied EIA perturbation to background electric field...'
     !  print*, '    ',minval(E03all),maxval(E03all)
     else
-      error stop 'Into background electric field routine...'
       E01all = 0
       E02all = 0
       E03all = 0
