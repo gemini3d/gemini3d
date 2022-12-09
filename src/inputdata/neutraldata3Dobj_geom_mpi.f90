@@ -53,7 +53,7 @@ contains
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
     end if
 
-    self%zimat=x%alt     !vertical coordinate is just altitude array already stored in grid object
+    self%zimat=x%alt(1:x%lx1,1:x%lx2,1:x%lx3)     !vertical coordinate is just altitude array already stored in grid object
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
