@@ -72,7 +72,8 @@ contains
     !! call msis to get an initial neutral background atmosphere
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,cfg%msis_version,atmos)
+    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3),x%alt(1:lx1,1:lx2,1:lx3), &
+                         cfg%activ,cfg%msis_version,atmos)
     call neutralBG_denstemp(atmos)
     !if (mpi_cfg%myid == 0) then
       call cpu_time(tfin)
