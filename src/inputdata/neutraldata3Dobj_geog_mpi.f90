@@ -62,7 +62,7 @@ contains
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations, using geographic coordinates...'
     end if
-    self%zimat=x%alt     !vertical coordinate is just altitude array already stored in grid object; assume the same for geographic v. geomagnetic
+    self%zimat=x%alt(1:x%lx1,1:x%lx2,1:x%lx3)     !vertical coordinate is just altitude array already stored in grid object; assume the same for geographic v. geomagnetic
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
