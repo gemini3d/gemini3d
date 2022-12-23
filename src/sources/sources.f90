@@ -534,12 +534,12 @@ call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !This includes losses of the FBI part
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-!Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*FBIlossfactor*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
-!Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*FBIlossfactor*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
 
 !This is for no loss simulations
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
-Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
+!Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+!Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
 
