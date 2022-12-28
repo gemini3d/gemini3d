@@ -193,6 +193,7 @@ type, abstract :: curvmesh
     procedure(calc_procedure), deferred :: calc_e1
     procedure(calc_procedure), deferred :: calc_e2
     procedure(calc_procedure), deferred :: calc_e3
+    procedure(native_convert), deferred :: native2ECEFspher
 
     !! these bindings have different interfaces due to evaluation of metric factors at cell centers
     !! vs. interfaces
@@ -205,7 +206,7 @@ type, abstract :: curvmesh
 end type curvmesh
 
 
-!> interfaces for deferred bindings, note all should operate on data in self - this provides maximum
+!> interfaces for deferred bindings, most will operate on data in self - this provides maximum
 !! flexibility for the extension to use whatever data it needs to compute the various grid quantities
 abstract interface
   subroutine initmake(self)
@@ -223,6 +224,17 @@ abstract interface
     real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                         lbound(coord1,3):ubound(coord1,3)) :: hval   ! arrays may not start at index 1
   end function calc_metric
+  subroutine native_convert(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,phispher)
+    import curvmesh
+    import wp
+    class(curvmesh), intent(in) :: self
+    real(wp) :: glonctr,glatctr
+    real(wp), dimension(:), pointer, intent(in) :: coord1,coord2,coord3
+    !real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
+    real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord2,1):ubound(coord2,1), &
+                lbound(coord3,1):ubound(coord3,1)), &
+                intent(inout) :: r,theta,phispher
+  end subroutine native_convert
 end interface
 
 

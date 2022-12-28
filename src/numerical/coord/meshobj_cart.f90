@@ -42,9 +42,7 @@ type, extends(curvmesh) :: cartmesh
     procedure, nopass :: calc_h1=>calc_hz
     procedure, nopass :: calc_h2=>calc_hx
     procedure, nopass :: calc_h3=>calc_hy
-
-    !> Cartesian specific procedure, should really be in base class since every mesh type needs this
-    procedure :: cart2ECEFspher
+    procedure :: native2ECEFspher=>cart2ECEFspher
 
     !> type deallocations, reset flags, etc.
     final :: destructor
@@ -110,7 +108,7 @@ subroutine make_cartmesh(self)
   print '(A,1X,I0,1X,I0,1X,I0)', ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
   lz=lzg-4; lx=lxg-4; ly=lyg-4;
 
-  call self%cart2ECEFspher(self%glonctr,self%glatctr,self%x,self%y,self%z,r,theta,phispher)
+  call self%native2ECEFspher(self%glonctr,self%glatctr,self%z,self%x,self%y,r,theta,phispher)
 
   ! now assign structure elements and deallocate unneeded temp variables
 !  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
@@ -183,43 +181,56 @@ end subroutine make_cartmesh
 
 
 !> utility convert native Cartesian coordinates to ECEF spherical
-subroutine cart2ECEFspher(self,glonctr,glatctr,x,y,z,r,theta,phispher)
+subroutine cart2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,phispher)
   class(cartmesh), intent(in) :: self
   real(wp) :: glonctr,glatctr
-  real(wp), dimension(:), intent(in) :: x,y,z
-  real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
+  real(wp), dimension(:), pointer, intent(in) :: coord1,coord2,coord3
+  real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord2,1):ubound(coord2,1),lbound(coord3,1):ubound(coord3,1)), &
+              intent(inout) :: r,theta,phispher
+  real(wp), dimension(:), pointer :: x,y,z
   integer :: lx,ly,lz,ix,iy,iz
+  integer :: izmin,izmax,ixmin,ixmax,iymin,iymax
   real(wp) :: thetactr,phictr
   real(wp) :: gamma1,gamma2
 
+  z=>coord1; x=>coord2; y=>coord3;
   lz=size(z); lx=size(x); ly=size(y);
+
+  izmin=lbound(z,1); izmax=ubound(z,1);   ! apparently pointers carry lbound/ubound into procedures but arrays don't???
+  ixmin=lbound(x,1); ixmax=ubound(x,1);
+  iymin=lbound(y,1); iymax=ubound(y,1);
+
+  if (lz /= size(r,1) .or. lx /= size(r,2) .or. ly /= size(r,3) ) then
+    print*, lz,lx,ly,size(r,1),size(r,2),size(r,3)
+    error stop 'cartmesh::cart2ECEFspher - r and native coord. arrays not conformable...'
+  end if
 
   call geog2geomag(glonctr,glatctr,phictr,thetactr)
 
   ! radial distance from Earth's center
-  do iy=1,ly
-    do ix=1,lx
-      do iz=1,lz
+  do iy=iymin,iymax
+    do ix=ixmin,ixmax
+      do iz=izmin,izmax
         r(iz,ix,iy)=Re+z(iz)
       end do
     end do
   end do
 
   ! northward angular distance
-  do iy=1,ly
+  do iy=iymin,iymax
     gamma2=y(iy)/Re                  ! must retain sign(y)
-    do ix=1,lx
-      do iz=1,lz
+    do ix=ixmin,ixmax
+      do iz=izmin,izmax
         theta(iz,ix,iy)=thetactr-gamma2  ! minus because theta is positive south (y runs positive north)
       end do
     end do
   end do
 
   ! eastward angular distance
-  do iy=1,ly
-    do ix=1,lx
+  do iy=iymin,iymax
+    do ix=ixmin,ixmax
       gamma1=x(ix)/Re/sin(thetactr)
-      do iz=1,lz
+      do iz=izmin,izmax
         phispher(iz,ix,iy)=phictr+gamma1
       end do
     end do
