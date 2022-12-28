@@ -640,6 +640,13 @@ contains
       allocate(self%alti(1:self%lx1+1,1:self%lx2+1,1:self%lx3+1))
       allocate(self%gloni,self%glati, mold=self%alti) 
 
+      allocate(ri,thetai,phispheri, mold=self%alti)
+
+      call self%native2ECEFspher(self%glonctr,self%glatctr,self%x1i,self%x2i,self%x3i,ri,thetai,phispheri)
+      call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
+      self%alti=r2alt(ri)
+
+      deallocate(ri,thetai,phispheri)
       self%geogi_set_status=.true.
     else
       print*, 'WARNING:  geographic locations of cell edges already calculated!'
