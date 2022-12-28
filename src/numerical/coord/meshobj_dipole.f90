@@ -250,13 +250,13 @@ subroutine dipole2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,ph
     error stop 'dipolemesh::dipole2ECEFspher - r and native coord. arrays not conformable...'
   end if
 
-  call self%calc_rtheta_2D(q,p,r(:,:,1),theta(:,:,1))
-  do iphi=iphimin,iphimax     ! tile
-    r(:,:,iphi)=r(:,:,1)
-    theta(:,:,iphi)=theta(:,:,1)
+  call self%calc_rtheta_2D(q,p,r(:,:,iphimin),theta(:,:,iphimin))
+  do iphi=iphimin+1,iphimax     ! tile
+    r(:,:,iphi)=r(:,:,iphimin)
+    theta(:,:,iphi)=theta(:,:,iphimin)
   end do
-  do iphi=iphimin,iphimax
-    phispher(:,:,iphi)=phidip(iphi)   !scalar assignment should work...
+  do iphi=iphimin+1,iphimax
+    phispher(:,:,iphi)=phidip(iphimin)   !scalar assignment should work...
   end do
 end subroutine dipole2ECEFspher
 
