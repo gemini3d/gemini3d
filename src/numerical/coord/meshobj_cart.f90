@@ -43,6 +43,9 @@ type, extends(curvmesh) :: cartmesh
     procedure, nopass :: calc_h2=>calc_hx
     procedure, nopass :: calc_h3=>calc_hy
 
+    !> Cartesian specific procedure, should really be in base class since every mesh type needs this
+    procedure :: cart2ECEFspher
+
     !> type deallocations, reset flags, etc.
     final :: destructor
 end type cartmesh
@@ -107,39 +110,7 @@ subroutine make_cartmesh(self)
   print '(A,1X,I0,1X,I0,1X,I0)', ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
   lz=lzg-4; lx=lxg-4; ly=lyg-4;
 
-  ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
-  print*, ' make_cartmesh:  converting cell centers to spherical coordinates...'
-  call geog2geomag(self%glonctr,self%glatctr,phictr,thetactr)
-  print*, ' make_cartmesh:  grid center glon,glat,phi,theta',self%glonctr,self%glatctr,phictr,thetactr
-
-  ! radial distance from Earth's center
-  do iy=-1,ly+2
-    do ix=-1,lx+2
-      do iz=-1,lz+2
-        r(iz,ix,iy)=Re+self%z(iz)
-      end do
-    end do
-  end do
-
-  ! northward angular distance
-  do iy=-1,ly+2
-    gamma2=self%y(iy)/Re                  ! must retain sign(y)
-    do ix=-1,lx+2
-      do iz=-1,lz+2
-        theta(iz,ix,iy)=thetactr-gamma2  ! minus because theta is positive south (y runs positive north)
-      end do
-    end do
-  end do
-
-  ! eastward angular distance
-  do iy=-1,ly+2
-    do ix=-1,lx+2
-      gamma1=self%x(ix)/Re/sin(thetactr)
-      do iz=-1,lz+2
-        phispher(iz,ix,iy)=phictr+gamma1
-      end do
-    end do
-  end do
+  call self%cart2ECEFspher(self%glonctr,self%glatctr,self%x,self%y,self%z,r,theta,phispher)
 
   ! now assign structure elements and deallocate unneeded temp variables
 !  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
@@ -209,6 +180,51 @@ subroutine make_cartmesh(self)
   call self%calc_inclination()
   print *, "make_cartmesh done"
 end subroutine make_cartmesh
+
+
+!> utility convert native Cartesian coordinates to ECEF spherical
+subroutine cart2ECEFspher(self,glonctr,glatctr,x,y,z,r,theta,phispher)
+  class(cartmesh), intent(in) :: self
+  real(wp) :: glonctr,glatctr
+  real(wp), dimension(:), intent(in) :: x,y,z
+  real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
+  integer :: lx,ly,lz,ix,iy,iz
+  real(wp) :: thetactr,phictr
+  real(wp) :: gamma1,gamma2
+
+  lz=size(z); lx=size(x); ly=size(y);
+
+  call geog2geomag(glonctr,glatctr,phictr,thetactr)
+
+  ! radial distance from Earth's center
+  do iy=1,ly
+    do ix=1,lx
+      do iz=1,lz
+        r(iz,ix,iy)=Re+z(iz)
+      end do
+    end do
+  end do
+
+  ! northward angular distance
+  do iy=1,ly
+    gamma2=y(iy)/Re                  ! must retain sign(y)
+    do ix=1,lx
+      do iz=1,lz
+        theta(iz,ix,iy)=thetactr-gamma2  ! minus because theta is positive south (y runs positive north)
+      end do
+    end do
+  end do
+
+  ! eastward angular distance
+  do iy=1,ly
+    do ix=1,lx
+      gamma1=x(ix)/Re/sin(thetactr)
+      do iz=1,lz
+        phispher(iz,ix,iy)=phictr+gamma1
+      end do
+    end do
+  end do
+end subroutine cart2ECEFspher
 
 
 !> compute gravitational field components
