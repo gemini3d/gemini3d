@@ -48,8 +48,7 @@ type, extends(curvmesh) :: dipolemesh
     procedure, nopass :: calc_h1=>calc_hq
     procedure, nopass :: calc_h2=>calc_hp
     procedure, nopass :: calc_h3=>calc_hphi_dip
-
-    procedure :: dipole2ECEFspher
+    procedure :: native2ECEFspher=>dipole2ECEFspher
 
     !> type deallocations, etc.
     final :: destructor
@@ -146,15 +145,15 @@ subroutine make_dipolemesh(self)
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
   print*, 'make_dipolemesh:  converting cell centers to spherical coordinates...'
-  call self%dipole2ECEFspher(self%glonctr,self%glatctr,self%q,self%p,self%phidip,r,theta,phispher)
+  call self%native2ECEFspher(self%glonctr,self%glatctr,self%q,self%p,self%phidip,r,theta,phispher)
 
   ! locations of the cell interfaces in q-dimension (along field lines)
   print*, 'make_dipolemesh:  converting cell interfaces in q...'
-  call self%dipole2ECEFspher(self%glonctr,self%glatctr,self%qint,self%p(1:lp),self%phidip(1:lphi),rqint,thetaqint,phiqint)
+  call self%native2ECEFspher(self%glonctr,self%glatctr,self%qint,self%p(1:lp),self%phidip(1:lphi),rqint,thetaqint,phiqint)
 
   ! locations of cell interfaces in p-dimesion (along constant L-shell)
   print*, 'make_dipolemesh:  converting cell interfaces in p...'
-  call self%dipole2ECEFspher(self%glonctr,self%glatctr,self%q(1:lq),self%pint,self%phidip(1:lphi),rpint,thetapint,phipint)
+  call self%native2ECEFspher(self%glonctr,self%glatctr,self%q(1:lq),self%pint,self%phidip(1:lphi),rpint,thetapint,phipint)
 
   ! compute and store the metric factors; these need to include ghost cells
   print*, 'make_dipolemesh:  metric factors for cell centers...'
@@ -233,25 +232,31 @@ end subroutine make_dipolemesh
 
 
 !> convert input dipole coordinates into ECEF spherical coordinates
-subroutine dipole2ECEFspher(self,glonctr,glatctr,q,p,phidip,r,theta,phispher)
+subroutine dipole2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,phispher)
   class(dipolemesh), intent(in) :: self
-  real(wp) :: glonctr,glatctr
-  real(wp), dimension(:), intent(in) :: q,p,phidip
-  real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
-  integer :: lq,lp,lphi,iphi
+  real(wp) :: glonctr,glatctr     ! unused in this implementation
+  real(wp), dimension(:), pointer, intent(in) :: coord1,coord2,coord3
+  !real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
+  real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord2,1):ubound(coord2,1),lbound(coord3,1):ubound(coord3,1)), &
+              intent(inout) :: r,theta,phispher
+  integer :: lq,lp,lphi,iphi,iphimin,iphimax
+  real(wp), dimension(:), pointer :: q,p,phidip
 
+  q=>coord1; p=>coord2; phidip=>coord3;
   lq=size(q); lp=size(p); lphi=size(phidip);
+  iphimin=lbound(phidip,1); iphimax=ubound(phidip,1);
 
   if (lq /= size(r,1) .or. lp /= size(r,2) .or. lphi /= size(r,3) ) then
+    print*, lq,lp,lphi,size(r,1),size(r,2),size(r,3)
     error stop 'dipolemesh::dipole2ECEFspher - r and native coord. arrays not conformable...'
   end if
 
   call self%calc_rtheta_2D(q,p,r(:,:,1),theta(:,:,1))
-  do iphi=1,lphi     ! tile
+  do iphi=iphimin,iphimax     ! tile
     r(:,:,iphi)=r(:,:,1)
     theta(:,:,iphi)=theta(:,:,1)
   end do
-  do iphi=1,lphi
+  do iphi=iphimin,iphimax
     phispher(:,:,iphi)=phidip(iphi)   !scalar assignment should work...
   end do
 end subroutine dipole2ECEFspher
