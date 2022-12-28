@@ -37,6 +37,7 @@ type, abstract :: curvmesh
   logical :: null_alloc_status=.false.
   logical :: geog_set_status=.false.      ! geographic coords. get allocated with other arrays, but get set separately
   logical :: coord_set_status_root=.false.
+  !logical :: geogi_set_status=.false.
 
   !> sizes.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -132,6 +133,7 @@ type, abstract :: curvmesh
 
   !> geographic data; pointers
   real(wp), dimension(:,:,:), pointer :: glat,glon,alt
+  !real(wp), dimension(:,:,:), pointer :: glati,gloni,alti
 
   !> magnetic field magnitude and inclination.  Pointers
   real(wp), dimension(:,:,:), pointer :: Bmag
@@ -469,6 +471,11 @@ contains
     allocate(self%r(-1:lx1+2,-1:lx2+2,-1:lx3+2))
     allocate(self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%r)
 
+    !! by default these are not use so we allocate on request in set_geographici()
+    !! some location edges are required; only for workers tho
+    !allocate(self%gloni(1:lx1+1,1:lx2+1,1:lx3+1))
+    !allocate(self%glati,self%alti, mold=self%gloni)
+
     self%coord_alloc_status=.true.
   end subroutine init_storage
 
@@ -610,6 +617,14 @@ contains
     self%alt=r2alt(self%r)
     self%geog_set_status=.true.
   end subroutine calc_geographic
+
+
+  !> this isn't used by computation parts of gemini but may be need for certain types of 3D visualization
+  !pure subroutine calc_geographici(self)
+  !  
+  !
+  !  self%geogi_set_status=.true.
+  !end subroutine calc_geographici(self)
 
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
@@ -817,6 +832,10 @@ contains
       self%coord_alloc_status=.false.
       self%geog_set_status=.false.
     end if
+    !if (self%geogi_set_status) then
+    !  deallocate(self%alti,self%gloni,self%glati)
+    !  self%geogi_set_status=.false.
+    !end if
     if (self%coord_alloc_status_root) then
       deallocate(self%h1all,self%h2all,self%h3all)
       deallocate(self%h1x1iall,self%h2x1iall,self%h3x1iall)

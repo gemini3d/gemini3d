@@ -856,7 +856,10 @@ contains
   end subroutine
 
 
-  !> get c pointers to magnetic coordinates of mesh sites, note that these include ghost cells
+  !> get c pointers to magnetic coordinates of mesh sites (cell centers), note that these include ghost cells
+  !  Due to the way the vtu files are created in forestclaw we likely need interface values for the cell locations
+  !    As such this particular routine is likely not useful and we need separate facilities to computer and return
+  !    the cell edge values.  
   subroutine get_grid_magcoords_C(xtype,xC,mlonC,mlatC,altC) bind(C, name='get_grid_magcoords_C')
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -870,6 +873,25 @@ contains
     mlatC=c_loc(x%glat)
     altC=c_loc(x%alt)    
   end subroutine get_grid_magcoords_C
+
+
+!  !> force computation (if needed) of interface cell locations (geographic coordinates) and return a C pointer
+!  subroutine get_grid_magcoordsi(xtype,xC,mloniC,mlatiC,altiC) bind(C, name='get_grid_magcoordsi')
+!    integer(C_INT), intent(in) :: xtype
+!    type(c_ptr), intent(in) :: xC
+!    type(c_ptr), intent(inout) :: mlonC,mlatC,altC
+!    class(curvmesh), pointer :: x
+!
+!    x=>set_gridpointer_dyntype(xtype, xC)
+!
+!    ! call for generation of interface locations if not already done
+!    
+!
+!    ! for now just use geographic since already stored; also note that these do include ghost cells!
+!    mloniC=c_loc(x%gloni)
+!    mlatiC=c_loc(x%glati)
+!    altiC=c_loc(x%alti)    
+!  end subroutine get_grid_magcoordsi
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
