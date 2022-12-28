@@ -36,7 +36,7 @@ type, abstract :: curvmesh
   logical :: null_alloc_status=.false.
   logical :: geog_set_status=.false.      ! geographic coords. get allocated with other arrays, but get set separately
   logical :: coord_set_status_root=.false.
-  !logical :: geogi_set_status=.false.
+  logical :: geogi_set_status=.false.
 
   !> sizes.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -132,7 +132,7 @@ type, abstract :: curvmesh
 
   !> geographic data; pointers
   real(wp), dimension(:,:,:), pointer :: glat,glon,alt
-  !real(wp), dimension(:,:,:), pointer :: glati,gloni,alti
+  real(wp), dimension(:,:,:), pointer :: glati,gloni,alti
 
   !> magnetic field magnitude and inclination.  Pointers
   real(wp), dimension(:,:,:), pointer :: Bmag
@@ -630,12 +630,21 @@ contains
   end subroutine calc_geographic
 
 
-  !> this isn't used by computation parts of gemini but may be need for certain types of 3D visualization
-  !pure subroutine calc_geographici(self)
-  !  
-  !
-  !  self%geogi_set_status=.true.
-  !end subroutine calc_geographici(self)
+  !> this isn't used by computational parts of gemini but may be need for certain types of 3D visualization
+  !    as such we only allocate and calculate interface geographic locations on demand and not be default
+  subroutine calc_geographici(self)
+    class(curvmesh), intent(inout) :: self
+    real(wp), dimension(:,:,:), allocatable :: ri,thetai,phispheri
+
+    if (.not. self%geogi_set_status) then 
+      allocate(self%alti(1:self%lx1+1,1:self%lx2+1,1:self%lx3+1))
+      allocate(self%gloni,self%glati, mold=self%alti) 
+
+      self%geogi_set_status=.true.
+    else
+      print*, 'WARNING:  geographic locations of cell edges already calculated!'
+    end if
+  end subroutine calc_geographici
 
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
@@ -843,10 +852,10 @@ contains
       self%coord_alloc_status=.false.
       self%geog_set_status=.false.
     end if
-    !if (self%geogi_set_status) then
-    !  deallocate(self%alti,self%gloni,self%glati)
-    !  self%geogi_set_status=.false.
-    !end if
+    if (self%geogi_set_status) then
+      deallocate(self%alti,self%gloni,self%glati)
+      self%geogi_set_status=.false.
+    end if
     if (self%coord_alloc_status_root) then
       deallocate(self%h1all,self%h2all,self%h3all)
       deallocate(self%h1x1iall,self%h2x1iall,self%h3x1iall)
