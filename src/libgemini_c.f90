@@ -875,23 +875,23 @@ contains
   end subroutine get_grid_magcoords_C
 
 
-!  !> force computation (if needed) of interface cell locations (geographic coordinates) and return a C pointer
-!  subroutine get_grid_magcoordsi(xtype,xC,mloniC,mlatiC,altiC) bind(C, name='get_grid_magcoordsi')
-!    integer(C_INT), intent(in) :: xtype
-!    type(c_ptr), intent(in) :: xC
-!    type(c_ptr), intent(inout) :: mlonC,mlatC,altC
-!    class(curvmesh), pointer :: x
-!
-!    x=>set_gridpointer_dyntype(xtype, xC)
-!
-!    ! call for generation of interface locations if not already done
-!    
-!
-!    ! for now just use geographic since already stored; also note that these do include ghost cells!
-!    mloniC=c_loc(x%gloni)
-!    mlatiC=c_loc(x%glati)
-!    altiC=c_loc(x%alti)    
-!  end subroutine get_grid_magcoordsi
+  !> force computation (if needed) of interface cell locations (geographic coordinates) and return a C pointer
+  subroutine get_grid_magcoordsi_C(xtype,xC,mloniC,mlatiC,altiC) bind(C, name='get_grid_magcoordsi_C')
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: mloniC,mlatiC,altiC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+
+    ! call for generation of interface locations if not already done
+    call x%calc_geographici()
+
+    ! for now just use geographic since already stored; also note that these do include ghost cells!
+    mloniC=c_loc(x%gloni)
+    mlatiC=c_loc(x%glati)
+    altiC=c_loc(x%alti)    
+  end subroutine get_grid_magcoordsi_C
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
