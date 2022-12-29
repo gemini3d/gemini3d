@@ -255,8 +255,8 @@ subroutine dipole2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,ph
     r(:,:,iphi)=r(:,:,iphimin)
     theta(:,:,iphi)=theta(:,:,iphimin)
   end do
-  do iphi=iphimin+1,iphimax
-    phispher(:,:,iphi)=phidip(iphimin)   !scalar assignment should work...
+  do iphi=iphimin,iphimax
+    phispher(:,:,iphi)=phidip(iphi)   !scalar assignment should work...
   end do
 end subroutine dipole2ECEFspher
 

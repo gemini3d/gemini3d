@@ -647,6 +647,9 @@ contains
       call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
       self%alti=r2alt(ri)
 
+      !print*, minval(phispheri),maxval(phispheri)
+      !print*, 'GLONI check:  ',minval(self%gloni),maxval(self%gloni)
+
       deallocate(ri,thetai,phispheri)
       self%geogi_set_status=.true.
     else
