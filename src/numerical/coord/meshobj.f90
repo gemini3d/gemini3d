@@ -645,11 +645,12 @@ contains
       allocate(ri,thetai,phispheri, mold=self%alti)
 
       call self%native2ECEFspher(self%glonctr,self%glatctr,self%x1i,self%x2i,self%x3i,ri,thetai,phispheri)
-      call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
-      self%alti=r2alt(ri)
+      !call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
+      !self%alti=r2alt(ri)
 
-      !print*, minval(phispheri),maxval(phispheri)
-      !print*, 'GLONI check:  ',minval(self%gloni),maxval(self%gloni)
+      self%alti(:,:,:)=ri(:,:,:)*cos(thetai(:,:,:))    ! z
+      self%gloni(:,:,:)=ri(:,:,:)*sin(thetai(:,:,:))*cos(phispheri(:,:,:))    ! x
+      self%glati(:,:,:)=ri(:,:,:)*sin(thetai(:,:,:))*sin(phispheri(:,:,:))    ! y
 
       deallocate(ri,thetai,phispheri)
       self%geogi_set_status=.true.
