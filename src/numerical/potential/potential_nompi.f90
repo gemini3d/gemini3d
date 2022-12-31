@@ -31,9 +31,6 @@ contains
     real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: pressure    ! temp space for computing these
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradlp2,gradlp3
 
-    !! FIXME:  Do we really need separate wind mobility or
-    !! can we just compute off electrical mobility as done with gravity.
-    !! This is necessary because we are not storing the collision frequencies...
     !! For adding pressure terms we may want to just use collision freq.
     !! to avoid a bunch of slightly different mobility arrays.
     !> electric field and wind terms for ion drifts
@@ -82,7 +79,7 @@ contains
   end subroutine velocities_nompi
 
 
-  !> Set the electric fields to some fixed value for purposes of testing
+  !> Set the electric fields to some fixed value ***for purposes of testing***; this shouldn't be used for any other purpose
   subroutine set_fields_test(x,E1,E2,E3)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3

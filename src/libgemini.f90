@@ -633,17 +633,29 @@ contains
     !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
     !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
     !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
+    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0;
+    call set_magfield(x,fluidauxvars)
+  end subroutine set_start_values_auxvars
+
+
+  subroutine set_magfield(x,fluidauxvars)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     ix1min=lbound(B1,1)+2
     ix1max=ubound(B1,1)-2
     ix2min=lbound(B1,2)+2
     ix2max=ubound(B1,2)-2
     ix3min=lbound(B1,3)+2
     ix3max=ubound(B1,3)-2
-    rhov2 = 0; rhov3 = 0; v2 = 0; v3 = 0; B2 = 0; B3 = 0;
     B1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max) = x%Bmag(1:lx1,1:lx2,1:lx3)
     !! this assumes that the grid is defined s.t. the x1 direction corresponds
     !! to the magnetic field direction (hence zero B2 and B3).
-  end subroutine set_start_values_auxvars
+  end subroutine set_magfield
 
 
   !> Wrapper for initialization of electron precipitation data
@@ -1008,7 +1020,7 @@ contains
     ! Check main variables
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! force a check on the interior cells of the domain
-    nlower=1e-20; nupper=1e14;
+    nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     vplower=-1e4; vpupper=1e4;
     Tlower=0; Tupper=20000;
@@ -1311,9 +1323,21 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
+
+!    print*, '-----------------------------------------------------------------------'
+!!    print*, '                      ',minval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!!    print*, '                      ',minval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!    print*, '                      ',minval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
+!                                       minval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
+!                                       minval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!!    print*, '                      ',maxloc(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!!    print*, '                      ',shape(vs2),lbound(vs2)
+!    print*, '                      ',minval(intvars%atmos%vn2),maxval(intvars%atmos%vn2), &
+!                                       minval(intvars%atmos%vn3),maxval(intvars%atmos%vn3)
+!    print*, '-----------------------------------------------------------------------'
 
     !call set_fields_test(x,E1,E2,E3)
-    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
     call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
@@ -1321,8 +1345,17 @@ contains
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 
-    !print*, 'Electric field info:  ',minval(E2),maxval(E2),minval(E3),maxval(E3)
-    !print*, '                      ',minval(vs2),maxval(vs2),minval(vs3),maxval(vs3)
+!    print*, '======================================================================='
+!!    print*, '                      ',minval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!!    print*, '                      ',minval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!    print*, '                      ',minval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
+!                                       minval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
+!                                       minval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!!    print*, '                      ',maxloc(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:))
+!    print*, '                      ',minval(intvars%atmos%vn2),maxval(intvars%atmos%vn2), &
+!                                       minval(intvars%atmos%vn3),maxval(intvars%atmos%vn3)
+!    print*, '======================================================================='
+!!    error stop
   end subroutine electrodynamics_test
 
 
