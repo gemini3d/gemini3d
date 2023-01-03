@@ -227,7 +227,7 @@ contains
 
     !> none of this can be done unless the size variables in the grid module are set
     if (lx1<=0 .or. lx2<=0 .or. lx3<=0 .or. lx2all<=0 .or. lx3all<=0) then
-      print*,  '  Malformed grid size from module:  ',lx1,lx2,lx3,lx2all,lx3all
+      print*,  '  Malformed size from grid module:  ',lx1,lx2,lx3,lx2all,lx3all
       error stop
     end if
 

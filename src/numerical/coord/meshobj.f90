@@ -654,7 +654,8 @@ contains
       deallocate(ri,thetai,phispheri)
       self%geogi_set_status=.true.
     else
-      print*, 'WARNING:  geographic locations of cell edges already calculated!'
+      !print*, 'WARNING:  geographic locations of cell edges already calculated!'
+      return
     end if
   end subroutine calc_geographici
 
