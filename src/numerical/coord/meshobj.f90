@@ -340,11 +340,12 @@ contains
     !   this when simply trying to model an angular coordinate (e.g. longitude) across the full globe as the 
     !   atmospheric and SZA changes are needed to realistically capture the system.  
     ! force periodicity in geographic locations using reference meridian data
+    !! FIXME: specify ghost cells for glat/glon arrays?
     if (flagperiodic==1) then
       do ix3=1,self%lx3
-        self%glat(:,:,ix3)=refglat(:,:)
-        self%glon(:,:,ix3)=refglon(:,:)
-        self%alt(:,:,ix3)=refalt(:,:)
+        self%glat(1:self%lx1,1:self%lx2,ix3)=refglat(:,:)
+        self%glon(1:self%lx1,1:self%lx2,ix3)=refglon(:,:)
+        self%alt(1:self%lx1,1:self%lx2,ix3)=refalt(:,:)
       end do
     end if
   end subroutine set_periodic
