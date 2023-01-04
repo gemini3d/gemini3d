@@ -124,7 +124,7 @@ subroutine enforce_gridmpi_periodic(flagperiodic,x)
   if (flagperiodic/=0) then
     select case (flagperiodic)
       case(1)
-        refalt=x%alt(:,:,1); refglon=x%glon(:,:,1); refglat=x%glat(:,:,1);
+        refalt=x%alt(1:lx1,1:lx2,1); refglon=x%glon(1:lx1,1:lx2,1); refglat=x%glat(1:lx1,1:lx2,1);
         call gather_ref_meridian(refalt,refglon,refglat)
         call x%set_periodic(flagperiodic,refalt,refglon,refglat)
       case default
