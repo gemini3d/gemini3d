@@ -133,10 +133,13 @@ contains
     real(wp), intent(in), dimension(:,:,:) :: alt,theta,phi
     real(wp), intent(in) :: theta1,phi1
     real(wp), intent(inout), dimension(:,:,:) :: x,y,z    !ENU
+    real(wp) :: xp,yp
     real(wp) :: theta2,theta3,gamma1,gamma2,phi2,phi3
     integer :: lx1,lx2,lx3,ix1,ix2,ix3    ! local copies
 
-    lx1=size(alt,1); lx2=size(alt,2); lx3=size(alt,3);
+    lx1=size(alt,1)
+    lx2=size(alt,2)
+    lx3=size(alt,3);
     if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
 
     z(:,:,:)=alt(:,:,:)
@@ -169,15 +172,15 @@ contains
             gamma2= -1
           end if
           gamma2=acos(gamma2)
-          x=Re*gamma1
-          y=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
+          xp=Re*gamma1
+          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
       
           ! coordinates from distances
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            y= -y            !do we want an abs here to be safe
+            y(ix1,ix2,ix3)= -yp            !do we want an abs here to be safe
           end if
           if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-            x= -x
+            x(ix1,ix2,ix3)= -xp
           end if
         end do
       end do
