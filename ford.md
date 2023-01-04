@@ -9,10 +9,8 @@ author: Matthew Zettergren
         Michael Hirsch
 license: by
 exclude: CMakeFortranCompilerId.F
-exclude_dir: archive/
-             vendor/
-             tests/
-             src/tests/
+exclude_dir: src/vendor/
+             test/
 include:
 display: public
          protected
