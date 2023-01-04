@@ -7,6 +7,7 @@ use neutraldata3Dobj_mpi, only: neutraldata3D
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use mpimod, only: mpi_cfg
+use geomagnetic, only: ECEFspher2ENU
 
 implicit none (type,external)
 private
@@ -29,7 +30,7 @@ contains
     class(neutraldata3D_geom), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp) :: theta1,phi1,theta2,phi2,theta3,phi3,gamma1,gamma2
+    real(wp) :: theta1,phi1
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
@@ -53,53 +54,15 @@ contains
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
     end if
 
-    self%zimat=x%alt(1:x%lx1,1:x%lx2,1:x%lx3)     !vertical coordinate is just altitude array already stored in grid object
+    ! coordinate arrays (ENU)
+    call ECEFspher2ENU(x%alt(1:x%lx1,1:x%lx2,1:x%lx3),x%theta(1:x%lx1,1:x%lx2,1:x%lx3),x%phi(1:x%lx1,1:x%lx2,1:x%lx3), &
+                          theta1,phi1, &
+                          self%ximat,self%yimat,self%zimat)
+
+    ! unite vectors and projections (ENU)
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
-          ! interpolation based on geomag
-          theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-
-          !print*, ' center NS set',shape(self%zi),shape(self%zimat),theta2,x%theta(ix1,ix2,ix3)
-
-          if (x%lx2/=1) then
-            phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
-          else
-            phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
-          end if
-
-          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
-          theta3=theta2
-          phi3=phi1
-          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-          if (gamma1 > 1) then     !handles weird precision issues in 2D
-            gamma1 = 1
-          else if (gamma1 < -1) then
-            gamma1 = -1
-          end if
-          gamma1=acos(gamma1)
-
-          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-          if (gamma2 > 1) then     !handles weird precision issues in 2D
-            gamma2= 1
-          else if (gamma2 < -1) then
-            gamma2= -1
-          end if
-          gamma2=acos(gamma2)
-          xp=Re*gamma1
-          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-
-          ! coordinates from distances
-          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            yp= -yp            !do we want an abs here to be safe
-          end if
-          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-            xp= -xp
-          end if
-
-          self%ximat(ix1,ix2,ix3)=xp     !eastward distance
-          self%yimat(ix1,ix2,ix3)=yp     !northward distance
-
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
           ezp=x%er(ix1,ix2,ix3,:)

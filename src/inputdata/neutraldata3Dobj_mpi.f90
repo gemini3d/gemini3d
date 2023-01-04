@@ -214,7 +214,7 @@ contains
   end subroutine init_storage
 
 
-  !> do nothing stub
+  !> do nothing stub - type extensions must override this to perform whatever load steps are needed for their data types
   subroutine load_size_neu3D(self)
     class(neutraldata3D), intent(inout) :: self
 

@@ -11,7 +11,7 @@ real(wp), parameter :: thetan=11*pi/180
 real(wp), parameter :: phin=289*pi/180
 
 private
-public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg
+public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU
 
 contains
   !> convert geomagnetic coordinates to geographic
@@ -126,4 +126,61 @@ contains
 
     Rgg2gm=matmul(transpose(roty(thetan)),transpose(rotz(phin)))
   end function rotgg2gm
+
+
+  !> take a set of ECEF spherical coordinatese and convert into ENU (geog or geom)
+  subroutine ECEFspher2ENU(alt,theta,phi,theta1,phi1,x,y,z)
+    real(wp), intent(in), dimension(:,:,:) :: alt,theta,phi
+    real(wp), intent(in) :: theta1,phi1
+    real(wp), intent(inout), dimension(:,:,:) :: x,y,z    !ENU
+    real(wp) :: theta2,theta3,gamma1,gamma2,phi2,phi3
+    integer :: lx1,lx2,lx3,ix1,ix2,ix3    ! local copies
+
+    lx1=size(alt,1); lx2=size(alt,2); lx3=size(alt,3);
+    if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
+
+    z(:,:,:)=alt(:,:,:)
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          theta2=theta(ix1,ix2,ix3)                    !field point zenith angle
+      
+          if (size(alt,2)/=1) then
+            phi2=phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
+          else
+            phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
+          end if
+      
+          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
+          theta3=theta2
+          phi3=phi1
+          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
+          if (gamma1 > 1) then     !handles weird precision issues in 2D
+            gamma1 = 1
+          else if (gamma1 < -1) then
+            gamma1 = -1
+          end if
+          gamma1=acos(gamma1)
+      
+          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
+          if (gamma2 > 1) then     !handles weird precision issues in 2D
+            gamma2= 1
+          else if (gamma2 < -1) then
+            gamma2= -1
+          end if
+          gamma2=acos(gamma2)
+          x=Re*gamma1
+          y=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
+      
+          ! coordinates from distances
+          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
+            y= -y            !do we want an abs here to be safe
+          end if
+          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
+            x= -x
+          end if
+        end do
+      end do
+    end do
+  end subroutine ECEFspher2ENU
 end module geomagnetic
