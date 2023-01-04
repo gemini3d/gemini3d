@@ -22,20 +22,18 @@ implicit none (type,external)
 public :: neutraldata3D
 
 interface
-!! This avoids GGC >= 10 type mismatch warnings for MPI-2
-subroutine mpi_send(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)
-  type(*), dimension(..), intent(in) :: BUF
-  integer, intent(in) ::  COUNT, DATATYPE, DEST, TAG, COMM
-  integer, intent(out) :: IERROR
-end subroutine
-
-subroutine mpi_recv(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR)
-  import MPI_STATUS_SIZE
-  type(*), dimension(..), intent(in) :: BUF
-  integer, intent(in) ::  COUNT, DATATYPE, SOURCE, TAG, COMM
-  integer, intent(out) :: STATUS(MPI_STATUS_SIZE), IERROR
-end subroutine
-
+  !! This avoids GGC >= 10 type mismatch warnings for MPI-2
+  subroutine mpi_send(BUF, COUNT, DATATYPE, DEST, TAG, COMM, IERROR)
+    type(*), dimension(..), intent(in) :: BUF
+    integer, intent(in) ::  COUNT, DATATYPE, DEST, TAG, COMM
+    integer, intent(out) :: IERROR
+  end subroutine
+  subroutine mpi_recv(BUF, COUNT, DATATYPE, SOURCE, TAG, COMM, STATUS, IERROR)
+    import MPI_STATUS_SIZE
+    type(*), dimension(..), intent(in) :: BUF
+    integer, intent(in) ::  COUNT, DATATYPE, SOURCE, TAG, COMM
+    integer, intent(out) :: STATUS(MPI_STATUS_SIZE), IERROR
+  end subroutine
 end interface
 
 !> type definition for 3D neutral data
@@ -234,10 +232,11 @@ contains
   end subroutine init_storage
 
 
-  !> do nothing stub
+  !> do nothing stub - type extensions must override this to perform whatever load steps are needed for their data types
   subroutine load_size_neu3D(self)
     class(neutraldata3D), intent(inout) :: self
 
+    return
   end subroutine load_size_neu3D
 
 
@@ -245,6 +244,7 @@ contains
   subroutine load_grid_neu3D(self)
     class(neutraldata3D), intent(inout) :: self
 
+    return
   end subroutine load_grid_neu3D
 
 

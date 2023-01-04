@@ -52,7 +52,7 @@ add_library(neutraldata3D_geom_mpi OBJECT neutraldata3Dobj_geom_mpi.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(neutraldata3D_geom_mpi PRIVATE
-const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader geomagnetic
 h5fortran::h5fortran MPI::MPI_Fortran
 )
 
