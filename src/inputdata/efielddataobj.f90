@@ -245,11 +245,13 @@ contains
     class(efielddata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg     ! presently not used but possibly eventually?
     class(curvmesh), intent(in) :: x
-    integer :: ix2,ix3,iflat,ix1ref,ix2ref,ix3ref
+    integer :: ix2,ix3,iflat,ix1ref,ix2ref,ix3ref,ix1offset,ix2offset,ix3offset
 
-
-    print*, shape(self%coord1i),shape(self%coord2i),shape(self%coord3i)
-
+    ! source arrays in the grid object may have ghost cells; these are offsets for arrays that do not
+    !   preserve lbound and ubound, e.g. array(:,1,1) and the like
+    ix1offset=1-lbound(x%rall,1)
+    ix2offset=1-lbound(x%rall,2)
+    ix3offset=1-lbound(x%rall,3)
 
     !! reference locations for determining points onto which we are interpolating
     !! these are grid specific, not object specific...
@@ -268,7 +270,8 @@ contains
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     !! These are the coordinates for inputs varying along axes 2,3
-    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)
+    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
+    ix1ref=ix1ref-ix1offset
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
