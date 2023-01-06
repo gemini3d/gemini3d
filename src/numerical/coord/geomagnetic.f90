@@ -139,7 +139,7 @@ contains
 
     lx1=size(alt,1)
     lx2=size(alt,2)
-    lx3=size(alt,3);
+    lx3=size(alt,3)
     if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
 
     z(:,:,:)=alt(:,:,:)
@@ -177,11 +177,14 @@ contains
       
           ! coordinates from distances
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            y(ix1,ix2,ix3)= -yp            !do we want an abs here to be safe
+            yp=-yp            !do we want an abs here to be safe
           end if
           if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-            x(ix1,ix2,ix3)= -xp
+            xp=-xp
           end if
+
+          x(ix1,ix2,ix3)=xp
+          y(ix1,ix2,ix3)=yp
         end do
       end do
     end do
