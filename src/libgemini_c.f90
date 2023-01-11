@@ -852,7 +852,7 @@ contains
     class(curvmesh), pointer :: x
 
     x=>set_gridpointer_dyntype(xtype, xC)
-    call tag4refine_location(x,flagrefine)   
+    call tag4refine_location(x,flagrefine)
   end subroutine
 
 

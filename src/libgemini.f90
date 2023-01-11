@@ -44,6 +44,7 @@ use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi
+use geomagnetic, only: geog2geomag,ECEFspher2ENU
 
 implicit none (type, external)
 private
@@ -1512,10 +1513,15 @@ contains
           mlon=x%phi(ix1,ix2,ix3)*180.0/pi
           mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
           alt=x%alt(ix1,ix2,ix3)
-          if ( mlon > 209.5 .and. mlon < 210.5 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
+!          if ( mlon > 209.5 .and. mlon < 210.5 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
+!               alt > 80e3 .and. alt < 300e3) then
+!            flagrefine=.true.
+!            exit
+!          end if
+
+          if ( sqrt( (mlon-210)**2 + (mlat-28.5)**2) < 0.35 .and. &
+          !if ( mlon > 209.5 .and. mlon < 210.5 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
                alt > 80e3 .and. alt < 300e3) then
-!          if ( mlon > 209.0 .and. mlon < 211.0 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
-!               alt > 80e3 .and. alt < 350e3) then
             flagrefine=.true.
             exit
           end if
@@ -1523,6 +1529,40 @@ contains
       end do
     end do
   end subroutine tag4refine_location
+
+
+!  subroutine tag4refine_dist(x,flagrefine)
+!    class(curvmesh), intent(in) :: x
+!    logical, intent(inout) :: flagrefine
+!    real(wp) :: phi1,theta1
+!    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: xi,yi,zi
+!    real(wp), parameter :: rmag=25e3
+!    real(wp) :: r,xi0,yi0
+!    integer :: ix1,ix2,ix3
+!
+!    ! retrieve grid ENU coords
+!    call geog2geomag(x%glonctr,x%glatctr,phi1,theta1)
+!    call ECEFspher2ENU(x%alt(1:x%lx1,1:x%lx2,1:x%lx3),x%theta(1:x%lx1,1:x%lx2,1:x%lx3), &
+!                         x%phi(1:x%lx1,1:x%lx2,1:x%lx3), &
+!                         theta1,phi1,xi,yi,zi)
+!
+!    ! find the average x,y on the end slab so we can control refinement
+!    ix1=x%lx1-25
+!    xi0=sum(xi(ix1,:,:))/(x%lx2*x%lx3)
+!    yi0=sum(yi(ix1,:,:))/(x%lx2*x%lx3)
+!
+!    ! now check for distance from center to determine refinment
+!    flagrefine=.false.
+!    do ix3=1,lx3
+!      do ix2=1,lx2
+!          r=sqrt( (xi(ix1,ix2,ix3)-xi0)**2 + (yi(ix1,ix2,ix3)-yi0)**2)
+!          if (r<rmag) then
+!            flagrefine=.true.
+!            exit
+!          end if
+!      end do
+!    end do
+!  end subroutine tag4refine_dist
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
