@@ -1518,9 +1518,7 @@ contains
 !            flagrefine=.true.
 !            exit
 !          end if
-
-          if ( sqrt( (mlon-210)**2 + (mlat-28.5)**2) < 0.35 .and. &
-          !if ( mlon > 209.5 .and. mlon < 210.5 .and. mlat > 28.0 .and. mlat < 29.0 .and. &
+          if ( sqrt( ((mlon-210)/3)**2 + (mlat-28.5)**2) < 0.35 .and. &
                alt > 80e3 .and. alt < 300e3) then
             flagrefine=.true.
             exit
