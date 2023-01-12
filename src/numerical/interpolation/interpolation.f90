@@ -83,7 +83,7 @@ contains
   
   pure real(wp) function interp3(x1,x2,x3,f,x1i,x2i,x3i)
     !------------------------------------------------------------
-    !-------A 2D TRILINEAR INTERPOLATION FUNCTION.  THIS VERSION ASSUMES
+    !-------A 3D TRILINEAR INTERPOLATION FUNCTION.  THIS VERSION ASSUMES
     !-------THAT THE LIST OF OUTPUT POINTS IS A 'FLAT LIST' RATHER THAN
     !-------DESCRIPTIVE OF A 2D MESHGRID.
     !------------------------------------------------------------
