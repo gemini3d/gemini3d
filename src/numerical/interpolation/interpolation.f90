@@ -7,17 +7,16 @@ private
 public :: interp1, interp2, interp3
 
 interface ! interp2d.f90
-module pure function interp2_plaid(x1,x2,f,x1i,x2i)
-real(wp), dimension(:), intent(in) :: x1, x2, x1i, x2i
-real(wp), dimension(:,:), intent(in) :: f
-real(wp) :: interp2_plaid(1:size(x1i,1),1:size(x2i,1))
-end function interp2_plaid
-
-module pure function interp2(x1,x2,f,x1i,x2i)
-real(wp), dimension(:), intent(in) :: x1, x2, x1i, x2i
-real(wp), dimension(:,:), intent(in) :: f
-real(wp) :: interp2(1:size(x1i,1))
-end function interp2
+  module pure function interp2_plaid(x1,x2,f,x1i,x2i)
+    real(wp), dimension(:), intent(in) :: x1, x2, x1i, x2i
+    real(wp), dimension(:,:), intent(in) :: f
+    real(wp) :: interp2_plaid(1:size(x1i,1),1:size(x2i,1))
+  end function interp2_plaid
+  module pure function interp2(x1,x2,f,x1i,x2i)
+    real(wp), dimension(:), intent(in) :: x1, x2, x1i, x2i
+    real(wp), dimension(:,:), intent(in) :: f
+    real(wp) :: interp2(1:size(x1i,1))
+  end function interp2
 end interface
 
 contains
