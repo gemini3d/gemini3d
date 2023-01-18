@@ -58,6 +58,10 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
     print*, '1 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
     print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
     print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
+    open(newunit=funit,file='error.dat',status='replace',access='stream')
+    write(funit) ns
+    write(funit) vs3i
+    close(funit)
     error stop
   end if
 
@@ -603,19 +607,19 @@ subroutine clean_param(x,paramflag,param)
 
 
       !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
-!      param(-1:0,:,:,:)=mindensdiv
-!      param(lx1+1:lx1+2,:,:,:)=mindensdiv
-!      param(:,-1:0,:,:)=mindensdiv
-!      param(:,lx2+1:lx2+2,:,:)=mindensdiv
-!      param(:,:,-1:0,:)=mindensdiv
-!      param(:,:,lx3+1:lx3+2,:)=mindensdiv
+      param(-1:0,:,:,:)=mindensdiv
+      param(lx1+1:lx1+2,:,:,:)=mindensdiv
+      param(:,-1:0,:,:)=mindensdiv
+      param(:,lx2+1:lx2+2,:,:)=mindensdiv
+      param(:,:,-1:0,:)=mindensdiv
+      param(:,:,lx3+1:lx3+2,:)=mindensdiv
 
-      param(-1:0,:,:,:)=1
-      param(lx1+1:lx1+2,:,:,:)=1
-      param(:,-1:0,:,:)=1
-      param(:,lx2+1:lx2+2,:,:)=1
-      param(:,:,-1:0,:)=1
-      param(:,:,lx3+1:lx3+2,:)=1
+!      param(-1:0,:,:,:)=1
+!      param(lx1+1:lx1+2,:,:,:)=1
+!      param(:,-1:0,:,:)=1
+!      param(:,lx2+1:lx2+2,:,:)=1
+!      param(:,:,-1:0,:)=1
+!      param(:,:,lx3+1:lx3+2,:)=1
     case (2)    !velocity
       do isp=1,lsp       !set null cells to zero mometnum
         do iinull=1,x%lnull
