@@ -92,7 +92,7 @@ extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**
 extern void forceZOH_all_C(double**);
 extern void permute_fluidvars_C(double**);
 extern void ipermute_fluidvars_C(double**);
-extern void tag4refine_location_C(int*,void**,bool*);
+extern void tag4refine_C(int*,void**,double**,double**,double**,void**,int*,bool*);
 extern void get_grid_magcoords_C(int*,void**,double**,double**,double**);
 extern void get_grid_magcoordsi_C(int*,void**,double**,double**,double**);
 

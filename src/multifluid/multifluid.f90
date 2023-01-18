@@ -578,8 +578,8 @@ subroutine clean_param(x,paramflag,param)
 
   select case (paramflag)
     case (1)    !density
-      param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)
-      param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)       !enforce charge neutrality based on ion densities
+      param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)    ! enforce a minimum density
+      param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)              !enforce charge neutrality based on ion densities
 
       do isp=1,lsp             !set null cells to some value
         if (isp==1) then
@@ -603,12 +603,19 @@ subroutine clean_param(x,paramflag,param)
 
 
       !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
-      param(-1:0,:,:,:)=mindensdiv
-      param(lx1+1:lx1+2,:,:,:)=mindensdiv
-      param(:,-1:0,:,:)=mindensdiv
-      param(:,lx2+1:lx2+2,:,:)=mindensdiv
-      param(:,:,-1:0,:)=mindensdiv
-      param(:,:,lx3+1:lx3+2,:)=mindensdiv
+!      param(-1:0,:,:,:)=mindensdiv
+!      param(lx1+1:lx1+2,:,:,:)=mindensdiv
+!      param(:,-1:0,:,:)=mindensdiv
+!      param(:,lx2+1:lx2+2,:,:)=mindensdiv
+!      param(:,:,-1:0,:)=mindensdiv
+!      param(:,:,lx3+1:lx3+2,:)=mindensdiv
+
+      param(-1:0,:,:,:)=1
+      param(lx1+1:lx1+2,:,:,:)=1
+      param(:,-1:0,:,:)=1
+      param(:,lx2+1:lx2+2,:,:)=1
+      param(:,:,-1:0,:)=1
+      param(:,:,lx3+1:lx3+2,:)=1
     case (2)    !velocity
       do isp=1,lsp       !set null cells to zero mometnum
         do iinull=1,x%lnull
