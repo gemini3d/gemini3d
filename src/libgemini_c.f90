@@ -44,7 +44,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
-            permute_fluidvars, ipermute_fluidvars, tag4refine_location
+            permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp
 
 implicit none (type, external)
 
@@ -845,15 +845,34 @@ contains
 
 
   !> static refinement based on grid location
-  subroutine tag4refine_location_C(xtype,xC,flagrefine) bind(C, name='tag4refine_location_C')
+  subroutine tag4refine_C(xtype,xC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,refinetype,flagrefine) &
+                            bind(C, name='tag4refine_C')
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC
+    integer(C_INT), intent(in) :: refinetype
     logical, intent(inout) :: flagrefine
     class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
 
     x=>set_gridpointer_dyntype(xtype, xC)
-    call tag4refine_location(x,flagrefine)
-  end subroutine
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+
+    select case (refinetype)
+      case (0)    ! do a refinement based on grid location (usually used for static refines)
+        call tag4refine_location(x,flagrefine)
+      case (1)    ! actively refine based on perpendicular velocity magnitude (e.g. indicative of auroral or neutral forcing)
+        call tag4refine_vperp(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
+      case default
+        error stop 'unrecognized refinment criteria from user...'
+    end select
+  end subroutine tag4refine_C
 
 
   !> get c pointers to magnetic coordinates of mesh sites (cell centers), note that these include ghost cells
