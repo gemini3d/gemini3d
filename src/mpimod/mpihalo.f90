@@ -1,6 +1,6 @@
 submodule (mpimod) mpihalo
 
-use mpi_f08, only: mpi_waitall, mpi_isend, mpi_irecv, MPI_REQUEST, MPI_STATUS, MPI_PROC_NULL
+use mpi_f08, only: mpi_waitall, mpi_isend, mpi_irecv, MPI_REQUEST, MPI_STATUS
 
 implicit none (type, external)
 

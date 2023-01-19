@@ -1,7 +1,7 @@
 program test_potential2d
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
-use mpi_f08, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world,mpi_finalize
+use mpi_f08, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file

@@ -19,7 +19,7 @@ real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
 real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
 real(wp), dimension(:), pointer, protected :: x1=>null()
 logical, protected :: flaglims=.false.
-!!^ These variables will be shared between all workers/patches so they can be module-scope variables.  
+!!^ These variables will be shared between all workers/patches so they can be module-scope variables.
 
 private
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
@@ -61,7 +61,7 @@ contains
 
 
   !> Force a size and grid center location into module variables, if desired.  In general some other method
-  !    should be used like read_size_gridcenter().  
+  !    should be used like read_size_gridcenter().
   subroutine set_size_gridcenter(lx1in,lx2allin,lx3allin,glonctrin,glatctrin)
     integer, intent(in) :: lx1in,lx2allin,lx3allin
     real(wp), intent(in) :: glonctrin,glatctrin
@@ -192,7 +192,7 @@ contains
 !    real(wp), dimension(:,:,:), intent(inout) :: gcoordsx3max
 !    class(curvmesh), allocatable :: xghost
 !    real(wp) :: x1max,x2max,x3max
-! 
+!
 !    ! error check for size
 !    if (.not. (size(gcoordsx1max,1)==x%lx2 .and. size(gcoordsx1max,2)==x%lx3 .and. size(gcoordsx1max,3)==3) ) then
 !      error stop 'ghost_location_generate:  bad array size in gcoordsx1max spec'
@@ -318,7 +318,7 @@ contains
       case default
         error stop 'grid:meshobj_alloc - Unable to identify grid type'
     end select
-  end subroutine 
+  end subroutine
 
 
   !> deallocate mesh class
@@ -326,7 +326,7 @@ contains
     class(curvmesh), pointer, intent(inout) :: x
     integer(C_INT), intent(inout), optional :: xtype
     type(C_PTR), intent(inout), optional :: xC
-    
+
 
     deallocate(x)
     x=>null()
@@ -338,7 +338,7 @@ contains
 !  !> Generate a "worker" grid based on coordinate arrays and grid center, polymorphic grid object must already
 !  !    exist, i.e. already be allocated with some dynamic type.  Note that you can set x2all=x2 and
 !  !    (or) x3all=x3 if you are only doing "local" grid operations in your GEMINI application, e.g. as with
-!  !    trees-GEMINI.  The dynamic type of x must be set prior to calling this function; this can be 
+!  !    trees-GEMINI.  The dynamic type of x must be set prior to calling this function; this can be
 !  !    accomplished e.g. through a wrapper
 !  subroutine generate_worker_grid(x1,x2,x3,x2all,x3all,glonctr,glatctr,x)
 !    real(wp), dimension(:), intent(in) :: x1,x2,x3,x2all,x3all
@@ -376,7 +376,7 @@ contains
 
     call x%make()                              ! trigger generation of all internal data arrays
     call set_gridflag(x%gridflag)              ! set module variable to match the type stored in the grid class
-  end subroutine 
+  end subroutine
 
 
   !> Force deallocation of grid data at least to the point where it can be "remade", e.g. for AMR-like operations
@@ -390,18 +390,11 @@ contains
   !> Read in native coordinates from a grid file
   subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
+    real(wp), dimension(:), intent(inout) :: x1
+    real(wp), dimension(:), intent(inout) :: x2all,x3all
     real(wp) :: glonctr,glatctr
 
-    character(:), allocatable :: fmt
-
-    fmt = path(index(path, '.', back=.true.) : len(path))
-    select case (fmt)
-      case ('.h5')
-        call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
-      case default
-        error stop 'grid:get_grid3_coords: unknown grid format: ' // fmt
-    end select
+    call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
 
     if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'
     if(size(x2all) < 1) error stop 'grid:get_grid3_coords: size(x2all) must be strictly positive'

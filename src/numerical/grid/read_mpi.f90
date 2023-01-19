@@ -1,7 +1,5 @@
 submodule (grid_mpi) grid_read_mpi
 
-!use mpimod, only : mpi_realprec
-
 implicit none (type, external)
 
 contains
@@ -114,7 +112,7 @@ end procedure read_grid_cartdip
 
 !> Assign periodic or not based on user input -- this needs to be done "outside" object methods this e nforces
 !    geographic locations to be constant along the x3-direction so that empirical models etc. will spit out data
-!    consistent with a periodic domain, i.e. constant along x3.  
+!    consistent with a periodic domain, i.e. constant along x3.
 subroutine enforce_gridmpi_periodic(flagperiodic,x)
   integer, intent(in) :: flagperiodic
   class(curvmesh), intent(inout) :: x

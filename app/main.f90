@@ -17,6 +17,7 @@ program Gemini3D_main
 use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
+use mpi_f08, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
 
 !> type definitions
 use meshobj, only: curvmesh
@@ -40,8 +41,6 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
                           clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in
-
-use mpi_f08, only : mpi_init,mpi_finalize
 
 implicit none (type, external)
 
@@ -114,7 +113,7 @@ contains
     !> Simulation data, because these are all intended to be interoperable with C/CXX
     !    these should all be pointers, i.e. they should be allocated through specific
     !    calls and not static; this way both C and fortran main programs allocate and
-    !    access these variables in analogous ways.  
+    !    access these variables in analogous ways.
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: electrovars

@@ -39,8 +39,3 @@ endif
 
 end program
 
-
-! IntelMPI, MS-MPI:
-! type  value
-! mpi_real  1275069468
-! mpi_real8  1275070505

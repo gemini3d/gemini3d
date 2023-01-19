@@ -7,7 +7,9 @@ use neutraldata3Dobj_mpi, only: neutraldata3D
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use geomagnetic, only: geomag2geog, ECEFspher2ENU
-use mpimod, only: mpi_cfg
+use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
+
+use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
 
 implicit none (type, external)
 private
@@ -70,7 +72,6 @@ contains
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
-
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections as well)
           ezp=ealt(ix1,ix2,ix3,:)
           !ezp=x%er(ix1,ix2,ix3,:)
