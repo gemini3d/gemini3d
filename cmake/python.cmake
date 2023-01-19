@@ -8,7 +8,7 @@ ERROR_VARIABLE err
 )
 
 if(NOT ret EQUAL 0)
-  message(STATUS "Problem with Python Numpy:
+  message(VERBOSE "Problem with Python Numpy:
   ${ret}
   ${out}
   ${err}"
