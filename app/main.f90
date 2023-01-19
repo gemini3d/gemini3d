@@ -52,8 +52,7 @@ type(c_params) :: p
 integer :: myid
 
 !> initialize mpi
-call mpi_init(ierr)
-if (ierr/=0) error stop 'gemini.bin: failed mpi_init'
+call mpi_init()
 p%fortran_cli = .true.
 p%fortran_nml = .true.
 p%out_dir(1) = c_null_char

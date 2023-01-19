@@ -32,20 +32,20 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(out) :: dt
     real(wp), dimension(lsp) :: cour1,cour2,cour3
-    integer :: iid,isp, ierr
+    integer :: iid,isp
     real(wp) :: dttmp
 
     call dt_calc(cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,cfg%potsolve,cour1,cour2,cour3,dt)
 
     if (mpi_cfg%myid/=0) then
-      call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)
+      call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD)
       !! send what I think dt should be
-      call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
       !! receive roots decision
     else
       !> FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
       do iid=1,mpi_cfg%lid-1
-        call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
 
         if (dttmp < dt) dt=dttmp
       end do
@@ -67,7 +67,7 @@ contains
 
       !! SEND GLOBAL DT TO ALL WORKERS
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,ierr)
+        call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD)
       end do
 
       if (debug) then

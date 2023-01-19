@@ -7,10 +7,8 @@ use mumps_interface, only: mumps_struc, mumps_exec
 implicit none (type, external)
 
 type(mumps_struc) :: mumps_par
-integer :: ierr
 
-call mpi_init(ierr)
-if (ierr /= 0) error stop 'mpi init error'
+call mpi_init()
 ! Define a communicator for the package.
 mumps_par%COMM = MPI_COMM_WORLD%mpi_val
 !  Initialize an instance of the package
@@ -21,8 +19,7 @@ mumps_par%PAR = 1
 
 call simple_test(mumps_par)
 
-call mpi_finalize(ierr)
-if (ierr /= 0) error stop 'mpi finalize error'
+call mpi_finalize()
 
 contains
 

@@ -439,12 +439,8 @@ module mpimod
     subroutine mpisetup()
       !! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.
 
-      integer :: ierr
-
-      call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid, ierr)
-      if (ierr/=0) error stop 'mpimod: mpi_comm_rank'
-      call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid, ierr)
-      if (ierr/=0) error stop 'mpimod: mpi_comm_size'
+      call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid)
+      call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid)
 
       if(mpi_cfg%myid==0) print *, mpi_cfg%lid, "MPI processes detected"
 
