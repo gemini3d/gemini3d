@@ -82,8 +82,11 @@ else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to 
       Tn0=Tn(lx1,ix2,ix3)
       T(lx1+1,ix2,ix3)=Tn0   !bottom
 !!    T(0,ix2,ix3)=Teinf     !top
-      T(0,ix2,ix3)=-Teinf*x%h1(1,ix2,ix3)*x%dx1(2)/lambda(1,ix2,ix3) !top for neumman, now it is temperature diff
-
+      if (isp==7) then !only aply heatflux to the electron population, also remember that it in W/m2
+        T(0,ix2,ix3)=-Teinf*x%h1(1,ix2,ix3)*x%dx1(2)/lambda(1,ix2,ix3) !top for neumman, now it is temperature diff
+      else 
+        T(0,ix2,ix3)=0.0_wp
+      end if
     end do
   end do
   BCtype=[1,0]
@@ -93,7 +96,11 @@ else                          !non-inverted, standard.  Bottom is logical first 
       Tn0=Tn(1,ix2,ix3)
       T(0,ix2,ix3)=Tn0          !bottom
 !!    T(lx1+1,ix2,ix3)=Teinf    !top
-      T(lx1+1,ix2,ix3)=-Teinf*x%h1(lx1,ix2,ix3)*x%dx1(lx1)/lambda(lx1,ix2,ix3) !top for neumman
+      if (isp==7) then 
+        T(lx1+1,ix2,ix3)=-Teinf*x%h1(lx1,ix2,ix3)*x%dx1(lx1)/lambda(lx1,ix2,ix3) !top for neumman
+      else
+        T(lx1+1,ix2,ix3)=0.0_wp
+      end if
 
     end do
   end do
