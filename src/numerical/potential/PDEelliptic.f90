@@ -4,8 +4,9 @@ module PDEelliptic
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use mumps_interface, only : mumps_struc, mumps_exec
-use mpimod, only: mpi_comm_world
 use phys_consts, only: wp, debug
+
+use mpi_f08, only: MPI_COMM_WORLD
 
 implicit none (type, external)
 private
@@ -32,7 +33,7 @@ interface ! elliptic2d.f90
     integer, intent(in) :: it
     real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
   end function elliptic2D_polarization
-  
+
   module function elliptic2D_polarization_periodic(srcterm,SigP,SigH,gradSigH2,gradSigH3,Cm,v2,v3,Vminx2,Vmaxx2, &
       Vminx3,Vmaxx3,dt,dx1,dx1i,dx2all,dx2iall,dx3all,dx3iall,Phi0,perflag,it)
     real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,gradSigH2,gradSigH3,Cm,v2,v3
@@ -50,7 +51,7 @@ interface ! elliptic2d.f90
     integer, intent(in) :: it
     real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_periodic
   end function elliptic2D_polarization_periodic
-  
+
   module function elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,&
       dx1,dx1i,dx3all,dx3iall,flagsdirich,perflag,gridflag,it)
     real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
@@ -117,7 +118,7 @@ subroutine quiet_mumps(obj)
 !! it stops the 100's of megabytes of logging console text, probably speeding up as well
 
   type(MUMPS_STRUC), intent(inout) :: obj
-  
+
   obj%icntl(1) = stderr  ! error messages
   obj%icntl(2) = stdout !  diagnosic, statistics, and warning messages
   obj%icntl(3) = stdout! ! global info, for the host (myid==0)
@@ -129,36 +130,36 @@ subroutine elliptic_workers()
 !! ALLOWS WORKERS TO ENTER MUMPS SOLVES
 
   type(MUMPS_STRUC) :: mumps_par
-  
+
   !FIRE UP MUMPS
-  mumps_par%COMM = MPI_COMM_WORLD
+  mumps_par%COMM = MPI_COMM_WORLD%mpi_val
   mumps_par%JOB = -1
   mumps_par%SYM = 0
   mumps_par%PAR = 1
-  
+
   call MUMPS_exec(mumps_par)
   call quiet_mumps(mumps_par)
-  
+
   !ROOT WILL LOAD OUR PROBLEM
-  
+
   !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
   mumps_par%JOB = 6
   call MUMPS_exec(mumps_par)
   call check_mumps_status(mumps_par, 'elliptic_workers')
-  
+
   !DEALLOCATE STRUCTURES USED BY WORKERS DURING SOLVE
   mumps_par%JOB = -2
-  
+
   call MUMPS_exec(mumps_par)
 end subroutine elliptic_workers
-  
-  
+
+
 subroutine check_mumps_status(p, name)
   !! check if Mumps error occurred
-  
+
   type(MUMPS_STRUC), intent(in) :: p
   character(*), intent(in) :: name
-  
+
   if (p%info(1) < 0 .or. p%infog(1) < 0) then
     write(stderr, *) 'Gemini:PDEelliptic:' // name // '  MUMPS ERROR: details:'
     if (p%info(1) == -1) write(stderr,'(a,i4)') 'the error was reported by processor #',p%info(2)

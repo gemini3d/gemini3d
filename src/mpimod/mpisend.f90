@@ -1,5 +1,7 @@
 submodule (mpimod) mpisend
 
+use mpi_f08, only : mpi_send
+
 implicit none (type, external)
 
 contains
@@ -21,14 +23,14 @@ module procedure gather_send2D_23
 !-------THIS ROUTINE WORKS ON A PROCESS GRID
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx2,lx3
 
 
 lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
 lx3=size(paramtrim,2)
 
-call mpi_send(paramtrim, lx2*lx3, mpi_realprec, 0, tag, MPI_COMM_WORLD, ierr)
+call mpi_send(paramtrim, lx2*lx3, mpi_realprec, 0, tag, MPI_COMM_WORLD)
 
 end procedure gather_send2D_23
 
@@ -49,7 +51,7 @@ module procedure gather_send3D_23
 !-------THIS VERSION WORKS ON A PROCESS GRID
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3
 
 
@@ -57,7 +59,7 @@ lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
 lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)
 
-call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD)
 
 end procedure gather_send3D_23
 
@@ -70,7 +72,7 @@ module procedure gather_send4D_23
 !-------SENDS 4D DATA ON A 2D PROCESS GRID TO ROOT.
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3,isp
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 
@@ -81,7 +83,7 @@ lx3=size(param,3)-4
 
 do isp=1,lsp
   paramtmp=param(-1:lx1+2,1:lx2,1:lx3,isp)
-  call mpi_send(paramtmp,(lx1+4)*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+  call mpi_send(paramtmp,(lx1+4)*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD)
 end do
 
 end procedure gather_send4D_23
@@ -96,7 +98,7 @@ module procedure gather_send3D_ghost_23
 !! SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
 !!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
-  integer :: ierr
+
   integer :: lx1,lx2,lx3
 
   !> note here that param has ghost cells
@@ -106,12 +108,12 @@ module procedure gather_send3D_ghost_23
 
   !> workers send their slab of data to root
   call mpi_send(param,(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,0,tag,MPI_COMM_WORLD)
 end procedure gather_send3D_ghost_23
 
 
 module procedure gather_send3D_x2i_23
-  integer :: ierr
+
   integer :: lx1,lx2,lx3
 
   !> note here that param has ghost cells
@@ -121,12 +123,12 @@ module procedure gather_send3D_x2i_23
 
   !> workers send their slab of data to root
   call mpi_send(param,(lx1)*(lx2+1)*(lx3), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,0,tag,MPI_COMM_WORLD)
 end procedure gather_send3D_x2i_23
 
 
 module procedure gather_send3D_x3i_23
-  integer :: ierr
+
   integer :: lx1,lx2,lx3
 
   !> note here that param has ghost cells
@@ -136,7 +138,7 @@ module procedure gather_send3D_x3i_23
 
   !> workers send their slab of data to root
   call mpi_send(param,(lx1)*(lx2)*(lx3+1), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,0,tag,MPI_COMM_WORLD)
 end procedure gather_send3D_x3i_23
 
 
@@ -157,7 +159,7 @@ module procedure bcast_send1D_23_2
 !-------THE X2-DIRECTION
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx,lxall     !local sizes
 integer :: iid,islstart,islfin
 integer, dimension(2) :: indsgrid
@@ -173,7 +175,7 @@ do iid=1,mpi_cfg%lid-1
   islfin=islstart+lx-1
 
   call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
 end do
 param=paramall(-1:lx+2)
 
@@ -197,7 +199,7 @@ module procedure bcast_send1D_23_3
 !-------THE X3-DIRECTION
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx,lxall     !local sizes
 integer :: iid,islstart,islfin
 integer, dimension(2) :: indsgrid
@@ -213,7 +215,7 @@ do iid=1,mpi_cfg%lid-1
   islfin=islstart+lx-1
 
   call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
 end do
 param=paramall(-1:lx+2)
 
@@ -235,7 +237,7 @@ module procedure bcast_send2D_23
 !-------GHOST CELLS!
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -255,7 +257,7 @@ do iid=1,mpi_cfg%lid-1
 
   paramtmp=paramtrimall(inds(1):inds(2),inds(3):inds(4))
   call mpi_send(paramtmp,lx2*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
 end do
 
 
@@ -284,7 +286,7 @@ module procedure bcast_send3D_23
 !-------THE SLAB CALCULATIONS FOR WORKERS WILL BE OFF.
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -301,7 +303,7 @@ do iid=1,mpi_cfg%lid-1
   inds=slabinds(iid,lx2,lx3)
   paramtmp=paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))
   call mpi_send(paramtmp,lx1*lx2*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
 end do
 
 
@@ -327,7 +329,7 @@ module procedure bcast_send3D_x3i_23
 !-------LARGER THAN  LX3
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -345,7 +347,7 @@ do iid=1,mpi_cfg%lid-1
   paramtmp=paramtrimall(:,inds(1):inds(2),inds(3):inds(4)+1)
   !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*lx2*(lx3+1), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
   !! note the +1 since these are interface quantities (and need to overlap b/t workers)
 end do
 
@@ -372,7 +374,7 @@ module procedure bcast_send3D_x2i_23
 !-------LARGER THAN  LX2
 !------------------------------------------------------------
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -390,7 +392,7 @@ do iid=1,mpi_cfg%lid-1
   paramtmp=paramtrimall(:,inds(1):inds(2)+1,inds(3):inds(4))
   !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*(lx2+1)*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
   !! note the +1 since these are interface quantities (and need to overlap b/t workers)
 end do
 
@@ -413,7 +415,7 @@ module procedure bcast_send3D_ghost_23
 !!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
 
-  integer :: ierr
+
   integer :: lx1,lx2,lx3
   integer :: iid,islstart,islfin
   integer, dimension(4) :: inds
@@ -429,7 +431,7 @@ module procedure bcast_send3D_ghost_23
     inds=slabinds(iid,lx2,lx3)
     paramtmp=paramall(:,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)
     call mpi_send(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
-                 mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+                 mpi_realprec,iid,tag,MPI_COMM_WORLD)
   end do
 
   !> ROOT TAKES A SLAB OF DATA
@@ -450,7 +452,7 @@ module procedure bcast_send4D_23
 !! THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
 !! GHOST CELLS!
 
-integer :: ierr
+
 integer :: lx1,lx2,lx3,isp
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -471,7 +473,7 @@ do isp=1,lsp
     inds=slabinds(iid,lx2,lx3)
     paramtmp=paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)
     call mpi_send(paramtmp,(lx1+4)*lx2*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD)
   end do
 end do
 

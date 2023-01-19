@@ -1,9 +1,9 @@
 program test_mpi
 
-use mpi
+use mpi_f08, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_finalize, MPI_COMM_WORLD, mpi_real,mpi_real8
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
 
-implicit none
+implicit none (type, external)
 
 character(6) :: argv
 

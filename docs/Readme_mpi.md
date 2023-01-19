@@ -1,6 +1,6 @@
 # MPI for Gemini
 
-In general Gemini uses the MPI-2 standard, which has been widely supported for over a decade by most MPI libraries.
+In general Gemini uses the MPI-3 standard, which is widely supported by currently maintained MPI libraries.
 Here's how to get MPI for common computing platforms.
 
 ## MacOS Homebrew
@@ -14,6 +14,8 @@ brew install open-mpi
 # or
 brew install mpich
 ```
+
+Note: in general, any libraries that use MPI should be compiled with the same MPI library.
 
 ## Linux
 

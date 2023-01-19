@@ -122,7 +122,7 @@ loopx3: do ix3=1,lx3
     !! INTERIOR LOCATION
     !> ix2-1,ix3-2 grid point
     !>>  because we are one interior point in for x3, ix3-2 is "before" the boundary; we'll assume it's at the
-    !>>  same potential.  Effectively the electric field is assumed to go to zero at the boundary.  
+    !>>  same potential.  Effectively the electric field is assumed to go to zero at the boundary.
     coeff=-Cm(ix2,ix3-1)*v2(ix2,ix3-1)/ &
     ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
     if (ix3==2) then    !out of bounds, use nearest BC, and add to known vector
@@ -428,7 +428,7 @@ end do loopx3
 !if (myid == 0) then
 if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
 !end if
-mumps_par%COMM = MPI_COMM_WORLD
+mumps_par%COMM = MPI_COMM_WORLD%mpi_val
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
@@ -962,7 +962,7 @@ if (debug) print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solvin
 if (ient-1 /= lent) error stop 'Incorrect number of matrix entries filled in potential solve!!!'
 
 !end if
-mumps_par%COMM = MPI_COMM_WORLD
+mumps_par%COMM = MPI_COMM_WORLD%mpi_val
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
@@ -1049,7 +1049,7 @@ module procedure elliptic2D_cart
 !!
 !!    d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
 !!
-!! The boundary conditions arrays provided to this procedure are assumed to be 
+!! The boundary conditions arrays provided to this procedure are assumed to be
 !! in units of Volts (dirichlet) or V/m (Neumann), meaning any currents need
 !! to be converted into potential normal derivatives prior to calling this.
 
@@ -1136,7 +1136,7 @@ end if
 
 ! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
 ! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
-! math procedure with no specific knowledgeo of the ionospheric problem.  
+! math procedure with no specific knowledgeo of the ionospheric problem.
 M(:)=0
 b=pack(srcterm,.true.)           !boundaries overwritten later
 ient=1
@@ -1150,7 +1150,7 @@ do ix3=1,l2nddim
         ic(ient)=iPhi
         M(ient)=1
         if (flag2) then
-          b(iPhi)=Vminx1(ix3,1)  ! new routines always map min/max as specified in input files          
+          b(iPhi)=Vminx1(ix3,1)  ! new routines always map min/max as specified in input files
         else
           b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
         end if
@@ -1273,7 +1273,7 @@ if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 !FIRE UP MUMPS
-mumps_par%COMM = MPI_COMM_WORLD
+mumps_par%COMM = MPI_COMM_WORLD%mpi_val
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1

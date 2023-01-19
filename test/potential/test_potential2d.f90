@@ -1,14 +1,12 @@
 program test_potential2d
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
-use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world
+use mpi_f08, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file
 
 implicit none (type, external)
-
-external :: mpi_finalize
 
 type(hdf5_file) :: hout
 
@@ -79,12 +77,9 @@ allocate(srcterm(lx2,lx3), srcterm2(lx2,1,lx3))
 srcterm=0
 srcterm2=0
 
-call mpi_init(ierr)
-if (ierr /= 0) error stop 'test_potential2d: MPI init error'
-call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
-if (ierr /= 0) error stop 'test_potential2d: MPI_comm_rank error'
-call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
-if (ierr /= 0) error stop 'test_potential2d: MPI_comm_size error'
+call mpi_init()
+call mpi_comm_rank(MPI_COMM_WORLD,myid)
+call mpi_comm_size(MPI_COMM_WORLD,lid)
 
 
 !! Set things up to give debug output
@@ -171,8 +166,7 @@ if (myid==0) then
   if (maxval(abs(errorMUMPS2))>0.05_wp) error stop '2:  Numerical error too large; check setup/output!!!'
 end if
 
-call mpi_finalize(ierr)
-if (ierr /= 0) error stop 'test_potential2d: MPI finalize error'
+call mpi_finalize()
 
 end program
 

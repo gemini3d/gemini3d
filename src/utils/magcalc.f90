@@ -13,14 +13,14 @@ use meshobj, only : curvmesh
 use timeutils, only : dateinc,find_time_elapsed
 use gemini3d_config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
-use mpimod, only: mpi_sum, mpi_comm_world, &
-mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
+use mpimod, only: mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
 mpi_cfg, mpi_realprec, tag=>gemini_mpi
 use h5fortran, only : hdf5_file
 use filesystem, only : suffix
 
+use mpi_f08, only: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce,mpi_sum, mpi_comm_world
+
 implicit none (type, external)
-external :: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce
 
 !> VARIABLES READ IN FROM CONFIG FILE
 

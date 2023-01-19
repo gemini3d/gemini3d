@@ -8,10 +8,11 @@ use grid, only : lx1,lx2,lx3
 use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-mpi_realprec, mpi_cfg, tag=>gemini_mpi
+use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
+
+use mpi_f08, only : mpi_integer, mpi_comm_world, mpi_status_ignore
 
 implicit none (type, external)
 private

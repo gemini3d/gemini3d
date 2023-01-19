@@ -2,13 +2,11 @@ program test_potential3D
 
 use, intrinsic :: iso_fortran_env, only: real64
 
-use mpi, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD
+use mpi_f08, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD,mpi_finalize
 use mumps_interface, only : mumps_struc, mumps_exec
 use h5fortran, only : hdf5_file
 
 implicit none (type, external)
-
-external :: mpi_finalize
 
 type(mumps_struc) :: mumps_par
 
@@ -36,11 +34,9 @@ real(real64) :: tstart,tfin
 
 character(4096) :: argv
 
-call MPI_INIT(IERR)
-if (ierr/=0) error stop 'ERROR: mpi_init'
+call MPI_INIT()
 
-call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
-if (ierr /= 0) error stop 'ERROR: MPI_comm_rank error'
+call mpi_comm_rank(MPI_COMM_WORLD,myid)
 
 !------------------------------------------------------------
 !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
@@ -195,7 +191,7 @@ end if
 !------------------------------------------------------------
 
 ! Define a communicator for the package.
-mumps_par%COMM = MPI_COMM_WORLD
+mumps_par%COMM = MPI_COMM_WORLD%mpi_val
 
 
 !Initialize an instance of the package
@@ -254,7 +250,6 @@ deallocate(ir,ic,M,b)
 mumps_par%JOB = -2
 call mumps_exec(mumps_par)
 
-call MPI_FINALIZE(IERR)
-if (ierr /= 0) error stop 'mpi finalize'
+call MPI_FINALIZE()
 
 end program

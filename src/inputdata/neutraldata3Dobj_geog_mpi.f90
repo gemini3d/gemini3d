@@ -7,10 +7,12 @@ use neutraldata3Dobj_mpi, only: neutraldata3D
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use geomagnetic, only: geomag2geog, ECEFspher2ENU
-use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
+use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
+
+use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
 
 implicit none (type, external)
-external :: mpi_send,mpi_recv
+
 public :: neutraldata3D_geog
 
 !> type definition for 3D neutral data in geographic coordinates

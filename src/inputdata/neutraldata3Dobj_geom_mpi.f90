@@ -6,11 +6,13 @@ use neutraldataobj, only: neutraldata
 use neutraldata3Dobj_mpi, only: neutraldata3D
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
-use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
+use mpimod, only: mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use geomagnetic, only: ECEFspher2ENU
 
+use mpi_f08, only : mpi_send,mpi_recv, MPI_INTEGER, MPI_COMM_WORLD, MPI_STATUS_IGNORE
+
 implicit none (type,external)
-external :: mpi_send,mpi_recv
+
 public :: neutraldata3D_geom
 
 !> type definition for 3D neutral data

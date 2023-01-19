@@ -22,10 +22,11 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential3D_fieldresolved, &
                             potential3D_fieldresolved_truncate
 use PDEelliptic, only: elliptic_workers
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-mpi_cfg, tag=>gemini_mpi, &
+use mpimod, only: mpi_cfg, tag=>gemini_mpi, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo, bcast_send3D_ghost, bcast_recv3D_ghost
 use gemini3d_config, only: gemini_cfg
+
+use mpi_f08, only: mpi_send, mpi_recv, mpi_integer, mpi_comm_world, mpi_status_ignore
 
 implicit none (type, external)
 private
@@ -33,7 +34,6 @@ public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, veloc
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
             parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
             acc_perpBGconductioncurrents
-external :: mpi_send, mpi_recv
 
 !! overloading to deal with vestigial cartesian->curvilinear code
 interface electrodynamics
