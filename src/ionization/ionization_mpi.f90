@@ -18,7 +18,7 @@ contains
     type(neutral_info), intent(in) :: atmos
     real(wp), intent(out) :: gavg,Tninf
     real(wp) :: Tninftmp
-    integer :: iid, ierr
+    integer :: iid
     real(wp), dimension(:,:,:), allocatable :: g
 
     ! use an average value for the gravitational field; FIXME: perhaps should be done via averaging over all workers???
@@ -31,25 +31,22 @@ contains
 
     !both g and Tinf need to be computed as average over the entire grid...
     if (mpi_cfg%myid==0) then     !root
-      ierr=0
       do iid=1,mpi_cfg%lid-1
-          call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+          call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
           if (Tninf < Tninftmp) Tninf=Tninftmp
       end do
-      if (ierr /= 0) error stop 'root failed to mpi_recv Tninf'
 
-      ierr=0
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,ierr)
+        call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD)
       end do
-      if (ierr /= 0) error stop 'root failed to mpi_send Tninf'
 
       if (debug) print *, 'Exospheric temperature used for photoionization:  ',Tninf
     else                  !workders
-      call mpi_send(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
-      if (ierr /= 0) error stop 'worker failed to mpi_send Tninf'
-      call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
-      if (ierr /= 0) error stop 'worker failed to mpi_recv Tninf'
+      call mpi_send(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD)
+      !! send what I think Tninf should be
+
+      call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      !! receive roots decision
     end if
     !deallocate(g)
   end subroutine

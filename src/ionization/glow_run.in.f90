@@ -7,7 +7,7 @@ use cglow,only: cglow_init, &
   jmax,nbins,lmax,nmaj,nei,nex,nw,nc,nst, &
   idate,ut,glat,glong,f107a,f107,f107p,ap,ef,ec, &
   iscale,jlocal,kchem,xuvfac, &
-  sza,dip,efrac,ierr, &
+  sza,dip,efrac, &
   zz,zo,zn2,zo2,zns,znd,zno,ztn,ze,zti,zte, &
   ener,del,phitop,wave1,wave2,sflux,pespec,sespec,uflx,dflx,sion, &
   photoi,photod,phono,aglw,ecalc,zxden,zeta,zceta,eheat,vcb, &

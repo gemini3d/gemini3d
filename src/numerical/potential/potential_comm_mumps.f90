@@ -263,7 +263,7 @@ contains
     !! intent(out)
     !local work arrays
     real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
-    integer :: iid,ierr
+    integer :: iid
     real(wp) :: tstart,tfin
     real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1buf,Vmaxx1buf
 
@@ -281,11 +281,10 @@ contains
     call cpu_time(tfin)
     if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
 
-    ierr=0
-    do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
-      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+    do iid=1,mpi_cfg%lid-1
+      !! communicate intent for solve to workers so they know whether or not to call mumps fn.
+      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
     end do
-    if (ierr/=0) error stop 'mpi_send failed to send solve intent'
     if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
 
     ! Need to broadcast background fields from root
@@ -310,11 +309,8 @@ contains
     !! intent(out)
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! intent(out)
-    ! local variables
-    integer :: ierr
 
-    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    if (ierr /= 0) error stop 'dirich'
+    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
 
     !Need to broadcast background fields from root
     !Need to also broadcast x1 boundary conditions for source term calculations.

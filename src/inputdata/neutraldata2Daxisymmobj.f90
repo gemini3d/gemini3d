@@ -63,7 +63,7 @@ contains
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,erhop,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid
 
 
     ! Space for coordinate sites and projections in neutraldata2D object
@@ -194,7 +194,7 @@ contains
     class(neutraldata2Daxisymm), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
-    integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
+    integer :: ix1,ix2,ix3,ihorzn,izn,iid
     integer :: lxntmp,lyntmp                                   ! local copies for root, eventually these need to be stored in object
     real(wp) :: maxzn
     real(wp), dimension(2) :: xnrange,ynrange                ! these eventually get stored in extents

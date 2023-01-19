@@ -168,7 +168,7 @@ contains
 
   !> transfer single state parameter data from root to workers (viz. "broadcast")
   module procedure dneu_root2workers
-    integer :: iid,ierr
+    integer :: iid
     real(wp), dimension(:,:,:), allocatable :: parmtmp
     integer :: lzn
 
@@ -178,7 +178,7 @@ contains
       allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
 
       parmtmp=paramall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-      call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+      call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag,MPI_COMM_WORLD)
 
       deallocate(parmtmp)
     end do
@@ -188,9 +188,9 @@ contains
 
   !> get a chunk of neutral data from root
   module procedure dneu_workers_from_root
-    integer :: ierr,lzn,lxn,lyn
+    integer :: lzn,lxn,lyn
 
     lzn=size(param,1); lxn=size(param,2); lyn=size(param,3);
-    call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
   end procedure dneu_workers_from_root
 end submodule neuslab_mpi

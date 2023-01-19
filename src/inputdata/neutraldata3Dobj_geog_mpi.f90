@@ -36,7 +36,7 @@ contains
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid
     real(wp) :: glon1,glat1
     real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
     real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: thetageog,phigeog

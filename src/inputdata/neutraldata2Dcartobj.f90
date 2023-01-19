@@ -60,7 +60,7 @@ contains
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid
 
     ! Space for coordinate sites and projections in neutraldata2D object
     print*, x%lx1,x%lx2,x%lx3
@@ -177,7 +177,7 @@ contains
   subroutine load_sizeandgrid_neu2Dcart(self,cfg)
     class(neutraldata2Dcart), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
-    integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
+    integer :: ix1,ix2,ix3,ihorzn,izn,iid
     integer :: lxntmp,lyntmp                                   ! local copies for root, eventually these need to be stored in object
     real(wp) :: maxzn
     real(wp), dimension(2) :: xnrange,ynrange                ! these eventually get stored in extents

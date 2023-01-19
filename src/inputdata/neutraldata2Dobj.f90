@@ -206,7 +206,7 @@ contains
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
-    integer :: iid,ierr
+    integer :: iid
     integer :: lhorzn,lzn                        !number of horizontal grid points
     real(wp), dimension(:,:,:), allocatable :: paramall
     type(hdf5_file) :: hf

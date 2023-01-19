@@ -87,8 +87,6 @@ integer :: lid2in,lid3in
 !real(wp), parameter :: R3min=1d9
 !real(wp), parameter :: Rmin=5d3
 
-integer :: ierr
-
 !! for keeping track of start and end times requested by the user
 integer, dimension(3) :: ymdstart,ymdend,ymdfinal
 real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
@@ -99,7 +97,7 @@ integer :: iid
 character(256) :: filename
 
 !! --- MAIN PROGRAM
-call mpi_init(ierr)
+call mpi_init()
 
 !> get command line parameters and simulation config
 call cli(cfg,lid2in,lid3in,debug,ymdstart,UTsecstart,ymdend,UTsecend)
@@ -448,9 +446,9 @@ main : do while (t < cfg%tdur)
   if (mpi_cfg%myid ==0) then
     if(debug) print *, 'Attempting reduction of magnetic field...'
   end if
-  call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
-  call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
-  call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+  call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
+  call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
+  call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
   if (mpi_cfg%myid == 0) then
     if(debug) print *, 'magcalc.f90 --> Reduced magnetic field...'
     if(debug) print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
@@ -459,8 +457,7 @@ main : do while (t < cfg%tdur)
 
 
   if (cfg%dryrun) then
-    ierr = mpibreakdown()
-    if (ierr /= 0) error stop 'MAGCALC: dry run MPI shutdown failure'
+    if (mpibreakdown() /= 0) error stop 'MAGCALC: dry run MPI shutdown failure'
     stop "OK: MAGCALC dry run"
   endif
 
@@ -511,10 +508,9 @@ deallocate(integrandcorner)
 
 
 !! SHUT DOWN MPI
-ierr = mpibreakdown()
 
-if (ierr /= 0) then
-  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr, 'Process #', mpi_cfg%myid,' /',mpi_cfg%lid-1
+if (mpibreakdown() /= 0) then
+  write(stderr, *) 'MAGCALC: abnormal MPI shutdown: Process #', mpi_cfg%myid,' /',mpi_cfg%lid-1
   error stop
 endif
 

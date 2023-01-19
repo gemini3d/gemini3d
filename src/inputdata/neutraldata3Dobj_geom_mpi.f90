@@ -36,7 +36,7 @@ contains
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid
 
 
     ! Space for coordinate sites and projections in neutraldata3D object

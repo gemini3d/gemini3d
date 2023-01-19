@@ -138,7 +138,6 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
   real(wp), dimension(:,:), intent(inout) :: refalt,refglon,refglat
   integer :: iid,iid3
   integer :: lx1,lx2
-  integer :: ierr
 
   ! set sizes for convenience
   lx1=size(refalt,1); lx2=size(refalt,2);
@@ -147,15 +146,15 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
   if (mpi_cfg%myid3==0) then
     do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid
       iid=grid2ID(mpi_cfg%myid2,iid3)
-      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,ierr)
-      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,ierr)
-      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,ierr)
+      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD)
+      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD)
+      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD)
     end do
   else
     iid=grid2ID(mpi_cfg%myid2,0)
-    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
   end if
 end subroutine gather_ref_meridian
 
