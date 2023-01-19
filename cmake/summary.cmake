@@ -7,7 +7,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION V
 endif()
 
 if(CMAKE_GENERATOR MATCHES "Visual Studio")
-  message(WARNING "Visual Studio generator ${CMAKE_GENERATOR} is not supported. Please use MinGW Makefiles or Ninja:
+  message(WARNING "Visual Studio generator ${CMAKE_GENERATOR} is not supported. Please use \"MinGW Makefiles\" or Ninja:
 
   cmake -G Ninja -B ${PROJECT_BINARY_DIR}
 

@@ -27,27 +27,9 @@ provides Intel MPI and Scalapack on Linux.
 
 ## Windows
 
-We suggest using Windows Subsystem for Linux, which works as Linux above:
+We suggest using Windows Subsystem for Linux from [Microsoft Store](https://apps.microsoft.com/store/detail/ubuntu-22041-lts/9PN20MSR04DW).
 
-```sh
-wsl --install
-```
-
----
-
-[MSYS2](https://www.scivision.dev/install-msys2-windows/)
-also provides a comprehensive development solution.
-From the MSYS2 terminal, install MPI by:
-
-```sh
-pacman -S mingw-w64-x86_64-msmpi
-```
-
-Install
-[Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes),
-which gives `mpiexec`.
-
-Alternatively, [Intel oneAPI](./Windows_intel_oneapi.md)
+Alternatively,
+[Intel oneAPI](./Windows_intel_oneapi.md)
 provides Intel MPI and Scalapack on Windows.
-We do not use MSYS2/GCC libraries with Windows oneAPI as they are ABI incompatible.
 Use the oneAPI Command Prompt on Windows.

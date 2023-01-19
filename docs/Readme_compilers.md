@@ -33,7 +33,6 @@ and
 
 Windows users can choose between
 [Windows Subsystem for Linux](./Linux_gcc.md),
-[MSYS2](./Windows_gcc.md),
 [Intel oneAPI](./Windows_intel_oneapi.md),
 or Cygwin.
 Cygwin has noticeably slower performance in general for any program.

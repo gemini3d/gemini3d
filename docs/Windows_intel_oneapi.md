@@ -1,7 +1,6 @@
 # Build Gemini3D with Intel oneAPI on Windows
 
 Intel oneAPI (no cost) provides Intel MPI, LAPACK, and Scalapack on Windows.
-We do not use MSYS2/GCC libraries with Windows oneAPI as they are ABI incompatible.
 
 Whenever wanting to use oneAPI in Windows, use the "oneAPI Command Prompt for Intel 64" on Windows.
 Note: the Visual Studio CMake generator doesn't work for these project (or a lot of others).
