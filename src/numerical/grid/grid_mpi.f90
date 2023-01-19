@@ -1,13 +1,12 @@
 !> contains procedures for setting up grid that involve message passing of some sort.
 submodule (grid) grid_mpi
 
-use, intrinsic:: iso_c_binding, only : C_PTR, c_f_pointer, c_loc, C_INT
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use meshobj, only: curvmesh
 use meshobj_dipole, only: dipolemesh
 use meshobj_cart, only: cartmesh
-use phys_consts, only: Gconst,Me,Re,wp,red,black
+use phys_consts, only: Gconst,Me,Re,red,black
 use mpimod, only: mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &

@@ -43,4 +43,5 @@ $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(precipBCs PRIVATE reader const meshobj interp timeutils gemini3d_config
 inputdata precipdata
+MPI::MPI_Fortran
 )
