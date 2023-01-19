@@ -20,7 +20,7 @@ add_subdirectory(neutral)
 add_subdirectory(sources)
 
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
-target_link_libraries(multifluid_mpi PRIVATE const mpimod grid_mpi advec_mpi)
+target_link_libraries(multifluid_mpi PRIVATE const mpimod advec_mpi)
 add_library(multifluid OBJECT multifluid/multifluid.f90
 $<TARGET_OBJECTS:grid>
 )
@@ -105,7 +105,7 @@ neutral_perturbations
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources sources_mpi temporal_mpi timeutils
 exe_frontend
-grid grid_mpi io
+grid io
 PDEelliptic potential mumps_interface
 mpimod
 autogrid

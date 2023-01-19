@@ -29,7 +29,10 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
-             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims, alloc_x1coords !, generate_worker_grid
+             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims, alloc_x1coords, &
+             read_grid, grid_check, grid_drift, calc_subgrid_size
+
+             !, generate_worker_grid
 
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
@@ -38,6 +41,40 @@ interface ! readgrid_*.f90
     real(wp), intent(out) :: glonctr,glatctr
   end subroutine
 end interface
+
+interface !< grid_mpi.f90
+module subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
+  !1 read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size().
+  !!    this is only to be used when GEMINI is run using functionality that depends on fullgrid data like
+  !!    potential solutions etc.
+  character(*), intent(in) :: indatsize,indatgrid
+  integer, intent(in) :: flagperiodic
+  class(curvmesh), pointer, intent(inout) :: x
+  integer(C_INT), intent(inout), optional :: xtype
+  type(C_PTR), intent(inout), optional :: xC
+end subroutine
+
+module subroutine calc_subgrid_size(lx2all, lx3all)
+  !! worker subgrid sizes; requires knowledge of mpi, though not any direct mpi calls
+  integer, intent(in) :: lx2all, lx3all
+end subroutine
+
+module subroutine grid_drift(x,E02,E03,v2grid,v3grid)
+  !1 Compute grid drift speed; requires that we exchange some data through mpi
+  !! Compute the speed the grid is moving at given a background electric field
+  class(curvmesh), intent(in) :: x
+  reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
+  real(wp), intent(inout) :: v2grid,v3grid
+  !! intent(out)
+end subroutine
+end interface
+
+interface !< check.f90
+  module subroutine grid_check(x)
+    class(curvmesh), intent(in) :: x
+  end subroutine
+end interface
+
 
 !! some overloading for situations needing vs. not needing an allocation step
 !interface grid_from_extents

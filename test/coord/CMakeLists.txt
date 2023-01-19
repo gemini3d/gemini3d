@@ -25,7 +25,7 @@ add_test(NAME fullgrid_dipole_testdriver COMMAND fullgrid_dipole_testdriver)
 add_executable(fullgrid_dipole_regen fullgrid_dipole_regen.f90
 $<TARGET_OBJECTS:grid>
 )
-target_link_libraries(fullgrid_dipole_regen PRIVATE reader newton spherical geomagnetic meshobj_dipole meshobj_cart meshobj const
+target_link_libraries(fullgrid_dipole_regen PRIVATE reader newton spherical geomagnetic meshobj_dipole meshobj_cart meshobj mpimod autogrid const
 h5fortran::h5fortran
 ffilesystem::filesystem
 )

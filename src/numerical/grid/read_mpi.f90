@@ -1,4 +1,4 @@
-submodule (grid_mpi) grid_read_mpi
+submodule (grid:grid_mpi) grid_read_mpi
 
 implicit none (type, external)
 
