@@ -9,8 +9,7 @@ use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
-use grid, only: lx1,lx2,lx3
-use grid_mpi, only: grid_drift, read_grid, calc_subgrid_size
+use grid, only: lx1,lx2,lx3, grid_drift, read_grid, calc_subgrid_size
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics

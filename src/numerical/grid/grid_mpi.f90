@@ -1,5 +1,5 @@
 !> contains procedures for setting up grid that involve message passing of some sort.
-module grid_mpi
+submodule (grid) grid_mpi
 
 use, intrinsic:: iso_c_binding, only : C_PTR, c_f_pointer, c_loc, C_INT
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
@@ -13,16 +13,10 @@ use mpimod, only: mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
-use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
-                set_total_grid_sizes,set_subgrid_sizes,set_gridflag, &
-                get_grid3_coords, detect_gridtype, meshobj_alloc, grid_internaldata_alloc, &
-                grid_internaldata_generate, set_fullgrid_lims, alloc_x1coords !, generate_worker_grid
 
 use mpi_f08, only: mpi_integer, mpi_comm_world, mpi_status_ignore,mpi_recv, mpi_send
 
 implicit none (type, external)
-private
-public :: read_grid, grid_check, grid_drift, calc_subgrid_size
 
 interface ! read.f90
   module subroutine read_grid_cartdip(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
@@ -40,22 +34,9 @@ interface ! read.f90
 !  end subroutine read_grid_dipole
 end interface
 
-interface ! check.f90
-  module subroutine grid_check(x)
-    class(curvmesh), intent(in) :: x
-  end subroutine grid_check
-end interface
-
 contains
-  !> read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size().
-  !    this is only to be used when GEMINI is run using functionality that depends on fullgrid data like
-  !    potential solutions etc.
-  subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
-    character(*), intent(in) :: indatsize,indatgrid
-    integer, intent(in) :: flagperiodic
-    class(curvmesh), pointer, intent(inout) :: x
-    integer(C_INT), intent(inout), optional :: xtype
-    type(C_PTR), intent(inout), optional :: xC
+
+  module procedure read_grid
 
     real(wp), dimension(:), allocatable :: x2,x3,x2all,x3all
     integer :: islstart,islfin
@@ -108,13 +89,10 @@ contains
 
     !> just to be careful explicitly deallocate temp arrays
     deallocate(x2,x3,x2all,x3all)
-  end subroutine read_grid
+  end procedure read_grid
 
 
-  !> worker subgrid sizes; requires knowledge of mpi, though not any direct mpi calls
-  subroutine calc_subgrid_size(lx2all, lx3all)
-    integer, intent(in) :: lx2all, lx3all
-    integer :: lx2, lx3
+  module procedure calc_subgrid_size
 
     !! use only non-swapped axes
     if(lx2all==1) then
@@ -143,16 +121,10 @@ contains
     end if
 
     call set_subgrid_sizes(lx2,lx3)
-  end subroutine calc_subgrid_size
+  end procedure calc_subgrid_size
 
 
-  !> Compute grid drift speed; requires that we exchange some data through mpi
-  subroutine grid_drift(x,E02,E03,v2grid,v3grid)
-  !! Compute the speed the grid is moving at given a background electric field
-    class(curvmesh), intent(in) :: x
-    reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
-    real(wp), intent(inout) :: v2grid,v3grid
-    !! intent(out)
+  module procedure grid_drift
     integer :: iid
     real(wp) :: E2ref,E3ref,Bref
 
@@ -174,5 +146,6 @@ contains
       call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
       call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
     end if
-  end subroutine grid_drift
-end module grid_mpi
+  end procedure grid_drift
+
+end submodule grid_mpi

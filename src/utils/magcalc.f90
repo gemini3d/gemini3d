@@ -7,8 +7,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use magcalc_cli, only : cli
 use phys_consts, only : pi,mu0, wp, re, debug
-use grid, only : lx1, lx2, lx3, lx2all,lx3all,grid_size
-use grid_mpi, only: read_grid
+use grid, only : lx1, lx2, lx3, lx2all,lx3all,grid_size,read_grid
 use meshobj, only : curvmesh
 use timeutils, only : dateinc,find_time_elapsed
 use gemini3d_config, only : gemini_cfg
