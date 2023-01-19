@@ -29,7 +29,7 @@ DESCRIPTION "NCAR GLOW model")
 
 set_package_properties(MPI PROPERTIES
 TYPE RECOMMENDED
-DESCRIPTION "GEMINI MPI-2 standard parallelization")
+DESCRIPTION "GEMINI3D MPI standard parallelization")
 #PURPOSE "MPI gives massively parallel computation")
 
 set_package_properties(MUMPS PROPERTIES

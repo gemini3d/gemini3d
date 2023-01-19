@@ -23,7 +23,7 @@ infrequently used Lapack libraries and is unreliable for me.
 Tested on Linux, MacOS and Windows with:
 * GCC / Gfortran
 * Clang / Flang
-* Intel (icc, ifort)
+* IntelLLVM
 * Cray
 
 
@@ -50,6 +50,10 @@ COMPONENTS default to Netlib LAPACK / LapackE, otherwise:
 
 ``LAPACK95``
   get Lapack95 interfaces for MKL or Netlib (must also specify one of MKL, Netlib)
+
+``STATIC``
+  Library search default on non-Windows is shared then static. On Windows default search is static only.
+  Specifying STATIC component searches for static libraries only.
 
 
 Result Variables
@@ -169,12 +173,14 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
   find_library(LAPACKE_LIBRARY
   NAMES lapacke
   PATH_SUFFIXES lapack lapack/lib
+  DOC "LAPACKE library"
   )
 
   # lapack/include for Homebrew
   find_path(LAPACKE_INCLUDE_DIR
   NAMES lapacke.h
   PATH_SUFFIXES lapack lapack/include
+  DOC "LAPACKE include directory"
   )
   if(NOT (LAPACKE_LIBRARY AND LAPACKE_INCLUDE_DIR))
     return()
@@ -226,6 +232,7 @@ DOC "BLAS library"
 
 find_path(LAPACK_INCLUDE_DIR
 NAMES cblas-openblas.h cblas.h f77blas.h openblas_config.h
+DOC "LAPACK include directory"
 )
 
 if(NOT (LAPACK_LIBRARY AND BLAS_LIBRARY))
@@ -312,6 +319,11 @@ if(NOT (lapack_cray
 endif()
 
 find_package(Threads)
+
+if(STATIC IN_LIST LAPACK_FIND_COMPONENTS)
+  set(_orig_suff ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+endif()
 
 # ==== generic MKL variables ====
 
@@ -404,6 +416,13 @@ elseif(lapack_cray)
   # LAPACK is implicitly part of Cray PE LibSci, use Cray compiler wrapper.
 endif()
 
+if(STATIC IN_LIST LAPACK_FIND_COMPONENTS)
+  if(LAPACK_LIBRARY)
+    set(LAPACK_STATIC_FOUND true)
+  endif()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${_orig_suff})
+endif()
+
 # -- verify library works
 
 function(lapack_check)
@@ -416,7 +435,7 @@ endif()
 
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_LINK_OPTIONS)
-set(CMAKE_REQUIRED_INCLUDES)
+set(CMAKE_REQUIRED_INCLUDES ${LAPACK_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
 
 check_fortran_source_compiles(
@@ -473,27 +492,33 @@ set(LAPACK_INCLUDE_DIRS ${LAPACK_INCLUDE_DIR})
 
 if(LAPACK_FOUND)
 # need if _FOUND guard as can't overwrite imported target even if bad
-  if(NOT TARGET BLAS::BLAS)
-    add_library(BLAS::BLAS INTERFACE IMPORTED)
-    set_property(TARGET BLAS::BLAS PROPERTY INTERFACE_LINK_LIBRARIES "${BLAS_LIBRARY}")
-  endif()
 
-  if(NOT TARGET LAPACK::LAPACK)
-    add_library(LAPACK::LAPACK INTERFACE IMPORTED)
-    set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK_LIBRARY}")
-    set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK_INCLUDE_DIR}")
-  endif()
 
-  if(LAPACK_LAPACK95_FOUND)
-    set(LAPACK95_LIBRARIES ${LAPACK95_LIBRARY})
-    set(LAPACK95_INCLUDE_DIRS ${LAPACK95_INCLUDE_DIR})
+message(VERBOSE "Lapack libraries: ${LAPACK_LIBRARIES}
+Lapack include directories: ${LAPACK_INCLUDE_DIRS}")
 
-    if(NOT TARGET LAPACK::LAPACK95)
-      add_library(LAPACK::LAPACK95 INTERFACE IMPORTED)
-      set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK95_LIBRARY}")
-      set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK95_INCLUDE_DIR}")
-    endif()
+if(NOT TARGET BLAS::BLAS)
+  add_library(BLAS::BLAS INTERFACE IMPORTED)
+  set_property(TARGET BLAS::BLAS PROPERTY INTERFACE_LINK_LIBRARIES "${BLAS_LIBRARY}")
+endif()
+
+if(NOT TARGET LAPACK::LAPACK)
+  add_library(LAPACK::LAPACK INTERFACE IMPORTED)
+  set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK_LIBRARY}")
+  set_property(TARGET LAPACK::LAPACK PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK_INCLUDE_DIR}")
+endif()
+
+if(LAPACK_LAPACK95_FOUND)
+  set(LAPACK95_LIBRARIES ${LAPACK95_LIBRARY})
+  set(LAPACK95_INCLUDE_DIRS ${LAPACK95_INCLUDE_DIR})
+
+  if(NOT TARGET LAPACK::LAPACK95)
+    add_library(LAPACK::LAPACK95 INTERFACE IMPORTED)
+    set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_LINK_LIBRARIES "${LAPACK95_LIBRARY}")
+    set_property(TARGET LAPACK::LAPACK95 PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${LAPACK95_INCLUDE_DIR}")
   endif()
 endif()
+
+endif(LAPACK_FOUND)
 
 mark_as_advanced(LAPACK_LIBRARY LAPACK_INCLUDE_DIR)
