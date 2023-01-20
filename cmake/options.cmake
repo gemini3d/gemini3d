@@ -45,8 +45,8 @@ set(CMAKE_DEBUG_POSTFIX .debug)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
 # Rpath options necessary for shared library install to work correctly in user projects
-set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_FULL_LIBDIR})
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
 
 # Necessary for shared library with Visual Studio / Windows oneAPI
