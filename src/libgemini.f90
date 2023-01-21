@@ -1025,7 +1025,7 @@ contains
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     vplower=-1e4; vpupper=1e4;
-    Tlower=0; Tupper=20000;
+    Tlower=0; Tupper=100000;
 
     errflag=errflag .or. checkarray(ns(3:lx1+2,3:lx2+2,3:lx3+2,:),nlower,nupper, &
                                      '>>> Interior density data corrupted:  ',locID)
