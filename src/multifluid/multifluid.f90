@@ -642,9 +642,10 @@ subroutine clean_param(x,paramflag,param)
               end do
 
               ix1end=ix1beg
-              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the first non-null index for this field line
+              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
                 ix1end=ix1end+1
               end do
+              !if (ix1end /= ix1beg .and. ix1end /= lx1) ix1end=ix1end-1      ! I think this has been left out for a long time!?
 
               if (ix1beg /= lx1) then    !only do this if we actually have null grid points
                 param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
