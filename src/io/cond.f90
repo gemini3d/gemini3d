@@ -2,6 +2,7 @@ submodule (io) io_cond
 !! output conductivity to file
 use filesystem, only : is_dir, mkdir
 use timeutils, only : date_filename
+use mpimod, only : gather_send
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 

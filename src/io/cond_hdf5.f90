@@ -1,6 +1,7 @@
 submodule(io:io_cond) io_cond_hdf5
 
 use h5fortran, only: hdf5_file
+use mpimod, only : gather_recv
 
 implicit none (type, external)
 

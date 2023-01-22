@@ -22,10 +22,11 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential3D_fieldresolved, &
                             potential3D_fieldresolved_truncate
 use PDEelliptic, only: elliptic_workers
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-mpi_cfg, tag=>gemini_mpi, &
+use mpimod, only: mpi_cfg, tag=>gemini_mpi, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo, bcast_send3D_ghost, bcast_recv3D_ghost
 use gemini3d_config, only: gemini_cfg
+
+use mpi_f08, only: mpi_send, mpi_recv, mpi_integer, mpi_comm_world, mpi_status_ignore
 
 implicit none (type, external)
 private
@@ -33,7 +34,6 @@ public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, veloc
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
             parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
             acc_perpBGconductioncurrents
-external :: mpi_send, mpi_recv
 
 !! overloading to deal with vestigial cartesian->curvilinear code
 interface electrodynamics
@@ -198,7 +198,7 @@ contains
       call cpu_time(tstart)
       if (mpi_cfg%myid/=0) then
         !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-         call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
+        call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
                                      vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
                                      Vminx1slab,Vmaxx1slab, &
                                      E1,E2,E3,J1,J2,J3)
@@ -263,7 +263,7 @@ contains
     !! intent(out)
     !local work arrays
     real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
-    integer :: iid,ierr
+    integer :: iid
     real(wp) :: tstart,tfin
     real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1buf,Vmaxx1buf
 
@@ -281,11 +281,10 @@ contains
     call cpu_time(tfin)
     if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
 
-    ierr=0
-    do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
-      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+    do iid=1,mpi_cfg%lid-1
+      !! communicate intent for solve to workers so they know whether or not to call mumps fn.
+      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
     end do
-    if (ierr/=0) error stop 'mpi_send failed to send solve intent'
     if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
 
     ! Need to broadcast background fields from root
@@ -310,11 +309,8 @@ contains
     !! intent(out)
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! intent(out)
-    ! local variables
-    integer :: ierr
 
-    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    if (ierr /= 0) error stop 'dirich'
+    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
 
     !Need to broadcast background fields from root
     !Need to also broadcast x1 boundary conditions for source term calculations.
@@ -360,12 +356,12 @@ contains
     !> Pressure/diamagnetic terms (if required)
     if (flagdiamagnetic) then
       do isp=1,lsp
-         !> this behaves better when we take the gradient of log pressure
-         pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
-         call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-         gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-         gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-         vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+        !> this behaves better when we take the gradient of log pressure
+        pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
+        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+        gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+        gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+        vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
                    -muP(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp2(1:lx1,1:lx2,1:lx3) &
                    +muH(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradlp3(1:lx1,1:lx2,1:lx3)
         vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &

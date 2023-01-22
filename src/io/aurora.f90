@@ -2,6 +2,7 @@ submodule (io) io_aurora
 
 use filesystem, only : mkdir, is_dir
 use timeutils, only : date_filename
+use mpimod, only : gather_send
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 

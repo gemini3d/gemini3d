@@ -8,4 +8,5 @@ $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(grid_mpi PRIVATE const meshobj meshobj_cart meshobj_dipole mpimod
 h5fortran::h5fortran
+MPI::MPI_Fortran
 )

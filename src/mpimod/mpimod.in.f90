@@ -6,10 +6,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
 use autogrid, only : grid_auto
 
-use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
-  mpi_integer,mpi_sum, &
-  MPI_STATUS_SIZE, MPI_STATUS_IGNORE, MPI_PROC_NULL, &
-  mpi_realprec=>@mpi_realprec@
+use mpi_f08, only: mpi_realprec=>@mpi_realprec@
+use mpi_f08, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 
 implicit none (type, external)
 private
@@ -19,11 +17,8 @@ public :: gemini_mpi, gemini_mpi_config, mpi_cfg, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
   gather_send, gather_recv, &
   halo, halo_end, &
-  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i, &
   gather_recv3D_ghost,gather_recv3d_x2i,gather_recv3d_x3i
-
-external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
 
 
 type :: gemini_mpi_tags

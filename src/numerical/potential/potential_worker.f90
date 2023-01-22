@@ -22,16 +22,16 @@ module procedure potential_workers_mpi
   logical :: perflag    !MUMPS stuff
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
-  integer :: ix1,ix2,ix3,ierr
+  integer :: ix1,ix2,ix3
   integer :: idleft,idright,iddown,idup
   real(wp) :: tstart,tfin
   integer :: flagsolve
-  
+
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
   perflag=.false.
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
-  
+
   !!!!!!!!
   !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
   !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
@@ -42,19 +42,19 @@ module procedure potential_workers_mpi
       integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
       sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
       SigPint2=sigintegral(lx1,:,:)
-  
+
       integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigPint3=sigintegral(lx1,:,:)
-  
+
       integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigHint=sigintegral(lx1,:,:)
-  
+
       sigintegral=integral3D1(incap,x,1,lx1)
       incapint=sigintegral(lx1,:,:)
       !-------
-  
+
       !PRODUCE A FIELD-INTEGRATED SOURCE TERM
       if (flagdirich /= 1) then
         !! Neumann conditions; incorporate a source term and execute the solve
@@ -66,7 +66,7 @@ module procedure potential_workers_mpi
                                    x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab
         !! workers don't have access to boundary conditions, unless root sends
         !-------
-  
+
         !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
         call gather_send(srctermint,tag%src)
         call gather_send(incapint,tag%incapint)
@@ -80,13 +80,13 @@ module procedure potential_workers_mpi
   !          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);
         !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes);
         !! but this is only valid for Cartesian, so it's okay for the foreseeable future
-  
+
         call elliptic_workers()    !workers do not need any specific info about the problem (that all resides with root who will redistribute)
       else
         !! Dirichlet conditions
         !! - since this is field integrated we just copy BCs specified by user to other locations along field line (root does this)
       end if
-  
+
   !
     else    !resolved 3D solve
       !! ZZZ - conductivities need to be properly scaled here...
@@ -96,35 +96,35 @@ module procedure potential_workers_mpi
       sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
       srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
       sigHscaled=x%h1(1:lx1,1:lx2,1:lx3)*sigH
-  
+
       !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
       call gather_send(sigPscaled,tag%sigP)
       call gather_send(sigHscaled,tag%sigH)
       call gather_send(sig0scaled,tag%sig0)
       call gather_send(srcterm,tag%src)
-  
-      call mpi_recv(flagsolve,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  
+
+      call mpi_recv(flagsolve,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+
       if (flagsolve/=0) then
         call elliptic_workers()
       end if
-  
+
     end if
   else   !lx1=1 so do a field-resolved 2D solve over x1,x3
-  
-  
+
+
     !-------
     !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
     sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
     sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
     srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
     !-------
- 
+
     !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
     call gather_send(sigPscaled,tag%sigP)
     call gather_send(sig0scaled,tag%sig0)
     call gather_send(srcterm,tag%src)
-  
+
     ! Need to convert current boundary condition into potential normal derivative
     if (flagdirich==0) then
       if (gridflag==1) then
@@ -135,15 +135,15 @@ module procedure potential_workers_mpi
         call gather_send(Vmaxx1slab,tag%Vmaxx1)
       end if
     end if
-  
+
     call elliptic_workers()
   end if
   !    print *, 'MUMPS time:  ',tfin-tstart
   !!!!!!!!!
-  
+
   !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
   call bcast_recv3D_ghost(Phi,tag%Phi)
-  
+
   !-------
   !! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
   !! (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
@@ -151,7 +151,7 @@ module procedure potential_workers_mpi
   E2prev=E2(1:lx1,1:lx2,1:lx3)
   E3prev=E3(1:lx1,1:lx2,1:lx3)
   !-------
-  
+
   !-------
   !CALCULATE PERP FIELDS FROM POTENTIAL
   !      E20all=grad3D2(-Phi0all,dx2(1:lx2))
@@ -160,12 +160,12 @@ module procedure potential_workers_mpi
   !      E30all=grad3D3(-Phi0all,dx3all(1:lx3all))
   call pot2perpfield(Phi,x,E2,E3)
   !--------
-  
+
   call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
-  
+
   !--------
   J2(1:lx1,1:lx2,1:lx3)=0._wp; J3(1:lx1,1:lx2,1:lx3)=0._wp    ! must be zeroed out before we accumulate currents
-  if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
+  if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
   call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
@@ -176,11 +176,11 @@ module procedure potential_workers_mpi
     call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
   end if
   !--------
-  
-  
+
+
   call parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdirich,J1,E1)
-  
-  
+
+
   !    !R-------
   if (debug) then
   !    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))
@@ -191,8 +191,8 @@ module procedure potential_workers_mpi
   !    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
   endif
   !    !R-------
-  
-  
+
+
   !-------
   !GRAND TOTAL FOR THE CURRENT DENSITY:  TOSS IN POLARIZATION CURRENT SO THAT OUTPUT FILES ARE CONSISTENT
   J1(1:lx1,1:lx2,1:lx3)=J1(1:lx1,1:lx2,1:lx3)+J1pol

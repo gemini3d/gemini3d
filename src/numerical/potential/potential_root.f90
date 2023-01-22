@@ -33,43 +33,43 @@ module procedure potential_root_mpi_curv
   !real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: Phitmp
-  integer :: iid, ierr
+  integer :: iid
   integer :: ix1,ix2,ix3
   integer :: idleft,idright,iddown,idup
   real(wp) :: tstart,tfin
   integer :: u
-  
+
   !> store a cached ordering for later use (improves performance substantially)
   perflag=.true.
 
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
 
- 
+
   !!!!!!!!
   !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
   !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
   if (lx2all/=1 .and. lx3all/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
     if (cfg%potsolve == 1) then    !2D, field-integrated solve
       if (debug) print *, 'Beginning field-integrated solve...'
-  
+
       !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS
       integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
       sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
       SigPint2=sigintegral(lx1,:,:)
-  
+
       integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigPint3=sigintegral(lx1,:,:)
-  
+
       integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigHint=sigintegral(lx1,:,:)
-  
+
       sigintegral=integral3D1(incap,x,1,lx1)
       incapint=sigintegral(lx1,:,:)
       !-------
-  
+
       !> PRODUCE A FIELD-INTEGRATED SOURCE TERM
       if (flagdirich /= 1) then   !Neumann conditions; incorporate a source term and execute the solve
         if (debug) print *, 'Using FAC boundary condition...'
@@ -81,13 +81,13 @@ module procedure potential_root_mpi_curv
                                    x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab
         !! workers don't have access to boundary conditions, unless root sends
         !-------
-  
+
         v2=vs2(1:lx1,1:lx2,1:lx3,1); v3=vs3(1:lx1,1:lx2,1:lx3,1);
         ! must be set since used later by the polarization current calculation
         v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);
         !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian,
         !! so it's okay for the foreseeable future
-  
+
         !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
         call gather_recv(srctermint,tag%src,srctermintall)
         call gather_recv(incapint,tag%incapint,incapintall)
@@ -96,7 +96,7 @@ module procedure potential_root_mpi_curv
         call gather_recv(SigHint,tag%SigHint,SigHintall)
         call gather_recv(v2slab,tag%v2electro,v2slaball)
         call gather_recv(v3slab,tag%v3electro,v3slaball)
-  
+
         !R------
         !EXECUTE FIELD-INTEGRATED SOLVE
         Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
@@ -106,7 +106,7 @@ module procedure potential_root_mpi_curv
         Phislab0=Phiall(lx1,1:lx2all,1:lx3all)    !root already possess the fullgrid potential from prior solves...
         if (debug) print *, 'Root is calling MUMPS...'
         !R-------
-  
+
         !R------ EXECUTE THE MUMPS SOLVE FOR FIELD-INT
         call cpu_time(tstart)
         if (.not. x%flagper) then     !nonperiodic mesh
@@ -139,7 +139,7 @@ module procedure potential_root_mpi_curv
         if (debug) print *, 'Dirichlet conditions selected with field-integrated solve. Copying BCs along x1-direction...'
         !R------
       end if
-  
+
       !R------  AFTER ANY TYPE OF FIELD-INT SOLVE COPY THE BCS ACROSS X1 DIMENSION
       do ix1=1,lx1
         Phiall(ix1,1:lx2all,1:lx3all)=Phislab(1:lx2all,1:lx3all)
@@ -152,7 +152,7 @@ module procedure potential_root_mpi_curv
       !! ZZZ - conductivities need to be properly scaled here...
       !! So does the source term...  Maybe leave as broken for now since there are no immediate plans to use this (too slow)
       if (debug) print *, 'Beginning field-resolved 3D solve...  Type;  ',flagdirich
-  
+
       !-------
       !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM,
       !need to adopt for curvilinear case...
@@ -160,20 +160,20 @@ module procedure potential_root_mpi_curv
       sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
       srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
       sigHscaled=x%h1(1:lx1,1:lx2,1:lx3)*sigH
-  
+
       !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
       call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
       call gather_recv(sigHscaled,tag%sigH,sigHscaledall)
       call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
       call gather_recv(srcterm,tag%src,srctermall)
-  
+
       !R------
       if (debug) print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
      ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
      !                   x,flagdirich,perflag,it)
       !if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
         do iid=1,mpi_cfg%lid-1
-          call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+          call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
         end do
         !Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
         !                           Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
@@ -184,7 +184,7 @@ module procedure potential_root_mpi_curv
         Phiall(1:lx1,1:lx2all,1:lx3all)=Phitmp
       !else
       !  do iid=1,mpi_cfg%lid-1
-      !    call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+      !    call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
       !  end do
       !    if (debug) print*, 'Boundary conditions too small to require solve, setting everything to zero...'
       !  Phiall=0e0_wp
@@ -193,14 +193,14 @@ module procedure potential_root_mpi_curv
     end if
   else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
     if (debug) print *, 'Beginning field-resolved 2D solve...  Type;  ',flagdirich
-  
+
     !-------
     !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
     sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
     sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
     srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
     !-------
-  
+
     !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
     call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
     call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
@@ -250,7 +250,7 @@ module procedure potential_root_mpi_curv
   E2prev=E2(1:lx1,1:lx2,1:lx3)
   E3prev=E3(1:lx1,1:lx2,1:lx3)
   !-------
-  
+
   !-------
   !CALCULATE PERP FIELDS FROM POTENTIAL
   !      E20all=grad3D2(-Phi0all,dx2(1:lx2))
@@ -259,7 +259,7 @@ module procedure potential_root_mpi_curv
   !      E30all=grad3D3(-Phi0all,dx3all(1:lx3all))
   !FIXME
   call pot2perpfield(Phi,x,E2,E3)
-  
+
   !R-------
   !JUST TO JUDGE THE IMPACT OF MI COUPLING
   if (debug) then
@@ -273,12 +273,12 @@ module procedure potential_root_mpi_curv
                maxval(Phiall(1:lx1,1:lx2all,1:lx3all))
   endif
   !R-------
-  
+
   call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
-  
+
   !--------
   J2(1:lx1,1:lx2,1:lx3)=0._wp; J3(1:lx1,1:lx2,1:lx3)=0._wp    ! must be zeroed out before we accumulate currents
-  if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)      
+  if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
   call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
@@ -289,7 +289,7 @@ module procedure potential_root_mpi_curv
     call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
   end if
   !--------
- 
+
   call parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdirich,J1,E1)
 
   !R-------
@@ -306,7 +306,7 @@ module procedure potential_root_mpi_curv
     print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1(1:lx1,1:lx2,1:lx3)))
   endif
   !R-------
-  
+
   !-------
   !GRAND TOTAL FOR THE CURRENT DENSITY:  TOSS IN POLARIZATION CURRENT SO THAT OUTPUT FILES ARE CONSISTENT
   J1(1:lx1,1:lx2,1:lx3)=J1(1:lx1,1:lx2,1:lx3)+J1pol

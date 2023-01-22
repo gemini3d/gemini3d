@@ -8,8 +8,7 @@ use meshobj, only: curvmesh
 use meshobj_dipole, only: dipolemesh
 use meshobj_cart, only: cartmesh
 use phys_consts, only: Gconst,Me,Re,wp,red,black
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-  mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
+use mpimod, only :  mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
@@ -18,10 +17,11 @@ use grid, only: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
                 set_total_grid_sizes,set_subgrid_sizes,set_gridflag,generate_worker_grid, &
                 get_grid3_coords, detect_gridtype
 
+use mpi_f08, only : mpi_recv, mpi_send, mpi_comm_world, mpi_status_ignore
+
 implicit none (type, external)
 private
 public :: read_grid, grid_check, grid_drift
-external :: mpi_recv, mpi_send
 
 interface ! read.f90
   module subroutine read_grid_cartdip(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
@@ -180,7 +180,7 @@ subroutine grid_drift(x,E02,E03,v2grid,v3grid)
   reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
   real(wp), intent(inout) :: v2grid,v3grid
   !! intent(out)
-  integer :: iid,ierr
+  integer :: iid
   real(wp) :: E2ref,E3ref,Bref
 
   ! Root decides grid drift speed by examining initial background field in this center of its subdomain...
@@ -194,12 +194,12 @@ subroutine grid_drift(x,E02,E03,v2grid,v3grid)
     v3grid=-1*E2ref/Bref
     ! FIXME:  error checking to make sure input is sensible for this???
     do iid=1,mpi_cfg%lid-1
-      call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD,ierr)
-      call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD,ierr)
+      call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD)
+      call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD)
     end do
   else
-    call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
   end if
 end subroutine grid_drift
 

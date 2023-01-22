@@ -4,6 +4,7 @@ use reader, only : get_simsize3
 use sanity_check, only : check_finite_current, check_finite_plasma
 use interpolation, only : interp3
 use grid, only : get_grid3_coords_hdf5
+use mpimod, only : bcast_recv3D_ghost, bcast_recv
 
 implicit none (type, external)
 

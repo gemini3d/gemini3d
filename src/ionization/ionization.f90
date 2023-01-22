@@ -10,7 +10,7 @@ use timeutils, only: ymd2doy
 implicit none (type, external)
 private
 public :: ionrate_fang, ionrate_glow98, eheating, photoionization
-external :: mpi_send, mpi_recv
+
 
 interface
   module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
