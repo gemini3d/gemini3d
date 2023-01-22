@@ -11,7 +11,8 @@ use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
 implicit none (type, external)
-
+private
+public :: dipolemesh, qp2rtheta
 
 ! type extension for dipolemesh
 type, extends(curvmesh) :: dipolemesh

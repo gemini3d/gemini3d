@@ -10,6 +10,7 @@ use neutraldata2Dobj, only: neutraldata2D
 use reader, only: get_simsize3
 
 implicit none (type, external)
+private
 public :: neutraldata2Daxisymm
 
 !> type extension for neutral 2D axisymmetric input data

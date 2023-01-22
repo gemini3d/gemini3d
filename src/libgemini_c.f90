@@ -177,7 +177,7 @@ contains
     class(curvmesh), pointer :: x
 
     x=>set_gridpointer_dyntype(xtype,xC)
-    call grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)  
+    call grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     ! as an extra step we need to also assign a type to the grid
     xtype=detect_gridtype(x%x1,x%x2,x%x3)
   end subroutine grid_from_extents_C

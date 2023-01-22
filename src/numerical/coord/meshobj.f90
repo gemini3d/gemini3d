@@ -10,7 +10,8 @@ use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r,rotgg2gm
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
 implicit none (type, external)
-public
+private
+public :: curvmesh
 
 !> curvmesh is an abstract type containing functionality and data that is not specific to individual coordinate systems
 !   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
@@ -322,8 +323,8 @@ contains
     !   glat/glon to be the same across the x3 dimension so that the neutral atmosphere and photoionization
     !   will be constant vs. x3.  This is most typically used in instability simulations when one wants to
     !   explicitly remove any dependence of background parameters on the x3 direction.  One would not want to use
-    !   this when simply trying to model an angular coordinate (e.g. longitude) across the full globe as the 
-    !   atmospheric and SZA changes are needed to realistically capture the system.  
+    !   this when simply trying to model an angular coordinate (e.g. longitude) across the full globe as the
+    !   atmospheric and SZA changes are needed to realistically capture the system.
     ! force periodicity in geographic locations using reference meridian data
     if (flagperiodic==1) then
       do ix3=1,self%lx3
@@ -595,7 +596,7 @@ contains
 
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
-  !    This works on a full spatial arrays worth of data.  
+  !    This works on a full spatial arrays worth of data.
   subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
     class(curvmesh), intent(in) :: self
     real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglon,eglat
@@ -603,8 +604,8 @@ contains
     real(wp) :: thetagg,phigg    ! geographic spherical coords
     real(wp), dimension(3,3) :: Rgg2gm
     real(wp), dimension(3,1) :: ehere,ehererot
-   
-    if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to & 
+
+    if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to &
                                                  computing unit vectors'
 
     ! sizes

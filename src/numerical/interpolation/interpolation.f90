@@ -1,8 +1,10 @@
 module interpolation
+
 use phys_consts, only: wp
 
 implicit none (type, external)
-public
+private
+public :: interp1, interp2, interp3
 
 interface ! interp2d.f90
 module pure function interp2_plaid(x1,x2,f,x1i,x2i)

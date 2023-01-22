@@ -5,7 +5,8 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only: wp
 
 implicit none (type, external)
-
+private
+public :: newtopts, newton_exact, objfun, objfun_deriv
 
 !> derived type for containing the options for the newton method procedure, by default
 !   these work okay with the dipole to spherical conversion problem but can be adjusted

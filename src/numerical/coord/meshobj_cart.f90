@@ -9,7 +9,8 @@ use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 
 implicit none (type, external)
-
+private
+public :: cartmesh
 
 ! type extension for cartmesh
 type, extends(curvmesh) :: cartmesh

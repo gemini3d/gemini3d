@@ -12,6 +12,7 @@ use reader, only: get_simsize2,get_grid2,get_precip
 use timeutils, only: dateinc,date_filename
 
 implicit none (type, external)
+private
 public :: precipdata
 
 type, extends(inputdata) :: precipdata

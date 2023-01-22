@@ -4,16 +4,17 @@ use phys_consts, only: wp
 use inputdataobj, only: inputdata
 
 implicit none (type,external)
-public
+private
+public :: neutraldata
 
 !> abstract type for neutral data input; this is for 2D or 3D and contains only the data and init
 !    other procedures must be defined in concrete class
 type, extends(inputdata), abstract :: neutraldata
   ! interpolation site pointer aliases always 3D so defined here in based neutral class
   real(wp), dimension(:,:,:), pointer ::  dnOiprev,dnN2iprev,dnO2iprev,dvn1iprev,dvn2iprev,dvn3iprev, &
-                                           dTniprev 
+                                           dTniprev
   real(wp), dimension(:,:,:), pointer ::  dnOinext,dnN2inext,dnO2inext,dvn1inext,dvn2inext,dvn3inext, &
-                                           dTninext 
+                                           dTninext
   real(wp), dimension(:,:,:), pointer :: dnOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow, &
                                            dTninow
   contains
@@ -54,7 +55,7 @@ contains
     self%dTninow=>self%data3Dinow(:,:,:,7)
   end subroutine setptrs_grid
 
- 
+
   !> nullify neutral pointers (dealloc should occur from base class); unclear whether fortran standard automatically
   !    calls for setting pointers to null vs. undefined.
   subroutine dissociate_neutral_pointers(self)
@@ -66,5 +67,5 @@ contains
                                            self%dTninext)
     nullify(self%dnOinow,self%dnN2inow,self%dnO2inow,self%dvn1inow,self%dvn2inow,self%dvn3inow, &
                                            self%dTninow)
-  end subroutine dissociate_neutral_pointers  
+  end subroutine dissociate_neutral_pointers
 end module neutraldataobj

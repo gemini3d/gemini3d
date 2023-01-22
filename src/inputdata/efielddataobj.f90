@@ -15,6 +15,7 @@ use timeutils, only: dateinc,date_filename
 use grid, only: lx1,lx2,lx2all,lx3,lx3all,gridflag
 
 implicit none (type, external)
+private
 public :: efielddata
 
 type, extends(inputdata) :: efielddata

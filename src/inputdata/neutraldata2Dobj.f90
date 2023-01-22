@@ -13,6 +13,7 @@ use h5fortran, only: hdf5_file
 use grid, only: gridflag
 
 implicit none (type,external)
+private
 public :: neutraldata2D
 
 !> type definition for 3D neutral data

@@ -8,7 +8,8 @@ use interpolation, only : interp1,interp2,interp3
 use timeutils, only : dateinc, date_filename, find_lastdate
 
 implicit none (type, external)
-public
+private
+public :: inputdata
 
 
 !> this is a generic class for an data object being input into the model and interpolated in space and time
