@@ -34,7 +34,7 @@ use precipdataobj, only: precipdata
 implicit none (type, external)
 private
 public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid
 
 integer, parameter :: lprec=2
 !! number of precipitating electron populations
@@ -706,5 +706,137 @@ subroutine clean_param(x,paramflag,param)
       error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
   end select
 end subroutine clean_param
+
+
+!> Deal with cells outside computation domain; do not touch ghost cells in any way - exercise caution in the way null cells are
+!    treated as compared to a "normal" clean.  Screen cells "near" null cells for excessively large parameter values that may
+!    result from interpolation artifacts.  
+subroutine clean_param_after_regrid(x,paramflag,param)
+  !------------------------------------------------------------
+  !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
+  !-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
+  !------------------------------------------------------------
+  class(curvmesh), intent(in) :: x
+  integer, intent(in) :: paramflag
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
+  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
+  integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end,ix2beg
+
+  select case (paramflag)
+    case (1)    !density
+      param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)    ! enforce a minimum density
+      param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)              !enforce charge neutrality based on ion densities
+
+      do isp=1,lsp             !set null cells to some value
+        if (isp==1) then
+          do iinull=1,x%lnull
+            ix1=x%inull(iinull,1)
+            ix2=x%inull(iinull,2)
+            ix3=x%inull(iinull,3)
+
+            param(ix1,ix2,ix3,isp)=mindensnull*1e-2_wp
+          end do
+        else
+          do iinull=1,x%lnull
+            ix1=x%inull(iinull,1)
+            ix2=x%inull(iinull,2)
+            ix3=x%inull(iinull,3)
+
+            param(ix1,ix2,ix3,isp)=mindensnull
+          end do
+        end if
+
+        !> we want to try to prevent issues with interpolation of density
+        do ix3=1,lx3
+          do ix1=1,lx1
+            ix2beg=1
+            do while( (.not. x%nullpts(ix1,ix2beg,ix3)) .and. ix2beg<lx2)     !find the first non-null index for this field line, need to be careful if no null points exist...
+              ix2beg=ix2beg+1
+            end do
+    
+            !ix1end=ix1beg
+            !do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
+            !  ix1end=ix1end+1
+            !end do
+            !!if (ix1end /= ix1beg .and. ix1end /= lx1) ix1end=ix1end-1      ! I think this has been left out for a long time!?
+    
+            if (ix2beg /= lx2) then    !only do this if we actually have null grid points
+              param(ix1,ix2beg,ix3,isp)=mindensnull
+            end if
+            !if (ix1end /= lx1) then
+            !  param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+            !end if
+          end do
+        end do
+      end do
+    case (2)    !velocity
+      do isp=1,lsp       !set null cells to zero mometnum
+        do iinull=1,x%lnull
+          ix1=x%inull(iinull,1)
+          ix2=x%inull(iinull,2)
+          ix3=x%inull(iinull,3)
+
+          param(ix1,ix2,ix3,isp) = 0
+        end do
+      end do
+
+      !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
+      if (x%gridflag==0) then      ! closed dipole
+        do isp=1,lsp
+          do ix3=1,lx3
+            do ix2=1,lx2
+              ix1beg=1
+              do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+                ix1beg=ix1beg+1
+              end do
+
+              ix1end=ix1beg
+              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
+                ix1end=ix1end+1
+              end do
+              !if (ix1end /= ix1beg .and. ix1end /= lx1) ix1end=ix1end-1      ! I think this has been left out for a long time!?
+
+              if (ix1beg /= lx1) then    !only do this if we actually have null grid points
+                param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
+              end if
+              if (ix1end /= lx1) then
+                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+              end if
+            end do
+          end do
+        end do
+      elseif (x%gridflag==1) then     ! open dipole grid, inverted
+        do isp=1,lsp
+          do ix3=1,lx3
+            do ix2=1,lx2
+              ix1end=1
+              do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
+                ix1end=ix1end+1
+              end do
+
+              if (ix1end /= lx1) then
+                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+              end if
+            end do
+          end do
+        end do
+      end if
+    case (3)    !temperature
+      param=max(param,100._wp)     !temperature floor
+
+      do isp=1,lsp       !set null cells to some value
+        do iinull=1,x%lnull
+          ix1=x%inull(iinull,1)
+          ix2=x%inull(iinull,2)
+          ix3=x%inull(iinull,3)
+
+          param(ix1,ix2,ix3,isp) = 100
+        end do
+      end do
+    case default
+      !! throw an error as the code is likely not going to behave in a predictable way in this situation...
+      error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
+  end select
+end subroutine clean_param_after_regrid
 
 end module multifluid
