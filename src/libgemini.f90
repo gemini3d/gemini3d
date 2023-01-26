@@ -39,7 +39,7 @@ use msis_interface, only : msisinit
 use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
-            rhov12v1,v12rhov1
+            rhov12v1,v12rhov1,clean_param_after_regrid
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
@@ -62,7 +62,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
-            ipermute_fluidvars, tag4refine_location, tag4refine_vperp
+            ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -948,6 +948,29 @@ contains
     end select
     call clean_param(x,iparm,parm)
   end subroutine clean_param_in
+
+
+  !> deal with null cell solutions
+  subroutine clean_param_after_regrid_in(iparm,x,fluidvars)
+    integer, intent(in) :: iparm
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: parm
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    select case (iparm)
+      case (1)
+        parm=>ns
+      case (2)
+        parm=>vs1
+      case (3)
+        parm=>Ts
+      case default
+        error stop '  libgemini:clean_params_C(); invalid parameter selected'
+    end select
+    call clean_param_after_regrid(x,iparm,parm)
+  end subroutine clean_param_after_regrid_in
 
 
   !> diffusion of energy
