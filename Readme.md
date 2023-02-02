@@ -50,9 +50,9 @@ Gemini3D works "offline" that is without internet once initially setup.
 
 Requirements:
 
-* C++17 and Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) for optional further details.
-  * GCC 8 and newer
-  * Clang 7 and newer
+* C, C++ and Fortran compiler. See [compiler help](./docs/Readme_compilers.md) for optional further details.
+  * GCC &ge; 9 with OpenMPI or MPICH
+  * Clang with OpenMPI
   * Intel oneAPI
   * Cray with GCC or Intel oneAPI backend
 * Python and/or MATLAB for scripting front- and back-ends

@@ -5,13 +5,13 @@ GEMINI requires a C++ compiler that handles [filesystem](https://en.cppreference
 
 These compilers are known to work with GEMINI3D on Linux, MacOS, and Windows:
 
-* Gfortran (GCC): 7.5, 8.5, 9.3, 10.3, 11.1, 11.2, 11.3, 12.1
+* Gfortran (GCC): 9.3, 9.5, 10.3, 11.1, 11.2, 11.3, 12.1, 12.2
 * Intel oneAPI &ge; 2022.2 core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
 * Cray with GCC or Intel backend
 
 Intel Parallel Studio XE is obsolete and replaced by no-cost Intel oneAPI.
 
-Some older point releases of GCC are known to be broken (example: GCC 7.4 and 8.1 are broken in general).
+Some older point releases of GCC are known to be broken (example: GCC 9.2 is broken in general).
 
 ## Linux
 
