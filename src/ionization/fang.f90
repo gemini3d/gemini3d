@@ -14,15 +14,17 @@ real(wp), parameter :: erg2kev = 624150648._wp
 contains
 
 
-elemental real(wp) function fang2010(Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(Qtot)
+elemental real(wp) function fang2010(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(qtot)
 !! isotropically precipitating monoenergetic (100 eV to 1 MeV) electrons
 !! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
 
-real(wp), intent(in) :: Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2
+real(wp), intent(in) :: Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 
-real(wp) :: y, H_cm, f
-integer :: i, j
+real(wp) :: y, H_cm, f, dQ0_keV, phi_keV
+integer :: i, j, k
 real(wp), dimension(8) :: C
+real(wp), dimension(64) :: Ebins_keV
+real(wp), dimension(64) :: dEbins_keV
 
 character(12) :: E0_str
 
@@ -36,41 +38,55 @@ real(wp), parameter :: P(8,4) = reshape( &
 -6.45454e-1_wp,  8.49555e-4_wp, -4.28581e-2_wp, -2.99302e-3_wp, &
  9.48930e-1_wp,  1.97385e-1_wp, -2.50660e-3_wp, -2.06938e-3_wp], shape(P), order=[2,1])
 
-if (Emono_keV < 0.1 .or. Emono_keV > 1000) then
-  write(E0_str,'(F12.4)') Emono_keV * 1000
+if (E0_keV < 0.1 .or. E0_keV > 1000) then
+  write(E0_str,'(F12.4)') E0_keV * 1000
   error stop 'ionize_fang:fang2010: valid E0 range from 100 eV .. 1 MeV: E0 (keV) : ' // E0_str
 endif
+
+!! replace with input arrays Ebin and dEbins - jvi
+do k=1,64
+  Ebins_keV(k) = 0.1 + (k-1)*(100-0.1)/(64-1) ! 0.1 to 100
+  dEbins_keV(k) = (100-0.1)/(64-1) ! equal bin sizes
+end do
 
 !! scale height
 !! Equation (2)
 H_cm = 100 * kb * Tn / (meanmass_g/1000) / abs(g_ms2)
 
-!! normalized atmospheric column mass
-!! Equation (1)
-y = 2/Emono_keV * (massden_gcm3 * H_cm / 6e-6_wp)**0.7_wp
+qtot = 0
+do k=1,size(Ebins_keV)
 
-!! Equation (5)
-C = 0
-do i=1,size(P,1)
-  do j=1,size(P,2)
-    C(i) = C(i) + P(i,j) * log(Emono_keV)**(j-1)
+  !! normalized atmospheric column mass
+  !! Equation (1)
+  y = 2/Ebins_keV(k) * (massden_gcm3 * H_cm / 6e-6_wp)**0.7_wp
+
+  !! Equation (5)
+  C = 0
+  do i=1,size(P,1)
+    do j=1,size(P,2)
+      C(i) = C(i) + P(i,j) * log(Ebins_keV(k))**(j-1)
+    end do
   end do
+  C = exp(C)
+
+  !! Equation (4)
+  !! Energy deposition "f"
+  f = C(1)*y**C(2)*exp(-1*C(3)*y**C(4)) + C(5)*y**C(6) * exp(-1*C(7)*y**C(8))
+
+  !! Maxwellian for now - jvi
+  phi_keV = Q0_keV * Ebins_keV(k) * exp(-1*Ebins_keV(k)/E0_keV) / (2 * E0_keV**3) ! 1/keV/s/cm^2
+  phi_keV = Q0_keV * Ebins_keV(k) * exp(-1*Ebins_keV(k)/E0_keV) / (2 * E0_keV**3) ! 1/keV/s/cm^2
+  dQ0_keV = Ebins_keV(k) * phi_keV * dEbins_keV(k) ! keV/s/cm^2
+
+  !! Equation (3)
+  !! total ionization rate "qtot" [cm^-3 s^-1]
+  qtot = qtot + f * dQ0_keV / deps / H_cm
 end do
-C = exp(C)
-
-
-!! Equation (4)
-!! Energy deposition "f"
-f = C(1)*y**C(2)*exp(-1*C(3)*y**C(4)) + C(5)*y**C(6) * exp(-1*C(7)*y**C(8))
-
-!! Equation (3)
-!! total ionization rate "qtot" [cm^-3 s^-1]
-Qtot = f * Q0_keV / deps / H_cm
 
 end function fang2010
 
 
-elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(Qtot)
+elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(qtot)
 
 !! COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL METHOD.
 !! https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
@@ -132,7 +148,7 @@ C = exp(C)
 f = C(1)*y**C(2)*exp(-1*C(3)*y**C(4))+C(5)*y**C(6)*exp(-1*C(7)*y**C(8))
 
 !! Equation (2) total electron impact ionization rate
-Qtot = Q0_keV / 2._wp / deps / H_cm * f
+qtot = Q0_keV / 2._wp / deps / H_cm * f
 !! [cm^-3 s^-1]
 
 end function fang2008
