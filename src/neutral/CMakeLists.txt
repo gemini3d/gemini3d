@@ -21,7 +21,7 @@ $<TARGET_OBJECTS:grid>
 target_link_libraries(neutral_perturbations PRIVATE gemini3d_config const reader meshobj interp mpimod
 timeutils
 inputdata
-neutral neutraldata neutraldata3D_mpi neutraldata3D_geog_mpi neutraldata3D_geom_mpi
+neutral neutraldata neutraldata3D neutraldata3D_mpi neutraldata3D_geog_mpi neutraldata3D_geom_mpi
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran

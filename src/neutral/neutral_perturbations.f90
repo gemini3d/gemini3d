@@ -49,8 +49,11 @@ contains
       case (4)
         allocate(neutraldata3D_geog::atmosperturb)
       !!!
+      !case (5)     ! we assume forestGEMINI will control things
+      !  allocate(neutraldata3D_fclaw::atmosperturb)
       case default
-        error stop 'non-standard neutral interpolation type chosen in config.nml...'
+        print*, 'non-standard neutral interpolation type chosen in config.nml:  ',cfg%interptype
+        error stop
       end select
 
       ! call object init procedure
@@ -59,7 +62,8 @@ contains
   end subroutine init_neutralperturb
 
 
- !> update neutral perturbations and add to main neutral arrays
+ !> update neutral perturbations and add to main neutral arrays.  It is assumed that the main GEMINI app will control
+ !    when and where this gets called.
   subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,atmos,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dt,dtneu

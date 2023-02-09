@@ -3,7 +3,8 @@ module neutraldata3Dobj_geog_mpi
 use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
-use neutraldata3Dobj_mpi, only: neutraldata3D
+use neutraldata3Dobj, only: neutraldata3D
+use neutraldata3Dobj_mpi, only: neutraldata3D_mpi
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use geomagnetic, only: geomag2geog, ECEFspher2ENU
@@ -12,11 +13,10 @@ use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
 
 implicit none (type, external)
-
 public :: neutraldata3D_geog
 
 !> type definition for 3D neutral data in geographic coordinates
-type, extends(neutraldata3D) :: neutraldata3D_geog
+type, extends(neutraldata3D_mpi) :: neutraldata3D_geog
   !! all data use parent class pointers/arrays
   contains
     !! new deferred binding

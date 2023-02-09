@@ -3,7 +3,8 @@ module neutraldata3Dobj_geom_mpi
 use phys_consts, only: wp, debug, pi,Re
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
-use neutraldata3Dobj_mpi, only: neutraldata3D
+use neutraldata3Dobj, only: neutraldata3D
+use neutraldata3Dobj_mpi, only: neutraldata3D_mpi
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use mpimod, only: mpi_realprec,mpi_cfg,tag=>gemini_mpi
@@ -16,7 +17,7 @@ implicit none (type,external)
 public :: neutraldata3D_geom
 
 !> type definition for 3D neutral data
-type, extends(neutraldata3D) :: neutraldata3D_geom
+type, extends(neutraldata3D_mpi) :: neutraldata3D_geom
   !! all data held in parent class
   contains
     ! deferred bindings
