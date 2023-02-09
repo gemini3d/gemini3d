@@ -40,11 +40,18 @@ const gemini3d_config meshobj interp timeutils neutraldata neutraldata2D inputda
 h5fortran::h5fortran
 )
 
+add_library(neutraldata3D OBJECT neutraldata3Dobj.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(neutraldata3D PRIVATE 
+const gemini3d_config meshobj interp timeutils neutraldata inputdata reader
+)
+
 add_library(neutraldata3D_mpi OBJECT neutraldata3Dobj_mpi.f90 neuslab_mpi.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(neutraldata3D_mpi PRIVATE
-const gemini3d_config meshobj interp timeutils neutraldata inputdata reader
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D inputdata reader
 h5fortran::h5fortran MPI::MPI_Fortran
 )
 
@@ -52,7 +59,7 @@ add_library(neutraldata3D_geom_mpi OBJECT neutraldata3Dobj_geom_mpi.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(neutraldata3D_geom_mpi PRIVATE
-const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader geomagnetic
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D neutraldata3D_mpi inputdata reader geomagnetic
 h5fortran::h5fortran MPI::MPI_Fortran
 )
 
@@ -60,6 +67,6 @@ add_library(neutraldata3D_geog_mpi OBJECT neutraldata3Dobj_geog_mpi.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(neutraldata3D_geog_mpi PRIVATE
-const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D_mpi inputdata reader
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D neutraldata3D_mpi inputdata reader
 h5fortran::h5fortran MPI::MPI_Fortran
 )

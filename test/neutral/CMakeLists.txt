@@ -4,7 +4,7 @@ add_executable(test_proj test_proj.f90
 )
 
 foreach(t newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
-neutraldata neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutraldata neutraldata3D neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 )
 
   target_sources(test_proj PRIVATE $<TARGET_OBJECTS:${t}>)
