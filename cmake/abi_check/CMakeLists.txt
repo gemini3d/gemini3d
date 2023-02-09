@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1...3.25)
+cmake_minimum_required(VERSION 3.5)
 project(abi_check LANGUAGES C CXX Fortran)
 
 enable_testing()
