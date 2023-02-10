@@ -47,6 +47,13 @@ target_link_libraries(neutraldata3D PRIVATE
 const gemini3d_config meshobj interp timeutils neutraldata inputdata reader
 )
 
+add_library(neutraldata3D_fclaw OBJECT neutraldata3Dobj_fclaw.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(neutraldata3D_fclaw PRIVATE 
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata3D inputdata
+)
+
 add_library(neutraldata3D_mpi OBJECT neutraldata3Dobj_mpi.f90 neuslab_mpi.f90
 $<TARGET_OBJECTS:grid>
 )
