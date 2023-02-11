@@ -26,6 +26,8 @@ use meshobj, only: curvmesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
+use neutraldata3Dobj, only: neutraldata3D
+use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
 use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
@@ -62,7 +64,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
-            ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in
+            ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
+            set_datainow_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1623,6 +1626,42 @@ contains
 !      end do
 !    end do
 !  end subroutine tag4refine_dist
+
+
+  !> Call function to retrieve locations from a neutraldata3D_fclaw object
+  subroutine get_locationsi_in(intvars,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+    type(gemini_work), intent(inout) :: intvars
+    real(wp), dimension(2), intent(in) :: zlims,xlims,ylims
+    real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
+    real(wp), dimension(:,:), pointer, intent(inout) :: datavals
+    class(neutraldata), pointer :: aperptr
+        
+    aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
+    select type (aperptr)
+    class is (neutraldata3D_fclaw)
+      call intvars%atmosperturb%get_locationsi(zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+    class default
+      print*, 'WARNING:  attempted to direct feed data (get) to object of wrong type (not neutraldata3D_fclaw)'
+      zvals=>null();
+      xvals=>null();
+      yvals=>null();
+    end select
+  end subroutine get_locationsi_in
+
+
+  !> Notify object that the data have been placed in its buffer and it needs to copy-out
+  subroutine set_datainow_in(intvars)
+    type(gemini_work), intent(inout) :: intvars
+    class(neutraldata), pointer :: aperptr
+
+    aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
+    select type (aperptr)    
+    class is (neutraldata3D_fclaw)
+      call intvars%atmosperturb%set_datainow()
+    class default
+      print*, 'WARNING:  attempted to direct feed data (set) to object of wrong type (not neutraldata3D_fclaw)'
+    end select
+  end subroutine set_datainow_in
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

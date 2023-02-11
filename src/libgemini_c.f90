@@ -44,7 +44,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
-            permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in
+            permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
+            get_locationsi_in,set_datainow_in
 
 implicit none (type, external)
 
@@ -927,6 +928,36 @@ contains
     mlatiC=c_loc(x%glati)
     altiC=c_loc(x%alti)    
   end subroutine get_grid_magcoordsi_C
+
+
+  !> grab pointers and size of interpolation target locations
+  subroutine get_locationsi_C(intvarsC,zlims,xlims,ylims,zvalsC,xvalsC,yvalsC,datavalsC,lpts,lparms) bind(C,name='get_locationsi_C')
+    type(C_PTR), intent(inout) :: intvarsC
+    real(wp), dimension(2), intent(in) :: zlims,xlims,ylims   
+    type(C_PTR), intent(inout) :: zvalsC,xvalsC,yvalsC,datavalsC
+    integer(C_INT), intent(inout) :: lpts,lparms
+    real(wp), dimension(:), pointer :: zvals,xvals,yvals
+    real(wp), dimension(:,:), pointer :: datavals
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)
+    call get_locationsi_in(intvars,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+    zvalsC=c_loc(zvals)
+    xvalsC=c_loc(xvals)
+    yvalsC=c_loc(yvals)
+    datavalsC=c_loc(datavals)
+    lpts=size(datavals,1)
+    lparms=size(datavals,2)
+  end subroutine get_locationsi_C
+
+
+  subroutine set_datainow_C(intvarsC) bind(C,name='set_datainow_C')
+    type(C_PTR), intent(inout) :: intvarsC
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)          
+    call set_datainow_in(intvars)
+  end subroutine set_datainow_C
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
