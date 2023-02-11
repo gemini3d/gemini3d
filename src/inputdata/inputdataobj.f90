@@ -81,6 +81,8 @@ type, abstract :: inputdata
     procedure(initproc), deferred :: init        ! set up object for first time step:  call read in grid, set sizes, init_storage,
                                                  !   call prime_data, set data cadence based on some input
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
+    procedure :: get_locationsi                  ! (no-op, extensions need to override) return a pointer to some locations to be used directly by user
+    procedure :: set_datainow                    ! (no-op, extensions shoudl override) user wants to directly set data from locations returned by get_locationsi
 
     !! internal/fine-grained control
     procedure :: set_sizes             ! initiate sizes for coordinate axes and number of datasets of different dimensionality
@@ -698,6 +700,28 @@ contains
     !> update current time in object
     self%tnow=t+dt/2
   end subroutine timeinterp
+
+
+  !> These will do nothing for now, can override with custom code as needed
+  subroutine get_locationsi(self,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+    class(inputdata), intent(inout) :: self
+    real(wp), dimension(2), intent(in) :: zlims,xlims,ylims    ! global boundary of neutral grid we are accepting data from
+    real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
+    real(wp), dimension(:,:), pointer, intent(inout) :: datavals
+
+    print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
+    return
+  end subroutine
+
+
+  !> We assume that the get_locationsi will provide a memory space for the results which are stored in the object extension
+  !    so no additional inputs are needed to copy those data out into the proper object arrays.  
+  subroutine set_datainow(self)
+    class(inputdata), intent(inout) :: self
+
+    print*, 'WARNING:  triggered no-op set_datainow, use an extension with a full implementation'           
+    return
+  end subroutine set_datainow
 
 
   !> deallocate memory and dissociated pointers for generic array data

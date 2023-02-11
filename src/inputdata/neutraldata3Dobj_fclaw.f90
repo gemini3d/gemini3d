@@ -25,14 +25,12 @@ type, extends(neutraldata3D) :: neutraldata3D_fclaw
   real(wp), dimension(:,:), pointer :: dataxyzinow    ! will need to be rotated prior to placing in final arrays
 
   contains
-    ! procedures specific to this class
-    procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral modoel
-    procedure :: set_datainow          ! place a set of interpolated data into the data array at indices corresponding to locations
-                                      !   provided 
-
     ! overriding procedures
     procedure :: update
     procedure :: init_storage
+    procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral modoel
+    procedure :: set_datainow         ! place a set of interpolated data into the data array at indices corresponding to locations
+                                      !   provided 
 
     ! bindings for deferred procedures
     procedure :: init=>init_neu3D_fclaw
@@ -534,9 +532,11 @@ contains
 
   !> Find and return a list of interpolation sites that are in bounds for the external neutral model grid.  This
   !    procedure needs to allocate space to store the (unknown upon entry) number of locations needed.  
-  subroutine get_locationsi(self,zlims,xlims,ylims)
+  subroutine get_locationsi(self,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class(neutraldata3D_fclaw), intent(inout) :: self
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims    ! global boundary of neutral grid we are accepting data from
+    real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
+    real(wp), dimension(:,:), pointer, intent(inout) :: datavals
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
     integer :: ipts,lpts,itarg
 
@@ -577,11 +577,18 @@ contains
         if (itarg > lpts) return    ! we are done and can stop iterating through the list of points
       end if
     end do
+
+    zvals=>self%zlocsi
+    xvals=>self%xlocsi
+    yvals=>self%ylocsi
+    datavals=>self%dataxyzinow
   end subroutine get_locationsi
 
 
   ! Populate object arrays with information from an external model corresponding to locations defined by a call to
-  !   get_locationsi
+  !   get_locationsi.  The presumption is that the get_locationsi will provide a memory space for the data to be
+  !   placed.  In a sense a call to this procedure merely informs the object that data have been placed in its
+  !   holding buffer and needs to be copied out into the user-exposed arrays.  
   subroutine set_datainow(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
     integer lpts,ipts,ix1,ix2,ix3

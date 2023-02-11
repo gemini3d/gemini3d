@@ -7,6 +7,8 @@ use mpimod, only: mpi_cfg
 use neutraldataobj, only: neutraldata
 !!! FIXME: this should be conditioned on actually compiling with libgemini-mpi
 !use neutraldata3Dobj_mpi, only: neutraldata3D
+use neutraldata3Dobj, only: neutraldata3D
+use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
 use neutraldata3Dobj_geog_mpi, only: neutraldata3D_geog
 use neutraldata3Dobj_geom_mpi, only: neutraldata3D_geom
 !!!
@@ -48,9 +50,8 @@ contains
         allocate(neutraldata3D_geom::atmosperturb)
       case (4)
         allocate(neutraldata3D_geog::atmosperturb)
-      !!!
-      !case (5)     ! we assume forestGEMINI will control things
-      !  allocate(neutraldata3D_fclaw::atmosperturb)
+      case (5)     ! we assume forestGEMINI will control things
+        allocate(neutraldata3D_fclaw::atmosperturb)
       case default
         print*, 'non-standard neutral interpolation type chosen in config.nml:  ',cfg%interptype
         error stop

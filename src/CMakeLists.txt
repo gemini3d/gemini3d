@@ -72,7 +72,8 @@ ionization
 inputdata precipdata efielddata
 gemini3d_sysinfo
 neutral
-neutraldata neutraldata3D neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi 
+neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 PDEparabolic gbsv
@@ -97,7 +98,8 @@ ionization_mpi
 inputdata precipdata efielddata
 gemini3d_sysinfo
 neutral
-neutraldata neutraldata3D neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
+neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi 
+neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 multifluid_mpi

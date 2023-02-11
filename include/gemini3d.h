@@ -96,6 +96,8 @@ extern void tag4refine_C(int*,void**,double**,double**,double**,void**,int*,bool
 extern void get_grid_magcoords_C(int*,void**,double**,double**,double**);
 extern void get_grid_magcoordsi_C(int*,void**,double**,double**,double**);
 extern void clean_param_after_regrid_C(int*, int*, void**, double**);
+extern void get_locationsi_C(void**,double*,double*,double*,double**,double**,double**,double**,int*,int*);
+extern void set_datainow(void**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
