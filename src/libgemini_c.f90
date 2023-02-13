@@ -948,6 +948,7 @@ contains
     datavalsC=c_loc(datavals)
     lpts=size(datavals,1)
     lparms=size(datavals,2)
+    !print*, 'Internal size chk:  ',lpts,lparms,shape(datavals)
   end subroutine get_locationsi_C
 
 

@@ -21,9 +21,9 @@ public :: neutraldata3D_fclaw
 !> type definition for 3D neutral data that will be provided from a parallel model (i.e. one that runs with GEMINI)
 type, extends(neutraldata3D) :: neutraldata3D_fclaw
   ! these are for storing information about locations that are being communicated to the neutral model
-  real(wp), dimension(:), pointer :: zlocsi,xlocsi,ylocsi
-  integer, dimension(:,:), pointer :: ilocsi
-  real(wp), dimension(:,:), pointer :: dataxyzinow    ! will need to be rotated prior to placing in final arrays
+  real(wp), dimension(:), pointer :: zlocsi=>null(),xlocsi=>null(),ylocsi=>null()
+  integer, dimension(:,:), pointer :: ilocsi=>null()
+  real(wp), dimension(:,:), pointer :: dataxyzinow=>null()    ! will need to be rotated prior to placing in final arrays
 
   contains
     ! for flagging sizes as set
@@ -81,27 +81,27 @@ contains
 
 !    ! No singleton array objects being allocated by this extension; but this doesn't hurt anything so leave in place
 !    ! coordinate sites for singleton axes depend on mangling of data
-    if (self%flagdipmesh) then    ! mangle 2,3 sizes
-      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))
-    else
-      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
-    end if
-    allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
-    allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
-    allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
+!    if (self%flagdipmesh) then    ! mangle 2,3 sizes
+!      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))
+!    else
+!      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
+!    end if
+!    allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
+!    allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
+!    allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
 
 !    ! allocate object arrays for input data at a reference time.  FIXME: do we even need to store this perm. or can be local to
 !    ! load_data?
-    allocate(self%data0D(l0D))
-    allocate(self%data1Dax1(lc1,l1Dax1), self%data1Dax2(lc2,l1Dax2), self%data1Dax3(lc3,l1Dax3))
-    allocate(self%data2Dax23(lc2,lc3,l2Dax23), self%data2Dax12(lc1,lc2,l2Dax12), self%data2Dax13(lc1,lc3,l2Dax13))
-    allocate(self%data3D(lc1,lc2,lc3,l3D))
+!    allocate(self%data0D(l0D))
+!    allocate(self%data1Dax1(lc1,l1Dax1), self%data1Dax2(lc2,l1Dax2), self%data1Dax3(lc3,l1Dax3))
+!    allocate(self%data2Dax23(lc2,lc3,l2Dax23), self%data2Dax12(lc1,lc2,l2Dax12), self%data2Dax13(lc1,lc3,l2Dax13))
+!    allocate(self%data3D(lc1,lc2,lc3,l3D))
 
 !    ! allocate object arrays for interpolation sites at reference times
-    allocate(self%data0Di(l0D,2))
-    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
-    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
-    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+!    allocate(self%data0Di(l0D,2))
+!    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
+!    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
+!    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
 
     ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
     allocate(self%data0Dinow(l0D))
@@ -495,13 +495,15 @@ contains
     lx1=self%lc1i; lx2=self%lc2i; lx3=self%lc3i;
 
     ! get rid of any data that might be sitting in our output array
-    if (associated(self%zlocsi)) deallocate(self%zlocsi)
-    if (associated(self%xlocsi)) deallocate(self%xlocsi)
-    if (associated(self%ylocsi)) deallocate(self%ylocsi)
-    if (associated(self%ilocsi)) deallocate(self%ilocsi)
-    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
+    !print*, 'Checking prior status for location info...'
+    !if (associated(self%zlocsi)) deallocate(self%zlocsi)
+    !if (associated(self%xlocsi)) deallocate(self%xlocsi)
+    !if (associated(self%ylocsi)) deallocate(self%ylocsi)
+    !if (associated(self%ilocsi)) deallocate(self%ilocsi)
+    !if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
 
     ! count the number of in bounds points so we can do allocation
+    !print*, 'Searching with ranges:  ',zlims,xlims,ylims
     lpts=0
     do ipts=1,lx1*lx2*lx3
       if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
@@ -510,6 +512,7 @@ contains
         lpts=lpts+1
       end if
     end do
+    !print*, 'Allocating space for lpts inbounds locations:  ',lpts
     allocate(self%zlocsi(lpts))
     allocate(self%xlocsi,self%ylocsi, mold=self%zlocsi)
     allocate(self%ilocsi(lpts,3))
@@ -526,7 +529,7 @@ contains
         self%ylocsi(itarg)=self%yi(ipts)
         self%ilocsi(itarg,:)=[ix1,ix2,ix3]
         itarg=itarg+1
-        if (itarg > lpts) return    ! we are done and can stop iterating through the list of points
+        if (itarg > lpts) exit    ! we are done and can stop iterating through the list of points
       end if
     end do
 
