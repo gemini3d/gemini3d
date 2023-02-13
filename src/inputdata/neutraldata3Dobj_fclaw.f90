@@ -11,6 +11,7 @@ use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
 use timeutils, only: dateinc,date_filename
 use grid, only: gridflag
+use geomagnetic, only: ECEFspher2ENU
 
 implicit none (type, external)
 private
@@ -25,6 +26,9 @@ type, extends(neutraldata3D) :: neutraldata3D_fclaw
   real(wp), dimension(:,:), pointer :: dataxyzinow    ! will need to be rotated prior to placing in final arrays
 
   contains
+    ! for flagging sizes as set
+    procedure :: set_sizeflag
+
     ! overriding procedures
     procedure :: update
     procedure :: init_storage
@@ -69,36 +73,35 @@ contains
     ! NOTE: type extensions are reponsible for zeroing out any arrays they will use...
 
 !    ! input data coordinate arrays (presume plaid)
-!    allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
+    allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
 
     ! interpolation site arrays (note these are flat, i.e. rank 1), if one needed to save space by not allocating unused block
     !   could override this procedure...
     allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
 
-    ! No singleton array objects being allocated by this extension; but this doesn't hurt anything so leave in place
+!    ! No singleton array objects being allocated by this extension; but this doesn't hurt anything so leave in place
 !    ! coordinate sites for singleton axes depend on mangling of data
-!    if (self%flagdipmesh) then    ! mangle 2,3 sizes
-!      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))
-!    else
-!      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
-!    end if
-!
-!    allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
-!    allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
-!    allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
+    if (self%flagdipmesh) then    ! mangle 2,3 sizes
+      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))
+    else
+      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
+    end if
+    allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
+    allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
+    allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
 
 !    ! allocate object arrays for input data at a reference time.  FIXME: do we even need to store this perm. or can be local to
 !    ! load_data?
-!    allocate(self%data0D(l0D))
-!    allocate(self%data1Dax1(lc1,l1Dax1), self%data1Dax2(lc2,l1Dax2), self%data1Dax3(lc3,l1Dax3))
-!    allocate(self%data2Dax23(lc2,lc3,l2Dax23), self%data2Dax12(lc1,lc2,l2Dax12), self%data2Dax13(lc1,lc3,l2Dax13))
-!    allocate(self%data3D(lc1,lc2,lc3,l3D))
-!
+    allocate(self%data0D(l0D))
+    allocate(self%data1Dax1(lc1,l1Dax1), self%data1Dax2(lc2,l1Dax2), self%data1Dax3(lc3,l1Dax3))
+    allocate(self%data2Dax23(lc2,lc3,l2Dax23), self%data2Dax12(lc1,lc2,l2Dax12), self%data2Dax13(lc1,lc3,l2Dax13))
+    allocate(self%data3D(lc1,lc2,lc3,l3D))
+
 !    ! allocate object arrays for interpolation sites at reference times
-!    allocate(self%data0Di(l0D,2))
-!    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
-!    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
-!    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+    allocate(self%data0Di(l0D,2))
+    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
+    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
+    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
 
     ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
     allocate(self%data0Dinow(l0D))
@@ -106,7 +109,7 @@ contains
     allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
-    allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))   
+    !allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))   
     allocate(self%ximat(lc1i,lc2i,lc3i),self%yimat(lc1i,lc2i,lc3i),self%zimat(lc1i,lc2i,lc3i))
     allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
     allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
@@ -116,7 +119,15 @@ contains
   end subroutine init_storage
 
 
-    !> set pointer variables to locations for storage of interpolated data (3D always for neutral input)
+  !> just force the size flag to be set
+  subroutine set_sizeflag(self)
+    class(neutraldata3D_fclaw), intent(inout) :: self
+
+    self%flagdatasize=.true.
+  end subroutine set_sizeflag
+
+
+  !> set pointer variables to locations for storage of interpolated data (3D always for neutral input)
   subroutine setptrs_grid(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
 
@@ -182,6 +193,7 @@ contains
     !    source grid points for each worker until you have root compute the entire grid and slice everything up
     allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
     self%lzn=>self%lc1; self%lxn=>self%lc2; self%lyn=>self%lc3;              ! these referenced while reading size and grid data
+    call self%set_sizeflag()
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
              0, 0, 0, &    ! number 1D data along each axis
@@ -231,11 +243,11 @@ contains
     ! We don't really even have to keep up with datasets times since controlling app is going to give us whatever data
     !   we need and we dont' have to make decisions about when to load new data.  
     ! set to start time of simulation - not needed since assigned by update on first call.  FIXME: a bit messy
-    !self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
-    !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
+    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! No priming required
-    !call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
+    call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
   end subroutine init_neu3D_fclaw
 
 
@@ -258,58 +270,14 @@ contains
     phi1=cfg%sourcemlon*pi/180
     theta1=pi/2 - cfg%sourcemlat*pi/180
 
-    !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
-!    if (mpi_cfg%myid==0) then
-!      print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
-!    end if
+    ! coordinate arrays (ENU)
+    call ECEFspher2ENU(x%alt(1:x%lx1,1:x%lx2,1:x%lx3),x%theta(1:x%lx1,1:x%lx2,1:x%lx3),x%phi(1:x%lx1,1:x%lx2,1:x%lx3), &
+                          theta1,phi1, &
+                          self%ximat,self%yimat,self%zimat)
 
-    self%zimat=x%alt     !vertical coordinate is just altitude array already stored in grid object
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
-          ! interpolation based on geomag
-          theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-
-          !print*, ' center NS set',shape(self%zi),shape(self%zimat),theta2,x%theta(ix1,ix2,ix3)
-
-          if (x%lx2/=1) then
-            phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
-          else
-            phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
-          end if
-
-          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
-          theta3=theta2
-          phi3=phi1
-          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-          if (gamma1 > 1) then     !handles weird precision issues in 2D
-            gamma1 = 1
-          else if (gamma1 < -1) then
-            gamma1 = -1
-          end if
-          gamma1=acos(gamma1)
-
-          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-          if (gamma2 > 1) then     !handles weird precision issues in 2D
-            gamma2= 1
-          else if (gamma2 < -1) then
-            gamma2= -1
-          end if
-          gamma2=acos(gamma2)
-          xp=Re*gamma1
-          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-
-          ! coordinates from distances
-          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            yp= -yp            !do we want an abs here to be safe
-          end if
-          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-            xp= -xp
-          end if
-
-          self%ximat(ix1,ix2,ix3)=xp     !eastward distance
-          self%yimat(ix1,ix2,ix3)=yp     !northward distance
-
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
           ezp=x%er(ix1,ix2,ix3,:)
@@ -358,27 +326,9 @@ contains
     end do
 
     !Assign values for flat lists of grid points
-!    if (mpi_cfg%myid==0) then
-!      print*, '...Packing interpolation target points...'
-!    end if
     self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
     self%yi=pack(self%yimat,.true.)
     self%xi=pack(self%ximat,.true.)
-
-    ! FIXME: do we need to have the new grid code clear its unit vectors?  Or maybe this isn't a huge waste of memory???
-!    if (mpi_cfg%myid==0) then
-!      print*, '...Clearing out unit vectors (after projections)...'
-!    end if
-    !call clear_unitvecs(x)
-
-!    if(mpi_cfg%myid==0) then
-!      print*, 'Interpolation coords:  ',minval(self%zi),maxval(self%zi), &
-!                                        minval(self%xi),maxval(self%xi), &
-!                                        minval(self%yi),maxval(self%yi)
-!      print*, 'Projection checking:  ',minval(self%proj_exp_e1),maxval(self%proj_exp_e1), &
-!                                       minval(self%proj_exp_e2),maxval(self%proj_exp_e2), &
-!                                       minval(self%proj_exp_e3),maxval(self%proj_exp_e3)
-!    end if
 
     self%flagcoordsi=.true.
   end subroutine set_coordsi_neu3D_fclaw
@@ -482,6 +432,8 @@ contains
 !      print *, 'Min/max values for dTn:  ',mpi_cfg%myid,minval(self%dTn),maxval(self%dTn)
 !    !  print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
 !    end if
+
+    return
   end subroutine load_data_neu3D_fclaw
 
 
@@ -636,10 +588,22 @@ contains
     type(neutraldata3D_fclaw) :: self
 
     ! deallocate arrays from base inputdata class
-    call self%dissociate_pointers()
+    !call self%dissociate_pointers()
 
     ! null pointers specific to parent neutraldata class
-    call self%dissociate_neutral_pointers()
+    !call self%dissociate_neutral_pointers()
+    if (associated(self%zlocsi)) deallocate(self%zlocsi)
+    if (associated(self%xlocsi)) deallocate(self%xlocsi)
+    if (associated(self%ylocsi)) deallocate(self%ylocsi)
+    if (associated(self%ilocsi)) deallocate(self%ilocsi)
+    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
+
+    ! due to the nature of this object we cannot rely on base class deallocation
+    deallocate(self%data0Dinow)
+    deallocate(self%data1Dax1inow, self%data1Dax2inow, self%data1Dax3inow)
+    deallocate(self%data2Dax23inow, self%data2Dax12inow, self%data2Dax13inow)
+    deallocate(self%data3Dinow)
+    deallocate(self%coord1i,self%coord2i,self%coord3i)   
 
     ! now deallocate arrays specific to this extension
     deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
@@ -655,7 +619,11 @@ contains
 
     ! set pointers to null
     nullify(self%xi,self%yi,self%zi);
-    nullify(self%xn,self%yn,self%zn);
-    nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
+    !nullify(self%xn,self%yn,self%zn);
+    !nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
+
+    self%flagalloc=.false.
+    self%flagprimed=.false.
+    self%flagcoordsi=.false.
   end subroutine destructor
 end module neutraldata3Dobj_fclaw
