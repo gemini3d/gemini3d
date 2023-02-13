@@ -76,7 +76,7 @@ contains
 
   !> NOTE: because fortran doesn't allow you to do xcart=>x where xcart is a class extension of x the C location
   !    of the grid pointer can only be determined *at the time of creation* and cannot be arbitrarily retrieved
-  !    as far as I can tell.  SO there is not inverse operation to set_gridpointer_dyntype().
+  !    as far as I can tell.  SO there is no inverse operation to set_gridpointer_dyntype().
 
 
   !> wrapper for command line interface
@@ -951,6 +951,7 @@ contains
   end subroutine get_locationsi_C
 
 
+  !> inform gemini object that the data are now in place and can be rotated/copied out
   subroutine set_datainow_C(intvarsC) bind(C,name='set_datainow_C')
     type(C_PTR), intent(inout) :: intvarsC
     type(gemini_work), pointer :: intvars
@@ -958,6 +959,17 @@ contains
     call c_f_pointer(intvarsC,intvars)          
     call set_datainow_in(intvars)
   end subroutine set_datainow_C
+
+
+  !> return the type of neutral perturbation being used
+  subroutine get_neutralperturb_interptype(cfgC,interptype) bind(C,name='get_neutralperturb_interptype_C')
+    type(C_PTR), intent(in) :: cfgC
+    integer(C_INT), intent(inout) :: interptype
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    interptype=cfg%interptype
+  end subroutine get_neutralperturb_interptype 
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
