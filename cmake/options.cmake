@@ -54,10 +54,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
 # --- CMAKE_PREFIX_PATH auto-detection
 if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})
-  set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+  get_filename_component(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH} ABSOLUTE)
 endif()
 
-if(NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
+if(DEFINED CMAKE_PREFIX_PATH AND NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
+  message(STATUS "did not find CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} (from environment or CMake cache)")
   unset(CMAKE_PREFIX_PATH)
 endif()
 
@@ -90,7 +91,8 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
 ")
 
 if(NOT IS_DIRECTORY ${CMAKE_PREFIX_PATH}/cmake)
-  message(FATAL_ERROR ${need_gemext})
+  message(FATAL_ERROR "Did not find directory ${CMAKE_PREFIX_PATH}/cmake
+  ${need_gemext}")
 endif()
 
 # --- auto-ignore build directory
