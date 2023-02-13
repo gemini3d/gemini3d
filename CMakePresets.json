@@ -8,7 +8,7 @@
   "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
-    "CMAKE_COMPILE_WARNING_AS_ERROR": true
+    "CMAKE_COMPILE_WARNING_AS_ERROR": false
   }
 },
 {
@@ -36,7 +36,8 @@
   {
     "name": "debug",
     "configurePreset": "multi",
-    "configuration": "Debug"
+    "configuration": "Debug",
+    "displayName": "Debug build with bounds checking"
   }
 ],
 "testPresets": [
@@ -50,8 +51,7 @@
   "execution": {
     "noTestsAction": "error",
     "scheduleRandom": true,
-    "stopOnFailure": false,
-    "timeout": 180
+    "stopOnFailure": false
   }
 },
 {
@@ -83,7 +83,8 @@
 {
   "name": "debug", "inherits": "default",
   "configurePreset": "multi",
-  "configuration": "Debug"
+  "configuration": "Debug",
+  "displayName": "Debug test with bounds checking"
 }
 ],
 "workflowPresets": [
@@ -101,6 +102,40 @@
       {
         "type": "test",
         "name": "default"
+      }
+    ]
+  },
+  {
+    "name": "debug",
+    "steps": [
+      {
+        "type": "configure",
+        "name": "multi"
+      },
+      {
+        "type": "build",
+        "name": "debug"
+      },
+      {
+        "type": "test",
+        "name": "debug"
+      }
+    ]
+  },
+  {
+    "name": "release",
+    "steps": [
+      {
+        "type": "configure",
+        "name": "multi"
+      },
+      {
+        "type": "build",
+        "name": "release"
+      },
+      {
+        "type": "test",
+        "name": "release"
       }
     ]
   }

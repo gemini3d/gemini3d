@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...3.25)
+cmake_minimum_required(VERSION 3.14...3.26)
 
 # --- CMAKE_BUILD_TYPE default
 # The simulations are 10x slower for default to Debug.
