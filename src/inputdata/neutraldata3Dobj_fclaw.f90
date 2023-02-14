@@ -581,6 +581,15 @@ contains
     ! insure winds are correctly rotated before returning
     call self%rotate_winds()
 
+    ! some quick checking
+    print*, 'Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
+    print*, 'Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
+    print*, 'Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
+    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
+    print*, 'Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
+    print*, 'Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
+    print*, 'Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
+
     ! deallocate the temp space for the data exchange now that we are done populating
     deallocate(self%zlocsi,self%xlocsi,self%ylocsi,self%ilocsi,self%dataxyzinow)
   end subroutine set_datainow
