@@ -54,12 +54,18 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
 # --- CMAKE_PREFIX_PATH auto-detection
 if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})
-  get_filename_component(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH} ABSOLUTE)
+  set(CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
 endif()
 
-if(DEFINED CMAKE_PREFIX_PATH AND NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
-  message(STATUS "did not find CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} (from environment or CMake cache)")
-  unset(CMAKE_PREFIX_PATH)
+if(DEFINED CMAKE_PREFIX_PATH)
+  list(LENGTH CMAKE_PREFIX_PATH N)
+  if(N EQUAL 1)
+    get_filename_component(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" ABSOLUTE)
+    if(NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
+      message(STATUS "did not find CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} (from environment or CMake cache)")
+      unset(CMAKE_PREFIX_PATH)
+    endif()
+  endif()
 endif()
 
 if(NOT CMAKE_PREFIX_PATH)
@@ -69,10 +75,6 @@ if(NOT CMAKE_PREFIX_PATH)
   if(IS_DIRECTORY ${home}/libgem_${compiler_id})
     set(CMAKE_PREFIX_PATH ${home}/libgem_${compiler_id} CACHE PATH "prefix path for gemini3d/external libs")
   endif()
-endif()
-
-if(CMAKE_PREFIX_PATH)
-  get_filename_component(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ABSOLUTE)
 endif()
 
 # check that gemini3d/external libraries are installed
@@ -89,11 +91,6 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
   cmake --build build --parallel
 ")
-
-if(NOT IS_DIRECTORY ${CMAKE_PREFIX_PATH}/cmake)
-  message(FATAL_ERROR "Did not find directory ${CMAKE_PREFIX_PATH}/cmake
-  ${need_gemext}")
-endif()
 
 # --- auto-ignore build directory
 if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
