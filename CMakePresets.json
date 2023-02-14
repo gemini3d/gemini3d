@@ -8,7 +8,7 @@
   "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
-    "CMAKE_COMPILE_WARNING_AS_ERROR": false
+    "CMAKE_COMPILE_WARNING_AS_ERROR": true
   }
 },
 {

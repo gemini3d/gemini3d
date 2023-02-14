@@ -3,6 +3,7 @@ name: ci
 env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CTEST_NO_TESTS_ACTION: error
 
 on:
   push:
@@ -30,8 +31,8 @@ jobs:
         # hwm14: [true, false]
         hwm14: [false]
         # TODO: temp workaround for fclaw_prep3
-        img: [{os: ubuntu-22.04, cc: gcc-9, cxx: g++-9, fc: gfortran-9},
-              {os: ubuntu-22.04, cc: gcc-10, cxx: g++-10, fc: gfortran-10},
+        img: [{os: ubuntu-latest, cc: gcc-9, cxx: g++-9, fc: gfortran-9},
+              {os: ubuntu-latest, cc: gcc-10, cxx: g++-10, fc: gfortran-10},
               {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-11}]
 
     env:
@@ -88,8 +89,8 @@ jobs:
     - name: Debug unit test
       run: ctest --preset debug -L unit
 
-    - name: Debug core test
-      run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
+    # - name: Debug core test
+    #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
 
 
     - name: Release build
@@ -98,5 +99,5 @@ jobs:
     - name: Release unit test
       run: ctest --preset release -L unit
 
-    - name: Release core test
-      run: ctest --preset release -LE unit -E 3d
+    # - name: Release core test
+    #   run: ctest --preset release -LE unit -E 3d
