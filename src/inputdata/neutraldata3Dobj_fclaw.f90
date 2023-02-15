@@ -520,17 +520,23 @@ contains
 
     ! now make another pass through the data to copy out the locations
     itarg=1
-    do ipts=1,lx1*lx2*lx3
-      if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
-            self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
-            self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2)) then
-        self%zlocsi(itarg)=self%zi(ipts)
-        self%xlocsi(itarg)=self%xi(ipts)
-        self%ylocsi(itarg)=self%yi(ipts)
-        self%ilocsi(itarg,:)=[ix1,ix2,ix3]
-        itarg=itarg+1
-        if (itarg > lpts) exit    ! we are done and can stop iterating through the list of points
-      end if
+    ipts=1
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
+                self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
+                self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2)) then
+            self%zlocsi(itarg)=self%zi(ipts)
+            self%xlocsi(itarg)=self%xi(ipts)
+            self%ylocsi(itarg)=self%yi(ipts)
+            self%ilocsi(itarg,:)=[ix1,ix2,ix3]
+            itarg=itarg+1
+            if (itarg > lpts) exit    ! we are done and can stop iterating through the list of points
+          end if
+          ipts=ipts+1
+        end do
+      end do
     end do
 
     zvals=>self%zlocsi
@@ -582,13 +588,13 @@ contains
     call self%rotate_winds()
 
     ! some quick checking
-    print*, 'Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
-    print*, 'Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
-    print*, 'Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
-    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
-    print*, 'Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
-    print*, 'Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
-    print*, 'Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
+!    print*, 'Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
+!    print*, 'Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
+!    print*, 'Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
+!    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
+!    print*, 'Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
+!    print*, 'Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
+!    print*, 'Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
 
     ! deallocate the temp space for the data exchange now that we are done populating
     deallocate(self%zlocsi,self%xlocsi,self%ylocsi,self%ilocsi,self%dataxyzinow)
@@ -604,11 +610,13 @@ contains
 
     ! null pointers specific to parent neutraldata class
     !call self%dissociate_neutral_pointers()
-    if (associated(self%zlocsi)) deallocate(self%zlocsi)
-    if (associated(self%xlocsi)) deallocate(self%xlocsi)
-    if (associated(self%ylocsi)) deallocate(self%ylocsi)
-    if (associated(self%ilocsi)) deallocate(self%ilocsi)
-    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
+
+!    ! I don't know why this causes a segfault...
+!    if (associated(self%zlocsi)) deallocate(self%zlocsi)
+!    if (associated(self%xlocsi)) deallocate(self%xlocsi)
+!    if (associated(self%ylocsi)) deallocate(self%ylocsi)
+!    if (associated(self%ilocsi)) deallocate(self%ilocsi)
+!    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
 
     ! due to the nature of this object we cannot rely on base class deallocation
     deallocate(self%data0Dinow)
