@@ -526,15 +526,12 @@ iePT=iePT-max(fact,0._wp);
 
 
 !! This would be the place to include FBI heating probably just add to iePT
-! iePT=iePT+FBIheating()
 call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
-!!iePT=iePT+FBIproduction
-!ieLT=ieLT*FBIlossfactor 
-!now, here is have questions, since I do not how really what this terms does (loss factor), where to apply it, or if this is the right place
+
 
 !This includes losses of the FBI part
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*FBIlossfactor*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
 
 !This is for no loss simulations
@@ -568,6 +565,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, n
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
+integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
 
 !I have a lot of internal variables, some might be redundant
@@ -611,6 +609,12 @@ TsAvg=0.0_wp
 FBIproduction=0.0_wp
 FBIlossfactor=0.0_wp
 lossfactor=1.0_wp
+heatingfirst=0.0_wp
+heatingsecond=0.0_wp
+heatingtotal=0.0_wp
+
+FBIbinary=1
+
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
@@ -670,39 +674,109 @@ TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
 Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
 
-!outputtest=Ethreshold
-!print *, outputtest
-
-!Ethreshold=60e-3_wp 
-
-!!First term of heating equation, have to check the Emagnitude part
-heatingfirst=(msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2)/((1.0_wp+ki**2)*Bmagnitude**2)
-heatingsecond=((Emagnitude/Ethreshold)*(1.0_wp+phi)-1.0_wp)
-
-!heating total as if FBI was everywhere
-heatingtotal=heatingfirst*heatingsecond
-
-!Loss factor a every pixel, as if FBI was everywhere
-lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
-
-where (TsAvg(:,:,:,2)<=500_wp) !Anywhere Te is smaller than 500 gets no factor
-  lossfactor=1.0_wp
-end where
-
+!Create matrix of 1 and 0s where FBI is possible, FBIbinary starts with all 1's meaning FBI everywhere
 where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
-  heatingtotal=0.0_wp
-  lossfactor=1.0_wp
+  FBIbinary=0
 end where
 
 where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
-  heatingtotal=0.0
-  lossfactor=1.0
+  FBIbinary=0
 end where
+
+!Calculate heating term only where FBI is possible
+where (FBIbinary==1)
+  heatingfirst=(msAvg(:,:,:,1)*nuAvg(:,:,:,1)*nsAvg*(ki**2)*(Emagnitude-Ethreshold)**2)/((1.0_wp+ki**2)*Bmagnitude**2)
+  heatingsecond=((Emagnitude/Ethreshold)*(1.0_wp+phi)-1.0_wp)
+  heatingtotal=heatingfirst*heatingsecond
+end where
+
+call LossFactorCalc(TsAvg(:,:,:,2),Emagnitude,Ethreshold,ki,FBIbinary,lossfactor)
+
+!Calculate loss term only where FBI is possible
+!where (FBIbinary==1)
+!  lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
+!end where
 
 FBIproduction=heatingtotal
 FBIlossfactor=lossfactor
 
+
+!Loss factor a every pixel, as if FBI was everywhere
+!lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
+!
+!where (TsAvg(:,:,:,2)<=500_wp) !Anywhere Te is smaller than 500 gets no factor
+!  lossfactor=1.0_wp
+!end where
+!
+!where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
+!  heatingtotal=0.0_wp
+!  lossfactor=1.0_wp
+!end where
+!
+!where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
+!  heatingtotal=0.0
+!  lossfactor=1.0
+!end where
+
+!FBIproduction=heatingtotal
+!FBIlossfactor=lossfactor
+
 end subroutine FBIheating
+
+subroutine LossFactorCalc(Te,Emagnitude,Ethreshold,ki,FBIBinary,FourierLossFactor)
+
+!! Inputs Needed
+real(wp), dimension(:,:,:), intent(in) :: Te, Ethreshold, Emagnitude, ki !Temperature, without ghost cells
+integer, dimension(:,:,:), intent(in) :: FBIbinary
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !  
+!!Internal Arrays
+real(wp), dimension(size(Te,1),size(Te,2),size(Te,3)) :: costerms, sinterms, a0
+
+real(wp), parameter ::  a1 = -159.3814_wp, &      !(-177.7, -141.1)
+                        a2 = 1.7150e+03_wp, &     !(1097, 2333)
+                        a3 = 244.4458_wp, &       !(216.4, 272.5)
+                        a4 = -579.3561_wp, &       !(-796.1, -362.6)
+                        a5 = -94.0672_wp, &       !(-104.9, -83.24)
+                        a6 = 75.7883_wp, &        !(45.45, 106.1)
+                        a7 = 9.7414_wp, &         !(8.655, 10.83)
+                        a8 = -1.7097_wp        !(-2.494, -0.9256)
+
+real(wp), parameter ::  b1 = 2.2211e+03_wp, &     !%(1427, 3015)
+                        b2 = 249.2960_wp, &       !%(220.7, 277.9)
+                        b3 = -1.1022e+03_wp, &    !%(-1506, -698.8)
+                        b4 = -175.0776_wp, &      !%(-195.2, -155)
+                        b5 = 241.7140_wp, &       !%(148.6, 334.8)
+                        b6 = 36.9935_wp, &        !%(32.77, 41.22)
+                        b7 = -15.9934_wp, &       !%(-22.75, -9.238)
+                        b8 = -1.3170_wp        !%(-1.457, -1.177)
+
+real(wp), parameter ::  w = 1.0402e-04_wp         !%(0.0001018, 0.0001062)
+
+a0 = -1.2115e+03_wp
+costerms=0.0_wp
+sinterms=0.0_wp
+
+where (FBIBinary==1)
+  costerms = a1*cos(Te*w) + a2*cos(2.0_wp*Te*w) + a3*cos(3.0_wp*Te*w) + a4*cos(4.0_wp*Te*w) 
+  costerms = costerms + a5*cos(5.0_wp*Te*w) + a6*cos(6*Te*w) + a7*cos(7.0_wp*Te*w) + a8*cos(8.0_wp*Te*w)
+  sinterms = b1*sin(Te*w) + b2*sin(2.0_wp*Te*w) + b3*sin(3.0_wp*Te*w) + b4*sin(4.0_wp*Te*w)
+  sinterms = sinterms + b5*sin(5.0_wp*Te*w) + b6*sin(6*Te*w) + b7*sin(7.0_wp*Te*w) + b8*sin(8.0_wp*Te*w)
+  !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
+  FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear 
+elsewhere 
+  FourierLossFactor = 1.0_wp
+end where
+
+where (Te>=30000.0_wp)
+  FourierLossFactor=0.003811931223844_wp
+end where
+
+where (Te=<600.0_wp)
+  FourierLossFactor=1.0_wp
+end where
+
+end subroutine LossFactorCalc
 
 
 end module sources
