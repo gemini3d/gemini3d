@@ -20,6 +20,8 @@ interface backEuler3D
   module procedure backEuler3D_curv
 end interface backEuler3D
 
+real(wp), dimension(:,:,:), allocatable :: Tstop
+
 contains
   pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
     !! COMPUTE COEFFICIENTS IN DIFFUSION EQUATIONS AND LOAD UP GHOST CELLS
@@ -66,7 +68,8 @@ contains
           Tn0=Tn(lx1,ix2,ix3)
           T(lx1+1,ix2,ix3)=Tn0   !bottom
           !T(0,ix2,ix3)=Teinf     !top
-          T(0,ix2,ix3)=define_BC_temperature(ix2,ix3,x)     !top
+          !T(0,ix2,ix3)=define_BC_temperature(ix2,ix3,x)     !top
+          T(0,ix2,ix3)=T(1,ix2,ix3)
         end do
       end do
     else                          !non-inverted, standard.  Bottom is logical first element of array...
@@ -75,7 +78,8 @@ contains
           Tn0=Tn(1,ix2,ix3)
           T(0,ix2,ix3)=Tn0          !bottom
           !T(lx1+1,ix2,ix3)=Teinf    !top
-          T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
+          !T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
+          T(lx1+1,ix2,ix3)=T(lx1,ix2,ix3)
         end do
       end do
     end if
@@ -88,7 +92,7 @@ contains
     real(wp) :: x2loc
 
     x2loc=x%x2(ix2)
-    Tinf=1000 + 3000*(0.5 + 0.5*tanh((x2loc)/0.5e3))
+    Tinf=1000 + 4000*(0.5 + 0.5*tanh((x2loc)/0.5e3))
   end function define_BC_temperature
   
   
@@ -162,4 +166,15 @@ contains
       end do
     end do
   end function TRBDF23D_curv
+
+
+  subroutine set_Tstop(x,Ts)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts
+
+    ! since this is basically temp code I'm going to assume auto-deallocate...
+    if (.not. allocated(Tstop)) allocate(Tstop(x%lx2,x%lx3,lsp))
+
+    Tstop(:,:,:)=Ts(x%lx1,1:x%lx2,1:x%lx3,1:lsp)
+  end subroutine set_Tstop
 end module diffusion

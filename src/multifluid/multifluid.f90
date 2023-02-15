@@ -54,27 +54,27 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
 
   integer :: funit
 
-  if (minval(rhoes) < 0) then
-    print*, '1 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
-    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
-    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
-    error stop
-  end if
+!  if (minval(rhoes) < 0) then
+!    print*, '1 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
+!    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
+!    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
+!    error stop
+!  end if
 
   call sweep3_allspec(ns,vs3i,dt,x,0,6)
   call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
   call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
 
-  if (minval(rhoes) < 0) then
-    print*, '2 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
-    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
-    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
-    open(newunit=funit,file='error.dat',status='replace',access='stream')
-    write(funit) ns
-    write(funit) vs3i
-    close(funit)
-    error stop
-  end if
+!  if (minval(rhoes) < 0) then
+!    print*, '2 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
+!    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
+!    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
+!    open(newunit=funit,file='error.dat',status='replace',access='stream')
+!    write(funit) ns
+!    write(funit) vs3i
+!    close(funit)
+!    error stop
+!  end if
 end subroutine sweep3_allparams
 
 
