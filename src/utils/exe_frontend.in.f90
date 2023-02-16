@@ -12,10 +12,10 @@ implicit none (type, external)
 private
 public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
 
-interface
+interface !< cpu_count.cpp
 integer(c_int) function cpu_count_c() bind(c, name="cpu_count")
 import c_int
-end function cpu_count_c
+end function
 end interface
 
 contains
