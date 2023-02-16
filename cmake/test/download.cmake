@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.15...3.25)
+cmake_minimum_required(VERSION 3.15)
 # .zst requires CMake 3.15+
+
+set(CMAKE_TLS_VERIFY on)
 
 if(CMAKE_VERSION VERSION_LESS 3.19)
   include(${CMAKE_CURRENT_LIST_DIR}/../Modules/JsonParse.cmake)
@@ -10,14 +12,14 @@ function(download_archive url archive exp_hash)
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
 file(DOWNLOAD ${url} ${archive}
 INACTIVITY_TIMEOUT 15
-STATUS ret
+STATUS ret LOG log
 EXPECTED_HASH SHA256=${exp_hash}
-TLS_VERIFY ON
 )
 list(GET ret 0 stat)
 if(NOT stat EQUAL 0)
   list(GET ret 1 err)
-  message(FATAL_ERROR "${url} download failed: ${err}")
+  message(FATAL_ERROR "${url} download failed: ${err}
+  ${log}")
 endif()
 
 endfunction(download_archive)
@@ -26,7 +28,12 @@ endfunction(download_archive)
 function(gemini_download_ref_data name refroot arc_json_file)
 
 # --- download reference data JSON file (for previously generated data)
-if(NOT EXISTS ${arc_json_file})
+if(EXISTS ${arc_json_file})
+  file(SIZE ${arc_json_file} _size)
+else()
+  set(_size 0)
+endif()
+if(NOT EXISTS ${arc_json_file} OR _size EQUAL 0)
 
   file(READ ${CMAKE_CURRENT_LIST_DIR}/../libraries.json _libj)
 
@@ -39,15 +46,16 @@ if(NOT EXISTS ${arc_json_file})
 
   file(DOWNLOAD ${url} ${arc_json_file}
   INACTIVITY_TIMEOUT 15
-  STATUS ret
-  TLS_VERIFY ON
+  STATUS ret LOG log
   )
   list(GET ret 0 stat)
   if(NOT stat EQUAL 0)
     list(GET ret 1 err)
-    message(FATAL_ERROR "${url} download failed: ${err}")
+    message(FATAL_ERROR "${url} download failed: ${err}
+    ${log}")
   endif()
 endif()
+
 file(READ ${arc_json_file} _refj)
 
 # a priori test_name strips trailing _cpp
