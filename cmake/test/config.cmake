@@ -55,6 +55,10 @@ LABELS core
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
 )
 # WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
+if(DEFINED mpi_tmpdir)
+  set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
+endif()
+
 
 compare_gemini_output(${name} ${out_dir} ${ref_dir})
 

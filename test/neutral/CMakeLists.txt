@@ -19,9 +19,9 @@ msis::msis_ifc
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE Fortran)
+  set_property(TARGET test_proj PROPERTY LINKER_LANGUAGE Fortran)
 else()
-  set_target_properties(test_proj PROPERTIES LINKER_LANGUAGE CXX)
+  set_property(TARGET test_proj PROPERTY LINKER_LANGUAGE CXX)
 endif()
 
 
@@ -29,8 +29,12 @@ add_test(NAME Projection
 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_proj>
 )
 set_tests_properties(Projection PROPERTIES
+PROCESSORS 2
 LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
+if(DEFINED mpi_tmpdir)
+  set_property(TEST Projection PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
+endif()
 
 dll_test_path("ffilesystem::filesystem" Projection)

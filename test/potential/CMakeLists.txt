@@ -19,13 +19,6 @@ target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS:
 set(_cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential2d_testfile})
 
 add_test(NAME potential2d COMMAND ${_cmd})
-set_tests_properties(potential2d PROPERTIES
-FIXTURES_REQUIRED mpi_fxt
-FIXTURES_SETUP gemini_potential_fxt
-RESOURCE_LOCK cpu_mpi
-PROCESSORS ${Ncpu}
-LABELS "unit"
-)
 
 dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential2d)
 
@@ -51,12 +44,16 @@ target_link_libraries(test_potential3d PRIVATE const h5fortran::h5fortran MUMPS:
 set(_cmd ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential3d> ${_potential3d_testfile})
 
 add_test(NAME potential3d COMMAND ${_cmd})
-set_tests_properties(potential3d PROPERTIES
+
+set_tests_properties(potential2d potential3d PROPERTIES
 FIXTURES_SETUP gemini_potential_fxt
 FIXTURES_REQUIRED mpi_fxt
 RESOURCE_LOCK cpu_mpi
 PROCESSORS ${Ncpu}
 LABELS "unit"
 )
+if(DEFINED mpi_tmpdir)
+  set_property(TEST potential2d potential3d PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
+endif()
 
 dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" potential3d)
