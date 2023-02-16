@@ -772,7 +772,7 @@ where (Te>=30000.0_wp)
   FourierLossFactor=0.003811931223844_wp
 end where
 
-where (Te=<600.0_wp)
+where (Te<=600.0_wp)
   FourierLossFactor=1.0_wp
 end where
 
