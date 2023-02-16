@@ -50,7 +50,11 @@ if(cpp)
   endif()
 endif()
 
+# our own FindMPI needs to be before FindMUMPS
+set(MPI_DETERMINE_LIBRARY_VERSION true)
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
+message(STATUS "MPI Library Version: ${MPI_C_LIBRARY_VERSION_STRING}")
+include(cmake/openmpi.cmake)
 
 find_package(h5fortran CONFIG REQUIRED)
 
