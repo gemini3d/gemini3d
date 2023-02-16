@@ -54,18 +54,16 @@ scl enable gcc-toolset-11 "which g++"
 ```sh
 git clone https://github.com/gemini3d/external
 
-cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/lib_intel
-
-cmake --build external/build
+cmake -P external/build-online.cmake
 ```
 
-that installs Gemini3d external libraries under ~/lib_intel.
+that installs Gemini3d external libraries under ~/libgem_intel.
 This path is arbitrary but should be distinct between compilers.
 
 NOTE: If CMake is too old, install a new CMake:
 
 ```sh
-cmake -S external/scripts/install_cmake
+cmake -P external/scripts/install_cmake.cmake
 ```
 
 ## Build and Test Gemini3D
@@ -73,7 +71,7 @@ cmake -S external/scripts/install_cmake
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/lib_intel
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_intel
 
 cmake --build gemini3d/build
 

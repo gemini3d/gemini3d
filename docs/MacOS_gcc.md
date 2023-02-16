@@ -16,12 +16,10 @@ git clone https://github.com/gemini3d/external
 cmake -P external/scripts/requirements.cmake
 # gives command to install compiler and system libraries
 
-cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/lib_gcc
-
-cmake --build external/build
+cmake -P external/build-online.cmake
 ```
 
-that installs Gemini3d external libraries under ~/lib_gcc.
+that installs Gemini3d external libraries under ~/libgem_gcc.
 This path is arbitrary but should be distinct between compilers.
 
 ## Build and Test Gemini3D
@@ -29,7 +27,7 @@ This path is arbitrary but should be distinct between compilers.
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/lib_gcc
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_gcc
 
 cmake --build gemini3d/build
 

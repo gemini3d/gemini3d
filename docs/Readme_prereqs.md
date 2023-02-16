@@ -65,7 +65,7 @@ OR, install the distribution cmake package (which will be outdated) and use it w
 ```sh
 apt install cmake
 git clone https://github.com/gemini3d/external
-cmake -S external/scripts/install_cmake
+cmake -P external/scripts/install_cmake.cmake
 ```
 
 OR, install cmake from source by first downloading and extracting the latest source from [cmake.org](https://cmake.org):

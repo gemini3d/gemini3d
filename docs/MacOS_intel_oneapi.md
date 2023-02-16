@@ -1,10 +1,10 @@
 # Build Gemini3D with Intel oneAPI on MacOS
 
+NOTE: Apple Silicon CPU (arm64) is not compatible with Intel oneAPI.
+
 Intel oneAPI (no cost) does not come with MPI on MacOS.
 The [gemini3d/external](https://github.com/gemini3d/external)
 repo can build MPICH for oneAPI on MacOS.
-
-NOTE: Apple Silicon CPU (arm64) is not compatible with Intel oneAPI.
 
 oneAPI relies on the underlying AppleClang compiler for libc and libstdc++.
 Xcode is required:
@@ -46,12 +46,10 @@ source ~/intel_oneapi.sh
 ```sh
 git clone https://github.com/gemini3d/external
 
-cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/lib_intel
-
-cmake --build external/build
+cmake -P external/build-online.cmake
 ```
 
-that installs Gemini3d external libraries (including MPI) under ~/lib_intel.
+that installs Gemini3d external libraries (including MPI) under ~/libgem_intel.
 This path is arbitrary but should be distinct between compilers.
 
 ## Build and Test Gemini3D
@@ -59,7 +57,7 @@ This path is arbitrary but should be distinct between compilers.
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/lib_intel
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_intel
 
 cmake --build gemini3d/build
 
