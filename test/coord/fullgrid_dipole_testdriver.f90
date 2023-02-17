@@ -6,7 +6,8 @@ use meshobj_dipole, only : dipolemesh
 
 implicit none (type, external)
 
-integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
+integer, parameter :: lq = 44 + 4, lp = 32 + 4, lphi = 28 + 4
+!! +4 for ghost cells
 real(wp), dimension(lq) :: q
 real(wp), dimension(lp) :: p
 real(wp), dimension(lphi) :: phi
@@ -15,13 +16,11 @@ real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi, i
-real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(:,:,:), allocatable :: proj
 
 character(:), allocatable :: path
 character(1000) :: argv
 
-allocate(proj(1:lq-4,1:lp-4,1:lphi-4))
 
 ! define a grid, in reality this would be pull in from a file
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
@@ -38,7 +37,6 @@ phi=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,lphi)]
 !!do while (.true.)
 block
 type(dipolemesh) :: x
-
 
 !!!! grid setup and init
 ! grid spec.
@@ -59,42 +57,28 @@ if(.not. (x%xi_alloc_status .and. x%dxi_alloc_status .and. x%difflen_alloc_statu
   x%geog_set_status)) error stop "failed to allocate"
 
 ! now do some basic sanity checks
-print*, 'fullgrid_testdriver:  Starting basic checks...'
-print*, 'fullgrid_testdriver:  grid type...',x%gridflag
-minchkvar=minval(x%q); maxchkvar=maxval(x%q);
-print*, ' fullgrid_testdriver, q:  ',minchkvar,maxchkvar
-minchkvar=minval(x%p); maxchkvar=maxval(x%p);
-print*, ' fullgrid_testdriver, p:  ',minchkvar,maxchkvar
-minchkvar=minval(x%phi); maxchkvar=maxval(x%phi);
-print*, ' fullgrid_testdriver, phi:  ',minchkvar,maxchkvar
-minchkvar=minval(x%er); maxchkvar=maxval(x%er);
-print*, ' fullgrid_testdriver, er:  ',minchkvar,maxchkvar
-minchkvar=minval(x%etheta); maxchkvar=maxval(x%ephi);
-print*, ' fullgrid_testdriver, etheta:  ',minchkvar,maxchkvar
-minchkvar=minval(x%ephi); maxchkvar=maxval(x%ephi);
-print*, ' fullgrid_testdriver, ephi:  ',minchkvar,maxchkvar
-minchkvar=minval(x%eq); maxchkvar=maxval(x%eq);
-print*, ' fullgrid_testdriver, eq:  ',minchkvar,maxchkvar
-minchkvar=minval(x%ep); maxchkvar=maxval(x%ep);
-print*, ' fullgrid_testdriver, ep:  ',minchkvar,maxchkvar
-minchkvar=minval(x%Bmag); maxchkvar=maxval(x%Bmag);
-print*, ' fullgrid_testdriver, Bmag (nT):  ',minchkvar*1e9,maxchkvar*1e9
-minchkvar=minval(x%gq); maxchkvar=maxval(x%gq);
-print*, ' fullgrid_testdriver, gq:  ',minchkvar,maxchkvar
-minchkvar=minval(x%gp); maxchkvar=maxval(x%gp);
-print*, ' fullgrid_testdriver, gp:  ',minchkvar,maxchkvar
-minchkvar=minval(x%gphi); maxchkvar=maxval(x%gphi);
-print*, ' fullgrid_testdriver, gphi:  ',minchkvar,maxchkvar
-minchkvar=minval(x%I); maxchkvar=maxval(x%I);
-print*, ' fullgrid_testdriver, I:  ',minchkvar,maxchkvar
-minchkvar=minval(x%glon); maxchkvar=maxval(x%glon)
-print*, ' fullgrid_testdriver, glon:  ',minchkvar,maxchkvar
-minchkvar=minval(x%glat); maxchkvar=maxval(x%glat)
-print*, ' fullgrid_testdriver, glat:  ',minchkvar,maxchkvar
-minchkvar=minval(x%alt); maxchkvar=maxval(x%alt)
-print*, ' fullgrid_testdriver, alt:  ',minchkvar,maxchkvar
+print '(a)', 'fullgrid_testdriver:  Starting basic checks...'
+print '(a,1x,i0)', 'fullgrid_testdriver:  grid type...', x%gridflag
+
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, q:', minval(x%q), maxval(x%q)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, p:', minval(x%p), maxval(x%p)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, phi:', minval(x%phi), maxval(x%phi)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, er:', minval(x%er), maxval(x%er)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, etheta:', minval(x%etheta), maxval(x%etheta)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, ephi:', minval(x%ephi), maxval(x%ephi)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, eq:', minval(x%eq), maxval(x%eq)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, ep:', minval(x%ep), maxval(x%ep)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, Bmag (nT):', minval(x%Bmag)*1e9, maxval(x%Bmag)*1e9
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, gq:', minval(x%gq), maxval(x%gq)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, gp:', minval(x%gp), maxval(x%gp)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, gphi:', minval(x%gphi), maxval(x%gphi)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, I:', minval(x%I), maxval(x%I)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, glon:', minval(x%glon), maxval(x%glon)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, glat:', minval(x%glat), maxval(x%glat)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, alt:', minval(x%alt), maxval(x%alt)
 
 
+allocate(proj(1:lq-4,1:lp-4,1:lphi-4))
 ! check orthogonality of the basis vectors
 proj=sum(x%eq*x%ep,dim=4)
 if (any(abs(proj)>1e-4)) error stop '  eq,ep not ortho!!!'
@@ -108,6 +92,7 @@ proj=sum(x%er*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  er,ephi not ortho!!!'
 proj=sum(x%etheta*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
+deallocate(proj)
 
 ! test number of null grid points
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
@@ -118,7 +103,7 @@ if (command_argument_count() >= 1) then
   if (i /= 0) error stop "could not get user file write path"
   path = trim(argv)
   call mkdir(path)
-  print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
+  print '(a)', ' fullgrid_testdriver, writing grid coords. to: ' // path
   call x%writegrid(path,0)
   call x%writegridall(path,1)
 endif

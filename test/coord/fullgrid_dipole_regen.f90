@@ -59,7 +59,7 @@ do irepeat=1,10
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, p:', minval(x%p), maxval(x%p)
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, phi:', minval(x%phi), maxval(x%phi)
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, er:', minval(x%er), maxval(x%er)
-  print'(a,1x,2F14.3)', 'fullgrid_testdriver, etheta:', minval(x%etheta), maxval(x%ephi)
+  print'(a,1x,2F14.3)', 'fullgrid_testdriver, etheta:', minval(x%etheta), maxval(x%etheta)
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, ephi:', minval(x%ephi), maxval(x%ephi)
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, eq:', minval(x%eq), maxval(x%eq)
   print'(a,1x,2F14.3)', 'fullgrid_testdriver, ep:', minval(x%ep), maxval(x%ep)
