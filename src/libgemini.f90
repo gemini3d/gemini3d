@@ -44,6 +44,7 @@ use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi
+use diffusion, only: set_Tstop
 
 implicit none (type, external)
 private
@@ -61,7 +62,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
-            ipermute_fluidvars, tag4refine_location
+            ipermute_fluidvars, tag4refine_location, set_Tstop_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1489,6 +1490,17 @@ contains
       end do
     end do
   end subroutine tag4refine_location
+
+
+  !> Store current top temperature values in case needed for boundary conditions
+  subroutine set_Tstop_in(x,fluidvars)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call set_Tstop(x,Ts)
+  end subroutine set_Tstop_in
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

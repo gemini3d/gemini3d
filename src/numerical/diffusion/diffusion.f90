@@ -10,7 +10,7 @@ use PDEparabolic, only : backEuler1D,TRBDF21D
 
 implicit none (type, external)
 private
-public :: diffusion_prep, TRBDF23D, backEuler3D
+public :: diffusion_prep, TRBDF23D, backEuler3D, set_Tstop
 
 interface TRBDF23D
   module procedure TRBDF23D_curv
@@ -69,7 +69,8 @@ contains
           T(lx1+1,ix2,ix3)=Tn0   !bottom
           !T(0,ix2,ix3)=Teinf     !top
           !T(0,ix2,ix3)=define_BC_temperature(ix2,ix3,x)     !top
-          T(0,ix2,ix3)=T(1,ix2,ix3)
+          !T(0,ix2,ix3)=T(1,ix2,ix3)    ! will be partially updated!
+          T(0,ix2,ix3)=Tstop(ix2,ix3,isp)    ! will be partially updated!
         end do
       end do
     else                          !non-inverted, standard.  Bottom is logical first element of array...
@@ -79,7 +80,8 @@ contains
           T(0,ix2,ix3)=Tn0          !bottom
           !T(lx1+1,ix2,ix3)=Teinf    !top
           !T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
-          T(lx1+1,ix2,ix3)=T(lx1,ix2,ix3)
+          !T(lx1+1,ix2,ix3)=T(lx1,ix2,ix3)    ! partially updated
+          T(lx1+1,ix2,ix3)=Tstop(ix2,ix3,isp)    ! partially updated
         end do
       end do
     end if
@@ -174,6 +176,8 @@ contains
 
     ! since this is basically temp code I'm going to assume auto-deallocate...
     if (.not. allocated(Tstop)) allocate(Tstop(x%lx2,x%lx3,lsp))
+
+    !print*, shape(Tstop), shape(Ts)
 
     Tstop(:,:,:)=Ts(x%lx1,1:x%lx2,1:x%lx3,1:lsp)
   end subroutine set_Tstop
