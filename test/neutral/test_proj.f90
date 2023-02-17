@@ -8,7 +8,7 @@ use neutral, only : store_geo2native_projections,neutral_info
 implicit none (type, external)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
+integer, parameter :: lq = 44+4, lp=32+4, lphi = 28+4
 real(wp), dimension(lq) :: q
 real(wp), dimension(lp) :: p
 real(wp), dimension(lphi) :: phi
