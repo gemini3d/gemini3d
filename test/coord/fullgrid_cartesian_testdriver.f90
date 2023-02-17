@@ -72,7 +72,7 @@ print'(a,1x,2F14.3)', 'fullgrid_testdriver, ephi:',  minval(x%ephi), maxval(x%ep
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, ez:',  minval(x%ez), maxval(x%ez)
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, ex:',  minval(x%ex), maxval(x%ex)
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, ey:',  minval(x%ey), maxval(x%ey)
-print '(a,1x,2ES14.3)', 'fullgrid_testdriver, Bmag (nT):', minval(x%Bmag), maxval(x%Bmag)
+print'(a,1x,2F14.3)', 'fullgrid_testdriver, Bmag (nT):', minval(x%Bmag)*1e9, maxval(x%Bmag)*1e9
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, gz:', minval(x%gz), maxval(x%gz)
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, gx:', minval(x%gx), maxval(x%gx)
 print'(a,1x,2F14.3)', 'fullgrid_testdriver, gy:', minval(x%gy), maxval(x%gy)
