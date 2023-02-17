@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS interpolation)
+set_property(DIRECTORY PROPERTY LABELS interpolation)
 
 # --- tests
 add_executable(test_interp1 testinterp1.f90)

@@ -30,9 +30,8 @@ if(NOT WIN32)
   # undefined reference to `__kmpc_begin'
 endif()
 
-
-#$<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
-# heap-arrays: avoid stack overflow
+#add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
+# heap-arrays: avoid stack overflow, especially in units tests like interp3
 
 # --- IMPORTANT: bounds checking
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-check>")

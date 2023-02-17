@@ -9,7 +9,7 @@ implicit none (type, external)
 character(1024) :: argv
 type(hdf5_file) :: hout
 integer, parameter :: lx1=80, lx2=90, lx3=100
-integer, parameter :: lx1i=256, lx2i=256, lx3i=256
+integer, parameter :: lx1i=16, lx2i=96, lx3i=32
 real, parameter :: stride=0.5
 
 real(wp), allocatable, dimension(:) :: x1, x2, x3, x1i, x2i, x3i
@@ -17,45 +17,43 @@ real(wp), allocatable, dimension(:,:,:) :: f, fi
 
 real(wp), allocatable, dimension(:) :: x1ilist,x2ilist,x3ilist,filist
 
-integer :: ix1,ix2,ix3,ik
+integer :: ix1,ix2,ix3,ik, ierr
 
-allocate(x1(lx1), x2(lx2), x3(lx3), f(lx1,lx2,lx3))
-allocate(x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i))
 
-allocate(x1ilist(1:lx1i*lx2i*lx3i))
-allocate(x2ilist,x3ilist,filist, mold=x1ilist)
+!> grid for original data
+x1=[ ((real(ix1,wp)-1)*stride, ix1=1,lx1) ]
+x2=[ ((real(ix2,wp)-1)*stride, ix2=1,lx2) ]
+x3=[ ((real(ix3,wp)-1)*stride, ix3=1,lx3) ]
 
-!grid for original data
-x1=[ ((real(ix1,wp)-1._wp)*stride, ix1=1,lx1) ]
-x2=[ ((real(ix2,wp)-1._wp)*stride, ix2=1,lx2) ]
-x3=[ ((real(ix3,wp)-1._wp)*stride, ix3=1,lx3) ]
-
-!center grid points at zero
+!> center grid points at zero
 x1=x1-sum(x1)/size(x1,1)
 x2=x2-sum(x2)/size(x2,1)
 x3=x3-sum(x3)/size(x3,1)
 
-!test function
+allocate(f(lx1,lx2,lx3))
+!> test function
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      f(ix1,ix2,ix3)=sin(2._wp*pi/5._wp*x1(ix1))*cos(2._wp*pi/20._wp*x2(ix2))*sin(2._wp*pi/15._wp*x3(ix3))
+      f(ix1,ix2,ix3)=sin(2*pi/5._wp*x1(ix1))*cos(2*pi/20._wp*x2(ix2))*sin(2*pi/15._wp*x3(ix3))
     end do
   end do
 end do
 
 !> grid for interpolated data
-x1i=[ ((real(ix1)-1) * stride/(lx1i/real(lx1)), ix1=1,lx1i) ]
-x2i=[ ((real(ix2)-1) * stride/(lx2i/real(lx2)), ix2=1,lx2i) ]
-x3i=[ ((real(ix3)-1) * stride/(lx3i/real(lx3)), ix3=1,lx3i) ]
+x1i = [ ((real(ix1)-1) * stride/(lx1i/real(lx1)), ix1=1,lx1i) ]
+x2i = [ ((real(ix2)-1) * stride/(lx2i/real(lx2)), ix2=1,lx2i) ]
+x3i = [ ((real(ix3)-1) * stride/(lx3i/real(lx3)), ix3=1,lx3i) ]
 
 !> center grid points at zero
 x1i=x1i-sum(x1i)/size(x1i,1)
 x2i=x2i-sum(x2i)/size(x2i,1)
 x3i=x3i-sum(x3i)/size(x3i,1)
 
+allocate(x1ilist(lx1i*lx2i*lx3i))
+allocate(x2ilist, x3ilist, filist, mold=x1ilist)
 
-!> try a 333d interpolation
+!> try a 3d interpolation
 do ix3=1,lx3i
   do ix2=1,lx2i
     do ix1=1,lx1i
@@ -66,16 +64,20 @@ do ix3=1,lx3i
     end do
   end do
 end do
-filist=interp3(x1,x2,x3,f,x1ilist,x2ilist,x3ilist)
-fi=reshape(filist,[lx1i,lx2i,lx3i])
+
+print *, "interp3d: Starting test interpolation"
+print *, shape(x1), shape(x2), shape(x3), shape(f)
+print *, shape(x1ilist), shape(x2ilist), shape(x3ilist), shape(filist)
+filist = interp3(x1, x2, x3, f, x1ilist, x2ilist, x3ilist)
+
+fi = reshape(filist, [lx1i,lx2i,lx3i])
 
 !> sanity check
+if (any(shape(fi) /= [lx1i, lx2i, lx3i])) error stop "test_interp3d: not expected shape"
 
-if (any([256, 256, 256] /= [lx1i,lx2i,lx3i])) error stop "test_interp3d: not expected shape"
 
-
-call get_command_argument(1, argv)
-if(argv=="") error stop 'please specify input filename'
+call get_command_argument(1, argv, status=ierr)
+if(ierr /= 0) error stop 'please specify input filename'
 
 
 print "(A,/,A,/,A)", "interp3d: Finished test interpolation"
