@@ -199,12 +199,11 @@ module procedure halo_allspec_23
 end procedure halo_allspec_23
 
 
-!subroutine halo_end_23(param,paramend,paramtop,tag)
+!subroutine halo_end_23(param,paramend,paramtop,paramcorner,tag)
 !real(wp), dimension(:,:,:), intent(inout) :: param
 !real(wp), dimension(:,:), intent(inout) :: paramend
-!! intent(out)
 !real(wp), dimension(:,:), intent(inout) :: paramtop
-!! intent(out)
+!real(wp), dimension(:), intent(inout) :: paramcorner
 !integer, intent(in) :: tag
 module procedure halo_end_23
   !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
@@ -221,14 +220,14 @@ module procedure halo_end_23
   real(wp) :: tstart,tfin
   logical :: x2begin,x2end,x3begin,x3end,downleft,upright
   real(wp), dimension(:,:), allocatable :: buffer
-  real(wp), dimension(:), allocatable :: buffercorner
+  real(wp), dimension(:), allocatable :: buf_corner
 
-  !system sizes based off of input data
+  !> system sizes based off of input data
   lx1=size(param,1)
   lx2=size(param,2)
   lx3=size(param,3)
 
-  !identify neighbors in x3, we send our data "left" (i3-1) and receive from our "right" (i3+1)
+  !> identify neighbors in x3, we send our data "left" (i3-1) and receive from our "right" (i3+1)
   x3begin=.false.
   x3end=.false.
 
@@ -241,7 +240,8 @@ module procedure halo_end_23
     x3begin=.true.
   end if
   idleft=grid2ID(i2,i3)
-  if (x3begin) then     !we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
+  if (x3begin) then
+    !! we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
     idleft=MPI_PROC_NULL
   end if
 
@@ -259,7 +259,7 @@ module procedure halo_end_23
     idright=MPI_PROC_NULL
   end if
 
-  !identify x2 neighbor processes
+  !> identify x2 neighbor processes
   x2begin=.false.
   x2end=.false.
 
@@ -283,16 +283,18 @@ module procedure halo_end_23
     i2=0
     x2end=.true.
   end if
-  idup=grid2ID(i2,i3)    !convert to process ID
+  idup = grid2ID(i2,i3)
+  !! convert to process ID
   if (x2end) then
     idup=MPI_PROC_NULL
   end if
 
-  ! need to identify "corner neighbor" processes
+  !> need to identify "corner neighbor" processes
   downleft=.false.
   upright=.false.
 
-  if (.not. (x2begin .or. x3begin)) then   ! no down/left corner point if we reside on a min x2,3 edge
+  if (.not. (x2begin .or. x3begin)) then
+    !! no down/left corner point if we reside on a min x2,3 edge
     i3=mpi_cfg%myid3-1
     i2=mpi_cfg%myid2-1
     iddownleft=grid2ID(i2,i3)
@@ -309,46 +311,61 @@ module procedure halo_end_23
     idupright=MPI_PROC_NULL
   end if
 
-  !data passing in x3, if appropriate
-  if (.not. (x3begin .and. x3end)) then   ! for singleton process grid along x3; do not want to try to send to self...
+  !> data passing in x3, if appropriate
+  if (.not. (x3begin .and. x3end)) then
+    !! for singleton process grid along x3; do not want to try to send to self...
     !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
+
+    !> force contiguous in memory
     allocate(buffer(lx1,lx2))
-    buffer=param(:,:,1)     ! force contiguous in memory
+    buffer=param(:,:,1)
     call mpi_isend(buffer,lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD, requests(1))
-    call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD, requests(2))
+
+    call mpi_irecv(buffer,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD, requests(2))
+    paramend = buffer
 
     call mpi_waitall(2,requests,statuses)
     deallocate(buffer)
   end if
 
-  !data passing in x2, if appropriate
-  if (.not. (x2begin .and. x2end)) then    ! for singleton process grid along x2; dont' send to self
+  !> data passing in x2, if appropriate
+  if (.not. (x2begin .and. x2end)) then
+    !! for singleton process grid along x2; dont' send to self
+
+    !> force contiguous in memory
     allocate(buffer(lx1,lx3))
-    buffer=param(:,1,:)     ! force data into a contiguous buffer
+    buffer = param(:,1,:)
     call mpi_isend(buffer,lx1*lx3,mpi_realprec,iddown,tag,MPI_COMM_WORLD, requests(1))
-    call mpi_irecv(paramtop,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD, requests(2))
+
+    call mpi_irecv(buffer,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD, requests(2))
+    paramtop = buffer
 
     call mpi_waitall(2,requests,statuses)
     deallocate(buffer)
   end if
 
-  ! corner data passing if necessary
-  if (.not. (x2begin .and. x2end .and. x3begin .and. x3end)) then    ! single process "corner" case, lol; don't send to self
-    allocate(buffercorner(lx1))
-    buffercorner=param(:,1,1)     ! force data into a contiguous buffer
-    call mpi_isend(buffercorner,lx1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD, requests(1))
-    call mpi_irecv(paramcorner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD, requests(2))
+  !> corner data passing if necessary
+  if (.not. (x2begin .and. x2end .and. x3begin .and. x3end)) then
+    !! single process "corner" case, lol; don't send to self
+
+    !> force data into a contiguous buffer
+    allocate(buf_corner(lx1))
+    buf_corner=param(:,1,1)
+    call mpi_isend(buf_corner,lx1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD, requests(1))
+
+    call mpi_irecv(buf_corner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD, requests(2))
+    paramcorner = buf_corner
 
     call mpi_waitall(2,requests,statuses)
-    deallocate(buffercorner)
+    deallocate(buf_corner)
   end if
 
   !zero out ghost cells if past the end of the full simulation grid
-  if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0._wp
+  if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0
   !! add nothing on the end since no one is passing leftward to me, FIXME: need to account for periodic???
-  if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0._wp
+  if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0
   !! zero out the data at the end of the grid
-  if (mpi_cfg%myid2==mpi_cfg%lid2-1 .or. mpi_cfg%myid3==mpi_cfg%lid3-1) paramcorner=0._wp
+  if (mpi_cfg%myid2==mpi_cfg%lid2-1 .or. mpi_cfg%myid3==mpi_cfg%lid3-1) paramcorner=0
 end procedure halo_end_23
 
 
