@@ -56,4 +56,4 @@ if(host_ramGB LESS 8)
   set_property(TEST ${test_names} PROPERTY RESOURCE_LOCK cpu_ram)
 endif()
 
-dll_test_path("h5fortran::h5fortran;LAPACK::LAPACK" "${test_names}")
+dll_test_path("h5fortran::h5fortran;LAPACK::LAPACK;ffilesystem::filesystem" "${test_names}")
