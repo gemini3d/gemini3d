@@ -16,11 +16,7 @@ real(wp), dimension(lphi) :: phi
 real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
-integer :: iq,ip,iphi, i
-real(wp) :: minchkvar,maxchkvar
-real(wp), dimension(:,:,:), allocatable :: proj
-character(:), allocatable :: path
-character(1000) :: argv
+integer :: iq,ip,iphi
 type(dipolemesh) :: x
 real(wp), dimension(:,:,:,:), allocatable :: ealt,eglat,eglon
 real(wp), dimension(:,:,:,:,:), allocatable :: rotmats

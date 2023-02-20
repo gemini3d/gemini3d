@@ -103,8 +103,6 @@ contains
     !! READS THE INPUT CONFIGURATION FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
     class(gemini_cfg), intent(inout) :: cfg
     logical, intent(in), optional :: verbose
-    integer :: i, realbits, lxp, lyp
-    real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
 
     !> READ CONFIG FILE FOR THIS SIMULATION
     !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs

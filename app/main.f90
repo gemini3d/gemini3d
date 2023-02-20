@@ -77,7 +77,6 @@ contains
     type(c_params), intent(in) :: p
     !! output directory for Gemini3D to write simulation data to (can be large files GB, TB, ...)
     integer(c_int), intent(inout) :: lid2in, lid3in  !< inout to allow optional CLI
-    integer :: ierr
 
     !> VARIABLES READ IN FROM CONFIG FILE
     real(wp) :: UTsec

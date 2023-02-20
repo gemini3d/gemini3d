@@ -11,10 +11,9 @@ use ionrate, only: ionization_fang2008, ionization_fang2010
 implicit none (type, external)
 
 integer :: i, argc
-real(wp) :: Q0_erg, f107, f107a, Ap, glat, glon, UTsec, altrange(3), a
+real(wp) :: Q0_erg, f107, f107a, Ap, glat, glon, UTsec, altrange(3)
 real(wp), allocatable :: alt_km(:), E0_keV(:), Qtot08(:,:), Qtot10(:,:)
 integer :: doy
-real(wp) :: massden_gcm3, meanmass_g
 
 argc = command_argument_count()
 if (argc < 1) then

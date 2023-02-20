@@ -12,11 +12,11 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
 
-integer :: i,j, lx1, lx2all, lx3all, argc
+integer :: i,j, argc
 character(1000) :: buf
 character(10) :: which
 character(:), allocatable :: new_path, ref_path
-logical :: exists, all_ok
+logical :: all_ok
 character(*), parameter :: help = './gemini3d.compare new_dir ref_dir [-which in|out] [-python|-matlab]'
 
 type(params) :: P

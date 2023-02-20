@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, 
 use phys_consts, only : wp
 use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
-use filesystem, only : parent, assert_is_dir, expanduser
+use filesystem, only : parent, assert_is_dir, expanduser, remove
 use timeutils, only : date_filename,dateinc
 
 implicit none (type, external)
@@ -368,7 +368,7 @@ do
   if ( .not. exists ) exit
   !! last output file
   print *, 'delete: ', fn
-  call unlink(fn)
+  call remove(fn)
 
   !! next time
   call dateinc(cfg%dtout, ymd,UTsec)
@@ -376,17 +376,5 @@ end do
 
 end subroutine clean_output
 
-
-subroutine unlink(path)
-character(*), intent(in) :: path
-integer :: i
-logical :: e
-
-inquire(file=path, exist=e)
-if (.not.e) return
-
-open(newunit=i, file=path, status='old')
-close(i, status='delete')
-end subroutine unlink
 
 end module exe_frontend

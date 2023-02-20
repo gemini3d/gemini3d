@@ -319,8 +319,8 @@ contains
     real(wp), intent(in) :: dtmodel             ! model time and time step
     integer, dimension(3), intent(in) :: ymd ! date from which we need to prime input data
     real(wp), intent(in) :: UTsec            ! time from which we need to prime input data
-    integer, dimension(3) :: ymdprev,ymdnext,ymdtmp
-    real(wp) :: UTsecprev,UTsecnext,UTsectmp
+    integer, dimension(3) :: ymdtmp
+    real(wp) :: UTsectmp
 
     ! fIXME: unused variables
 
@@ -379,7 +379,6 @@ contains
     integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
     real(wp), intent(in) :: UTsec               ! UT seconds for which we compute perturbations
 
-    integer :: ix1,ix2,ix3,iid!,irhon,izn
     integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
     real(wp) :: UTsectmp
 

@@ -312,7 +312,6 @@ contains
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
-    integer :: iid,ierr
     integer :: flagdirich_int
 
     !! all workers should update the date

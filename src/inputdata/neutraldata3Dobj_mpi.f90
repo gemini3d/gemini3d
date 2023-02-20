@@ -101,7 +101,6 @@ contains
     real(wp), intent(in) :: dtmodel,dtdata
     integer, dimension(3), intent(in) :: ymd            ! target date of initiation
     real(wp), intent(in) :: UTsec                       ! target time of initiation
-    integer :: lc1,lc2,lc3
     character(:), allocatable :: strname    ! allow auto-allocate for strings
 
     ! force 3D interpolation regardless of working subarray size
@@ -237,8 +236,7 @@ contains
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
-    integer :: ix1,ix2,ix3,ihorzn,izn,iid
-    integer :: lxntmp,lyntmp                                   ! local copies for root, eventually these need to be stored in object
+    integer :: izn, iid                               ! local copies for root, eventually these need to be stored in object
     real(wp) :: maxzn
     real(wp), dimension(2) :: xnrange,ynrange                ! these eventually get stored in extents
     integer, dimension(6) :: indices                         ! these eventually get stored in indx
@@ -524,7 +522,6 @@ contains
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
-    integer :: iid
     integer :: lhorzn                        !number of horizontal grid points
     real(wp), dimension(:,:,:), allocatable :: paramall
     type(hdf5_file) :: hf

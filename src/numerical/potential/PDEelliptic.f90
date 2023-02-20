@@ -11,7 +11,8 @@ use mpi_f08, only: MPI_COMM_WORLD
 implicit none (type, external)
 private
 public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,&
-  elliptic_workers, check_mumps_status, quiet_mumps, elliptic3D_cart_periodic
+  elliptic_workers, check_mumps_status, quiet_mumps, elliptic3D_cart_periodic, &
+  mumps_perm
 
 interface ! elliptic2d.f90
   module function elliptic2D_polarization(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3,Cm,v2,v3,Vminx2,Vmaxx2, &
@@ -107,7 +108,7 @@ interface ! elliptic3d
   end function elliptic3D_cart_periodic
 end interface
 
-integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
+integer, dimension(:), pointer, protected :: mumps_perm
 
 contains
 

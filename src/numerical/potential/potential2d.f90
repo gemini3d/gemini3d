@@ -22,7 +22,6 @@ module procedure potential2D_polarization
 !! BE USED HERE!!!
 
 real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
-integer :: u
 integer :: lx2,lx3
 
 

@@ -58,7 +58,6 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: islstart,islfin
   integer, dimension(2) :: indsgrid
-  integer iid
   real(wp) :: glonctr,glatctr
   !> For whatever reason c_loc must be called on a static type (not polymorphic) though I don't see why
   !    this limitation exists...

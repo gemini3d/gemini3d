@@ -113,9 +113,6 @@ real(wp) :: fx1ix2prev, fx1ix2next    !function estimates at x1i point  vs. at x
 real(wp) :: slope
 
 integer :: lx1,lx2,lx1i,lx2i,ix1,ix2,ix1i,ix2i
-real(wp), dimension(1:size(x1i)) :: slicex1i
-real(wp), dimension(1:size(x2i)) :: slicex2i
-
 
 lx1=size(x1,1)
 lx2=size(x2,1)

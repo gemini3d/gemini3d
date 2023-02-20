@@ -111,7 +111,6 @@ real(wp), intent(out) :: dt
 
 real(wp), dimension(lsp) :: gridrate1,gridrate2,gridrate3
 real(wp) :: vsnd
-real(wp) :: rhom,Bmag,vA
 integer :: lx1,lx2,lx3,ix1,ix2,ix3,isp
 
 lx1=size(Ts,1)-4

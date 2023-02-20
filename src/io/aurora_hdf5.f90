@@ -13,9 +13,6 @@ module procedure output_aur_root_hdf5
 
   type(hdf5_file) :: hout
 
-  real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
-  real(wp), dimension(1:lwave,1:lx2all,1:lx3all) :: iverall
-
   real(wp), dimension(1:lx2,1:lx3) :: emistmp                !< single emission subgrid
   real(wp), dimension(1:lx2all,1:lx3all) :: emisall          !< single emission total grid
   real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !< output array in the order scripts expect

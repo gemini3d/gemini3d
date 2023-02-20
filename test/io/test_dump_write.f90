@@ -6,7 +6,6 @@ use phys_consts, only : wp
 
 implicit none (type, external)
 
-integer :: i, argc
 character(1000) :: buf
 character(:), allocatable :: mode, filename
 

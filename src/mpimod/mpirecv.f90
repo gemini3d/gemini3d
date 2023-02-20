@@ -15,7 +15,7 @@ module procedure gather_recv2D_23
 !!
 !! THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE ANY GHOST CELLS!!!!
 
-integer :: lx1,lx2,lx3,lsp,lx2all,lx3all
+integer :: lx2,lx3
 integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
@@ -50,7 +50,7 @@ module procedure gather_recv3D_23
 !! ANY GHOST CELLS!!!!
 !! THIS VERSION ALSO WORKS ON A PROCESS GRID
 
-integer :: lx1,lx2,lx3,lx2all,lx3all
+integer :: lx1,lx2,lx3
 integer :: iid
 integer, dimension(4) :: i
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
@@ -93,7 +93,7 @@ module procedure gather_recv4D_23
 !-------GHOST CELLS!
 !------------------------------------------------------------
 
-integer :: lx1,lx2,lx3,isp,lx2all,lx3all
+integer :: lx1,lx2,lx3,isp
 integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
@@ -234,7 +234,6 @@ module procedure bcast_recv1D_23_2
 !! GHOST CELLS!
 
 integer :: lx
-integer :: iid
 
 lx=size(param,1)-4
 
@@ -339,7 +338,6 @@ module procedure bcast_recv3D_x2i_23
 !! GHOST CELLS!
 
 integer :: lx1,lx2,lx3
-integer :: iid
 
 !>note here that paramtrim does not have ghost cells
 lx1=size(paramtrim,1)

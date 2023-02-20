@@ -80,9 +80,9 @@ contains
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:), intent(inout) :: W0,PhiWmWm2
     !! intent(out)
-    real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
-    real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
-    integer :: ix2,ix3,iprec,lx2,lx3,lprec
+    real(wp) :: W0pk,PhiWpk
+    real(wp) :: sigx2,sigx3,x30amp,varc,meanx2,sigt,meant
+    integer :: ix2,ix3,lx2,lx3,lprec
 
 
     lx2=size(W0,1)

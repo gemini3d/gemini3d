@@ -32,15 +32,15 @@ module procedure halo_23
 !-------AND THAT PASSING NEEDS TO BE DONE IN X2 AND X3
 !------------------------------------------------------------
 
-  integer :: lx1,lx2,lx3,ihalo
+  integer :: lx1,lx2,lx3
   integer :: idleft,idright,idup,iddown
   integer :: i2,i3
   type(MPI_REQUEST) :: requests(4)
   type(MPI_STATUS) :: statuses(4)
   real(wp), allocatable, dimension(:,:,:) :: buffer31,buffer32,buffer33,buffer34
   real(wp), allocatable, dimension(:,:,:) :: buffer21,buffer22,buffer23,buffer24
-  real(wp) :: tstart,tfin
-  logical :: x2begin,x3begin,x2end,x3end     !to store info about whether we are the first or last process in a direction
+  logical :: x2begin,x3begin,x2end,x3end
+  !! to store info about whether we are the first or last process in a direction
 
   !COMPUTE SIZES, JUST IN CASE.
   lx1=size(param,1)-4
@@ -210,14 +210,13 @@ module procedure halo_end_23
   !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
   !! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
 
-  integer :: lx1,lx2,lx3,ihalo
+  integer :: lx1,lx2,lx3
   integer :: idleft,idright,iddown,idup,iddownleft,idupright
   integer :: i2,i3
 
   type(MPI_REQUEST) :: requests(2)
   type(MPI_STATUS) :: statuses(4)
 
-  real(wp) :: tstart,tfin
   logical :: x2begin,x2end,x3begin,x3end,downleft,upright
   real(wp), dimension(:,:), allocatable :: buffer
   real(wp), dimension(:), allocatable :: buf_corner

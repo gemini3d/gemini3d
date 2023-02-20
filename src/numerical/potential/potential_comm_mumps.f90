@@ -137,8 +137,6 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
     real(wp) :: tstart,tfin
-    integer :: isp
-    integer :: ix1,ix2,ix3,iinull
     real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
     ! background variables and boundary conditions, full grid sized variables
     real(wp), dimension(1:x%lx2all,1:x%lx3all), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.

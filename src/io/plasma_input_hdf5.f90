@@ -82,11 +82,11 @@ contains
   !> Read in a full dataset from an input file
   module procedure getICs_hdf5
     type(hdf5_file) :: hf
-    integer :: lx1,lx2all,lx3all,isp
+    integer :: lx1,lx2all,lx3all
     integer :: ix1
-    integer :: lx1in,lx2in,lx3in,u,utrace
+    integer :: lx1in,lx2in,lx3in
     real(wp), dimension(:,:), allocatable :: Phislab
-    real(wp), allocatable :: tmp(:,:,:,:), tmpPhi(:), tmpPhi2(:,:)
+    real(wp), allocatable :: tmpPhi(:)
 
     !> so that random values (including NaN) don't show up in Ghost cells
 

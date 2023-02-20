@@ -30,11 +30,11 @@ contains
     class(neutraldata3D_geog), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+    real(wp) :: theta1,phi1,theta2,phi2,theta3,phi3,gamma1,gamma2
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3
     real(wp) :: glon1,glat1
     real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
 

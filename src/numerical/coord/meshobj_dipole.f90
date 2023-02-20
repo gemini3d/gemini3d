@@ -115,10 +115,10 @@ subroutine make_dipolemesh(self)
   class(dipolemesh), intent(inout) :: self
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
-  integer :: iq,ip,iphi
+  integer :: iphi
   real(wp), dimension(:,:,:), pointer :: r,theta,phispher     ! so these can serve as targets
-  real(wp), dimension(:,:,:), pointer :: rqint,thetaqint,phiqint
-  real(wp), dimension(:,:,:), pointer :: rpint,thetapint,phipint
+  real(wp), dimension(:,:,:), pointer :: rqint,thetaqint
+  real(wp), dimension(:,:,:), pointer :: rpint,thetapint
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
   if (.not. associated(self%q)) error stop  &

@@ -144,9 +144,6 @@ contains
     type(c_ptr), intent(inout) :: intvarsC
 
     type(gemini_cfg), pointer :: cfg
-    real(wp), dimension(:,:,:,:), pointer :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC,cfg)
@@ -171,8 +168,8 @@ contains
   !> C wrapper for procedure to compute a grid object given extents and fullgrid reference point
   subroutine grid_from_extents_C(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,xtype,xC) bind(C,name='grid_from_extents_C')
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
-    integer, intent(in) :: lx1wg,lx2wg,lx3wg
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(in) :: lx1wg,lx2wg,lx3wg
+    integer(C_INT), intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 

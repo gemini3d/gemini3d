@@ -87,7 +87,6 @@ real(wp), intent(inout) :: UTsec
 !! seconds since midnight UTC
 
 integer :: year,month,day
-integer :: monthinc          !< we incremented the month
 
 year=ymd(1); month=ymd(2); day=ymd(3);
 

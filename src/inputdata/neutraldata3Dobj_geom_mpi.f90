@@ -29,11 +29,11 @@ contains
     class(neutraldata3D_geom), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+    real(wp) :: theta1,phi1,theta2,phi2,theta3,phi3,gamma1,gamma2
     real(wp) :: xp,yp
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
-    integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
+    integer :: ix1,ix2,ix3
 
 
     ! Space for coordinate sites and projections in neutraldata3D object

@@ -10,7 +10,7 @@ implicit none (type, external)
 
 character(:), allocatable :: fn
 character (25) :: tmp
-real(wp) :: UTsec, dtinc
+real(wp) :: UTsec
 integer :: ymd(3), i
 
 ! print *, 'Single precision lacks adequate precision for dates beyond millisecond'

@@ -7,14 +7,15 @@ add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
 # --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
-add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-Wall>)
-# No Fortran -Wall by default because too many false positives
+add_compile_options(-Wall)
+# Fortran -Wall causes false positives in many Fortran projects
+add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-uninitialized>)
 
 if(dev)
-  add_compile_options(-Wall -Wextra)
+  add_compile_options(-Wextra)
   # -Wpedantic makes too many false positives
 else()
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-function>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wno-unused-dummy-argument>")
 endif()
 
 # avoid backtrace that's unusable without -g

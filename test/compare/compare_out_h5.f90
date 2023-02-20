@@ -8,10 +8,10 @@ module procedure check_plasma_output_hdf5
 
 type(gemini_cfg) :: cfg
 
-integer :: i, ymd(3), lx1, lx2all, lx3all
+integer :: ymd(3), lx1, lx2all, lx3all
 
 real(wp) :: UTsec, t
-logical :: exists, ok
+logical :: ok
 
 call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
 
@@ -54,7 +54,6 @@ class(params), intent(in) :: P
 
 type(hdf5_file) :: hnew, href
 integer :: i, bad
-logical :: exists, ok
 
 character(7), parameter :: varsT(2) = [character(7) :: 'Tavgall', 'TEall']
 character(8), parameter :: varsV(3) = ['v1avgall', 'v2avgall', 'v3avgall']

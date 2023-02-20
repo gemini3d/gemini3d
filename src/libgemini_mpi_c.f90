@@ -368,7 +368,7 @@ subroutine set_global_boundaries_allspec_C(xtype,xC, fluidvarsC,fluidauxvarsC, i
   type(C_PTR), intent(in) :: xC
   type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
   type(C_PTR), intent(inout) :: intvarsC
-  integer, intent(in) :: lsp
+  integer(C_INT), intent(in) :: lsp
 
   class(curvmesh), pointer :: x
   real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars

@@ -17,7 +17,7 @@ character(2048) :: argv
 
 character(4) :: ic
 
-real(wp), dimension(npts) :: v1,dx1i
+real(wp), dimension(npts) :: dx1i
 real(wp), dimension(-1:npts+2) :: x1,TsEuler,TsBDF2,Tstrue
 real(wp), dimension(npts) :: lambda,A,B,C,D,E
 real(wp), dimension(npts+1) :: x1i

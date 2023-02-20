@@ -20,7 +20,6 @@ integer :: iq,ip,iphi
 integer :: ierr, i, N
 integer(int64) :: mem_bytes, Bel
 
-character(:), allocatable :: path
 character(10) :: argv
 
 real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall

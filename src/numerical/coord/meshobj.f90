@@ -605,9 +605,9 @@ contains
     real(wp), dimension(3,3) :: Rgg2gm
     real(wp), dimension(3,1) :: ehere,ehererot
 
-    if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to &
-                                                 computing unit vectors'
-
+    if ( .not. self%geog_set_status) then
+      error stop 'geographic coords. must be set prior to computing unit vectors'
+    endif
     ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 

@@ -30,7 +30,7 @@ real(wp), dimension(lx3) :: Vminx2,Vmaxx2
 real(wp), dimension(lx2) :: Vminx3,Vmaxx3
 real(wp), dimension(1,lx3) :: Vminx22,Vmaxx22
 real(wp), dimension(lx2,1) :: Vminx32,Vmaxx32
-real(wp) :: tstart,tfin
+
 integer :: ierr,myid,lid
 
 real(wp), allocatable, dimension(:,:) :: Phi,Phi2squeeze,Phitrue,errorMUMPS,errorMUMPS2

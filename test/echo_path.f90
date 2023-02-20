@@ -6,7 +6,7 @@ implicit none (type, external)
 
 character(:), allocatable :: var
 character(4096) :: buf
-integer :: i,L
+integer :: i
 
 if (command_argument_count() == 0) then
   var = "PATH"

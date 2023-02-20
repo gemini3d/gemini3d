@@ -42,7 +42,7 @@ function expand_envvar(path) result(expanded)
 
 character(*), intent(in) :: path
 
-character(:), allocatable :: expanded, substr, envvar
+character(:), allocatable :: expanded, envvar
 
 integer :: i0, i1
 integer :: L, istat

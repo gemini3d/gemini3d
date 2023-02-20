@@ -46,7 +46,7 @@ integer :: il,isp
 real(wp), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
 real(wp), dimension(ll) :: brN2i,brN2di,brO2i,brO2di,pepiO,pepiN2i,pepiN2di,pepiO2i,pepiO2di
 real(wp), dimension(ll) :: Iinf
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: g,bigX,y,Chfn
+real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: bigX,y,Chfn
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
 real(wp) :: H

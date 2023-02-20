@@ -213,7 +213,6 @@ end subroutine make_cartmesh
 !> compute gravitational field components
 subroutine calc_grav_cart(self)
   class(cartmesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
 
   ! fixme: error checking?
 

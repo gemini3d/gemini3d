@@ -19,7 +19,6 @@ contains
     real(wp), intent(out) :: gavg,Tninf
     real(wp) :: Tninftmp
     integer :: iid
-    real(wp), dimension(:,:,:), allocatable :: g
 
     ! use an average value for the gravitational field; FIXME: perhaps should be done via averaging over all workers???
     !allocate(g(1:lx1,1:lx2,1:lx3))

@@ -22,7 +22,6 @@ integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
-real(wp) :: tstart,tfin
 
 type (MUMPS_STRUC) :: mumps_par
 
@@ -266,7 +265,6 @@ integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
-real(wp) :: tstart,tfin
 integer :: ix3prev,ix3next
 
 type (MUMPS_STRUC) :: mumps_par

@@ -65,8 +65,6 @@ contains
     class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
     real(wp), intent(in) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
-    integer, dimension(3) :: ymdtmp
-    real(wp) :: UTsectmp
     real(wp) :: tstart,tfin
 
     !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
@@ -131,7 +129,6 @@ contains
     type(neutral_info), intent(inout) :: atmos
     logical, intent(in), optional :: flagBG
     real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
-    integer :: lx1,lx2,lx3
 
     !> if first time called then allocate space for projections and compute
     if (.not. atmos%flagprojections) then

@@ -11,7 +11,6 @@ module procedure output_root_stream_mpi_hdf5
   !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
   !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
   character(:), allocatable :: filenamefull
-  integer :: isp
   type(hdf5_file) :: hout
 
   !> FIGURE OUT THE FILENAME

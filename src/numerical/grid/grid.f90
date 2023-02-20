@@ -80,8 +80,8 @@ contains
 
     ! error checking
     if (glatctr<-90._wp .or. glatctr>90._wp) then
-      error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
-                   module variables glonctr,glatctr'
+      error stop 'ERROR:grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter' // &
+        'to assign module variables glonctr,glatctr'
     end if
 
     ! create temp space

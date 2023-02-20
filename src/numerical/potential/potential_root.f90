@@ -26,7 +26,6 @@ module procedure potential_root_mpi_curv
   real(wp), dimension(1:lx2all,1:lx3all) :: Phislab,Phislab0
   real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: sig0scaledall,sigPscaledall,sigHscaledall
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0scaled,sigPscaled,sigHscaled
-  real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: sig0all
   logical :: perflag    !MUMPS stuff
   real(wp), dimension(1:lx3all) :: Vminx2slice,Vmaxx2slice
   real(wp), dimension(1:lx2all) :: Vminx3slice,Vmaxx3slice
@@ -34,10 +33,8 @@ module procedure potential_root_mpi_curv
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: Phitmp
   integer :: iid
-  integer :: ix1,ix2,ix3
-  integer :: idleft,idright,iddown,idup
+  integer :: ix1
   real(wp) :: tstart,tfin
-  integer :: u
 
   !> store a cached ordering for later use (improves performance substantially)
   perflag=.true.

@@ -17,7 +17,6 @@ module procedure read_nml
 !! past the group of interest it will (may?) miss that group and return junk.
 
 integer :: u, i
-logical :: exists
 
 integer :: ymd(3)
 real(wp) :: UTsec0
@@ -45,7 +44,6 @@ integer :: msis_version
 
 real(wp) :: PhiWBG,W0BG
 logical :: flagJpar
-logical :: flgcap
 real(wp) :: magcap
 integer :: diffsolvetype
 integer :: mcadence

@@ -214,7 +214,6 @@ contains
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
-    integer :: iid,ierr
 
     !! all workers should update the date
     ymdtmp = self%ymdref(:,2)

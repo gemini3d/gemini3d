@@ -40,9 +40,6 @@ integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
-real(wp) :: tstart,tfin
-
-integer :: utrace
 
 type(MUMPS_STRUC) :: mumps_par
 
@@ -534,7 +531,6 @@ integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
-real(wp) :: tstart,tfin
 
 type(MUMPS_STRUC) :: mumps_par
 
@@ -1064,7 +1060,7 @@ integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
-real(wp) :: tstart,tfin
+
 integer :: ibnd,ldirichx1,lneux1,ldirichx3,lneux3
 logical :: flag2
 type(MUMPS_STRUC) :: mumps_par

@@ -102,7 +102,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !expected to include ghosts
 real(wp), intent(in) :: dt
 class(curvmesh), intent(in) :: x
 
-integer :: ix1,ix2,ix3,lx1,lx2,lx3
+integer :: ix2,ix3,lx1,lx2,lx3
 real(wp),dimension(size(f,1)-4) :: fx1slice
 
 real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: backEuler3D_curv
@@ -145,7 +145,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: f
 real(wp), intent(in) :: dt
 class(curvmesh), intent(in) :: x
 
-integer :: ix1,ix2,ix3,lx1,lx2,lx3
+integer :: ix2,ix3,lx1,lx2,lx3
 real(wp),dimension(size(f,1)-4) :: fx1slice
 
 real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: TRBDF23D_curv

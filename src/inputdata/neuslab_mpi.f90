@@ -11,8 +11,6 @@ contains
   module procedure slabrange
     real(wp), dimension(:,:,:), allocatable :: xitmp,yitmp,zitmp
     integer :: lx1tmp
-    integer, dimension(size(ximat,2),size(ximat,3)) :: ix1stmp
-    integer :: ix1tmp
     logical :: flagSH
     integer :: ix1
     integer :: lx1,lx2,lx3

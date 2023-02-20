@@ -107,7 +107,6 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
   real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
-  integer :: iprec
   real(wp) :: tstart,tfin
 
   !> Establish top boundary conditions for electron precipitation
@@ -319,7 +318,6 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:), intent(in) :: Tn
   logical, intent(in) :: first  !< first time step
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
   integer :: iprec,lprec
   !! note PrprecipG and the like are module-scope variables
 
@@ -516,7 +514,6 @@ subroutine clean_param(x,paramflag,param)
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: paramflag
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
-  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
 
   select case (paramflag)

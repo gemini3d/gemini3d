@@ -18,7 +18,7 @@ read(argv,*) N
 call MPI_INIT()
 call MPI_COMM_RANK(MPI_COMM_WORLD, mrank)
 call MPI_COMM_SIZE(MPI_COMM_WORLD, msize)
-! call MPI_GET_LIBRARY_VERSION(version, vlen)
+call MPI_GET_LIBRARY_VERSION(version, vlen)
 
 call MPI_FINALIZE()
 
@@ -28,7 +28,7 @@ if (N /= msize) then
 endif
 
 print '(A,I3,A,I3)', 'Image ', mrank, ' / ', msize-1
-!print *, 'MPI library version: ', trim(version)
+print *, 'MPI library version: ', trim(version)
 
 if(mrank == 0) then
   print '(/,A,/)',compiler_version()

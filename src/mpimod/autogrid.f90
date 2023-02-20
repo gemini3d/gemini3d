@@ -19,7 +19,7 @@ subroutine grid_auto(lx2all,lx3all, lid, lid2, lid3)
 integer, intent(in) :: lx2all,lx3all,lid
 integer, intent(out) :: lid2, lid3
 
-integer :: inds(2), i,j,N
+integer :: i,j,N
 
 if(lid < 1) error stop "MPI image count must be positive"
 if(lid == 1) then

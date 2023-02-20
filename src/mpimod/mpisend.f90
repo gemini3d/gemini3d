@@ -239,7 +239,7 @@ module procedure bcast_send2D_23
 
 
 integer :: lx2,lx3
-integer :: iid,islstart,islfin
+integer :: iid
 integer, dimension(4) :: inds
 
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
@@ -288,7 +288,7 @@ module procedure bcast_send3D_23
 
 
 integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
+integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
 
@@ -331,7 +331,7 @@ module procedure bcast_send3D_x3i_23
 
 
 integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
+integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
 !! has size lx3+1 due to input having that size
@@ -376,7 +376,7 @@ module procedure bcast_send3D_x2i_23
 
 
 integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
+integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
 !! has size lx3+1 due to input having that size
@@ -417,7 +417,7 @@ module procedure bcast_send3D_ghost_23
 
 
   integer :: lx1,lx2,lx3
-  integer :: iid,islstart,islfin
+  integer :: iid
   integer, dimension(4) :: inds
   real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
 
@@ -454,7 +454,7 @@ module procedure bcast_send4D_23
 
 
 integer :: lx1,lx2,lx3,isp
-integer :: iid,islstart,islfin
+integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 

@@ -67,17 +67,8 @@ real(wp), dimension(:,:,:), intent(in) :: iver
 !! The mpi'd dimensions are 2 and 3 so lwave needs to be permuted
 !! to the first dimension for the canned routines to work.
 
-!real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 integer :: iwave
 real(wp), dimension(1:lx2,1:lx3) :: emistmp
-
-
-!!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-!ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
-!
-!!------- SEND AURORA PARAMETERS TO ROOT
-!call gather_send(ivertmp,tagAur)
 
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)

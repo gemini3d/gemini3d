@@ -69,7 +69,6 @@ real(wp), dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)), intent(inout) :: nu
 !! intent(out)
 
 integer :: lx1,lx2,lx3
-real(wp) :: mred
 real(wp),dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)) :: Teff
 
 lx1=size(Ts,1)-4
@@ -129,8 +128,8 @@ real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout)
 !! intent(out)
 integer :: lx1,lx2,lx3
 real(wp) :: mred
-real(wp),dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) &
-          :: Teff,Wsj,Phitmp
+real(wp),dimension(1:size(Ts,1)-4, 1:size(Ts,2)-4, 1:size(Ts,3)-4) &
+          :: Teff,Wsj
 
 
 lx1=size(Ts,1)-4

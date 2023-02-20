@@ -88,7 +88,6 @@ end procedure get_grid2_hdf5
 
 module procedure get_Efield_hdf5
 type(hdf5_file) :: hf
-real(wp) :: flagtmp
 
 if (debug) print *, 'READ electric field data from file:  ',path
 
@@ -117,7 +116,6 @@ end procedure get_Efield_hdf5
 module procedure get_precip_hdf5
 !! Qp, E0p are (llon, llat)
 type(hdf5_file) :: hf
-real(wp) :: flagtmp
 
 if (debug) print *, 'READ precipitation data from file:  ',path
 
@@ -133,7 +131,6 @@ end procedure get_precip_hdf5
 
 module procedure get_neutral2_hdf5
 type(hdf5_file) :: hf
-real(wp) :: flagtmp
 
 real(wp), dimension(1:size(dnO,1),1:size(dnO,2)) :: buffer
 !! FIXME: second dimension is singleton, so read data into a buffer
@@ -181,7 +178,6 @@ end procedure get_neutral2_hdf5
 
 module procedure get_neutral3_hdf5
 type(hdf5_file) :: hf
-real(wp) :: flagtmp
 
 if (debug) print *, 'READ neutral 3D data from file: ',path
 

@@ -10,20 +10,20 @@ contains
 !     arrays but does not directly assign them to any "output" variables as it used to - this avoids the need, strictly
 !     spreaking to have this procedure call another procedure that is dependend on mpi. At the same time it does require
 !     the "main" program to make an additional call to assign the background (and any perturbations) to variables used in that
-!     program for neutral parameters.   
+!     program for neutral parameters.
 module procedure neutral_winds
   real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt
   integer :: i1,i2,i3, dayOfYear
   real(wp) :: altnow,glonnow,glatnow
   integer :: iinull
-  integer :: lx1,lx2,lx3,ix1beg,ix1end
-  
+  integer :: lx1,lx2,lx3
+
   lx1=size(x%alt,1)
   lx2=size(x%alt,2)
   lx3=size(x%alt,3)
 
   dayOfYear = ymd2doy(ymd(1), ymd(2), ymd(3))
- 
+
   x3: do i3 = 1,lx3
     x2: do i2 = 1,lx2
       x1: do i1 = 1,lx1
@@ -37,9 +37,9 @@ module procedure neutral_winds
       end do x1
     end do x2
   end do x3
-  
+
   Walt = 0.0     ! HWM does not provide vertical winds so zero them out
-  
+
   !print*, 'Rotating atmospheric information from HWM14'
   call rotate_geo2native(vnalt=Walt, vnglat=Wmeridional, vnglon=Wzonal,x=x, atmos=atmos, flagBG=.true.)
   !v1=Walt; v2=Wmeridional; v3=Wzonal;
@@ -58,12 +58,12 @@ module procedure neutral_winds
   !!  drifts in the lower E-region cause stability problems.  Generally speaking, it's not too bad to omit field-
   !!  aligned drifts in the E-region since most of the dynamical behavior there is driven by the field-perp winds
   !!  (which are retained).  That being said, this could have implications, e.g. for spE modeling so perhaps should
-  !!  be revisited in the future.  
+  !!  be revisited in the future.
   do i2=1,lx2
     do i3=1,lx3
       atmos%vn1base(1:lx1,i2,i3)=atmos%vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
     end do
-  end do  
+  end do
 
   !! update GEMINI wind variables
   !call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)

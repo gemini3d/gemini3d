@@ -1,6 +1,6 @@
 program test_mumps
 
-use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, compiler_options
 use mpi_f08, only : mpi_init, mpi_comm_world,mpi_finalize
 use mumps_interface, only: mumps_struc, mumps_exec
 
@@ -8,7 +8,6 @@ implicit none (type, external)
 
 type(mumps_struc) :: mumps_par
 integer :: ierr
-integer(i64) :: i8
 
 call mpi_init(ierr)
 if (ierr /= 0) error stop 'mpi init error'

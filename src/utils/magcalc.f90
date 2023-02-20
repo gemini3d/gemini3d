@@ -43,7 +43,7 @@ real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state v
 real(wp) :: t=0, dt      !time from beginning of simulation (s) and time step (s)
 real(wp) :: tout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
-integer :: it,isp        !time and species loop indices
+integer :: it        !time and species loop indices
 
 !WORK ARRAYS
 integer :: flag2D
@@ -57,19 +57,16 @@ real(wp), dimension(:,:,:), allocatable :: proj_e1etheta,proj_e2etheta,proj_e3et
 real(wp), dimension(:,:,:), allocatable :: proj_e1ephi,proj_e2ephi,proj_e3ephi
 real(wp), dimension(:,:,:), allocatable :: Jx,Jy,Jz
 real(wp), dimension(:,:,:), allocatable :: Rx,Ry,Rz,Rcubed
-real(wp), dimension(:,:,:), allocatable :: integrand,integrandavg
+real(wp), dimension(:,:,:), allocatable :: integrand
 real(wp), dimension(:,:,:), allocatable :: alt
 real(wp), dimension(:), allocatable :: Br,Btheta,Bphi
 real(wp), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
 real(wp), dimension(:,:), allocatable :: Jxend,Jyend,Jzend,Rxend,Ryend,Rzend,Rcubedend,dVend,Rmagend
 real(wp), dimension(:,:), allocatable :: integrandend
-real(wp), dimension(:,:), allocatable :: integrandavgend
 
 real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcubedtop,dVtop,Rmagtop
 real(wp), dimension(:,:), allocatable :: integrandtop
-real(wp), dimension(:,:), allocatable :: integrandavgtop
 real(wp), dimension(:), allocatable :: integrandcorner
-real(wp), dimension(:), allocatable :: integrandavgcorner
 
 real(wp), dimension(:,:), allocatable :: xpend,ypend,zpend
 real(wp), dimension(:,:), allocatable :: xptop,yptop,zptop
@@ -95,9 +92,6 @@ integer, dimension(3) :: ymdstart,ymdend,ymdfinal
 real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
 real(wp) :: h1avg,h2avg,h3avg
 real(wp), dimension(:,:,:), allocatable :: Rmag
-
-integer :: iid
-character(256) :: filename
 
 !! --- MAIN PROGRAM
 call mpi_init(ierr)

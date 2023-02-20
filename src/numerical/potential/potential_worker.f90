@@ -11,7 +11,6 @@ module procedure potential_workers_mpi
   !! STATE VARIABLES VS2,3 INCLUDE GHOST CELLS.  FOR NOW THE
   !! POLARIZATION TERMS ARE PASSED BACK TO MAIN FN, EVEN THOUGH
   !! THEY ARE NOT USED (THEY MAY BE IN THE FUTURE)
-  real(wp), dimension(1:lx1,1:lx2,1:lx3) :: paramtrim    !to hold trimmed magnetic field
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: J1pol,J2pol,J3pol
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: srcterm!,divJperp
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E1prev,E2prev,E3prev
@@ -22,9 +21,6 @@ module procedure potential_workers_mpi
   logical :: perflag    !MUMPS stuff
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
-  integer :: ix1,ix2,ix3
-  integer :: idleft,idright,iddown,idup
-  real(wp) :: tstart,tfin
   integer :: flagsolve
 
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*

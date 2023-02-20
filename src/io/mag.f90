@@ -22,8 +22,6 @@ module procedure create_outdir_mag
 ! subroutine create_outdir_mag(outdir,fieldpointfile)
 !! CREATES OUTPUT DIRECTORY FOR MAGNETIC FIELD CALCULATIONS
 
-integer :: ierr
-
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
 call mkdir(outdir//'/magfields/')
 ! call mkdir(outdir//'/magfields/input/')
