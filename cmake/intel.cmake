@@ -1,7 +1,6 @@
 add_compile_options(
 $<$<COMPILE_LANGUAGE:Fortran>:-warn>
-$<$<COMPILE_LANGUAGE:C>:-Wall>
-$<$<COMPILE_LANGUAGE:CXX>:-Wall>
+$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 $<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5268$<COMMA>7712$<COMMA>10182,-diag-disable=5268$<COMMA>7712$<COMMA>10182>>
 $<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5415,-diag-disable=5415>>
@@ -17,12 +16,9 @@ endif()
 
 
 if(NOT WIN32)
-  add_compile_options(
-  $<$<COMPILE_LANG_AND_ID:Fortran,Intel>:-qopenmp>
-  $<$<COMPILE_LANG_AND_ID:C,IntelLLVM>:-fiopenmp>
-  $<$<COMPILE_LANG_AND_ID:CXX,IntelLLVM>:-fiopenmp>
-  $<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:-fiopenmp>
-  )
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
+    add_compile_options(-fiopenmp)
+  endif()
   # -fiopenmp:
   # undefined reference to `omp_get_max_threads'
   # undefined reference to `__kmpc_global_thread_num' and more similar

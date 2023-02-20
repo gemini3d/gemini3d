@@ -19,7 +19,7 @@ on:
       - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
-      - "!cmake/compilers/gnu.cmake"
+      - "!cmake/gnu.cmake"
       - ".github/workflows/oneapi-linux.yml"
 # paths ignore starting with "!"
       - "!docs/**"

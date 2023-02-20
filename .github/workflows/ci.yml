@@ -14,7 +14,7 @@ on:
       - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
-      - "!cmake/compilers/intel.cmake"
+      - "!cmake/intel.cmake"
       - ".github/workflows/ci.yml"
 # paths ignore starting with "!"
       - "!docs/**"
