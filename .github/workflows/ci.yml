@@ -18,7 +18,7 @@ on:
       - ".github/workflows/ci.yml"
 # paths ignore starting with "!"
       - "!docs/**"
-      - "!cray.cmake"
+      - "!**/cray.cmake"
 
 
 jobs:
@@ -33,7 +33,9 @@ jobs:
         # TODO: temp workaround for fclaw_prep3
         img: [{os: ubuntu-latest, cc: gcc-9, cxx: g++-9, fc: gfortran-9},
               {os: ubuntu-latest, cc: gcc-10, cxx: g++-10, fc: gfortran-10},
-              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-11}]
+              {os: ubuntu-latest, cc: gcc-11, cxx: g++-11, fc: gfortran-11},
+              {os: ubuntu-latest, cc: gcc-12, cxx: g++-12, fc: gfortran-12},
+              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-12}]
 
     env:
       CC: ${{ matrix.img.cc }}
