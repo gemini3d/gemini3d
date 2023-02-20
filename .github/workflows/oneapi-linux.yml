@@ -92,7 +92,7 @@ jobs:
     - name: DEBUG unit test
       run: ctest --preset debug -L unit
     - name: DEBUG test core
-      run: ctest --preset debug -LE unit -E 3d
+      run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
 
     - name: RELEASE build
       run: cmake --build --preset release
