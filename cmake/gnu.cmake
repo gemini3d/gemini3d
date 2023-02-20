@@ -9,7 +9,10 @@ add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werro
 
 add_compile_options(-Wall)
 # Fortran -Wall causes false positives in many Fortran projects
-add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-uninitialized>)
+add_compile_options(
+$<$<COMPILE_LANGUAGE:Fortran>:-Wno-uninitialized>
+$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<VERSION_LESS:$<Fortran_COMPILER_VERSION>,10>>:-Wno-conversion>
+)
 
 if(dev)
   add_compile_options(-Wextra)
