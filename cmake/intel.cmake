@@ -2,17 +2,12 @@ add_compile_options(
 $<$<COMPILE_LANGUAGE:Fortran>:-warn>
 $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
-$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5268$<COMMA>7712$<COMMA>10182,-diag-disable=5268$<COMMA>7712$<COMMA>10182>>
-$<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5415,-diag-disable=5415>>
+$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:7712,-diag-disable=7712>>
+$<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
 )
 # remark #5415: Feature not yet implemented: Some 'check' options temporarily disabled.
 # warning #10182: disabling optimization; runtime debug checks enabled
-
-if(WIN32)
-  add_compile_options($<$<CONFIG:Debug>:/Od>)
-else()
-  add_compile_options($<$<CONFIG:Debug>:-O0>)
-endif()
+# remark #7712: This variable has not been used.  (-Wunused-dummy-argument)
 
 
 if(NOT WIN32)
@@ -26,7 +21,7 @@ if(NOT WIN32)
   # undefined reference to `__kmpc_begin'
 endif()
 
-#add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
+add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
 # heap-arrays: avoid stack overflow, especially in units tests like interp3
 
 # --- IMPORTANT: bounds checking
