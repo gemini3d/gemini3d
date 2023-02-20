@@ -8,7 +8,7 @@ implicit none
 character(6) :: argv
 
 integer :: mrank, msize, vlen, ierr, N
-character(256) :: version
+character(MPI_MAX_LIBRARY_VERSION_STRING) :: version
 !! allocatable character for version does not work
 
 call get_command_argument(1, argv, status=ierr)
@@ -28,7 +28,7 @@ if (N /= msize) then
 endif
 
 print '(A,I3,A,I3)', 'Image ', mrank, ' / ', msize-1
-print *, 'MPI library version: ', trim(version)
+print *, 'MPI library version: ', version(:vlen)
 
 if(mrank == 0) then
   print '(/,A,/)',compiler_version()
