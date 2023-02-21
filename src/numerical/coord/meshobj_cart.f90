@@ -159,20 +159,20 @@ subroutine make_cartmesh(self)
 
   ! q cell interface metric factors
   print*, ' make_cartmesh:  metric factors for cell q-interfaces...'
-  self%hzzi=1._wp
-  self%hxzi=1._wp
-  self%hyzi=1._wp
+  self%hzzi=1
+  self%hxzi=1
+  self%hyzi=1
 
   ! p cell interface metric factors
   print*, ' make_cartmesh:  metric factors for cell p-intefaces...'
-  self%hzxi=1._wp
-  self%hxxi=1._wp
-  self%hyxi=1._wp
+  self%hzxi=1
+  self%hxxi=1
+  self%hyxi=1
 
   print*, ' make_cartmesh:  metric factors for cell phi-interfaces...'
-  self%hzyi=1._wp
-  self%hxyi=1._wp
-  self%hyyi=1._wp
+  self%hzyi=1
+  self%hxyi=1
+  self%hyyi=1
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
   print*, ' make_cartmesh:  spherical ECEF unit vectors...'
@@ -217,8 +217,8 @@ subroutine calc_grav_cart(self)
   ! fixme: error checking?
 
   self%gz=-Gconst*Me/self%r**2     ! radial component of gravity
-  self%gx=0._wp
-  self%gy=0._wp
+  self%gx=0
+  self%gy=0
 end subroutine calc_grav_cart
 
 
@@ -238,51 +238,59 @@ end subroutine calc_Bmag_cart
 subroutine calc_inclination_cart(self)
   class(cartmesh), intent(inout) :: self
 
-  ! fixme: error checking
-
-  self%I=90._wp
+  self%I=90
 end subroutine calc_inclination_cart
 
 
 !> compute metric factors for q
 function calc_hz(coord1,coord2,coord3) result(hval)
+  !! FIXME: add error checking
   real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
   real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                       lbound(coord1,3):ubound(coord1,3)) :: hval
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
-  ! fixme: error checking
+
+  logical :: a
+  a = associated(coord2)
+  !! avoid unused variable warning
 
   r=>coord1; theta=>coord1; phi=>coord3;
-  hval=1._wp
+  hval=1
 end function calc_hz
 
 
 !> compute p metric factors
 function calc_hx(coord1,coord2,coord3) result(hval)
+  !! FIXME: add error checking
   real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
   real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                       lbound(coord1,3):ubound(coord1,3)) :: hval
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
-  ! fixme: error checkign
+  logical :: a
+  a = associated(coord2)
+  !! avoid unused variable warning
 
   r=>coord1; theta=>coord1; phi=>coord3;
-  hval=1._wp
+  hval=1
 end function calc_hx
 
 
 !> compute phi metric factor
 function calc_hy(coord1,coord2,coord3) result(hval)
+  !! FIXME: add error checking
   real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
   real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                       lbound(coord1,3):ubound(coord1,3)) :: hval
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
-  ! fixme: error checking
+  logical :: a
+  a = associated(coord2)
+  !! avoid unused variable warning
 
   r=>coord1; theta=>coord1; phi=>coord3;
-  hval=1._wp
+  hval=1
 end function calc_hy
 
 

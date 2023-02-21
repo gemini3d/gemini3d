@@ -406,12 +406,15 @@ end subroutine calc_ephi_dip
 !   this should be agnostic to the array start index; here just remap as 1:size(array,1), etc.
 !   though the dummy argument declarations.  This is necessary due to the way that
 subroutine calc_rtheta_2D(self,q,p,r,theta)
-  class(dipolemesh) :: self
+  class(dipolemesh), intent(in) :: self
   real(wp), dimension(:), intent(in) :: q
   real(wp), dimension(:), intent(in) :: p
   real(wp), dimension(:,:), intent(inout) :: r,theta
 
   integer :: iq,ip,lq,lp
+
+  lq = size(self%q)
+  !! avoid unused argument warning
 
   lq=size(q,1); lp=size(p,1);
 
@@ -425,11 +428,14 @@ end subroutine calc_rtheta_2D
 
 !> convert a set of r,theta points (2D arrays) to 2D arrays of q,p
 subroutine calc_qp_2D(self,r,theta,q,p)
-  class(dipolemesh) :: self
+  class(dipolemesh), intent(in) :: self
   real(wp), dimension(:,:), intent(in) :: r,theta
   real(wp), dimension(:,:), intent(inout) :: q,p
 
   integer :: i1,i2,ldim1,ldim2
+
+  ldim1 = size(self%r)
+  !! avoid unused argument warning
 
   ldim1=size(r,1); ldim2=size(r,2);
 
@@ -443,7 +449,7 @@ end subroutine calc_qp_2D
 
 !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
 subroutine destructor(self)
-  type(dipolemesh) :: self
+  type(dipolemesh), intent(inout) :: self
 
   call self%dissociate_pointers()
   print*, '  dipolemesh destructor completed successfully'

@@ -195,6 +195,9 @@ contains
     class(curvmesh), intent(in) :: x
     integer :: ix2,ix3,iflat
 
+    iflat = cfg%potsolve
+    !! avoid unused argument warning
+
     ! set full 2D target coordinates along axes 2,3 - these are the only targets we have for precipitation data
     do ix3=1,x%lx3
       do ix2=1,x%lx2
@@ -214,6 +217,9 @@ contains
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
+
+    UTsectmp = 0*t*dtmodel
+    !! avoid unused argument warnings
 
     !! all workers should update the date
     ymdtmp = self%ymdref(:,2)

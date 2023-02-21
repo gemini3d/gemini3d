@@ -626,12 +626,12 @@ contains
           ealt(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
 
           ! latitude unit vector
-          ehere(1:3,1)=-1._wp*etheta_spherical(thetagg,phigg)
+          ehere(1:3,1) = -1*etheta_spherical(thetagg,phigg)
           ehererot=matmul(Rgg2gm,ehere)
           eglat(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
 
           ! longitude
-          ehere(1:3,1)=ephi_spherical(thetagg,phigg)
+          ehere(1:3,1) = ephi_spherical(thetagg,phigg)
           ehererot=matmul(Rgg2gm,ehere)
           eglon(ix1,ix2,ix3,1:3)=ehererot(1:3,1)
         end do
@@ -739,7 +739,7 @@ contains
     allocate(realnullpts(1:self%lx1,1:self%lx2,1:self%lx3))
     realnullpts=0.0
     where (self%nullpts)
-      realnullpts=1._wp
+      realnullpts = 1
     end where
     call hf%write('/nullpts',realnullpts)
     deallocate(realnullpts)

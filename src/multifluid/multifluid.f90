@@ -114,7 +114,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
     call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
   else
     !! no file input specified, so just call 'regular' function
-    call precipBCs(t,x,cfg,W0,PhiWmWm2)
+    call precipBCs(cfg,W0,PhiWmWm2)
   end if
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
@@ -122,7 +122,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
   Qeprecip=0.0
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
-  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
+  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
@@ -133,7 +133,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !ALL VELOCITY SOURCES
   call cpu_time(tstart)
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  call momentum_source_loss(dt,Pr,Lo,ns,rhovs1,vs1)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -342,12 +342,12 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
-        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang, x%g1)
+        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), nn, Tn, cfg%flag_fang, x%g1)
         !! calculation based on Fang et al [2008]
         Prprecip=Prprecip+Prpreciptmp
       end do
       Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
-      Qeprecip = eheating(nn,Tn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
+      Qeprecip = eheating(nn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
     else
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
@@ -380,7 +380,7 @@ end subroutine impact_ionization
 
 
 !> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want soley solar sources :)
-subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)
+subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,gavg,Tninf)
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
   integer, dimension(3), intent(in) :: ymd
@@ -390,7 +390,6 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(:,:,:,:), intent(in) :: nn
-  real(wp), dimension(:,:,:), intent(in) :: Tn
   real(wp), intent(in) :: gavg,Tninf
   real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3),1:size(Prprecip,4)) :: Prpreciptmp
   real(wp), dimension(1:size(Qeprecip,1),1:size(Qeprecip,2),1:size(Qeprecip,3)) :: Qepreciptmp
@@ -416,7 +415,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   !! enforce minimum production rate to preserve conditioning for species that rely on constant production
   !! testing should probably be done to see what the best choice is...
 
-  Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
+  Qepreciptmp = eheating(nn,Prpreciptmp,ns)
   !! thermal electron heating rate from Swartz and Nisbet, (1978)
 
   !> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
@@ -453,9 +452,8 @@ end subroutine energy_source_loss
 
 !>  Momentum source/loss processes.  Upon entry the momentum density should be updated to most recent; upon exit
 !     both momentum density and velocity will be updated.
-subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+subroutine momentum_source_loss(dt,Pr,Lo,ns,rhovs1,vs1)
   real(wp), intent(in) :: dt
-  class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: Pr
   real(wp), dimension(:,:,:,:), intent(in) :: Lo
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns

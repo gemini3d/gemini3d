@@ -248,6 +248,8 @@ contains
     class(curvmesh), intent(in) :: x
     integer :: ix2,ix3,iflat,ix1ref,ix2ref,ix3ref
 
+    ix2 = cfg%potsolve
+    !! avoid unused argument warning
 
     print*, shape(self%coord1i),shape(self%coord2i),shape(self%coord3i)
 
@@ -313,6 +315,9 @@ contains
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
     integer :: flagdirich_int
+
+    UTsectmp = 0*t*dtmodel
+    !! avoid unused argument warning
 
     !! all workers should update the date
     ymdtmp = self%ymdref(:,2)

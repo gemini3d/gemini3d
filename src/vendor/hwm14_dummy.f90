@@ -25,7 +25,7 @@ real(real64), intent(in) :: UTsec, alt_km, glat, glon, Ap
 real(real64), intent(out) :: Wmeridional, Wzonal
 
 Wmeridional = 0
-Wzonal = 0
+Wzonal = 00*real(dayOfYear, real64)*UTsec*alt_km*glat*glon*Ap
 
 end subroutine hwm_14_r64
 
@@ -37,7 +37,7 @@ real(real32), intent(in) :: UTsec, alt_km, glat, glon, Ap
 real(real32), intent(out) :: Wmeridional, Wzonal
 
 Wmeridional = 0
-Wzonal = 0
+Wzonal = 0*real(dayOfYear, real32)*UTsec*alt_km*glat*glon*Ap
 
 end subroutine hwm_14_r32
 
@@ -48,7 +48,7 @@ integer, intent(in) :: dayOfYear
 real(real64), intent(in) ::  UTsec, alt_km, glat, glon, Ap
 real(real64), intent(out) :: DW2(2)
 
-DW2 = 0
+DW2 = 0*real(dayOfYear, real64)*UTsec*alt_km*glat*glon*Ap
 
 end subroutine dwm_07_r64
 
@@ -59,7 +59,7 @@ integer, intent(in) :: dayOfYear
 real(real32), intent(in) ::  UTsec, alt_km, glat, glon, Ap
 real(real32), intent(out) :: DW2(2)
 
-DW2 = 0
+DW2 = 0*real(dayOfYear, real32)*UTsec*alt_km*glat*glon*Ap
 
 end subroutine dwm_07_r32
 

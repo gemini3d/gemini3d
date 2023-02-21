@@ -153,7 +153,7 @@ contains
 
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
+    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
 
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
@@ -164,12 +164,12 @@ contains
 
     !> Precipitation input setup
     if(myid==0) print*, 'Priming precipitation input'
-    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    call init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
 
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
     call msisinit_in(cfg)
-    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid

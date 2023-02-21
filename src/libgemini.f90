@@ -415,16 +415,15 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+  subroutine init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
-    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%eprecip)
+    call init_precipinput(dt,cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
 
 
@@ -461,16 +460,15 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+  subroutine init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
-    real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
   end subroutine init_neutralBG_in
 
 

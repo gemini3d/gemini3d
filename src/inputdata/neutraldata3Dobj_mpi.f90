@@ -218,12 +218,20 @@ contains
   subroutine load_size_neu3D(self)
     class(neutraldata3D), intent(inout) :: self
 
+    integer :: i
+    i = self%lxn
+    !! avoid unused argument warning
+
   end subroutine load_size_neu3D
 
 
   !> do nothing stub
   subroutine load_grid_neu3D(self)
     class(neutraldata3D), intent(inout) :: self
+
+    integer :: i
+    i = self%lxn
+    !! avoid unused argument warning
 
   end subroutine load_grid_neu3D
 
@@ -526,6 +534,9 @@ contains
     real(wp), dimension(:,:,:), allocatable :: paramall
     type(hdf5_file) :: hf
     character(:), allocatable :: fn
+
+    UTsectmp = 0*t*dtmodel
+    !! avoid unused argument warning
 
     lhorzn=self%lyn
     ymdtmp = self%ymdref(:,2)

@@ -88,16 +88,16 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* initialize other file input data */
   std::cout << " Initializing electric field input data..." << std::endl;
-  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
+  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&intvars,&ymd[0],&UTsec);
   pot2perpfield_C(&xtype,&xC,&electrovars);
   std::cout << "pot2perpfield_C done" << std::endl;
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars, &v2grid,&v3grid);
   std::cout << " Initialize precipitation input data..." << std::endl;
-  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&ymd[0],&UTsec,&intvars);
   std::cout << " Initialize neutral background and input files..." << std::endl;
   msisinit_C(&cfgC);
-  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
+  init_neutralBG_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&v2grid,&v3grid,&intvars);
   init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */

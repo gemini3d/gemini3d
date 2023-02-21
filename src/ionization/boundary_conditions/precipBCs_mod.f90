@@ -18,8 +18,8 @@ public :: precipBCs_fileinput, precipBCs, init_precipinput
 
 contains
   !> initialize variables to hold input file precipitation information, must be called by all workers at the same time
-  subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x,eprecip)
-    real(wp), intent(in) :: dt,t
+  subroutine init_precipinput(dt,cfg,ymd,UTsec,x,eprecip)
+    real(wp), intent(in) :: dt
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -69,14 +69,13 @@ contains
 
 
   !> This is the default subroutine that is called for electron precipitation if file input is not used.
-  subroutine precipBCs(t,x,cfg,W0,PhiWmWm2)
+  subroutine precipBCs(cfg,W0,PhiWmWm2)
     !------------------------------------------------------------
     !-------LOAD UP ARRAYS CONTAINING TOP BOUNDARY CHAR. ENERGY
     !-------AND TOTAL ENERGY FLUX.  GRID VARIABLES INCLUDE
     !-------GHOST CELLS
     !------------------------------------------------------------
-    real(wp), intent(in) :: t
-    class(curvmesh), intent(in) :: x
+
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:), intent(inout) :: W0,PhiWmWm2
     !! intent(out)

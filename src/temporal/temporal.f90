@@ -1,16 +1,5 @@
 module temporal
 
-!DO NOT FIX THESE WARNINGS - THEY ARE FOR UNUSED VARIABLES THAT MAY BE LEVERAGED
-!IN LATER RELEASES
-!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused
-!parameter ‘ns’ [-Wunused-parameter]
-!   pure subroutine
-!dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dx1i,dx2i,dx3i,potsolve,cour1,cour2,cour3,dt) ^
-!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b1’ [-Wunused-parameter]
-!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b2’ [-Wunused-parameter]
-!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
-!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
-
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg
 use meshobj, only:  curvmesh
@@ -26,12 +15,11 @@ public :: dt_comm
 contains
 
 
-subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
+subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,x,dt)
 
 real(wp), intent(in) :: t,tout,tglowout
 type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
-real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
 class(curvmesh), intent(in) :: x
 real(wp), intent(out) :: dt
 
@@ -40,7 +28,7 @@ integer :: iid,isp, ierr
 real(wp) :: dttmp
 
 
-call dt_calc(cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,cfg%potsolve,cour1,cour2,cour3,dt)
+call dt_calc(cfg%tcfl,Ts,vs1,vs2,vs3,x%dl1i,x%dl2i,x%dl3i,cour1,cour2,cour3,dt)
 
 if (mpi_cfg%myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)
@@ -89,7 +77,7 @@ end if
 end subroutine dt_comm
 
 
-pure subroutine dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dx1i,dx2i,dx3i,potsolve,cour1,cour2,cour3,dt)
+pure subroutine dt_calc(tcfl,Ts,vs1,vs2,vs3,dx1i,dx2i,dx3i,cour1,cour2,cour3,dt)
 
 !------------------------------------------------------------
 !-------COMPUTE TIME STEP SUCH THAT STABILITY CONDITION IS
@@ -100,12 +88,10 @@ pure subroutine dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dx1i,dx2i,dx3i,potsolve,
 
 
 real(wp), intent(in) :: tcfl
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
-real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts,vs1,vs2,vs3
 real(wp), dimension(:,:,:), intent(in) :: dx1i
 real(wp), dimension(:,:,:), intent(in) :: dx2i
 real(wp), dimension(:,:,:), intent(in) :: dx3i
-integer, intent(in) :: potsolve
 real(wp), dimension(lsp), intent(out) :: cour1,cour2,cour3
 real(wp), intent(out) :: dt
 

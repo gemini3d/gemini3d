@@ -18,9 +18,9 @@ private
 public :: potentialbcs2D, potentialbcs2D_fileinput, init_Efieldinput, &
             compute_rootBGEfields
 contains
-  subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x,efield)
+  subroutine init_Efieldinput(dt,cfg,ymd,UTsec,x,efield)
     !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
-    real(wp), intent(in) :: dt,t
+    real(wp), intent(in) :: dt
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec

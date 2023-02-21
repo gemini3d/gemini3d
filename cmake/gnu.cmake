@@ -17,8 +17,6 @@ $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<VERSION_LESS:$<Fortran_COMPILER_VERSION>,1
 if(dev)
   add_compile_options(-Wextra)
   # -Wpedantic makes too many false positives
-else()
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wno-unused-dummy-argument>")
 endif()
 
 # avoid backtrace that's unusable without -g

@@ -207,10 +207,10 @@ end do
 end function photoionization
 
 
-pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, flag_fang, g1)
+pure function ionrate_fang(W0, PhiWmWm2, nn, Tn, flag_fang, g1)
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 real(wp), dimension(:,:,:,:), intent(in) :: nn
-real(wp), dimension(:,:,:), intent(in) :: alt,Tn
+real(wp), dimension(:,:,:), intent(in) :: Tn
 integer, intent(in) :: flag_fang
 real(wp), dimension(:,:,:), intent(in) :: g1
 real(wp) :: W0keV,PhiW
@@ -286,7 +286,7 @@ end if
 end function ionrate_fang
 
 
-pure function eheating(nn,Tn,ionrate,ns)
+pure function eheating(nn,ionrate,ns)
 
 !------------------------------------------------------------
 !-------COMPUTE SWARTZ AND NISBET, (1973) ELECTRON HEATING RATES.
@@ -295,7 +295,6 @@ pure function eheating(nn,Tn,ionrate,ns)
 !------------------------------------------------------------
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
-real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(in) :: ionrate
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns    !includes ghost cells
 

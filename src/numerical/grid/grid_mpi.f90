@@ -92,7 +92,7 @@ subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
 
 
   print*, 'read_grid has size:  ',lx1,lx2,lx3,lx2all,lx3all
-  gridtype=detect_gridtype(x1,x2,x3)
+  gridtype=detect_gridtype(x2)
   print*, 'read_grid detects grid type:  ',gridtype
   select case (gridtype)
     case (2)

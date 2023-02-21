@@ -193,11 +193,11 @@ subroutine init_procgrid_C(lx2all,lx3all,lid2in,lid3in) bind(C, name='init_procg
   call init_procgrid(lx2all,lx3all,lid2in,lid3in)
 end subroutine init_procgrid_C
 
-subroutine init_Efieldinput_C(cfgC, xtype,xC, dt,t, intvarsC,ymd,UTsec) bind(C, name='init_Efieldinput_C')
+subroutine init_Efieldinput_C(cfgC, xtype,xC, dt, intvarsC,ymd,UTsec) bind(C, name='init_Efieldinput_C')
   type(C_PTR), intent(in) :: cfgC
   integer(C_INT), intent(in) :: xtype
   type(C_PTR), intent(in) :: xC
-  real(wp), intent(in) :: dt,t
+  real(wp), intent(in) :: dt
   type(C_PTR), intent(inout) :: intvarsC
   integer(C_INT), dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
@@ -210,7 +210,7 @@ subroutine init_Efieldinput_C(cfgC, xtype,xC, dt,t, intvarsC,ymd,UTsec) bind(C, 
   x=>set_gridpointer_dyntype(xtype, xC)
   call c_f_pointer(intvarsC,intvars)
 
-  call init_Efieldinput_in(cfg, x, dt, t, intvars, ymd, UTsec)
+  call init_Efieldinput_in(cfg, x, dt, intvars, ymd, UTsec)
 
 end subroutine init_Efieldinput_C
 

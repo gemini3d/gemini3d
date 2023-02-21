@@ -190,12 +190,20 @@ contains
   subroutine load_size_neu2D(self)
     class(neutraldata2D), intent(inout) :: self
 
+    integer :: i
+    i = self%lxn
+    !! avoid unused argument warnings
+
   end subroutine load_size_neu2D
 
 
   !> do nothing stub
   subroutine load_grid_neu2D(self)
     class(neutraldata2D), intent(inout) :: self
+
+    integer :: i
+    i = self%lxn
+    !! avoid unused argument warnings
 
   end subroutine load_grid_neu2D
 
@@ -207,6 +215,9 @@ contains
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
     integer :: lhorzn,lzn                        !number of horizontal grid points
+
+    UTsectmp = 0*t*dtmodel
+    !! avoid unused argument warnings
 
     ! sizes for convenience
     lhorzn=self%lhorzn; lzn=self%lzn;

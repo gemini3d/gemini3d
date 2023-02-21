@@ -2,7 +2,6 @@ add_compile_options(
 $<$<COMPILE_LANGUAGE:Fortran>:-warn>
 $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
-$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:7712,-diag-disable=7712>>
 $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
 )
 # remark #5415: Feature not yet implemented: Some 'check' options temporarily disabled.

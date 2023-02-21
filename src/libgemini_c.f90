@@ -176,7 +176,7 @@ contains
     x=>set_gridpointer_dyntype(xtype,xC)
     call grid_from_extents_in(x1lims,x2lims,x3lims,lx1wg,lx2wg,lx3wg,x)
     ! as an extra step we need to also assign a type to the grid
-    xtype=detect_gridtype(x%x1,x%x2,x%x3)
+    xtype=detect_gridtype(x%x2)
   end subroutine grid_from_extents_C
 
 
@@ -222,12 +222,11 @@ contains
 
 
   !> Wrapper for initialization of electron precipitation data
-  subroutine init_precipinput_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_precipinput_C')
+  subroutine init_precipinput_C(cfgC,xtype,xC,dt,ymd,UTsec,intvarsC) bind(C, name='init_precipinput_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     real(wp), intent(in) :: dt
-    real(wp), intent(in) :: t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: intvarsC
@@ -239,7 +238,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    call init_precipinput_in(cfg,x,dt,ymd,UTsec,intvars)
   end subroutine init_precipinput_C
 
 
@@ -254,11 +253,10 @@ contains
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C, name='init_neutralBG_C')
+  subroutine init_neutralBG_C(cfgC,xtype,xC,ymd,UTsec,v2grid,v3grid,intvarsC) bind(C, name='init_neutralBG_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
-    real(wp), intent(in) :: dt,t
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
@@ -271,7 +269,7 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,v2grid,v3grid,intvars)
+    call init_neutralBG_in(cfg,x,ymd,UTsec,v2grid,v3grid,intvars)
   end subroutine init_neutralBG_C
 
 

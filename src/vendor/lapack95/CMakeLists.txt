@@ -2,10 +2,12 @@ function(patch_lapack95)
 
 if(realbits EQUAL 32)
   set(sgbsv "call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)")
-  set(dgbsv "error stop 'LAPACK95:gbsv Gemini3D is in real32 mode. File GitHub issue for Gemini'")
+  set(dgbsv "B = 0
+  error stop 'LAPACK95:gbsv Gemini3D is in real32 mode. File GitHub issue for Gemini'")
 else()
   set(dgbsv "call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)")
-  set(sgbsv "error stop 'LAPACK95:gbsv Gemini3D is in real64 mode. File GitHub issue for Gemini'")
+  set(sgbsv "B = 0
+  error stop 'LAPACK95:gbsv Gemini3D is in real64 mode. File GitHub issue for Gemini'")
 endif()
 
 configure_file(gbsv.in.f90 gbsv.f90 @ONLY)

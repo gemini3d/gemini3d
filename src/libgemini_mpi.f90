@@ -299,15 +299,15 @@ contains
 
 
   !> initialize electric field input data
-  subroutine init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
+  subroutine init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
-    real(wp), intent(in) :: dt,t
+    real(wp), intent(in) :: dt
     type(gemini_work), intent(inout) :: intvars
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_Efieldinput(dt,t,cfg,ymd,UTsec,x,intvars%efield)
+    call init_Efieldinput(dt,cfg,ymd,UTsec,x,intvars%efield)
   end subroutine init_Efieldinput_in
 
 
@@ -367,7 +367,7 @@ contains
     dtprev = dt
 
     !> time step calculation, requires workers to report their most stringent local stability constraint
-    call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
+    call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,x,dt)
 
     !> do not allow the time step to change too rapidly
     if (it>1) then
@@ -402,7 +402,7 @@ contains
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: v2grid,v3grid
 
-    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+    call neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
                                intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
   end subroutine neutral_perturb_in

@@ -60,10 +60,9 @@ contains
 
 
  !> update neutral perturbations and add to main neutral arrays
-  subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,atmos,atmosperturb)
+  subroutine neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,atmos,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), intent(in) :: dt,dtneu
-    real(wp), intent(in) :: t
+    real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     !! date for which we wish to calculate perturbations
     real(wp), intent(in) :: UTsec
