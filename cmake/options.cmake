@@ -92,7 +92,4 @@ Now, configure and build Gemini3D (from gemini3d/ directory) like this:
   cmake --build build --parallel
 ")
 
-# --- auto-ignore build directory
-if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
-  file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
-endif()
+file(GENERATE OUTPUT .gitignore CONTENT "*")
