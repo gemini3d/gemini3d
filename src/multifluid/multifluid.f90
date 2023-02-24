@@ -167,8 +167,8 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
 
   !ALL MASS SOURCES
   call cpu_time(tstart)
-  call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  !call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+  !call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart

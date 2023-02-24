@@ -70,7 +70,7 @@ contains
           !T(0,ix2,ix3)=Teinf     !top
           !T(0,ix2,ix3)=define_BC_temperature(ix2,ix3,x)     !top
           !T(0,ix2,ix3)=T(1,ix2,ix3)    ! will be partially updated!
-          T(0,ix2,ix3)=Tstop(ix2,ix3,isp)    ! will be partially updated!
+          T(0,ix2,ix3)=Tstop(ix2,ix3,isp)
         end do
       end do
     else                          !non-inverted, standard.  Bottom is logical first element of array...
@@ -79,9 +79,9 @@ contains
           Tn0=Tn(1,ix2,ix3)
           T(0,ix2,ix3)=Tn0          !bottom
           !T(lx1+1,ix2,ix3)=Teinf    !top
-          !T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
+         ! T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
           !T(lx1+1,ix2,ix3)=T(lx1,ix2,ix3)    ! partially updated
-          T(lx1+1,ix2,ix3)=Tstop(ix2,ix3,isp)    ! partially updated
+          T(lx1+1,ix2,ix3)=Tstop(ix2,ix3,isp)
         end do
       end do
     end if
@@ -94,7 +94,7 @@ contains
     real(wp) :: x2loc
 
     x2loc=x%x2(ix2)
-    Tinf=1000 + 4000*(0.5 + 0.5*tanh((x2loc)/0.5e3))
+    Tinf=1000 + 6000*(0.5 + 0.5*tanh((x2loc)/0.5e3))
   end function define_BC_temperature
   
   
