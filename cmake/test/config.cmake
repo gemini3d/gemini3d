@@ -2,7 +2,7 @@ function(setup_gemini_test name)
 
 # --- setup test
 set(out_dir ${PROJECT_BINARY_DIR}/${name})
-set(ref_root ${PROJECT_SOURCE_DIR}/test_data/compare)
+set(ref_root ${PROJECT_BINARY_DIR}/test_data/compare)
 set(ref_dir ${ref_root}/${name})
 set(arc_json_file ${PROJECT_BINARY_DIR}/ref_data.json)
 
