@@ -503,11 +503,11 @@ end do
 
 
 !INELASTIC COLLISIONS FOR ELECTRONS, ROTATIONAL
-sfact=elchrg/kB*(gammas(lsp)-1);   !cf. S&N 2010, electron energy equatoin section
-nu=sfact*6.9e-14_wp*nn(:,:,:,3)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !O2 rotational excitation
+sfact=elchrg/kB*(gammas(lsp)-1);   !cf. S&N 2010, electron energy equatoin section fixed by JMDP
+nu=sfact*5.2e-15_wp*nn(:,:,:,3)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !O2 rotational excitation
 iePT=nu*Tn
 ieLT=nu
-nu=sfact*2.9e-14_wp*nn(:,:,:,2)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 rot. exc.
+nu=sfact*3.5e-14_wp*nn(:,:,:,2)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 rot. exc.
 iePT=iePT+nu*Tn;
 ieLT=ieLT+nu;
 
@@ -528,10 +528,9 @@ iePT=iePT-max(fact,0._wp);
 !! This would be the place to include FBI heating probably just add to iePT
 call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
-
 !This includes losses of the FBI part
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+(iePT*FBIlossfactor)*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
 
 !This is for no loss simulations
@@ -540,7 +539,45 @@ Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
 
 end subroutine srcsEnergy
 
+subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
+real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and temperature
 
+real(wp), dimension(:,:,:), intent(out) :: N2VibrationalLoss
+
+
+end subroutine N2vib
+
+subroutine O2vib(nn,Tn,Ts,O2VibrationalLoss)
+real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and temperature
+
+real(wp), dimension(:,:,:), intent(out) :: O2VibrationalLoss
+
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) ::LogQTe, QTe, Te
+
+!Define Te, no ghost cells
+Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
+
+!! Calculate Log10(Q(Te))
+LogQTe = -19.9171_wp &
+      +0.0267_wp*Te &
+      -3.9960e-5_wp*Te**2 &
+      +3.5187e-8_wp*Te**3 &
+      -1.9228e-11_wp*Te**4 &
+      +6.6865e-15_wp*Te**5 &
+      -1.4791e-18_wp*Te**6 &
+      +2.0127e-22_wp*Te**7 &
+      -1.5346e-26_wp*Te**8 &
+      +5.0148e-31_wp*Te**9 
+
+!Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
+QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear 
+O2VibrationalLoss=nn(:,:,:,3)*QTe*(1-EXP(2239.0_wp*(1/Te-1/Tn)))
+
+end subroutine O2vib
 
 
 subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
@@ -567,30 +604,6 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, hea
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
-
-!I have a lot of internal variables, some might be redundant
-!nsuAvg= Collision frequencies for each species averaged over all neutrals
-!nuW+ MassDensity Weight for averaging
-!nuAvg= Collision frequencies for ions (:,:,:,1) averaged over al species and electrons (:,:,:,2)
-!msAvg= Average ion mass (:,:,:,1), wieghted by the density at each pixel. Electron mass is also included (:,:,:,2). No Ghost cells
-!TsAvg= Average ion temperature (:,:,:,1), wieghted by the density at each pixel. Electron temperature is also included (:,:,:,2) No Ghost cells
-!Bmagnitude= Magnitude of the magnetic field WITHOUT ghost cells
-!nu= Output of maxwell_coll, used inside a loop
-!nsAvg= Average density of each pixel, currently it assumes qneutrality, could be wrong. 
-!omegai= Plasma parameter omega for ions
-!omegai= Plasma parameter omega for electrons
-!ki and ke=Omega diveded by collision frequency, used in FBI heating equation
-!phi= Inverse of the product between ki and ke, used in FBI heating equation
-!Ethresholdnum= Numeretor of the Ethreshold equation, done this way to avoid mistakes
-!Ethresholden= Denominator of the Ethreshold equation, done this way to avoid mistakes
-!Ethreshold= Threshold at which FBI should appear (this might be a redundant thing, could eliminate the two from above if works correctly)
-!Emagnitude= Magnitude of the electric field WITHOUT ghost cells
-!heatingfirst= First term of the FBI heating equation
-!heatingsecond= Second term of the FBI heating equation
-!heatingtotal= Multiplication of both terms from above, again can be made into just one variuable if this works.
-!Lossfactor= Factor used to reduce supertherman electron velocities, ergo reduced electron cooling rate.  
-
-
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
@@ -598,7 +611,6 @@ lx3=x%lx3
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
-
 
 !!Initialize arrays a 0s and loss as 1s
 nuAvg=0.0_wp
@@ -612,9 +624,7 @@ lossfactor=1.0_wp
 heatingfirst=0.0_wp
 heatingsecond=0.0_wp
 heatingtotal=0.0_wp
-
 FBIbinary=1
-
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
@@ -666,10 +676,6 @@ phi=1.0_wp/(ke*ki)
 TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 
-!!Ethreshold
-!Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
-!Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
-
 !doi:10.1029/2011JA016649
 Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
 Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
@@ -692,34 +698,8 @@ end where
 
 call LossFactorCalc(TsAvg(:,:,:,2),Emagnitude,Ethreshold,ki,FBIbinary,lossfactor)
 
-!Calculate loss term only where FBI is possible
-!where (FBIbinary==1)
-!  lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
-!end where
-
 FBIproduction=heatingtotal
 FBIlossfactor=lossfactor
-
-
-!Loss factor a every pixel, as if FBI was everywhere
-!lossfactor=exp(-7.54e-4_wp*(TsAvg(:,:,:,2)-500_wp))
-!
-!where (TsAvg(:,:,:,2)<=500_wp) !Anywhere Te is smaller than 500 gets no factor
-!  lossfactor=1.0_wp
-!end where
-!
-!where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
-!  heatingtotal=0.0_wp
-!  lossfactor=1.0_wp
-!end where
-!
-!where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
-!  heatingtotal=0.0
-!  lossfactor=1.0
-!end where
-
-!FBIproduction=heatingtotal
-!FBIlossfactor=lossfactor
 
 end subroutine FBIheating
 
