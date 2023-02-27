@@ -758,10 +758,10 @@ costerms=0.0_wp
 sinterms=0.0_wp
 
 where (FBIBinary==1)
-  costerms = a1*cos(Te*w) + a2*cos(2.0_wp*Te*w) + a3*cos(3.0_wp*Te*w) + a4*cos(4.0_wp*Te*w) 
-  costerms = costerms + a5*cos(5.0_wp*Te*w) + a6*cos(6*Te*w) + a7*cos(7.0_wp*Te*w) + a8*cos(8.0_wp*Te*w)
-  sinterms = b1*sin(Te*w) + b2*sin(2.0_wp*Te*w) + b3*sin(3.0_wp*Te*w) + b4*sin(4.0_wp*Te*w)
-  sinterms = sinterms + b5*sin(5.0_wp*Te*w) + b6*sin(6*Te*w) + b7*sin(7.0_wp*Te*w) + b8*sin(8.0_wp*Te*w)
+  costerms = a1*cos(Te*w) + a2*cos(2.0_wp*Te*w) + a3*cos(3.0_wp*Te*w) + a4*cos(4.0_wp*Te*w) &
+            + a5*cos(5.0_wp*Te*w) + a6*cos(6*Te*w) + a7*cos(7.0_wp*Te*w) + a8*cos(8.0_wp*Te*w)
+  sinterms = b1*sin(Te*w) + b2*sin(2.0_wp*Te*w) + b3*sin(3.0_wp*Te*w) + b4*sin(4.0_wp*Te*w) &
+            + b5*sin(5.0_wp*Te*w) + b6*sin(6*Te*w) + b7*sin(7.0_wp*Te*w) + b8*sin(8.0_wp*Te*w)
   !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
   FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear 
 elsewhere 
