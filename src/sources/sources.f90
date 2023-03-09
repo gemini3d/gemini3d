@@ -539,27 +539,35 @@ Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
 
 end subroutine srcsEnergy
 
+
 subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
 real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and temperature
 
-real(wp), dimension(:,:,:), intent(out) :: N2VibrationalLoss
-
+real(wp), dimension(:,:,:), intent(inout) :: N2VibrationalLoss
 
 end subroutine N2vib
 
+
 subroutine O2vib(nn,Tn,Ts,O2VibrationalLoss)
-real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
-real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and temperature
+real(wp), dimension(:,:,:,:), intent(in) :: nn !< Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !< neutral temperature
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !< Plasma density and temperature
 
-real(wp), dimension(:,:,:), intent(out) :: O2VibrationalLoss
+real(wp), dimension(:,:,:), intent(inout) :: O2VibrationalLoss
 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) ::LogQTe, QTe, Te
+real(wp), dimension(:,:,:), allocatable :: LogQTe, QTe, Te
 
+integer :: lx1, lx2, lx3
+
+lx1 = size(Ts,1) - 4
+lx2 = size(Ts,2) - 4
+lx3 = size(Ts,3) - 4
+
+allocate(Te(lx1, lx2, lx3), QTe(lx1, lx2, lx3), LogQTe(lx1, lx2, lx3))
 !Define Te, no ghost cells
-Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
+Te = Ts(1:lx1,1:lx2,1:lx3,lsp)
 
 !! Calculate Log10(Q(Te))
 LogQTe = -19.9171_wp &
@@ -571,10 +579,13 @@ LogQTe = -19.9171_wp &
       -1.4791e-18_wp*Te**6 &
       +2.0127e-22_wp*Te**7 &
       -1.5346e-26_wp*Te**8 &
-      +5.0148e-31_wp*Te**9 
+      +5.0148e-31_wp*Te**9
 
-!Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
-QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear 
+!> Because the loss factor is a fitting of the logarithmic base 10 value of it.
+!! Multiply by LOG10 to change to natural log
+QTe = EXP(LogQTe*LOG(10.0_wp))
+!! Make it linear
+
 O2VibrationalLoss=nn(:,:,:,3)*QTe*(1-EXP(2239.0_wp*(1/Te-1/Tn)))
 
 end subroutine O2vib
@@ -590,14 +601,14 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
+real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling.
 
 !!Internal Arrays
 integer :: isp,isp2,lx1,lx2,lx3
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
@@ -666,7 +677,7 @@ nsAvg=(ns(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+ns(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4)
 omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
 ki=abs(omegai/nuAvg(:,:,:,1)) !! Could do ABS to be sure of the sign
 !! ke value
-omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
+omegae=elchrg*Bmagnitude/msAvg(:,:,:,2)
 ke=abs(omegae/nuAvg(:,:,:,2))
 
 !!Phi value 1/(ki*ke)
@@ -703,13 +714,14 @@ FBIlossfactor=lossfactor
 
 end subroutine FBIheating
 
+
 subroutine LossFactorCalc(Te,Emagnitude,Ethreshold,ki,FBIBinary,FourierLossFactor)
 
 !! Inputs Needed
 real(wp), dimension(:,:,:), intent(in) :: Te, Ethreshold, Emagnitude, ki !Temperature, without ghost cells
 integer, dimension(:,:,:), intent(in) :: FBIbinary
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !  
+real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !
 !!Internal Arrays
 real(wp), dimension(size(Te,1),size(Te,2),size(Te,3)) :: costerms, sinterms, a0
 
@@ -743,8 +755,8 @@ where (FBIBinary==1)
   sinterms = b1*sin(Te*w) + b2*sin(2.0_wp*Te*w) + b3*sin(3.0_wp*Te*w) + b4*sin(4.0_wp*Te*w) &
             + b5*sin(5.0_wp*Te*w) + b6*sin(6*Te*w) + b7*sin(7.0_wp*Te*w) + b8*sin(8.0_wp*Te*w)
   !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
-  FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear 
-elsewhere 
+  FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear
+elsewhere
   FourierLossFactor = 1.0_wp
 end where
 
