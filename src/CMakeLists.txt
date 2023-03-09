@@ -12,7 +12,7 @@ add_subdirectory(io)
 add_subdirectory(temporal)
 
 add_library(collision OBJECT collisions/collisions.f90)
-target_link_libraries(collision PRIVATE const gemini3d_config)
+target_link_libraries(collision PRIVATE meshobj const gemini3d_config)
 
 # --- other libs
 
@@ -76,7 +76,7 @@ multifluid
 PDEparabolic gbsv
 precipBCs reader sanity_check errors sources timeutils
 exe_frontend
-grid
+grid io
 mpimod
 autogrid
 )
