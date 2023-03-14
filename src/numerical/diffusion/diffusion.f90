@@ -79,7 +79,7 @@ contains
           Tn0=Tn(1,ix2,ix3)
           T(0,ix2,ix3)=Tn0          !bottom
           !T(lx1+1,ix2,ix3)=Teinf    !top
-         ! T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
+          !T(lx1+1,ix2,ix3)=define_BC_temperature(ix2,ix3,x)    !top
           !T(lx1+1,ix2,ix3)=T(lx1,ix2,ix3)    ! partially updated
           T(lx1+1,ix2,ix3)=Tstop(ix2,ix3,isp)
         end do
