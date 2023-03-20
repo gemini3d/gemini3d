@@ -144,7 +144,7 @@ if (any(abs(vs1(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e7_wp)) &
 if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
   call error_stop (dump_filename, 'input:plasma: negative temperature in Ts', ns, vs1, Ts)
 
-if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 100000)) &
+if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 500000)) &
   call error_stop (dump_filename, 'input:plasma: too hot Ts', ns, vs1, Ts)
 
 ! FIXME:  this can cause problems if a worker gets data from all lower altitudes.  
