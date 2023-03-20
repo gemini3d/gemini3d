@@ -703,8 +703,9 @@ contains
 
 
   !> These will do nothing for now, can override with custom code as needed
-  subroutine get_locationsi(self,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+  subroutine get_locationsi(self,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class(inputdata), intent(inout) :: self
+    logical, intent(in) :: flagallpts
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims    ! global boundary of neutral grid we are accepting data from
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
     real(wp), dimension(:,:), pointer, intent(inout) :: datavals
