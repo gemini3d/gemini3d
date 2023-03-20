@@ -1629,8 +1629,9 @@ contains
 
 
   !> Call function to retrieve locations from a neutraldata3D_fclaw object
-  subroutine get_locationsi_in(intvars,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+  subroutine get_locationsi_in(intvars,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     type(gemini_work), intent(inout) :: intvars
+    logical, intent(in) :: flagallpts
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
     real(wp), dimension(:,:), pointer, intent(inout) :: datavals
@@ -1639,7 +1640,7 @@ contains
     aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
     select type (aperptr)
     class is (neutraldata3D_fclaw)
-      call intvars%atmosperturb%get_locationsi(zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+      call intvars%atmosperturb%get_locationsi(flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class default
       print*, 'WARNING:  attempted to direct feed data (get) to object of wrong type (not neutraldata3D_fclaw)'
       zvals=>null();

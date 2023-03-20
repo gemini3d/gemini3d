@@ -931,8 +931,10 @@ contains
 
 
   !> grab pointers and size of interpolation target locations
-  subroutine get_locationsi_C(intvarsC,zlims,xlims,ylims,zvalsC,xvalsC,yvalsC,datavalsC,lpts,lparms) bind(C,name='get_locationsi_C')
+  subroutine get_locationsi_C(intvarsC,flagallpts,zlims,xlims,ylims, &
+                                zvalsC,xvalsC,yvalsC,datavalsC,lpts,lparms) bind(C,name='get_locationsi_C')
     type(C_PTR), intent(inout) :: intvarsC
+    logical, intent(in) :: flagallpts
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims   
     type(C_PTR), intent(inout) :: zvalsC,xvalsC,yvalsC,datavalsC
     integer(C_INT), intent(inout) :: lpts,lparms
@@ -941,7 +943,7 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(intvarsC,intvars)
-    call get_locationsi_in(intvars,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+    call get_locationsi_in(intvars,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     zvalsC=c_loc(zvals)
     xvalsC=c_loc(xvals)
     yvalsC=c_loc(yvals)
