@@ -484,8 +484,9 @@ contains
 
   !> Find and return a list of interpolation sites that are in bounds for the external neutral model grid.  This
   !    procedure needs to allocate space to store the (unknown upon entry) number of locations needed.  
-  subroutine get_locationsi(self,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
+  subroutine get_locationsi(self,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class(neutraldata3D_fclaw), intent(inout) :: self
+    logical, intent(in) :: flagallpts    ! return all points
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims    ! global boundary of neutral grid we are accepting data from
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
     real(wp), dimension(:,:), pointer, intent(inout) :: datavals
@@ -508,7 +509,8 @@ contains
     do ipts=1,lx1*lx2*lx3
       if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
             self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
-            self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2)) then
+            self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2) &
+             .or. flagallpts) then
         lpts=lpts+1
       end if
     end do
@@ -516,7 +518,7 @@ contains
     allocate(self%zlocsi(lpts))
     allocate(self%xlocsi,self%ylocsi, mold=self%zlocsi)
     allocate(self%ilocsi(lpts,3))
-    allocate(self%dataxyzinow(lpts,7))
+    allocate(self%dataxyzinow(lpts,7))    ! we have 7 state variables we need from neutral model
 
     ! now make another pass through the data to copy out the locations
     itarg=1
@@ -526,7 +528,8 @@ contains
         do ix1=1,lx1
           if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
                 self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
-                self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2)) then
+                self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2) &
+                 .or. flagallpts) then
             self%zlocsi(itarg)=self%zi(ipts)
             self%xlocsi(itarg)=self%xi(ipts)
             self%ylocsi(itarg)=self%yi(ipts)
