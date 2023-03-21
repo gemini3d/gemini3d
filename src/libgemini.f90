@@ -65,7 +65,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
-            set_datainow_in
+            set_datainow_in, get_datainow_ptr_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1642,11 +1642,29 @@ contains
       call intvars%atmosperturb%get_locationsi(flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class default
       print*, 'WARNING:  attempted to direct feed data (get) to object of wrong type (not neutraldata3D_fclaw)'
-      zvals=>null();
-      xvals=>null();
-      yvals=>null();
+      zvals=>null()
+      xvals=>null()
+      yvals=>null()
+      datavals=>null()
     end select
   end subroutine get_locationsi_in
+
+
+  !> retrieve a pointer that we can directly copy data to
+  subroutine get_datainow_ptr_in(intvars,datavals)
+    type(gemini_work), intent(inout) :: intvars
+    real(wp), dimension(:,:), pointer, intent(inout) :: datavals
+    class(neutraldata), pointer :: aperptr
+
+    aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
+    select type (aperptr)
+    class is (neutraldata3D_fclaw)
+      datavals=>intvars%atmosperturb%get_datainow_ptr()
+    class default
+      print*, 'WARNING:  attempted to direct feed data (get) to object of wrong type (not neutraldata3D_fclaw)'
+      datavals=>null();
+    end select
+  end subroutine get_datainow_ptr_in
 
 
   !> Notify object that the data have been placed in its buffer and it needs to copy-out

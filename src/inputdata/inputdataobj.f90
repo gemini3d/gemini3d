@@ -82,6 +82,7 @@ type, abstract :: inputdata
                                                  !   call prime_data, set data cadence based on some input
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
     procedure :: get_locationsi                  ! (no-op, extensions need to override) return a pointer to some locations to be used directly by user
+    procedure :: get_datainow_ptr                ! (no-op) extensions need to return a pointer to a place where data can directly be fed
     procedure :: set_datainow                    ! (no-op, extensions shoudl override) user wants to directly set data from locations returned by get_locationsi
 
     !! internal/fine-grained control
@@ -713,6 +714,15 @@ contains
     print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
     return
   end subroutine
+
+
+  function get_datainow_ptr(self) result(datavals)
+    class(inputdata), intent(inout) :: self
+    real(wp), dimension(:,:), pointer :: datavals 
+
+    print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
+    return
+  end function get_datainow_ptr
 
 
   !> We assume that the get_locationsi will provide a memory space for the results which are stored in the object extension

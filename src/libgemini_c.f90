@@ -45,7 +45,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
             permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
-            get_locationsi_in,set_datainow_in
+            get_locationsi_in,set_datainow_in, get_datainow_ptr_in
 
 implicit none (type, external)
 
@@ -952,6 +952,19 @@ contains
     lparms=size(datavals,2)
     !print*, 'Internal size chk:  ',lpts,lparms,shape(datavals)
   end subroutine get_locationsi_C
+
+
+  !> retrieve (again?) the pointer to the data storage location for direct-feed
+  subroutine get_datainow_C(intvarsC,datavalsC) bind(C,name='get_datainow_C')
+    type(C_PTR), intent(inout) :: intvarsC
+    type(C_PTR), intent(inout) :: datavalsC
+    real(wp), dimension(:,:), pointer :: datavals
+    type(gemini_work), pointer :: intvars  
+
+    call c_f_pointer(intvarsC,intvars)   
+    call get_datainow_ptr_in(intvars,datavals)
+    datavalsC=c_loc(datavals)
+  end subroutine get_datainow_C
 
 
   !> inform gemini object that the data are now in place and can be rotated/copied out

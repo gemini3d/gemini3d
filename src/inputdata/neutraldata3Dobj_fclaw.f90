@@ -32,9 +32,9 @@ type, extends(neutraldata3D) :: neutraldata3D_fclaw
     ! overriding procedures
     procedure :: update
     procedure :: init_storage
-    procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral modoel
+    procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral model
+    procedure :: get_datainow_ptr     ! grab a pointer to where data need to be fed
     procedure :: set_datainow         ! place a set of interpolated data into the data array at indices corresponding to locations
-                                      !   provided 
 
     ! bindings for deferred procedures
     procedure :: init=>init_neu3D_fclaw
@@ -547,6 +547,19 @@ contains
     yvals=>self%ylocsi
     datavals=>self%dataxyzinow
   end subroutine get_locationsi
+
+
+  !> Return a pointer to direct-feed the input data to the user
+  function get_datainow_ptr(self) result(datavals)
+    class(neutraldata3D_fclaw), intent(inout) :: self   
+    real(wp), dimension(:,:), pointer :: datavals
+
+    if (.not. associated(self%dataxyzinow)) then
+      error stop 'neutraldata3D_fclaw:  attempting to access unallocated space.'
+    end if
+
+    datavals=>self%dataxyzinow
+  end function get_datainow_ptr
 
 
   ! Populate object arrays with information from an external model corresponding to locations defined by a call to
