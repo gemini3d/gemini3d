@@ -97,6 +97,7 @@ extern void get_grid_magcoords_C(int*,void**,double**,double**,double**);
 extern void get_grid_magcoordsi_C(int*,void**,double**,double**,double**);
 extern void clean_param_after_regrid_C(int*, int*, void**, double**);
 extern void get_locationsi_C(void**,bool*,double*,double*,double*,double**,double**,double**,double**,int*,int*);
+extern void get_datainow_ptr_C(void**,double**);
 extern void set_datainow_C(void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
 
