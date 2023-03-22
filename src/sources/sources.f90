@@ -449,6 +449,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact,iePT,ieLT,f,g    !work arrays
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: N2vibrationalLoss, O2vibrationalLoss
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIproduction,FBIlossfactor    !FBI array
 real(wp) :: sfact
 
@@ -511,19 +512,23 @@ nu=sfact*3.5e-14_wp*nn(:,:,:,2)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 r
 iePT=iePT+nu*Tn;
 ieLT=ieLT+nu;
 
-f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
-g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
-  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
-fact=sfact*2.99e-12_wp*nn(:,:,:,2)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000)*(exp(-g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !N2 vibrational excitation
-iePT=iePT-max(fact,0._wp);
-f=3300-839*sin(1.91e-4_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2700))
-fact=sfact*5.196e-13_wp*nn(:,:,:,3)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700) &
-     /Ts(1:lx1,1:lx2,1:lx3,lsp)/700)*(exp(-2770*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
-     /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !O2 vibrational excitation
-iePT=iePT-max(fact,0._wp);
+call N2vib(nn,Tn,Ts,N2vibrationalLoss)
+call O2vib(nn, Tn, Ts, O2vibrationalLoss)
+iePT=iePT-max(O2vibrationalLoss,0._wp)-max(O2vibrationalLoss,0._wp)
 
+!f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
+!g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
+!  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
+!fact=sfact*2.99e-12_wp*nn(:,:,:,2)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000) &
+!        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000)*(exp(-g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
+!        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !N2 vibrational excitation
+!iePT=iePT-max(fact,0._wp);
+!f=3300-839*sin(1.91e-4_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2700))
+!fact=sfact*5.196e-13_wp*nn(:,:,:,3)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700) &
+!     /Ts(1:lx1,1:lx2,1:lx3,lsp)/700)*(exp(-2770*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
+!     /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !O2 vibrational excitation
+!iePT=iePT-max(fact,0._wp);
+!print*,fact
 
 !! This would be the place to include FBI heating probably just add to iePT
 call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
@@ -546,6 +551,194 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and tempera
 
 real(wp), dimension(:,:,:), intent(out) :: N2VibrationalLoss
 
+integer :: lx1,lx2,lx3,isp,isp2
+
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: LQ0Te, Q0Te , LQ1Te, Q1Te, vibloss1, vibloss2, vibloss3, &
+                                                               STerm1, STerm2, Te, Teaux
+real(wp), parameter :: E1 = 3353.0_wp
+
+integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: mask1500, mask6000, masklimit
+
+real(wp), parameter :: A0(10)=[real(wp) :: -2.025_wp, &
+                                            7.066_wp, & 
+                                            8.211_wp, &
+                                            9.713_wp, &
+                                            10.353_wp, &
+                                            10.819_wp, &
+                                            10.183_wp, &
+                                            12.698_wp, &
+                                            14.710_wp, &
+                                            17.538_wp]*(-1.0_wp)
+
+real(wp), parameter :: B0(10)=[real(wp) :: 8.782e-2_wp, &
+                                           1.001_wp, &
+                                           1.092_wp, &
+                                           1.204_wp, &
+                                           1.243_wp, &
+                                           1.244_wp, &
+                                           1.185_wp, &
+                                           1.309_wp, &
+                                           1.409_wp, &
+                                           1.600_wp]*(1.0e-2_wp)
+
+real(wp), parameter :: C0(10)=[real(wp) :: -2.954e-1_wp, &
+                                            3.066_wp, &
+                                            3.369_wp, &
+                                            3.732_wp, &
+                                            3.850_wp, &
+                                            3.771_wp, &
+                                            3.570_wp, &
+                                            3.952_wp, &
+                                            4.249_wp, &
+                                            4.916_wp]*(-1.0e-6_wp)
+
+real(wp), parameter :: D0(10)=[real(wp) :: -9.562e-1_wp, &
+                                            4.436_wp, &
+                                            4.891_wp, &
+                                            5.431_wp, &
+                                            5.600_wp, &
+                                            5.385_wp, &
+                                            5.086_wp, &
+                                            5.636_wp, &
+                                            6.058_wp, &
+                                            7.128_wp]*(1.0e-10_wp)
+
+real(wp), parameter :: F0(10)=[real(wp) :: -7.252e-1_wp, &
+                                            2.449_wp, &
+                                            2.706_wp, &
+                                            3.008_wp, &
+                                            3.100_wp, &
+                                            2.936_wp, &
+                                            2.769_wp, &
+                                            3.071_wp, &
+                                            3.300_wp, &
+                                            3.941_wp]*(-1.0e-14_wp)
+
+real(wp), parameter :: A1(8)=[real(wp) :: 3.413_wp, &
+                                           4.160_wp, &
+                                           5.193_wp, &
+                                           5.939_wp, &
+                                           8.261_wp, &
+                                           8.185_wp, &
+                                           10.823_wp, &
+                                           11.273_wp]*(-1.0_wp)
+
+real(wp), parameter :: B1(8)=[real(wp) :: 7.326e-1_wp, &
+                                          7.803e-1_wp, &
+                                          8.360e-1_wp, &
+                                          8.807e-1_wp, &
+                                          1.010_wp, &
+                                          1.010_wp, &
+                                          1.199_wp, &
+                                          1.283_wp]*(1.0e-2_wp)
+
+real(wp), parameter :: C1(8)=[real(wp) :: 2.200_wp, &
+                                          2.352_wp, &
+                                          2.526_wp, &
+                                          2.669_wp, &
+                                          3.039_wp, &
+                                          3.039_wp, &
+                                          3.620_wp, &
+                                          3.879_wp]*(-1.0e-6_wp)
+
+real(wp), parameter :: D1(8)=[real(wp) :: 3.128_wp, &
+                                          3.352_wp, &
+                                          3.606_wp, &
+                                          3.806_wp, &
+                                          4.318_wp, &
+                                          4.318_wp, &
+                                          5.159_wp, &
+                                          5.534_wp]*(1.0e-10_wp)
+
+real(wp), parameter :: F1(8)=[real(wp) :: 1.702_wp, &
+                                          1.828_wp, &
+                                          1.968_wp, &
+                                          2.073_wp, &
+                                          2.347_wp, &
+                                          2.347_wp, &
+                                          2.810_wp, &
+                                          3.016_wp]*(-1.0e-14_wp)
+
+                                          
+
+lx1=size(Ts,1)-4
+lx2=size(Ts,2)-4
+lx3=size(Ts,3)-4
+
+!Define Te, no ghost cells
+Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
+
+!!creat mask for points
+mask1500=0
+mask6000=0
+masklimit=0
+
+Where (Te<=1500)
+  mask1500=1
+elsewhere (Te<6000)
+  mask6000=1
+elsewhere
+  masklimit=1
+end where
+
+!First step, lower temperatures
+where (mask1500==1)
+    LQ0Te=-6.462_wp+3.151e-2_wp*Te-4.075e-5_wp*Te**2+2.439e-8_wp*Te**3-5.479e-12_wp*Te**4-16.0_wp;
+    Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+    vibloss1=nn(:,:,:,2)*1e-6_wp*(1-EXP(-E1/Tn))*Q0Te*(1-exp(E1*((Tn-Te)/(Te*Tn))))
+end where
+
+!Q0 step, have to loop over all Q0 for temperatures 
+
+STerm1=0.0_wp
+STerm2=0.0_wp
+
+do isp = 1,10 
+  where (mask6000==1)
+      LQ0Te=A0(isp)+Te*B0(isp)+Te**2*C0(isp)+Te**3*D0(isp)+Te**4*F0(isp)-16.0_wp;
+      Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+      STerm1=STerm1+Q0Te*(1-exp(isp*E1*((Tn-Te)/(Te*Tn))))
+  end where
+  where (masklimit==1)
+      LQ0Te=A0(isp)+Teaux*B0(isp)+Teaux**2*C0(isp)+Teaux**3*D0(isp)+Teaux**4*F0(isp)-16.0_wp;
+      Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+      STerm2=STerm2+Q0Te*(1-exp(isp*E1*((Tn-Teaux)/(Teaux*Tn))))
+  end where
+end do
+!Evaluate only where we need, although STerm should be 0 anywhere the mask is 0
+where (mask6000==1)
+  vibloss2=(1-EXP(-E1/Tn))*STerm1
+end where
+where (masklimit==1)
+  vibloss2=(1-EXP(-E1/Tn))*STerm2
+end where
+
+!Q1 step, have to loop over all Q1 for temperatures 
+
+STerm1=0.0_wp
+STerm2=0.0_wp
+
+do isp = 1,8 
+  where (mask6000==1)
+      LQ1Te=A1(isp)+Te*B1(isp)+Te**2*C1(isp)+Te**3*D1(isp)+Te**4*F1(isp)-16.0_wp;
+      Q1Te=EXP(LQ1Te*LOG(10.0_wp))
+      STerm1=STerm1+Q1Te*(1-exp(isp*E1*((Tn-Te)/(Te*Tn))))
+  end where
+  where (masklimit==1)
+      LQ1Te=A1(isp)+Teaux*B1(isp)+Teaux**2*C1(isp)+Teaux**3*D1(isp)+Teaux**4*F1(isp)-16.0_wp;
+      Q1Te=EXP(LQ1Te*LOG(10.0_wp))
+      STerm2=STerm2+Q1Te*(1-exp(isp*E1*((Tn-Teaux)/(Teaux*Tn))))
+  end where
+end do
+!Evaluate only where we need, although STerm should be 0 anywhere the mask is 0
+where (mask6000==1)
+  vibloss3=(1-EXP(-E1/Tn))*STerm1*EXP(-E1/Tn)
+end where
+where (masklimit==1)
+  vibloss3=(1-EXP(-E1/Tn))*STerm2*EXP(-E1/Tn)
+end where
+
+N2vibrationalLoss=nn(:,:,:,2)*1e-6_wp*(vibloss1+vibloss2+vibloss3)
 
 end subroutine N2vib
 
@@ -556,26 +749,47 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and tempera
 
 real(wp), dimension(:,:,:), intent(out) :: O2VibrationalLoss
 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) ::LogQTe, QTe, Te
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) ::LogQTe, QTe, Te, Teaux
+
+integer :: lx1,lx2,lx3,isp,isp2
+
+lx1=size(Ts,1)-4
+lx2=size(Ts,2)-4
+lx3=size(Ts,3)-4
 
 !Define Te, no ghost cells
 Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
+Teaux=3800.0_wp
 
 !! Calculate Log10(Q(Te))
+where (Te<=Teaux)
 LogQTe = -19.9171_wp &
-      +0.0267_wp*Te &
-      -3.9960e-5_wp*Te**2 &
-      +3.5187e-8_wp*Te**3 &
-      -1.9228e-11_wp*Te**4 &
-      +6.6865e-15_wp*Te**5 &
-      -1.4791e-18_wp*Te**6 &
-      +2.0127e-22_wp*Te**7 &
-      -1.5346e-26_wp*Te**8 &
-      +5.0148e-31_wp*Te**9 
+         +0.0267_wp*Te &
+         -3.9960e-5_wp*Te**2 &
+         +3.5187e-8_wp*Te**3 &
+         -1.9228e-11_wp*Te**4 &
+         +6.6865e-15_wp*Te**5 &
+         -1.4791e-18_wp*Te**6 &
+         +2.0127e-22_wp*Te**7 &
+         -1.5346e-26_wp*Te**8 &
+         +5.0148e-31_wp*Te**9 
+elsewhere
+LogQTe = -19.9171_wp &
+         +0.0267_wp*Teaux &
+         -3.9960e-5_wp*Teaux**2 &
+         +3.5187e-8_wp*Teaux**3 &
+         -1.9228e-11_wp*Teaux**4 &
+         +6.6865e-15_wp*Teaux**5 &
+         -1.4791e-18_wp*Teaux**6 &
+         +2.0127e-22_wp*Teaux**7 &
+         -1.5346e-26_wp*Teaux**8 &
+         +5.0148e-31_wp*Teaux**9 
+end where
 
 !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
 QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear 
-O2VibrationalLoss=nn(:,:,:,3)*QTe*(1-EXP(2239.0_wp*(1/Te-1/Tn)))
+O2VibrationalLoss=nn(:,:,:,3)*1.0e+6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
+!print*,nn(:,:,:,3)
 
 end subroutine O2vib
 
