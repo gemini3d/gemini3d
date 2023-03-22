@@ -514,7 +514,7 @@ ieLT=ieLT+nu;
 
 call N2vib(nn,Tn,Ts,N2vibrationalLoss)
 call O2vib(nn, Tn, Ts, O2vibrationalLoss)
-iePT=iePT-max(O2vibrationalLoss,0._wp)-max(O2vibrationalLoss,0._wp)
+iePT=iePT-max(O2vibrationalLoss,0._wp)
 
 !f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
 !g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
@@ -675,7 +675,7 @@ masklimit=0
 
 Where (Te<=1500)
   mask1500=1
-elsewhere (Te<6000)
+elsewhere (Te<=6000)
   mask6000=1
 elsewhere
   masklimit=1
@@ -788,7 +788,7 @@ end where
 
 !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
 QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear 
-O2VibrationalLoss=nn(:,:,:,3)*1.0e+6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
+O2VibrationalLoss=nn(:,:,:,3)*1.0e-6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
 !print*,nn(:,:,:,3)
 
 end subroutine O2vib
