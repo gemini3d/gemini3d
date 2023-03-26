@@ -1605,10 +1605,12 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    allocate(tmpvar(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,1:size(ns,4)))
+    !allocate(tmpvar(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,1:size(ns,4)))
+    allocate(tmpvar,mold=rhovs1)
     tmpvar(:,:,:,:)=rhovs1(:,:,:,:)
     rhovs1(:,:,:,:)=vs1(:,:,:,:)
     vs1(:,:,:,:)=tmpvar(:,:,:,:)
+
     tmpvar(:,:,:,:)=rhoes(:,:,:,:)
     rhoes(:,:,:,:)=Ts(:,:,:,:)
     Ts(:,:,:,:)=tmpvar(:,:,:,:)
