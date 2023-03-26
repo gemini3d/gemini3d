@@ -65,7 +65,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
-            set_datainow_in, get_datainow_ptr_in
+            set_datainow_in, get_datainow_ptr_in, swap_statevars
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1591,6 +1591,29 @@ contains
       end do
     end do
   end subroutine tag4refine_vperp
+
+
+  !> if refinement is being done it may be advantageous to have refine/interpolate done with drift and temperature
+  !    it's easiest to just copy swap existing variables.  
+  subroutine swap_statevars(fluidvars,fluidauxvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:,:), allocatable :: tmpvar
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+
+    allocate(tmpvar(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,1:size(ns,4)))
+    tmpvar(:,:,:,:)=rhovs1(:,:,:,:)
+    rhovs1(:,:,:,:)=vs1(:,:,:,:)
+    vs1(:,:,:,:)=tmpvar(:,:,:,:)
+    tmpvar(:,:,:,:)=rhoes(:,:,:,:)
+    rhoes(:,:,:,:)=Ts(:,:,:,:)
+    Ts(:,:,:,:)=tmpvar(:,:,:,:)
+    deallocate(tmpvar)
+  end subroutine swap_statevars
 
 
 !  subroutine tag4refine_dist(x,flagrefine)
