@@ -893,7 +893,7 @@ contains
 
 
   !> In case we need to swap state variables
-  subroutine swap_statevars_C(fluidvarsC,fluidauxvarsC) bind(C, name='swap_statvars_C')
+  subroutine swap_statevars_C(fluidvarsC,fluidauxvarsC) bind(C, name='swap_statevars_C')
     type(c_ptr), intent(inout) :: fluidvarsC,fluidauxvarsC
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
