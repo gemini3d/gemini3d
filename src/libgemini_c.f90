@@ -45,7 +45,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
             permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
-            get_locationsi_in,set_datainow_in, get_datainow_ptr_in
+            get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars
 
 implicit none (type, external)
 
@@ -892,6 +892,19 @@ contains
   end subroutine tag4refine_C
 
 
+  !> In case we need to swap state variables
+  subroutine swap_statevars_C(fluidvarsC,fluidauxvarsC) bind(C, name='swap_statvars_C')
+    type(c_ptr), intent(inout) :: fluidvarsC,fluidauxvarsC
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+
+    call swap_statevars(fluidvars,fluidauxvars)
+  end subroutine swap_statevars_C
+
+
   !> get c pointers to magnetic coordinates of mesh sites (cell centers), note that these include ghost cells
   !  Due to the way the vtu files are created in forestclaw we likely need interface values for the cell locations
   !    As such this particular routine is likely not useful and we need separate facilities to computer and return
@@ -955,7 +968,7 @@ contains
 
 
   !> retrieve (again?) the pointer to the data storage location for direct-feed
-  subroutine get_datainow_C(intvarsC,datavalsC) bind(C,name='get_datainow_C')
+  subroutine get_datainow_ptr_C(intvarsC,datavalsC) bind(C,name='get_datainow_ptr_C')
     type(C_PTR), intent(inout) :: intvarsC
     type(C_PTR), intent(inout) :: datavalsC
     real(wp), dimension(:,:), pointer :: datavals
@@ -964,7 +977,7 @@ contains
     call c_f_pointer(intvarsC,intvars)   
     call get_datainow_ptr_in(intvars,datavals)
     datavalsC=c_loc(datavals)
-  end subroutine get_datainow_C
+  end subroutine get_datainow_ptr_C
 
 
   !> inform gemini object that the data are now in place and can be rotated/copied out
