@@ -47,6 +47,7 @@ use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
+use interpolation, only: interp3
 
 implicit none (type, external)
 private
@@ -65,7 +66,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
-            set_datainow_in, get_datainow_ptr_in, swap_statevars
+            set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1705,6 +1706,34 @@ contains
       print*, 'WARNING:  attempted to direct feed data (set) to object of wrong type (not neutraldata3D_fclaw)'
     end select
   end subroutine set_datainow_in
+
+
+  !> Interface to access trilinear interpolation routines in gemini and interpolate MAGIC data
+  subroutine interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
+    real(wp), dimension(:), intent(in) :: x
+    real(wp), dimension(:), intent(in) :: y
+    real(wp), dimension(:), intent(in) :: z
+    real(wp), intent(in) :: xi,yi,zi    ! single points based on forestclaw organization
+    real(wp), dimension(:), intent(inout) :: qi,auxi
+    real(wp), intent(in), dimension(:,:,:,:) :: q,aux
+    integer :: mx,my,mz,meqn,maux,ieqn,iaux
+    real(wp), dimension(1) :: xiarr,yiarr,ziarr,qiarr,auxiarr
+
+    ! sizes
+    mx=size(q,1); my=size(q,2); mz=size(q,3);
+    meqn=size(q,4); maux=size(aux,4);
+    xiarr=[xi]; yiarr=[yi]; ziarr=[zi];
+
+    ! interpolate
+    do ieqn=1,meqn
+      qiarr=interp3(x,y,z,q(:,:,:,ieqn),xiarr,yiarr,ziarr)     !note that the MAGIC coordinatees are permuted x,y,z
+      qi(ieqn)=qiarr(1)
+    end do
+    do iaux=1,maux
+      auxiarr=interp3(x,y,z,aux(:,:,:,iaux),xiarr,yiarr,ziarr)
+      auxi(iaux)=auxiarr(1)
+    end do
+  end subroutine interp3_in
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
