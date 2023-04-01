@@ -101,6 +101,8 @@ extern void get_datainow_ptr_C(void**,double**);
 extern void set_datainow_C(void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
 extern void swap_statevars_C(double**, double**);
+extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double**,int*,int*,
+		double*,double*,double*,double**,double**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
