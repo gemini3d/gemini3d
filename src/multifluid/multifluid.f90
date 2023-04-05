@@ -51,9 +51,6 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
-
-  integer :: funit
-
 !  if (minval(rhoes) < 0) then
 !    print*, '1 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
 !    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
@@ -141,7 +138,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
     call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
   else
     !! no file input specified, so just call 'regular' function
-    call precipBCs(t,x,cfg,W0,PhiWmWm2)
+    call precipBCs(cfg,W0,PhiWmWm2)
   end if
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
@@ -383,12 +380,12 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
-        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt(1:lx1,1:lx2,1:lx3), nn, Tn, cfg%flag_fang, x%g1)
+        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), nn, Tn, cfg%flag_fang, x%g1)
         !! calculation based on Fang et al [2008]
         Prprecip=Prprecip+Prpreciptmp
       end do
       Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
-      Qeprecip = eheating(nn,Tn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
+      Qeprecip = eheating(nn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
     else
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
@@ -458,7 +455,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   !! enforce minimum production rate to preserve conditioning for species that rely on constant production
   !! testing should probably be done to see what the best choice is...
 
-  Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
+  Qepreciptmp = eheating(nn,Prpreciptmp,ns)
   !! thermal electron heating rate from Swartz and Nisbet, (1978)
 
   !> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
@@ -707,7 +704,7 @@ end subroutine clean_param
 
 !> Deal with cells outside computation domain; do not touch ghost cells in any way - exercise caution in the way null cells are
 !    treated as compared to a "normal" clean.  Screen cells "near" null cells for excessively large parameter values that may
-!    result from interpolation artifacts.  
+!    result from interpolation artifacts.
 subroutine clean_param_after_regrid(x,paramflag,param)
   !------------------------------------------------------------
   !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
@@ -716,7 +713,6 @@ subroutine clean_param_after_regrid(x,paramflag,param)
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: paramflag
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
-  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end,ix2beg
 
   select case (paramflag)
@@ -750,13 +746,13 @@ subroutine clean_param_after_regrid(x,paramflag,param)
             do while( (.not. x%nullpts(ix1,ix2beg,ix3)) .and. ix2beg<lx2)     !find the first non-null index for this field line, need to be careful if no null points exist...
               ix2beg=ix2beg+1
             end do
-    
+
             !ix1end=ix1beg
             !do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
             !  ix1end=ix1end+1
             !end do
             !!if (ix1end /= ix1beg .and. ix1end /= lx1) ix1end=ix1end-1      ! I think this has been left out for a long time!?
-    
+
             if (ix2beg /= lx2) then    !only do this if we actually have null grid points
               param(ix1,ix2beg,ix3,isp)=mindensnull
             end if

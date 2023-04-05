@@ -59,7 +59,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
-            fluidauxvar_pointers, electrovar_pointers, gemini_work, & 
+            fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             interp_file2subgrid_in,grid_from_extents_in,read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_alloc, gemini_grid_dealloc, &
@@ -121,7 +121,7 @@ contains
 
 
   !> interface subroutine to handle command line inputs or otherwise setup variables that would be specified
-  !    from the command line.  
+  !    from the command line.
   subroutine cli_in(p,lid2in,lid3in,cfg)
     type(c_params), intent(in) :: p
     integer, intent(inout) :: lid2in,lid3in
@@ -155,7 +155,7 @@ contains
     if(p%fortran_nml) then
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
-    endif 
+    endif
 
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
     call check_input_files(cfg)
@@ -356,7 +356,7 @@ contains
     class(curvmesh), intent(inout), pointer :: x
     integer, intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
-    integer :: ix1,ix2,ix3
+    integer :: ix2,ix3
     real(wp), dimension(:), allocatable :: x2,x3
     real(wp), dimension(:), pointer :: x1
     real(wp) :: glonctr,glatctr
@@ -619,14 +619,13 @@ contains
   end subroutine set_start_timefromcfg
 
 
-  !> set start values for some variables not specified by the input files.  
+  !> set start values for some variables not specified by the input files.
   !    some care is required here because the state variable pointers are mapped;
   !    however, note that the lbound and ubound have not been set since arrays are not passed through as dummy args
   !    with specific ubound so that we need to use intrinsic calls to make sure we fill computational cells (not ghost)
   subroutine set_start_values_auxvars(x,fluidauxvars)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
-    integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
 
@@ -673,7 +672,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt,t,cfg,ymd,UTsec,x,intvars%eprecip)
+    call init_precipinput(dt, cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
 
 
@@ -716,10 +715,9 @@ contains
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: v2grid,v3grid
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
   end subroutine init_neutralBG_in
 
 
@@ -1064,7 +1062,7 @@ contains
                                      '>>> Interior v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:),vplower,vpupper, &
                                      '>>> Interior v3 data corrupted:  ',locID)
- 
+
     ! now check the bottom ghost cells
     errflag=errflag .or. checkarray(ns(1:2,:,:,:),nlower,nupper, &
                                      '>>> Bottom density data corrupted:  ',locID)
@@ -1076,7 +1074,7 @@ contains
                                      '>>> Bottom v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(1:2,:,:,:),vplower,vpupper, &
                                      '>>> Bottom v3 data corrupted:  ',locID)
- 
+
     ! check top
     errflag=errflag .or. checkarray(ns(lx1+3:lx1+4,:,:,:),nlower,nupper, &
                                      '>>> Top density data corrupted:  ',locID)
@@ -1088,7 +1086,7 @@ contains
                                      '>>> Top v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(lx1+3:lx1+4,:,:,:),vplower,vpupper, &
                                      '>>> Top v3 data corrupted:  ',locID)
- 
+
     ! check left
     errflag=errflag .or. checkarray(ns(:,1:2,:,:),nlower,nupper, &
                                      '>>> Left density data corrupted:  ',locID)
@@ -1100,7 +1098,7 @@ contains
                                      '>>> Left v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(:,1:2,:,:),vplower,vpupper, &
                                      '>>> Left v3 data corrupted:  ',locID)
- 
+
     ! check right
     errflag=errflag .or. checkarray(ns(:,lx2+3:lx2+4,:,:),nlower,nupper, &
                                      '>>> Right density data corrupted:  ',locID)
@@ -1112,7 +1110,7 @@ contains
                                      '>>> Right v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(:,lx2+3:lx2+4,:,:),vplower,vpupper, &
                                      '>>> Right v3 data corrupted:  ',locID)
- 
+
     ! check bwd
     errflag=errflag .or. checkarray(ns(:,:,1:2,:),nlower,nupper, &
                                      '>>> Bwd density data corrupted:  ',locID)
@@ -1124,7 +1122,7 @@ contains
                                      '>>> Bwd v2 data corrupted:  ',locID)
     errflag=errflag .or. checkarray(vs3(:,:,1:2,:),vplower,vpupper, &
                                      '>>> Bwd v3 data corrupted:  ',locID)
- 
+
     ! check fwd
     errflag=errflag .or. checkarray(ns(:,:,lx3+3:lx3+4,:),nlower,nupper, &
                                      '>>> Fwd density data corrupted:  ',locID)
@@ -1323,7 +1321,7 @@ contains
     errflag=errflag .or. checkarray(B1(:,:,lx3+3:lx3+4),Blower,Bupper, &
                                      '>>> Fwd B1 data corrupted:  ',locID)
 
-    if (errflag) then 
+    if (errflag) then
       open(newunit=funit,file='error.dat',status='replace',access='stream')
       write(funit) ns
       write(funit) vs1
@@ -1426,7 +1424,7 @@ contains
     real(wp), intent(in) :: dt
     real(wp), intent(inout) :: maxcfl
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    
+
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call cflcalc(Ts,vs1,vs2,vs3,x%dl1i,x%dl2i,x%dl3i,dt,maxcfl)
   end subroutine
@@ -1436,19 +1434,19 @@ contains
   subroutine forceZOH(param)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
     integer :: lx1,lx2,lx3
-  
+
     lx1=size(param,1)-4; lx2=size(param,2)-4; lx3=size(param,3)-4;
-  
+
 !    param(0,:,:,:)=param(1,:,:,:)
 !    param(-1,:,:,:)=param(1,:,:,:)
 !    param(lx1+1,:,:,:)=param(lx1,:,:,:)
 !    param(lx1+2,:,:,:)=param(lx1,:,:,:)
-!  
+!
 !    param(:,0,:,:)=param(:,1,:,:)
 !    param(:,-1,:,:)=param(:,1,:,:)
 !    param(:,lx2+1,:,:)=param(:,lx2,:,:)
 !    param(:,lx2+2,:,:)=param(:,lx2,:,:)
-  
+
     param(:,:,0,:)=param(:,:,1,:)
     param(:,:,-1,:)=param(:,:,1,:)
     param(:,:,lx3+1,:)=param(:,:,lx3,:)
@@ -1530,7 +1528,7 @@ contains
   subroutine tag4refine_location(x,flagrefine)
     class(curvmesh), intent(in) :: x
     logical, intent(inout) :: flagrefine
-    integer :: ix1,ix2,ix3    
+    integer :: ix1,ix2,ix3
     real(wp) :: mlat,mlon,alt
 
     flagrefine=.false.
@@ -1562,14 +1560,14 @@ contains
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
     type(gemini_work) :: intvars
     logical, intent(inout) :: flagrefine
-    integer :: ix1,ix2,ix3    
+    integer :: ix1,ix2,ix3
     real(wp) :: mlat,mlon,alt
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     real(wp) :: vperp,vpar
-    
+
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
@@ -1596,7 +1594,7 @@ contains
 
 
   !> if refinement is being done it may be advantageous to have refine/interpolate done with drift and temperature
-  !    it's easiest to just copy swap existing variables.  
+  !    it's easiest to just copy swap existing variables.
   subroutine swap_statevars(fluidvars,fluidauxvars)
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
@@ -1662,7 +1660,7 @@ contains
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
     real(wp), dimension(:,:), pointer, intent(inout) :: datavals
     class(neutraldata), pointer :: aperptr
-        
+
     aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
     select type (aperptr)
     class is (neutraldata3D_fclaw)
@@ -1700,7 +1698,7 @@ contains
     class(neutraldata), pointer :: aperptr
 
     aperptr=>intvars%atmosperturb    ! apparently select case cannot handle a compound statement
-    select type (aperptr)    
+    select type (aperptr)
     class is (neutraldata3D_fclaw)
       call intvars%atmosperturb%set_datainow()
     class default

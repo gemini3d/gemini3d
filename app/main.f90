@@ -177,7 +177,7 @@ contains
 
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
-    call init_Efieldinput_in(cfg,x,dt,t,intvars,ymd,UTsec)
+    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
 
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background

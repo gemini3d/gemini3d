@@ -1,5 +1,7 @@
 submodule (io) plasma_output
 
+use mpimod, only : gather_recv, gather_send
+
 implicit none (type, external)
 
 interface ! plasma_output_*.f90

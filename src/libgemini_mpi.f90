@@ -379,7 +379,7 @@ contains
     dtprev = dt
 
     !> time step calculation, requires workers to report their most stringent local stability constraint
-    call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,x,dt)
+    call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
 
     !> do not allow the time step to change too rapidly
     if (it>1) then
