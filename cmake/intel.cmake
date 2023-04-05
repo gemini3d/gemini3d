@@ -10,7 +10,7 @@ $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
 
 
 if(NOT WIN32)
-  if(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
     add_compile_options(-fiopenmp)
   endif()
   # -fiopenmp:
