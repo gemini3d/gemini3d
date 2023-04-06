@@ -45,7 +45,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
             permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
-            get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in
+            get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in
 
 implicit none (type, external)
 
@@ -1025,6 +1025,32 @@ contains
 
     call interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
   end subroutine interp3_C
+
+
+  !> call gemini's internal interpolation code
+  subroutine interp2_C(xC,yC,mx,my,qC,auxC,meqn,maux,rhoi,zi,qiC,auxiC) bind(C,name='interp2_C')
+    type(C_PTR), intent(in) :: xC,yC
+    integer(C_INT), intent(in) :: mx,my
+    type(C_PTR), intent(in) :: qC,auxC
+    integer(C_INT), intent(in) :: meqn,maux
+    real(wp), intent(in) :: rhoi,zi
+    type(C_PTR), intent(inout) :: qiC,auxiC
+
+    real(wp), dimension(:), pointer :: x,y
+    real(wp), dimension(:,:,:), pointer :: q
+    real(wp), dimension(:,:,:), pointer :: aux
+    real(wp), dimension(:), pointer :: qi
+    real(wp), dimension(:), pointer :: auxi
+
+    call c_f_pointer(xC,x,[mx])
+    call c_f_pointer(yC,y,[my])
+    call c_f_pointer(qC,q,[mx,my,meqn])
+    call c_f_pointer(auxC,aux,[mx,my,maux])
+    call c_f_pointer(qiC,qi,[meqn])
+    call c_f_pointer(auxiC,auxi,[maux])
+
+    call interp2_in(x,y,q,aux,rhoi,zi,qi,auxi)
+  end subroutine interp2_C
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.

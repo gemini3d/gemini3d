@@ -47,7 +47,7 @@ use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
-use interpolation, only: interp3
+use interpolation, only: interp3,interp2
 
 implicit none (type, external)
 private
@@ -66,7 +66,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
-            set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in
+            set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1733,6 +1733,33 @@ contains
       auxi(iaux)=auxiarr(1)
     end do
   end subroutine interp3_in
+
+
+  !> Interface to access trilinear interpolation routines in gemini and interpolate MAGIC data
+  subroutine interp2_in(x,y,q,aux,rhoi,zi,qi,auxi)
+    real(wp), dimension(:), intent(in) :: x
+    real(wp), dimension(:), intent(in) :: y
+    real(wp), intent(in) :: rhoi,zi    ! single points based on forestclaw organization
+    real(wp), dimension(:), intent(inout) :: qi,auxi
+    real(wp), intent(in), dimension(:,:,:) :: q,aux
+    integer :: mx,my,meqn,maux,ieqn,iaux
+    real(wp), dimension(1) :: xiarr,yiarr,qiarr,auxiarr
+
+    ! sizes
+    mx=size(q,1); my=size(q,2);
+    meqn=size(q,3); maux=size(aux,3);
+    xiarr=[rhoi]; yiarr=[zi];
+
+    ! interpolate
+    do ieqn=1,meqn
+      qiarr=interp2(x,y,q(:,:,ieqn),xiarr,yiarr)     !note that the MAGIC coordinatees are permuted x,y,z
+      qi(ieqn)=qiarr(1)
+    end do
+    do iaux=1,maux
+      auxiarr=interp2(x,y,aux(:,:,iaux),xiarr,yiarr)
+      auxi(iaux)=auxiarr(1)
+    end do
+  end subroutine interp2_in
 
 
   !> increment date and time arrays, this is superfluous but trying to keep outward facing function calls here.
