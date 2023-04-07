@@ -45,7 +45,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             cli_in, gemini_grid_generate, gemini_grid_alloc, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
             permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
-            get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in
+            get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in, &
+            tag4refine_diff
 
 implicit none (type, external)
 
@@ -886,6 +887,8 @@ contains
         call tag4refine_location(x,flagrefine)
       case (1)    ! actively refine based on perpendicular velocity magnitude (e.g. indicative of auroral or neutral forcing)
         call tag4refine_vperp(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
+      case (2)
+        call tag4refine_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
       case default
         error stop 'unrecognized refinment criteria from user...'
     end select
