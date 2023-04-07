@@ -48,6 +48,7 @@ use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
+use calculus, only: grad3D2,grad3D3
 
 implicit none (type, external)
 private
@@ -66,7 +67,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
-            set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in
+            set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in, tag4refine_diff
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1591,6 +1592,54 @@ contains
       end do
     end do
   end subroutine tag4refine_vperp
+
+
+  !> Tag for refinement based on differences within some range
+  subroutine tag4refine_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
+    type(gemini_work) :: intvars
+    logical, intent(inout) :: flagrefine
+    integer :: ix1,ix2,ix3    
+    real(wp) :: mlat,mlon,alt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+!    real(wp) :: vtest1,vtest2
+    real(wp), dimension(x%lx1,x%lx2,x%lx3) :: gradvn12,gradvn13
+    
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+!    vtest1=minval(intvars%atmos%vn1)
+!    vtest2=maxval(intvars%atmos%vn1)
+!    if (vtest2-vtest1<15._wp) then
+!      flagrefine=.false.
+!    else
+!      flagrefine=.true.
+!    end if
+
+    gradvn12(:,:,:)=grad3D2(intvars%atmos%vn1(:,:,:),x,1,x%lx1,1,x%lx2,1,x%lx3)
+    gradvn13(:,:,:)=grad3D3(intvars%atmos%vn1(:,:,:),x,1,x%lx1,1,x%lx2,1,x%lx3)
+
+    flagrefine=.false.
+    do ix3=1,x%lx3
+      do ix2=1,x%lx2
+        do ix1=1,x%lx1
+          mlon=x%phi(ix1,ix2,ix3)*180.0/pi
+          mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
+          alt=x%alt(ix1,ix2,ix3)
+          if (alt > 90e3 .and. alt < 350e3 .and. &
+                  (abs(gradvn12(ix1,ix2,ix3)) > 1e-4 .or. abs(gradvn13(ix1,ix2,ix3)) > 1e-4) ) then
+            flagrefine=.true.
+            exit
+          end if
+        end do
+      end do
+    end do
+  end subroutine tag4refine_diff
 
 
   !> if refinement is being done it may be advantageous to have refine/interpolate done with drift and temperature

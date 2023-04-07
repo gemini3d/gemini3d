@@ -546,6 +546,10 @@ contains
     xvals=>self%xlocsi
     yvals=>self%ylocsi
     datavals=>self%dataxyzinow
+
+    !print*, 'x limits:  ',minval(xvals),maxval(xvals)
+    !print*, 'y limits:  ',minval(yvals),maxval(yvals)
+    !print*, 'z limits:  ',minval(zvals),maxval(zvals)
   end subroutine get_locationsi
 
 
@@ -607,7 +611,7 @@ contains
 !    print*, 'Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
 !    print*, 'Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
 !    print*, 'Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
-!    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
+    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
 !    print*, 'Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
 !    print*, 'Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
 !    print*, 'Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
