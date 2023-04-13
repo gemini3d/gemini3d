@@ -573,6 +573,7 @@ contains
   subroutine set_datainow(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
     integer lpts,ipts,ix1,ix2,ix3
+    integer funit
 
     if (.not. associated(self%dataxyzinow)) then
       error stop 'neutraldata3D_fclaw:  attempting to assign unallocated space to inputdata'
@@ -604,17 +605,22 @@ contains
       self%dTninow(ix1,ix2,ix3)=self%dataxyzinow(ipts,7)
     end do
 
-    ! insure winds are correctly rotated before returning
-    call self%rotate_winds()
+      open(newunit=funit,file='error.dat',status='replace',access='stream')
+      write(funit) self%dvn3inow
+      write(funit) self%zlocsi
+      close(funit)
 
     ! some quick checking
-!    print*, 'Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
-!    print*, 'Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
-!    print*, 'Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
-    print*, 'Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
-!    print*, 'Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
-!    print*, 'Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
-!    print*, 'Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
+!    print*, 'O Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
+!    print*, 'N2 Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
+!    print*, 'O2 Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)
+!    print*, 'vn1 Data limits:  ',minval(self%dvn1inow),maxval(self%dvn1inow)
+!    print*, 'vn2 Data limits:  ',minval(self%dvn2inow),maxval(self%dvn2inow)
+!    print*, 'vn3 Data limits:  ',minval(self%dvn3inow),maxval(self%dvn3inow)
+!    print*, 'T Data limits:  ',minval(self%dTninow),maxval(self%dTninow)
+
+    ! insure winds are correctly rotated before returning
+    call self%rotate_winds()
 
     ! deallocate the temp space for the data exchange now that we are done populating
     deallocate(self%zlocsi,self%xlocsi,self%ylocsi,self%ilocsi,self%dataxyzinow)
