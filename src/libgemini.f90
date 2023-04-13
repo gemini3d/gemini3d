@@ -1633,7 +1633,7 @@ contains
           mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
           alt=x%alt(ix1,ix2,ix3)
           if (alt > 90e3 .and. alt < 350e3 .and. &
-                  (abs(gradvn12(ix1,ix2,ix3)) > 1e-3 .or. abs(gradvn13(ix1,ix2,ix3)) > 1e-3) ) then
+                  (abs(gradvn12(ix1,ix2,ix3)) > 1.25e-3 .or. abs(gradvn13(ix1,ix2,ix3)) > 1.25e-3) ) then
             flagrefine=.true.
             exit
           end if
