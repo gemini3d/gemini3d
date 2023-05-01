@@ -333,6 +333,8 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, T
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude, commonfactor
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
+integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
+
 
 !!Start
 lx1=x%lx1
@@ -349,6 +351,8 @@ nsAvg=0.0_wp
 TsAvg=0.0_wp
 sigNCH=0.0_wp
 sigNCP=0.0_wp
+FBIbinary=1
+
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
@@ -407,23 +411,24 @@ TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
 Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
 Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
 
-commonfactor=(Emagnitude/Ethreshold-1)*(1-Ethreshold/Emagnitude)
-
-sigNCP=(1-ki**2)*commonfactor*sigP/(1+ki**2)
-sigNCH=-(2*ki)*(1+phi)*commonfactor*sigH/(1+ki**2)
-
+!Create matrix of 1 and 0s where FBI is possible, FBIbinary starts with all 1's meaning FBI everywhere
 where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
-  sigNCP=0.0_wp
-  sigNCH=0.0_wp
+  FBIbinary=0
 end where
 
 where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
-  sigNCP=0.0_wp
-  sigNCH=0.0_wp
+  FBIbinary=0
 end where
 
+!Calculate conductivity term only where FBI is possible
+where (FBIbinary==1)
+  commonfactor=(Emagnitude/Ethreshold-1)*(1-Ethreshold/Emagnitude)
+  sigNCP=(1-ki**2)*commonfactor*sigP/(1+ki**2)
+  sigNCH=-(2*ki)*(1+phi)*commonfactor*sigH/(1+ki**2)
+end where
 
 end subroutine NLConductivity
+
 
 
 subroutine capacitance(ns,B1,cfg,incap)

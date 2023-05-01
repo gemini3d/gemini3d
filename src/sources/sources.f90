@@ -512,16 +512,16 @@ nu=sfact*3.5e-14_wp*nn(:,:,:,2)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 r
 iePT=iePT+nu*Tn;
 ieLT=ieLT+nu;
 
-!call N2vib(nn,Tn,Ts,N2vibrationalLoss)
+call N2vib(nn,Tn,Ts,N2vibrationalLoss)
 call O2vib(nn, Tn, Ts, O2vibrationalLoss)
-iePT=iePT-max(O2vibrationalLoss,0._wp)
+iePT=iePT-max(O2vibrationalLoss,0._wp)-max(N2vibrationalLoss,0._wp)
 
-f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
-g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
-  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
-fact=sfact*2.99e-12_wp*nn(:,:,:,2)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000)*(exp(-g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !N2 vibrational excitation
+!f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
+!g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
+!  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
+!fact=sfact*2.99e-12_wp*nn(:,:,:,2)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000) &
+!        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000)*(exp(-g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
+!        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !N2 vibrational excitation
 !iePT=iePT-max(fact,0._wp);
 !f=3300-839*sin(1.91e-4_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2700))
 !fact=sfact*5.196e-13_wp*nn(:,:,:,3)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700) &
@@ -594,6 +594,182 @@ O2VibrationalLoss=nn(:,:,:,3)*1.0e-6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
 !print*,nn(:,:,:,3)
 
 end subroutine O2vib
+
+subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
+real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
+real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and temperature
+
+real(wp), dimension(:,:,:), intent(out) :: N2VibrationalLoss
+
+integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
+
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: vibloss, Te
+
+real(wp), parameter :: E1 = 3353.0_wp
+real(wp) :: LQ0Te=0.0_wp, Q0Te=0.0_wp, LQ1Te=0.0_wp, Q1Te=0.0_wp, &
+            Tei=0.0_wp, Tni=0.0_wp, nni=0.0_wp, &
+            STerm0, STerm1
+
+real(wp), parameter :: A0(10)=[real(wp) :: -2.025_wp, &
+                                            7.066_wp, & 
+                                            8.211_wp, &
+                                            9.713_wp, &
+                                            10.353_wp, &
+                                            10.819_wp, &
+                                            10.183_wp, &
+                                            12.698_wp, &
+                                            14.710_wp, &
+                                            17.538_wp]*(-1.0_wp)
+
+real(wp), parameter :: B0(10)=[real(wp) :: 8.782e-2_wp, &
+                                           1.001_wp, &
+                                           1.092_wp, &
+                                           1.204_wp, &
+                                           1.243_wp, &
+                                           1.244_wp, &
+                                           1.185_wp, &
+                                           1.309_wp, &
+                                           1.409_wp, &
+                                           1.600_wp]*(1.0e-2_wp)
+
+real(wp), parameter :: C0(10)=[real(wp) :: -2.954e-1_wp, &
+                                            3.066_wp, &
+                                            3.369_wp, &
+                                            3.732_wp, &
+                                            3.850_wp, &
+                                            3.771_wp, &
+                                            3.570_wp, &
+                                            3.952_wp, &
+                                            4.249_wp, &
+                                            4.916_wp]*(-1.0e-6_wp)
+
+real(wp), parameter :: D0(10)=[real(wp) :: -9.562e-1_wp, &
+                                            4.436_wp, &
+                                            4.891_wp, &
+                                            5.431_wp, &
+                                            5.600_wp, &
+                                            5.385_wp, &
+                                            5.086_wp, &
+                                            5.636_wp, &
+                                            6.058_wp, &
+                                            7.128_wp]*(1.0e-10_wp)
+
+real(wp), parameter :: F0(10)=[real(wp) :: -7.252e-1_wp, &
+                                            2.449_wp, &
+                                            2.706_wp, &
+                                            3.008_wp, &
+                                            3.100_wp, &
+                                            2.936_wp, &
+                                            2.769_wp, &
+                                            3.071_wp, &
+                                            3.300_wp, &
+                                            3.941_wp]*(-1.0e-14_wp)
+
+real(wp), parameter :: A1(8)=[real(wp) :: 3.413_wp, &
+                                           4.160_wp, &
+                                           5.193_wp, &
+                                           5.939_wp, &
+                                           8.261_wp, &
+                                           8.185_wp, &
+                                           10.823_wp, &
+                                           11.273_wp]*(-1.0_wp)
+
+real(wp), parameter :: B1(8)=[real(wp) :: 7.326e-1_wp, &
+                                          7.803e-1_wp, &
+                                          8.360e-1_wp, &
+                                          8.807e-1_wp, &
+                                          1.010_wp, &
+                                          1.010_wp, &
+                                          1.199_wp, &
+                                          1.283_wp]*(1.0e-2_wp)
+
+real(wp), parameter :: C1(8)=[real(wp) :: 2.200_wp, &
+                                          2.352_wp, &
+                                          2.526_wp, &
+                                          2.669_wp, &
+                                          3.039_wp, &
+                                          3.039_wp, &
+                                          3.620_wp, &
+                                          3.879_wp]*(-1.0e-6_wp)
+
+real(wp), parameter :: D1(8)=[real(wp) :: 3.128_wp, &
+                                          3.352_wp, &
+                                          3.606_wp, &
+                                          3.806_wp, &
+                                          4.318_wp, &
+                                          4.318_wp, &
+                                          5.159_wp, &
+                                          5.534_wp]*(1.0e-10_wp)
+
+real(wp), parameter :: F1(8)=[real(wp) :: 1.702_wp, &
+                                          1.828_wp, &
+                                          1.968_wp, &
+                                          2.073_wp, &
+                                          2.347_wp, &
+                                          2.347_wp, &
+                                          2.810_wp, &
+                                          3.016_wp]*(-1.0e-14_wp)
+
+                                          
+
+lx1=size(Ts,1)-4
+lx2=size(Ts,2)-4
+lx3=size(Ts,3)-4
+
+!Define Te, no ghost cells
+Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
+
+!loop over all indexes in the grid
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+
+      STerm0=0.0_wp !make summation terms 0 again, previous cell will have numbers here
+      STerm1=0.0_wp
+      Tei=Te(ix1,ix2,ix3) !Define it for selection
+      Tni=Tn(ix1,ix2,ix3)
+      nni=nn(ix1,ix2,ix3,2) !just N2
+
+      if (Tei<=1500) then       !Case 1, lower temperature
+        LQ0Te=-6.462_wp+3.151e-2_wp*Tei-4.075e-5_wp*Tei**2+2.439e-8_wp*Tei**3-5.479e-12_wp*Tei**4-16.0_wp;
+        Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+        vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Q0Te*(1-exp(E1*((Tni-Tei)/(Tei*Tni))))
+      else if (Tei<=6000) then !Case 2, have to calculate summations
+        do isp=1,10
+          LQ0Te=A0(isp)+Tei*B0(isp)+Tei**2*C0(isp)+Tei**3*D0(isp)+Tei**4*F0(isp)-16.0_wp;
+          Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+          STerm0=STerm0+Q0Te*(1-exp(isp*E1*((Tni-Tei)/(Tei*Tni))))
+        end do
+        do isp=1,8
+          LQ1Te=A1(isp)+Tei*B1(isp)+Tei**2*C1(isp)+Tei**3*D1(isp)+Tei**4*F1(isp)-16.0_wp;
+          Q1Te=EXP(LQ1Te*LOG(10.0_wp))
+          STerm1=STerm1+Q1Te*(1-exp(isp*E1*((Tni-Tei)/(Tei*Tni))))
+        end do
+        vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Sterm0+ &
+                             nni*1e-6_wp*(1-EXP(-E1/Tni))*EXP(-E1/Tni)*Sterm0
+      else 
+        Tei=6000 !the to max temperature value and do the same as above
+        do isp=1,10
+          LQ0Te=A0(isp)+Tei*B0(isp)+Tei**2*C0(isp)+Tei**3*D0(isp)+Tei**4*F0(isp)-16.0_wp;
+          Q0Te=EXP(LQ0Te*LOG(10.0_wp))
+          STerm0=STerm0+Q0Te*(1-exp(isp*E1*((Tni-Tei)/(Tei*Tni))))
+        end do
+        do isp=1,8
+          LQ1Te=A1(isp)+Tei*B1(isp)+Tei**2*C1(isp)+Tei**3*D1(isp)+Tei**4*F1(isp)-16.0_wp;
+          Q1Te=EXP(LQ1Te*LOG(10.0_wp))
+          STerm1=STerm1+Q1Te*(1-exp(isp*E1*((Tni-Tei)/(Tei*Tni))))
+        end do
+        vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Sterm0+ &
+                             nni*1e-6_wp*(1-EXP(-E1/Tni))*EXP(-E1/Tni)*Sterm0
+      end if   
+    end do
+  end do
+end do
+
+N2VibrationalLoss=vibloss
+!PRINT *, N2VibrationalLoss
+end subroutine N2vib
 
 
 subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
