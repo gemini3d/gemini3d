@@ -877,7 +877,7 @@ where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back
   FBIbinary=0
 end where
 
-where (ki>=1.0_wp) !Anything where ions are magnetized also goes back to normal
+where (ki>1.0_wp) !Anything where ions are magnetized also goes back to normal
   FBIbinary=0
 end where
 
