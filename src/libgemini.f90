@@ -1795,7 +1795,7 @@ contains
     real(wp), dimension(1) :: xiarr,yiarr,qiarr,auxiarr
 
     ! sizes
-    mx=size(q,1); my=size(q,2);
+    !mx=size(q,1); my=size(q,2);
     meqn=size(q,3); maux=size(aux,3);
     xiarr=[rhoi]; yiarr=[zi];
 
