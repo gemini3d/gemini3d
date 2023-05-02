@@ -1045,10 +1045,10 @@ contains
     real(wp), dimension(:), pointer :: qi
     real(wp), dimension(:), pointer :: auxi
 
-    call c_f_pointer(xC,x,[mx])
-    call c_f_pointer(yC,y,[my])
-    call c_f_pointer(qC,q,[mx,my,meqn])
-    call c_f_pointer(auxC,aux,[mx,my,maux])
+    call c_f_pointer(xC,x,[mx+4])
+    call c_f_pointer(yC,y,[my+4])
+    call c_f_pointer(qC,q,[mx+4,my+4,meqn])
+    call c_f_pointer(auxC,aux,[mx+4,my+4,maux])
     call c_f_pointer(qiC,qi,[meqn])
     call c_f_pointer(auxiC,auxi,[maux])
 

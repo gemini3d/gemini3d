@@ -572,8 +572,9 @@ contains
   !   holding buffer and needs to be copied out into the user-exposed arrays.  
   subroutine set_datainow(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
-    integer lpts,ipts,ix1,ix2,ix3
-    integer funit
+    integer :: lpts,ipts,ix1,ix2,ix3
+    integer :: funit
+    real(wp), parameter :: tol=1e-3
 
     if (.not. associated(self%dataxyzinow)) then
       error stop 'neutraldata3D_fclaw:  attempting to assign unallocated space to inputdata'
@@ -603,14 +604,36 @@ contains
       self%dvn2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,5)
       self%dvn3inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,6)
       self%dTninow(ix1,ix2,ix3)=self%dataxyzinow(ipts,7)
+
+!      print*, ipts, 'x,y,z:  '
+!      print*, self%dataxyzinow(ipts,1)
+!      print*, self%dataxyzinow(ipts,2)
+!      print*, self%dataxyzinow(ipts,3)
+!      print*, self%dataxyzinow(ipts,4),self%xlocsi(ipts)
+!      print*, self%dataxyzinow(ipts,5),self%ylocsi(ipts)
+!      print*, self%dataxyzinow(ipts,6),self%zlocsi(ipts)
+!      print*, self%dataxyzinow(ipts,7)
+
+!      ! FIXME: debugging code to check proper function
+!      if ( abs(self%dataxyzinow(ipts,1)-self%xlocsi(ipts)) > tol .or. &
+!              abs(self%dataxyzinow(ipts,2)-self%ylocsi(ipts)) > tol .or. &
+!              abs(self%dataxyzinow(ipts,3)-self%zlocsi(ipts)) > tol .or. &
+!              isnan(self%dataxyzinow(ipts,1)) .or. isnan(self%dataxyzinow(ipts,2)) .or. &
+!              isnan(self%dataxyzinow(ipts,3)) ) then
+!        print*, 'Bad mapping data x:  ',self%dataxyzinow(ipts,1),self%xlocsi(ipts)
+!        print*, 'Bad mapping data y:  ',self%dataxyzinow(ipts,2),self%ylocsi(ipts)
+!        print*, 'Bad mapping data z:  ',self%dataxyzinow(ipts,3),self%zlocsi(ipts)        
+!        error stop
+!      end if
+
     end do
 
-      open(newunit=funit,file='error.dat',status='replace',access='stream')
-      write(funit) self%dvn3inow
-      write(funit) self%zlocsi
-      close(funit)
+!      open(newunit=funit,file='error.dat',status='replace',access='stream')
+!      write(funit) self%dvn3inow
+!      write(funit) self%zlocsi
+!      close(funit)
 
-    ! some quick checking
+!    ! some quick checking
 !    print*, 'O Data limits:  ',minval(self%dnOinow),maxval(self%dnOinow)
 !    print*, 'N2 Data limits:  ',minval(self%dnN2inow),maxval(self%dnN2inow)
 !    print*, 'O2 Data limits:  ',minval(self%dnO2inow),maxval(self%dnO2inow)

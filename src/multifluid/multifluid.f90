@@ -42,6 +42,7 @@ real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
 real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 real(wp), parameter :: xicon = 3
+!real(wp), parameter :: xicon = 0
 !! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 contains
@@ -259,12 +260,16 @@ subroutine VNRicht_artvisc(ns,vs1,Q)
 
 !  !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
 !  ! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
-  do isp=1,lsp-1
-    v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
-    dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
-    Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
-  end do
-  Q(:,:,:,lsp) = 0
+  if (xicon>0) then
+    do isp=1,lsp-1
+      v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
+      dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
+      Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
+    end do
+    Q(:,:,:,lsp) = 0
+  else
+    Q=0._wp
+  end if
    !Q=0.0
 end subroutine VNRicht_artvisc
 
