@@ -553,7 +553,7 @@ real(wp), dimension(:,:,:), intent(out) :: O2VibrationalLoss
 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) ::LogQTe, QTe, Te, Teaux
 
-integer :: lx1,lx2,lx3,isp,isp2
+integer :: lx1,lx2,lx3
 
 lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
@@ -602,7 +602,7 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts !Plasma density and tempera
 
 real(wp), dimension(:,:,:), intent(out) :: N2VibrationalLoss
 
-integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
+integer :: ix1,ix2,ix3,lx1,lx2,lx3, isp
 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: vibloss, Te
 
@@ -771,7 +771,6 @@ N2VibrationalLoss=vibloss
 !PRINT *, N2VibrationalLoss
 end subroutine N2vib
 
-
 subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !! Inputs Needed
@@ -791,9 +790,8 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethresholdnum, Ethresholdden, Ethreshold, Emagnitude
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
 lx1=x%lx1
@@ -888,17 +886,17 @@ where (FBIbinary==1)
   heatingtotal=heatingfirst*heatingsecond
 end where
 
-call LossFactorCalc(TsAvg(:,:,:,2),Emagnitude,Ethreshold,ki,FBIbinary,lossfactor)
+call LossFactorCalc(TsAvg(:,:,:,2),FBIbinary,lossfactor)
 
 FBIproduction=heatingtotal
 FBIlossfactor=lossfactor
 
 end subroutine FBIheating
 
-subroutine LossFactorCalc(Te,Emagnitude,Ethreshold,ki,FBIBinary,FourierLossFactor)
+subroutine LossFactorCalc(Te,FBIBinary,FourierLossFactor)
 
 !! Inputs Needed
-real(wp), dimension(:,:,:), intent(in) :: Te, Ethreshold, Emagnitude, ki !Temperature, without ghost cells
+real(wp), dimension(:,:,:), intent(in) :: Te!Temperature, without ghost cells
 integer, dimension(:,:,:), intent(in) :: FBIbinary
 !! intent(out)
 real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !  
