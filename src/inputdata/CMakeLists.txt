@@ -24,6 +24,13 @@ const gemini3d_config meshobj interp timeutils neutraldata inputdata reader
 h5fortran::h5fortran
 )
 
+add_library(neutraldata2Daxisymm_fclaw OBJECT neutraldata2Daxisymmobj_fclaw.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(neutraldata2Daxisymm_fclaw PRIVATE 
+const gemini3d_config meshobj interp timeutils neutraldata neutraldata2D inputdata
+)
+
 add_library(neutraldata2Daxisymm OBJECT neutraldata2Daxisymmobj.f90
 $<TARGET_OBJECTS:grid>
 )

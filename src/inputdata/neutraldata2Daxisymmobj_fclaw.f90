@@ -1,32 +1,31 @@
-module neutraldata3Dobj_fclaw
+module neutraldata2Daxisymmobj_fclaw
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
-use neutraldata3Dobj, only: neutraldata3D
+use neutraldata2Dobj, only: neutraldata2D
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize3,get_simsize2,get_grid2,get_precip
 use timeutils, only: dateinc,date_filename
 use grid, only: gridflag
-use geomagnetic, only: ECEFspher2ENU
+!use geomagnetic, only: ECEFspher2ENUaxisymm
 
 implicit none (type, external)
 private
-public :: neutraldata3D_fclaw
+public :: neutraldata2Daxisymm_fclaw
 
 
 !> type definition for 3D neutral data that will be provided from a parallel model (i.e. one that runs with GEMINI)
-type, extends(neutraldata3D) :: neutraldata3D_fclaw
+type, extends(neutraldata2D) :: neutraldata2Daxisymm_fclaw
+  real(wp), dimension(:), pointer :: rhoi
+
   ! these are for storing information about locations that are being communicated to the neutral model
   real(wp), dimension(:), pointer :: zlocsi=>null(),xlocsi=>null(),ylocsi=>null()
   integer, dimension(:,:), pointer :: ilocsi=>null()
   real(wp), dimension(:,:), pointer :: dataxyzinow=>null()    ! will need to be rotated prior to placing in final arrays
-
-  ! FIXME: for dealing with axisymmetric situations
-  real(wp), dimension(:,:,:), allocatable :: proj_ehorzp_e1,proj_ehorzp_e2,proj_ehorzp_e3
 
   contains
     ! for flagging sizes as set
@@ -38,24 +37,24 @@ type, extends(neutraldata3D) :: neutraldata3D_fclaw
     procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral model
     procedure :: get_datainow_ptr     ! grab a pointer to where data need to be fed
     procedure :: set_datainow         ! place a set of interpolated data into the data array at indices corresponding to locations
-    procedure :: rotate_winds         ! FIXME: hardcoded axisymmetric
 
     ! bindings for deferred procedures
-    procedure :: init=>init_neu3D_fclaw
-    procedure :: set_coordsi=>set_coordsi_neu3D_fclaw
-    procedure :: load_data=>load_data_neu3D_fclaw
-    procedure :: load_grid=>load_grid_neu3D_fclaw
-    procedure :: load_size=>load_size_neu3D_fclaw
+    procedure :: init=>init_neu2Daxisymm_fclaw
+    procedure :: set_coordsi=>set_coordsi_neu2Daxisymm_fclaw
+    procedure :: load_data=>load_data_neu2Daxisymm_fclaw
+    procedure :: load_grid=>load_grid_neu2Daxisymm_fclaw
+    procedure :: load_size=>load_size_neu2Daxisymm_fclaw
+    procedure :: load_sizeandgrid_neu2D=>load_sizeandgrid_neu2D_fclaw
 
     ! destructor
     final :: destructor
-end type neutraldata3D_fclaw
+end type neutraldata2Daxisymm_fclaw
 
 
 contains
   !> initialize arrays for storing object data once the sizes are set
     subroutine init_storage(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     integer :: lc1,lc2,lc3
     integer :: lc1i,lc2i,lc3i
     integer :: l0D
@@ -114,12 +113,11 @@ contains
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
     !allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))   
-    allocate(self%ximat(lc1i,lc2i,lc3i),self%yimat(lc1i,lc2i,lc3i),self%zimat(lc1i,lc2i,lc3i))
+    allocate(self%horzimat(lc1i,lc2i,lc3i),self%zimat(lc1i,lc2i,lc3i))
+!    allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
+!    allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
+!    allocate(self%proj_exp_e1(lc1i,lc2i,lc3i),self%proj_exp_e2(lc1i,lc2i,lc3i),self%proj_exp_e3(lc1i,lc2i,lc3i))
     allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
-    allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
-    allocate(self%proj_exp_e1(lc1i,lc2i,lc3i),self%proj_exp_e2(lc1i,lc2i,lc3i),self%proj_exp_e3(lc1i,lc2i,lc3i))
-
-    !FIXME: for when axisymmetric rotations need to be done
     allocate(self%proj_ehorzp_e1(lc1i,lc2i,lc3i),self%proj_ehorzp_e2(lc1i,lc2i,lc3i),self%proj_ehorzp_e3(lc1i,lc2i,lc3i))
 
     self%flagalloc=.true.
@@ -128,7 +126,7 @@ contains
 
   !> just force the size flag to be set
   subroutine set_sizeflag(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
 
     self%flagdatasize=.true.
   end subroutine set_sizeflag
@@ -136,7 +134,7 @@ contains
 
   !> set pointer variables to locations for storage of interpolated data (3D always for neutral input)
   subroutine setptrs_grid(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
 
 !    ! set aliases for prev data
 !    self%dnOiprev=>self%data3Di(:,:,:,1,1)
@@ -169,8 +167,8 @@ contains
 
   !> initialize object for this type of neutral input data.  In this case the source arrays are not needed at all since
   !    we expect the top-level app to populate the neutral data for us.
-  subroutine init_neu3D_fclaw(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+  subroutine init_neu2Daxisymm_fclaw(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     character(*), intent(in) :: sourcedir               ! will not be used but part of call signature for uniformity, could replace
                                                         !   with "generic" procedure
@@ -188,7 +186,7 @@ contains
     !   Note that we don't have a source location per se
     !call self%set_source(sourcedir)
     call self%set_source('')
-    strname='neutral perturbations fclaw (3D)'
+    strname='neutral perturbations axisymmetric fclaw (2D)'
     call self%set_name(strname)
     call self%set_cadence(dtdata)
     ! I believe that this won't even be used but set to false anyway
@@ -198,8 +196,8 @@ contains
     ! set sizes, we have 7 arrays all 3D (irrespective of 2D vs. 3D neutral input).  for 3D neutral input
     !    the situation is more complicated that for other datasets because you cannot compute the number of
     !    source grid points for each worker until you have root compute the entire grid and slice everything up
-    allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
-    self%lzn=>self%lc1; self%lxn=>self%lc2; self%lyn=>self%lc3;              ! these referenced while reading size and grid data
+    !allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
+    !self%lzn=>self%lc1; self%lhorzn=>self%lc2; self%lyn=>self%lc3;              ! these referenced while reading size and grid data
     call self%set_sizeflag()
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
@@ -255,33 +253,32 @@ contains
 
     ! No priming required
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
-  end subroutine init_neu3D_fclaw
+
+    ! bind axisymmetric pointers for convenience
+    self%rhoi=>self%horzi
+  end subroutine init_neu2Daxisymm_fclaw
 
 
 
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
-  subroutine set_coordsi_neu3D_fclaw(self,cfg,x)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+  subroutine set_coordsi_neu2Daxisymm_fclaw(self,cfg,x)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
     real(wp) :: xp,yp
-    real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
-    real(wp), dimension(3) :: erhop    ! FIXME: axisymmetric
+    real(wp), dimension(3) :: ezp,erhop,tmpvec,exprm
     real(wp) :: tmpsca
     integer :: ix1,ix2,ix3,iyn,izn,ixn,iid
-
-    ! Space for coordinate sites and projections in neutraldata3D object
-    self%zi=>self%coord1i; self%xi=>self%coord2i; self%yi=>self%coord3i;     ! alias coordinates of interpolation sites
 
     !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
     phi1=cfg%sourcemlon*pi/180
     theta1=pi/2 - cfg%sourcemlat*pi/180
 
     ! coordinate arrays (ENU)
-    call ECEFspher2ENU(x%alt(1:x%lx1,1:x%lx2,1:x%lx3),x%theta(1:x%lx1,1:x%lx2,1:x%lx3),x%phi(1:x%lx1,1:x%lx2,1:x%lx3), &
-                          theta1,phi1, &
-                          self%ximat,self%yimat,self%zimat)
+    !call ECEFspher2ENU(x%alt(1:x%lx1,1:x%lx2,1:x%lx3),x%theta(1:x%lx1,1:x%lx2,1:x%lx3),x%phi(1:x%lx1,1:x%lx2,1:x%lx3), &
+    !                      theta1,phi1, &
+    !                      self%ximat,self%yimat,self%zimat)
 
     do ix3=1,x%lx3
       do ix2=1,x%lx2
@@ -363,33 +360,43 @@ contains
       end do
     end do
 
+!    !Assign values for flat lists of grid points
+!    self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
+!    self%yi=pack(self%yimat,.true.)
+!    self%xi=pack(self%ximat,.true.)
+
     !Assign values for flat lists of grid points
-    self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
-    self%yi=pack(self%yimat,.true.)
-    self%xi=pack(self%ximat,.true.)
+    self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
+    self%horzi=pack(self%horzimat,.true.)
+
+    !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
+    print *, 'Min/max rhoi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
+    print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
+    print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
 
     self%flagcoordsi=.true.
-  end subroutine set_coordsi_neu3D_fclaw
+  end subroutine set_coordsi_neu2Daxisymm_fclaw
 
 
   !> do nothing stub - type extensions must override this to perform whatever load steps are needed for their data types
-  subroutine load_size_neu3D_fclaw(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+  subroutine load_size_neu2Daxisymm_fclaw(self)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
 
     return
-  end subroutine load_size_neu3D_fclaw
+  end subroutine load_size_neu2Daxisymm_fclaw
 
 
   !> do nothing stub
-  subroutine load_grid_neu3D_fclaw(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+  subroutine load_grid_neu2Daxisymm_fclaw(self)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
 
     return
-  end subroutine load_grid_neu3D_fclaw
+  end subroutine load_grid_neu2Daxisymm_fclaw
 
 
-  subroutine load_data_neu3D_fclaw(self,t,dtmodel,ymdtmp,UTsectmp)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+  subroutine load_data_neu2Daxisymm_fclaw(self,t,dtmodel,ymdtmp,UTsectmp)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
@@ -472,12 +479,12 @@ contains
 !    end if
 
     return
-  end subroutine load_data_neu3D_fclaw
+  end subroutine load_data_neu2Daxisymm_fclaw
 
 
   !> overriding procedure for updating neutral atmos (need additional rotation steps)
   subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dtmodel             ! need both model and input data time stepping
     real(wp), intent(in) :: t                   ! simulation absoluate time for which perturabation is to be computed
@@ -523,7 +530,7 @@ contains
   !> Find and return a list of interpolation sites that are in bounds for the external neutral model grid.  This
   !    procedure needs to allocate space to store the (unknown upon entry) number of locations needed.  
   subroutine get_locationsi(self,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     logical, intent(in) :: flagallpts    ! return all points
     real(wp), dimension(2), intent(in) :: zlims,xlims,ylims    ! global boundary of neutral grid we are accepting data from
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
@@ -545,8 +552,7 @@ contains
     !print*, 'Searching with ranges:  ',zlims,xlims,ylims
     lpts=0
     do ipts=1,lx1*lx2*lx3
-      if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
-            self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
+      if (self%rhoi(ipts) > xlims(1) .and. self%rhoi(ipts) < xlims(2) .and. &
             self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2) &
              .or. flagallpts) then
         lpts=lpts+1
@@ -564,13 +570,11 @@ contains
     do ix3=1,lx3
       do ix2=1,lx2
         do ix1=1,lx1
-          if (self%xi(ipts) > xlims(1) .and. self%xi(ipts) < xlims(2) .and. &
-                self%yi(ipts) > ylims(1) .and. self%yi(ipts) < ylims(2) .and. &
+          if (self%rhoi(ipts) > xlims(1) .and. self%rhoi(ipts) < xlims(2) .and. &
                 self%zi(ipts) > zlims(1) .and. self%zi(ipts) < zlims(2) &
                  .or. flagallpts) then
             self%zlocsi(itarg)=self%zi(ipts)
-            self%xlocsi(itarg)=self%xi(ipts)
-            self%ylocsi(itarg)=self%yi(ipts)
+            self%xlocsi(itarg)=self%rhoi(ipts)
             self%ilocsi(itarg,:)=[ix1,ix2,ix3]
             itarg=itarg+1
             if (itarg > lpts) exit    ! we are done and can stop iterating through the list of points
@@ -582,7 +586,7 @@ contains
 
     zvals=>self%zlocsi
     xvals=>self%xlocsi
-    yvals=>self%ylocsi
+    yvals=>null()
     datavals=>self%dataxyzinow
 
     !print*, 'x limits:  ',minval(xvals),maxval(xvals)
@@ -593,7 +597,7 @@ contains
 
   !> Return a pointer to direct-feed the input data to the user
   function get_datainow_ptr(self) result(datavals)
-    class(neutraldata3D_fclaw), intent(inout) :: self   
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self   
     real(wp), dimension(:,:), pointer :: datavals
 
     if (.not. associated(self%dataxyzinow)) then
@@ -609,7 +613,7 @@ contains
   !   placed.  In a sense a call to this procedure merely informs the object that data have been placed in its
   !   holding buffer and needs to be copied out into the user-exposed arrays.  
   subroutine set_datainow(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
     integer :: lpts,ipts,ix1,ix2,ix3
     integer :: funit
     real(wp), parameter :: tol=1e-3
@@ -688,40 +692,9 @@ contains
   end subroutine set_datainow
 
 
-  ! FIXME: axisymmetric
-  !> This subroutine takes winds stored in self%dvn?inow and applies a rotational transformation onto the
-  !      grid object for this simulation.  Provided that the horizontal projections have been computed
-  !      correctly the same rotation can be used for axisymmetric and cartesian.
-  subroutine rotate_winds(self)
-    class(neutraldata3D_fclaw), intent(inout) :: self
-    integer :: ix1,ix2,ix3
-    real(wp) :: vnhorz,vnz,Tn
-
-    ! do rotations one grid point at a time to cut down on temp storage needed.  Note that until this point there
-    !   shoudl be only zero data stored in vn3 since this class is for 2D data input, instead temperature
-    !   gets stored in the dvn3i variables.
-    do ix3=1,self%lc3i
-      do ix2=1,self%lc2i
-        do ix1=1,self%lc1i
-          vnz=self%dvn1inow(ix1,ix2,ix3)
-          vnhorz=self%dvn2inow(ix1,ix2,ix3)
-          Tn=self%dvn3inow(ix1,ix2,ix3)    ! need to save because it will get overwritten in rotation
-          self%dvn1inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_ehorzp_e1(ix1,ix2,ix3)
-          self%dvn2inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_ehorzp_e2(ix1,ix2,ix3)
-          self%dvn3inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_ehorzp_e3(ix1,ix2,ix3)
-          self%dTninow(ix1,ix2,ix3)=Tn     ! assign saved temperature into correct slot in "output" variables
-        end do
-      end do
-    end do
-  end subroutine rotate_winds
-
-
   !> destructor for when object goes out of scope
   subroutine destructor(self)
-    type(neutraldata3D_fclaw) :: self
+    type(neutraldata2Daxisymm_fclaw) :: self
 
     ! deallocate arrays from base inputdata class
     !call self%dissociate_pointers()
@@ -745,9 +718,8 @@ contains
 
     ! now deallocate arrays specific to this extension
     deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
-    deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
-    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
-    deallocate(self%ximat,self%yimat,self%zimat)
+    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)
+    deallocate(self%horzimat,self%zimat)
 
     ! root has some extra data
 !    if (mpi_cfg%myid==0) then
@@ -756,7 +728,8 @@ contains
 !    end if
 
     ! set pointers to null
-    nullify(self%xi,self%yi,self%zi);
+    nullify(self%zi,self%horzi)
+    nullify(self%rhoi)
     !nullify(self%xn,self%yn,self%zn);
     !nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
 
@@ -764,4 +737,12 @@ contains
     self%flagprimed=.false.
     self%flagcoordsi=.false.
   end subroutine destructor
-end module neutraldata3Dobj_fclaw
+
+
+  subroutine load_sizeandgrid_neu2D_fclaw(self,cfg)
+    class(neutraldata2Daxisymm_fclaw), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
+
+    return
+  end subroutine load_sizeandgrid_neu2D_fclaw
+end module neutraldata2Daxisymmobj_fclaw
