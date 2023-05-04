@@ -638,9 +638,9 @@ contains
       self%dnOinow(ix1,ix2,ix3)=self%dataxyzinow(ipts,1)
       self%dnN2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,2)
       self%dnO2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,3)
-      self%dvn1inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,4)
-      self%dvn2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,5)
-      self%dvn3inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,6)
+      self%dvn1inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,6)     ! will be interpreted as vertical
+      self%dvn2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,4)     ! interpreted as horizontal, swapped with 
+      self%dvn3inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,5)     ! not used if axisymmetric
       self%dTninow(ix1,ix2,ix3)=self%dataxyzinow(ipts,7)
 
 !      print*, ipts, 'x,y,z:  '
