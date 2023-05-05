@@ -639,7 +639,7 @@ contains
       self%dnN2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,2)
       self%dnO2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,3)
       self%dvn1inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,6)     ! will be interpreted as vertical
-      self%dvn2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,4)     ! interpreted as horizontal, swapped with 
+      self%dvn2inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,4)     ! interpreted as horizontal
       self%dvn3inow(ix1,ix2,ix3)=self%dataxyzinow(ipts,5)     ! not used if axisymmetric
       self%dTninow(ix1,ix2,ix3)=self%dataxyzinow(ipts,7)
 
@@ -688,7 +688,7 @@ contains
   end subroutine set_datainow
 
 
-  ! FIXME: axisymmetric
+  ! FIXME: overridden with axisymmetric rotation code for now...
   !> This subroutine takes winds stored in self%dvn?inow and applies a rotational transformation onto the
   !      grid object for this simulation.  Provided that the horizontal projections have been computed
   !      correctly the same rotation can be used for axisymmetric and cartesian.
@@ -748,6 +748,9 @@ contains
     deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
     deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
     deallocate(self%ximat,self%yimat,self%zimat)
+
+    ! FIXME: axisymmetric
+    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)   
 
     ! root has some extra data
 !    if (mpi_cfg%myid==0) then
