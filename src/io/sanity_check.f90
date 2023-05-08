@@ -147,6 +147,7 @@ if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
 if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 100000)) &
   call error_stop (dump_filename, 'input:plasma: too hot Ts', ns, vs1, Ts)
 
+! FIXME:  this can cause problems if a worker gets data from all lower altitudes.  
 if (maxval(Ts(i1:k1, i2:k2, i3:k3, i4:k4)) < 500) &
   call error_stop (dump_filename, 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
 
