@@ -127,7 +127,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   ! Change made here for FBI. Added E2 and E3 to the call magnetic field magnitude is x%Bmag(:,:,:)
-  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)                     ! collisional interactions
+  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo, E2,E3,x)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then

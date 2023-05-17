@@ -429,7 +429,7 @@ end do
 end subroutine srcsMomentum_curv
 
 
-subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)
+subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x)
 
 !------------------------------------------------------------
 !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
@@ -439,7 +439,7 @@ subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3
 class(curvmesh), intent(in) :: x !Added for FBI, need BMAG
 
 
@@ -530,7 +530,7 @@ iePT=iePT-max(O2vibrationalLoss,0._wp)-max(N2vibrationalLoss,0._wp)
 !iePT=iePT-max(fact,0._wp);
 
 !! This would be the place to include FBI heating probably just add to iePT
-call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
+call FBIheating(nn,Tn,ns,Ts,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !This includes losses of the FBI part
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
@@ -771,13 +771,13 @@ N2VibrationalLoss=vibloss
 !PRINT *, N2VibrationalLoss
 end subroutine N2vib
 
-subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
+subroutine FBIheating(nn,Tn,ns,Ts,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !! Inputs Needed
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
 real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 
 !! intent(out)
@@ -800,7 +800,7 @@ lx3=x%lx3
 
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
-Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
+Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 
 !!Initialize arrays a 0s and loss as 1s
 nuAvg=0.0_wp
