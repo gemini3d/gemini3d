@@ -10,6 +10,7 @@ use neutraldataobj, only: neutraldata
 use neutraldata3Dobj, only: neutraldata3D
 use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
 use neutraldata3Dobj_fclaw_axisymm, only: neutraldata3D_fclaw_axisymm
+use neutraldata3Dobj_fclaw_3Dx, only: neutraldata3D_fclaw_3Dx
 use neutraldata3Dobj_geog_mpi, only: neutraldata3D_geog
 use neutraldata3Dobj_geom_mpi, only: neutraldata3D_geom
 !!!
@@ -51,8 +52,10 @@ contains
         allocate(neutraldata3D_geom::atmosperturb)
       case (4)
         allocate(neutraldata3D_geog::atmosperturb)
-      case (5)     ! we assume forestGEMINI will control things
+      case (5)     ! we assume forestGEMINI will control things, this will be axisymmetric MAGIC-forest data
         allocate(neutraldata3D_fclaw_axisymm::atmosperturb)
+      case (6)     ! we assume forestGEMINI will control things, this will be 3Dx MAGIC-forest data
+        allocate(neutraldata3D_fclaw_3Dx::atmosperturb)
       case default
         print*, 'non-standard neutral interpolation type chosen in config.nml:  ',cfg%interptype
         error stop
