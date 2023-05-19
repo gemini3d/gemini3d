@@ -1469,7 +1469,8 @@ contains
   end subroutine forceZOH_all
 
 
-  !> permute state variables x1,x2,x3 --> x2,x3,x1
+  !> permute state variables x1,x2,x3 --> x2,x3,x1.  FIXME: this is now deprecated since we also need to 
+  !    swap for density variables when using forestclaw.
   subroutine permute_fluidvars(fluidvars)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     integer lx1,lx2,lx3,leqn,ix1,ix2,ix3,ieqn
@@ -1498,7 +1499,7 @@ contains
   end subroutine permute_fluidvars
 
 
-  ! inverse permute state variables x2,x3,x1 --> x1,x2,x3
+  ! inverse permute state variables x2,x3,x1 --> x1,x2,x3.  FIXME: also deprecated.  
   subroutine ipermute_fluidvars(fluidvars)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     integer lx1,lx2,lx3,leqn,ix1,ix2,ix3,ieqn
