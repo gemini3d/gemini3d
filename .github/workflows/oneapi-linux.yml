@@ -19,6 +19,7 @@ on:
       - "**.F90"
       - "**.cmake"
       - "cmake/libraries.json"
+      - "CMakePresets.json"
       - "**/CMakeLists.txt"
       - "!cmake/gnu.cmake"
       - ".github/workflows/oneapi-linux.yml"
