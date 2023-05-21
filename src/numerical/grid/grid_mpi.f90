@@ -3,9 +3,6 @@ submodule (grid) grid_mpi
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
-use meshobj, only: curvmesh
-use meshobj_dipole, only: dipolemesh
-use meshobj_cart, only: cartmesh
 use phys_consts, only: Gconst,Me,Re,red,black
 use mpimod, only: mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
