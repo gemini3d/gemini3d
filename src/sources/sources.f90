@@ -784,7 +784,7 @@ class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
 
 !!Internal Arrays
-integer :: isp,isp2,lx1,lx2,lx3,ix1,ix2,ix3
+integer :: isp,isp2,lx1,lx2,lx3,ix1,ix2,ix3,tcount
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
@@ -794,7 +794,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold,
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
-real(wp), dimension(size(Ts,1),size(Ts,2),size(Ts,3),lsp) :: Tsfix 
+real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tsfix
 real(wp) :: TMAX
 
 lx1=x%lx1
@@ -818,6 +818,7 @@ heatingfirst=0.0_wp
 heatingsecond=0.0_wp
 heatingtotal=0.0_wp
 FBIbinary=1
+tcount=0
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
@@ -831,19 +832,22 @@ end do
 
 !Fix attempt, any temperature above 8000 is 8000 (only electrons)
 Tsfix=Ts
-! TMAX=8000.0_wp
+TMAX=7000.0_wp
 
-! do ix3=1,lx3
-!   do ix2=1,lx2
-!     do ix1=1,lx1
-!         if (Tsfix(ix1,ix2,ix3,lsp)>TMAX) then
-!           PRINT *, Tsfix(ix1,ix2,ix3,lsp)
-!           Tsfix(ix1,ix2,ix3,lsp)=TMAX
-!         end if
-!     end do
-!   end do
-! end do
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+        if (Tsfix(ix1,ix2,ix3,lsp)>TMAX) then
+          tcount=tcount+1
+          Tsfix(ix1,ix2,ix3,lsp)=TMAX
+        end if
+    end do
+  end do
+end do
 
+if (tcount>0) then 
+  PRINT *, tcount
+end if
 
 !! Average Collisuons frequencies: first averaging over neutrals
 do isp=1,lsp
