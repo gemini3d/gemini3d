@@ -794,7 +794,7 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold,
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
-real(wp), dimension(size(Ts,1),size(Ts,2),size(Ts,3),lsp) :: Tsfix 
+real(wp), dimension(:,:,:,:) :: Tsfix 
 real(wp) :: TMAX
 
 lx1=x%lx1
