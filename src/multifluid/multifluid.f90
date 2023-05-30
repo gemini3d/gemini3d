@@ -54,7 +54,7 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
 
   call sweep3_allspec(ns,vs3i,dt,x,0,6)
   call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
-  call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
+  call sweep3_allspec(rhoes,vs3i,dt,x,0,6)    ! FIXME: omit electrons
 end subroutine sweep3_allparams
 
 
@@ -67,7 +67,7 @@ subroutine sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
 
   call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
   call sweep1_allspec(rhovs1,vs1i,dt,x,6)
-  call sweep1_allspec(rhoes,vs1i,dt,x,7)
+  call sweep1_allspec(rhoes,vs1i,dt,x,6)    ! omit electrons
 end subroutine sweep1_allparams
 
 
@@ -80,7 +80,7 @@ subroutine sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
 
   call sweep2_allspec(ns,vs2i,dt,x,0,6)
   call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
-  call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+  call sweep2_allspec(rhoes,vs2i,dt,x,0,6)    ! FIXME: omit electrons
 end subroutine sweep2_allparams
 
 
@@ -94,7 +94,6 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   real(wp), intent(in) :: UTsec
   class(curvmesh), intent(in) :: x
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3
-
 
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), intent(in) :: f107a,f107
@@ -111,6 +110,8 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
   integer :: iprec
   real(wp) :: tstart,tfin
+  integer, parameter :: lsub=1    ! number of source subcycles to do
+  integer :: isub
 
   !> Establish top boundary conditions for electron precipitation
   if (cfg%flagprecfile==1) then
@@ -126,31 +127,35 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   Qeprecip=0.0
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
-  ! Change made here for FBI. Added E2 and E3 to the call magnetic field magnitude is x%Bmag(:,:,:)
-  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo, E2,E3,x)                     ! collisional interactions
-  call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
 
-  !ALL VELOCITY SOURCES
-  call cpu_time(tstart)
-  call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
-
-  !ALL MASS SOURCES
-  call cpu_time(tstart)
-  call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
+  do isub=1,lsub
+    ! Change made here for FBI. Added E2 and E3 to the call magnetic field magnitude is x%Bmag(:,:,:)
+    call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)                     ! collisional interactions
+    call energy_source_loss(dt/lsub,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+    call cpu_time(tfin)
+    !if (mpi_cfg%myid==0 .and. debug) then
+    !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+    !end if
+  
+    !ALL VELOCITY SOURCES
+    call cpu_time(tstart)
+    call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
+    call momentum_source_loss(dt/lsub,x,Pr,Lo,ns,rhovs1,vs1)
+    call cpu_time(tfin)
+    !if (mpi_cfg%myid==0 .and. debug) then
+    !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+    !end if
+  
+    ! FIXME: don't solve chemistry
+    !ALL MASS SOURCES
+    call cpu_time(tstart)
+    call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+    call mass_source_loss(dt/lsub,Pr,Lo,Prprecip,ns)
+    call cpu_time(tfin)
+    !if (mpi_cfg%myid==0 .and. debug) then
+    !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+    !end if
+  end do
 end subroutine source_loss_allparams
 
 
@@ -247,20 +252,25 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
   real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
   integer :: isp,lsp
+  integer, parameter :: lsub=1
+  integer :: isub
 
   lsp=size(vs1,4)
-  do isp=1,lsp
-    divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
-                  vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
-                  vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    !! diff with one set of ghost cells to preserve second order accuracy over the grid
-    paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
 
-    rhoeshalf = paramtrim - dt/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
-    !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
-
-    paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
-    rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
+  do isub=1,lsub
+    do isp=1,lsp    ! FIXME: omit electrons
+      divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
+                    vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
+                    vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      !! diff with one set of ghost cells to preserve second order accuracy over the grid
+      paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
+  
+      rhoeshalf = paramtrim - (dt/lsub)/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
+      !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
+  
+      paramtrim=paramtrim-(dt/lsub)*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
+      rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
+    end do
   end do
 end subroutine compression
 
@@ -280,25 +290,30 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
   integer :: isp,lsp
+  integer, parameter :: lsub=1
+  integer :: isub
 
   lsp=size(Ts,4)
-  do isp=1,lsp
-    param=Ts(:,:,:,isp)     !temperature for this species
-    call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
 
-    call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
-    select case (flagdiffsolve)
-      case (1)
-        param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
-      case (2)
-        param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
-      case default
-        print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
-        error stop
-    end select
-
-    Ts(:,:,:,isp) = param
-    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
+  do isub=1,lsub
+    do isp=1,lsp    ! FIXME: no conduction for electrons!
+      param=Ts(:,:,:,isp)     !temperature for this species
+      call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+  
+      call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+      select case (flagdiffsolve)
+        case (1)
+          param=backEuler3D(param,A,B,C,D,E,dt/lsub,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+        case (2)
+          param=TRBDF23D(param,A,B,C,D,E,dt/lsub,x)       !2nd order method, should be used for most simulations
+        case default
+          print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
+          error stop
+      end select
+  
+      Ts(:,:,:,isp) = param
+      Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
+    end do
   end do
 end subroutine energy_diffusion
 
