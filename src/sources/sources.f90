@@ -791,7 +791,7 @@ class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
 
 !!Internal Arrays
-integer :: isp,isp2,lx1,lx2,lx3
+integer :: isp,isp2,lx1,lx2,lx3, ix1, ix2, ix3
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
