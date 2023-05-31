@@ -312,13 +312,13 @@ end do
 
 end subroutine conductivities
 
-subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
+subroutine NLConductivity(nn,Tn,ns,Ts,E1,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
 !! Inputs Needed
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
 real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH !linear conductivities
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
 
 !! intent(out)
@@ -335,12 +335,21 @@ real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold,
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: outputtest
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
+!FIXME: fix temperatures
+real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tstmp
 
 !!Start
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
+
+! for adjusting temps used in FBI calculations
+do isp=1,lsp
+  Tstmp(1:lx1,1:lx2,1:lx3,isp)=Tn(:,:,:)
+end do
+
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+!Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 
 !!Initialize arrays as 0s
@@ -367,7 +376,8 @@ end do
 !! Average Collisuons frequencies: first averaging over neutrals
 do isp=1,lsp
   do isp2=1,ln
-    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+!    call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+    call maxwell_colln(isp,isp2,nn,Tn,Tstmp,nu)
     nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)+nu*nuW(:,:,:,isp2) !Store the collision frequencies weighted by massdensity
   end do
   nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
@@ -402,6 +412,8 @@ phi=1.0_wp/(ke*ki)
 !!Average ion temperature
 TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
 TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
+!TsAvg(:,:,:,1)=Tstmp(1:lx1,1:lx2,1:lx3,1)
+!TsAvg(:,:,:,2)=Tstmp(1:lx1,1:lx2,1:lx3,7)
 
 !!Ethreshold
 !Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))

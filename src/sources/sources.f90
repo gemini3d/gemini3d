@@ -429,7 +429,7 @@ end do
 end subroutine srcsMomentum_curv
 
 
-subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x)
+subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E1,E2,E3,x)
 
 !------------------------------------------------------------
 !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
@@ -439,7 +439,7 @@ subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x)
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3
 class(curvmesh), intent(in) :: x !Added for FBI, need BMAG
 
 
@@ -474,7 +474,6 @@ do isp=1,lsp
     Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1)*fact*Tn
     Lo(:,:,:,isp)=Lo(:,:,:,isp)+ms(isp)*fact
 
-
     !FRICTION
     fact=fact*mn(isp2)/3
     Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1) &
@@ -504,6 +503,9 @@ end do
 
 
 !INELASTIC COLLISIONS FOR ELECTRONS, ROTATIONAL
+iePT=0.0; ieLT=0.0;
+
+!!FIXME:  omit for now
 sfact=elchrg/kB*(gammas(lsp)-1);   !cf. S&N 2010, electron energy equatoin section fixed by JMDP
 nu=sfact*5.2e-15_wp*nn(:,:,:,3)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !O2 rotational excitation 5.2e-15
 iePT=nu*Tn
@@ -516,6 +518,9 @@ call N2vib(nn,Tn,Ts,N2vibrationalLoss)
 call O2vib(nn, Tn, Ts, O2vibrationalLoss)
 iePT=iePT-max(O2vibrationalLoss,0._wp)-max(N2vibrationalLoss,0._wp)
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! OLD CODE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
 !g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
 !  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
@@ -528,9 +533,11 @@ iePT=iePT-max(O2vibrationalLoss,0._wp)-max(N2vibrationalLoss,0._wp)
 !     /Ts(1:lx1,1:lx2,1:lx3,lsp)/700)*(exp(-2770*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
 !     /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !O2 vibrational excitation
 !iePT=iePT-max(fact,0._wp);
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 !! This would be the place to include FBI heating probably just add to iePT
-call FBIheating(nn,Tn,ns,Ts,E2,E3,x,FBIproduction,FBIlossfactor)
+call FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !This includes losses of the FBI part
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
@@ -771,39 +778,47 @@ N2VibrationalLoss=vibloss
 !PRINT *, N2VibrationalLoss
 end subroutine N2vib
 
-subroutine FBIheating(nn,Tn,ns,Ts,E2,E3,x,FBIproduction,FBIlossfactor)
+subroutine FBIheating(nn,Tn,ns,Ts,E1,E2,E3,x,FBIproduction,FBIlossfactor)
 
 !! Inputs Needed
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
 real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 
 !! intent(out)
 real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
 
 !!Internal Arrays
-integer :: isp,isp2,lx1,lx2,lx3,ix1,ix2,ix3,tcount
+integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg 
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
-real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tsfix
-real(wp) :: TMAX
+!FIXME: fix temperatures
+real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tstmp
 
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
 
+!Tstmp=1000.0_wp
+!Tstmp=Ts
+do isp=1,lsp
+  Tstmp(1:lx1,1:lx2,1:lx3,isp)=Tn(:,:,:)
+end do
+
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
 Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+!Emagnitude=sqrt(E1(1:lx1,1:lx2,1:lx3)**2+E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
 Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
+
 
 !!Initialize arrays a 0s and loss as 1s
 nuAvg=0.0_wp
@@ -818,7 +833,6 @@ heatingfirst=0.0_wp
 heatingsecond=0.0_wp
 heatingtotal=0.0_wp
 FBIbinary=1
-tcount=0
 
 !MassDensity Weight of Neutrals
 do isp2=1,ln
@@ -830,29 +844,11 @@ do isp=1,lsp-1
   niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
 
-!Fix attempt, any temperature above 8000 is 8000 (only electrons)
-Tsfix=Ts
-TMAX=7000.0_wp
-
-do ix3=1,lx3
-  do ix2=1,lx2
-    do ix1=1,lx1
-        if (Tsfix(ix1,ix2,ix3,lsp)>TMAX) then
-          tcount=tcount+1
-          Tsfix(ix1,ix2,ix3,lsp)=TMAX
-        end if
-    end do
-  end do
-end do
-
-if (tcount>0) then 
-  PRINT *, tcount
-end if
-
 !! Average Collisuons frequencies: first averaging over neutrals
 do isp=1,lsp
   do isp2=1,ln
-    call maxwell_colln(isp,isp2,nn,Tn,Tsfix,nu)
+    !call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
+    call maxwell_colln(isp,isp2,nn,Tn,Tstmp,nu)        ! use some background temp value for collision frequency...
     nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)+nu*nuW(:,:,:,isp2) !Store the collision frequencies weighted by massdensity
   end do
   nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
@@ -886,8 +882,10 @@ ke=abs(omegae/nuAvg(:,:,:,2))
 phi=1.0_wp/(ke*ki)
 
 !!Average ion temperature
-TsAvg(:,:,:,1)=(Tsfix(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Tsfix(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
-TsAvg(:,:,:,2)=Tsfix(1:lx1,1:lx2,1:lx3,lsp)
+TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
+TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
+!TsAvg(:,:,:,1)=Tstmp(1:lx1,1:lx2,1:lx3,1)
+!TsAvg(:,:,:,2)=Tstmp(1:lx1,1:lx2,1:lx3,7)
 
 !doi:10.1029/2011JA016649
 Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
@@ -913,6 +911,13 @@ call LossFactorCalc(TsAvg(:,:,:,2),FBIbinary,lossfactor)
 
 FBIproduction=heatingtotal
 FBIlossfactor=lossfactor
+
+block
+integer u
+open(newunit=u,file='FBIProduction.dat',status='replace', access='stream', action='write')
+write(u) FBIProduction,Emagnitude,Ethreshold,phi
+close(u)
+end block
 
 end subroutine FBIheating
 
@@ -968,6 +973,9 @@ end where
 where (Te<=600.0_wp)
   FourierLossFactor=1.0_wp
 end where
+
+! FIXME: force loss factor to not matter
+FourierLossFactor=1.0_wp
 
 end subroutine LossFactorCalc
 
