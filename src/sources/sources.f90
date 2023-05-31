@@ -803,15 +803,29 @@ integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
 !FIXME: fix temperatures
 real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tstmp
+real(wp) :: TMAX
 
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
-
+!! Matt Method
 !Tstmp=1000.0_wp
 !Tstmp=Ts
 do isp=1,lsp
   Tstmp(1:lx1,1:lx2,1:lx3,isp)=Tn(:,:,:)
+end do
+
+!! Joaquin Method
+Tstmp=Ts
+TMAX=6000.0_wp
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+        if (Tstmp(ix1,ix2,ix3,lsp)>TMAX) then
+          Tstmp(ix1,ix2,ix3,lsp)=TMAX
+        end if
+    end do
+  end do
 end do
 
 !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
