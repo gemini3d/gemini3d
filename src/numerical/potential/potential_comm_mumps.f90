@@ -155,7 +155,7 @@ contains
     !> update conductivities and mobilities
     call cpu_time(tstart)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav) !Location for calling NLC
-    call NLConductivity(nn,Tn,ns,Ts,E1,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
+    call NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
     sigP=sigP+sigNCP
     sigH=sigH+sigNCH
     call cpu_time(tfin)

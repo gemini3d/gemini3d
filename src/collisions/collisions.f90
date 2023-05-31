@@ -312,13 +312,13 @@ end do
 
 end subroutine conductivities
 
-subroutine NLConductivity(nn,Tn,ns,Ts,E1,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
+subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
 !! Inputs Needed
 real(wp), dimension(:,:,:,:), intent(in) :: nn !Neutral density
 real(wp), dimension(:,:,:), intent(in) :: Tn !neutral temperature
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH !linear conductivities
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,E2,E3 !Electric Field
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
 
 !! intent(out)
