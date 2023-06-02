@@ -50,11 +50,22 @@ if(cpp)
   endif()
 endif()
 
-# our own FindMPI needs to be before FindMUMPS
+# --- MPI
+# NOTE: our find_package(MPI) needs to be before find_package(MUMPS), which also calls find_package(MPI)
+# Conda e.g. scikit-learn can cause problems with finding MPI, so exclude Conda from search
+if(DEFINED ENV{CONDA_PREFIX})
+  set(mpi_ignore_path
+    $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include
+    $ENV{CONDA_PREFIX}/Library/bin $ENV{CONDA_PREFIX}/Library/lib $ENV{CONDA_PREFIX}/Library/include
+  )
+  list(APPEND CMAKE_IGNORE_PATH ${mpi_ignore_path})
+endif()
 set(MPI_DETERMINE_LIBRARY_VERSION true)
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
 message(STATUS "MPI Library Version: ${MPI_C_LIBRARY_VERSION_STRING}")
 include(cmake/openmpi.cmake)
+
+# --- end MPI
 
 find_package(h5fortran CONFIG REQUIRED)
 
@@ -82,6 +93,11 @@ get_target_property(msis_loc msis::msis_ifc LOCATION)
 get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
 
 # END WORKAROUND
+
+# pop off ignored paths so rest of script can find Python
+if(DEFINED CMAKE_IGNORE_PATH)
+  list(REMOVE_ITEM CMAKE_IGNORE_PATH "${mpi_ignore_path}")
+endif()
 
 
 # unit test DLL paths
