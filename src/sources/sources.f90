@@ -581,7 +581,7 @@ LogQTe = -19.9171_wp &
          -1.4791e-18_wp*Te**6 &
          +2.0127e-22_wp*Te**7 &
          -1.5346e-26_wp*Te**8 &
-         +5.0148e-31_wp*Te**9 
+         +5.0148e-31_wp*Te**9
 elsewhere
 LogQTe = -19.9171_wp &
          +0.0267_wp*Teaux &
@@ -592,11 +592,11 @@ LogQTe = -19.9171_wp &
          -1.4791e-18_wp*Teaux**6 &
          +2.0127e-22_wp*Teaux**7 &
          -1.5346e-26_wp*Teaux**8 &
-         +5.0148e-31_wp*Teaux**9 
+         +5.0148e-31_wp*Teaux**9
 end where
 
 !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
-QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear 
+QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear
 O2VibrationalLoss=nn(:,:,:,3)*1.0e-6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
 !print*,nn(:,:,:,3)
 
@@ -619,7 +619,7 @@ real(wp) :: LQ0Te=0.0_wp, Q0Te=0.0_wp, LQ1Te=0.0_wp, Q1Te=0.0_wp, &
             STerm0, STerm1
 
 real(wp), parameter :: A0(10)=[real(wp) :: -2.025_wp, &
-                                            7.066_wp, & 
+                                            7.066_wp, &
                                             8.211_wp, &
                                             9.713_wp, &
                                             10.353_wp, &
@@ -718,7 +718,7 @@ real(wp), parameter :: F1(8)=[real(wp) :: 1.702_wp, &
                                           2.810_wp, &
                                           3.016_wp]*(-1.0e-14_wp)
 
-                                          
+
 
 lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
@@ -755,7 +755,7 @@ do ix3=1,lx3
         end do
         vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Sterm0+ &
                              nni*1e-6_wp*(1-EXP(-E1/Tni))*EXP(-E1/Tni)*Sterm0
-      else 
+      else
         Tei=6000 !the to max temperature value and do the same as above
         do isp=1,10
           LQ0Te=A0(isp)+Tei*B0(isp)+Tei**2*C0(isp)+Tei**3*D0(isp)+Tei**4*F0(isp)-16.0_wp;
@@ -769,7 +769,7 @@ do ix3=1,lx3
         end do
         vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Sterm0+ &
                              nni*1e-6_wp*(1-EXP(-E1/Tni))*EXP(-E1/Tni)*Sterm0
-      end if   
+      end if
     end do
   end do
 end do
@@ -788,36 +788,38 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
 class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here
 
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling. 
+real(wp), dimension(:,:,:), intent(inout) :: FBIproduction,FBIlossfactor ! Two terms, one is heating and the other one is a factor for cooling.
 
 !!Internal Arrays
 integer :: isp,isp2,lx1,lx2,lx3, ix1, ix2, ix3
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: heatingfirst, heatingsecond, heatingtotal, lossfactor
 integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
 
 !FIXME: fix temperatures
-real(wp), dimension(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp) :: Tstmp
+real(wp), allocatable :: Tstmp(:,:,:,:)
 real(wp) :: TMAX
 
 lx1=x%lx1
 lx2=x%lx2
 lx3=x%lx3
+
+allocate(Tstmp(lbound(Ts,1):ubound(Ts,1),lbound(Ts,2):ubound(Ts,2),lbound(Ts,3):ubound(Ts,3),lsp))
 !! Matt Method
 !Tstmp=1000.0_wp
 !Tstmp=Ts
 do isp=1,lsp
-  Tstmp(1:lx1,1:lx2,1:lx3,isp)=Tn(:,:,:)
+  Tstmp(1:lx1,1:lx2,1:lx3,isp) = Tn(:,:,:)
 end do
 
 !! Joaquin Method
-Tstmp=Ts
-TMAX=6000.0_wp
+Tstmp = Ts
+TMAX = 6000
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
@@ -889,7 +891,7 @@ nsAvg=(ns(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+ns(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4)
 omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
 ki=abs(omegai/nuAvg(:,:,:,1)) !! Could do ABS to be sure of the sign
 !! ke value
-omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
+omegae=elchrg*Bmagnitude/msAvg(:,:,:,2)
 ke=abs(omegae/nuAvg(:,:,:,2))
 
 !!Phi value 1/(ki*ke)
@@ -941,7 +943,7 @@ subroutine LossFactorCalc(Te,FBIBinary,FourierLossFactor)
 real(wp), dimension(:,:,:), intent(in) :: Te!Temperature, without ghost cells
 integer, dimension(:,:,:), intent(in) :: FBIbinary
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !  
+real(wp), dimension(:,:,:), intent(inout) :: FourierLossFactor !
 !!Internal Arrays
 real(wp), dimension(size(Te,1),size(Te,2),size(Te,3)) :: costerms, sinterms, a0
 
@@ -975,8 +977,8 @@ where (FBIBinary==1)
   sinterms = b1*sin(Te*w) + b2*sin(2.0_wp*Te*w) + b3*sin(3.0_wp*Te*w) + b4*sin(4.0_wp*Te*w) &
             + b5*sin(5.0_wp*Te*w) + b6*sin(6*Te*w) + b7*sin(7.0_wp*Te*w) + b8*sin(8.0_wp*Te*w)
   !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
-  FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear 
-elsewhere 
+  FourierLossFactor = EXP((a0 + costerms + sinterms)*LOG(10.0_wp)) !Make it linear
+elsewhere
   FourierLossFactor = 1.0_wp
 end where
 
