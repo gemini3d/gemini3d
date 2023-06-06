@@ -6,9 +6,6 @@ endif(matlab)
 
 include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
 
-if(mpi)
-# keep this if(mpi) because these tests truly use MPI -- don't work with MPI stub
-
 add_executable(test_mpi test_mpi.f90)
 target_link_libraries(test_mpi PRIVATE MPI::MPI_Fortran)
 
@@ -39,7 +36,7 @@ FIXTURES_SETUP scalapack_fxt
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps PRIVATE mumps_interface
 MUMPS::MUMPS
-"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
+"$<$<BOOL:${MUMPS_Scotch_FOUND}>:Scotch::Scotch;METIS::METIS>"
 )
 # same link logic applied to gemini.bin
 
@@ -58,9 +55,6 @@ FIXTURES_SETUP mumps_fxt
 )
 
 dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "scalapack;mumps_basic")
-
-
-endif(mpi)
 
 
 add_test(NAME gemini_fortran COMMAND gemini.bin -h)

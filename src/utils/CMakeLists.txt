@@ -20,9 +20,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(magcalc.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
-$<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
-)
+target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
 
 # --- gemini3d.run Fortran front end
 

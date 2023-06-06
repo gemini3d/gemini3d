@@ -58,11 +58,22 @@ if(ffilesystem_VERSION VERSION_LESS 3.4.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "GN
   set_target_properties(ffilesystem::filesystem PROPERTIES INTERFACE_LINK_LIBRARIES stdc++fs)
 endif()
 
-if(mpi)
-  find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
-else()
-  find_package(mpi_scalapack_stub CONFIG REQUIRED)
+# --- MPI
+# NOTE: our find_package(MPI) needs to be before find_package(MUMPS), which also calls find_package(MPI)
+# Conda e.g. scikit-learn can cause problems with finding MPI, so exclude Conda from search
+if(DEFINED ENV{CONDA_PREFIX})
+  set(mpi_ignore_path
+    $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include
+    $ENV{CONDA_PREFIX}/Library/bin $ENV{CONDA_PREFIX}/Library/lib $ENV{CONDA_PREFIX}/Library/include
+  )
+  list(APPEND CMAKE_IGNORE_PATH ${mpi_ignore_path})
 endif()
+set(MPI_DETERMINE_LIBRARY_VERSION true)
+find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
+message(STATUS "MPI Library Version: ${MPI_C_LIBRARY_VERSION_STRING}")
+include(cmake/openmpi.cmake)
+
+# --- end MPI
 
 find_package(h5fortran CONFIG REQUIRED)
 
@@ -70,11 +81,8 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
-if(mpi)
-  find_package(MUMPS REQUIRED COMPONENTS d)
-else()
-  find_package(MUMPS REQUIRED COMPONENTS d mpiseq)
-endif()
+
+find_package(MUMPS REQUIRED COMPONENTS d)
 
 # --- climate models
 if(glow)
@@ -92,6 +100,11 @@ find_package(msis CONFIG REQUIRED)
 get_target_property(msis_loc msis::msis_ifc LOCATION)
 cmake_path(GET msis_loc PARENT_PATH msis_dir)
 # END WORKAROUND
+
+# pop off ignored paths so rest of script can find Python
+if(DEFINED CMAKE_IGNORE_PATH)
+  list(REMOVE_ITEM CMAKE_IGNORE_PATH "${mpi_ignore_path}")
+endif()
 
 
 # unit test DLL paths
