@@ -46,7 +46,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, checkE1, get_cfg_timevars,electrodynamics_test,forceZOH_all, &
             permute_fluidvars, ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, &
             get_locationsi_in,set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in, &
-            tag4refine_diff
+            tag4refine_diff, tag4refine_grad, tag4coarsening_diff
 
 implicit none (type, external)
 
@@ -862,7 +862,7 @@ contains
   end subroutine ipermute_fluidvars_C
 
 
-  !> static refinement based on grid location
+  !> refinement type switchyard
   subroutine tag4refine_C(xtype,xC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,refinetype,flagrefine) &
                             bind(C, name='tag4refine_C')
     integer(C_INT), intent(in) :: xtype
@@ -889,10 +889,35 @@ contains
         call tag4refine_vperp(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
       case (2)
         call tag4refine_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
+      case (3)
+        call tag4refine_grad(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
       case default
         error stop 'unrecognized refinment criteria from user...'
     end select
   end subroutine tag4refine_C
+
+
+  !> top-level routine for determining mesh coarsening
+  subroutine tag4coarsening_C(xtype,xC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,flagcoarsening) &
+                            bind(C, name='tag4coarsening_C')
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC
+    logical, intent(inout) :: flagcoarsening
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+
+    call tag4coarsening_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagcoarsening)
+  end subroutine tag4coarsening_C
 
 
   !> In case we need to swap state variables
