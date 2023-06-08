@@ -229,6 +229,8 @@ contains
     call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", &
       self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
 
+    print*, 'Loading 2D neutral data from:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5"
+
     if (debug) then
       print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
       print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
