@@ -336,17 +336,21 @@ contains
       !! find the last input data preceding the milestone/initial condition that we start with
       !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
       !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
-      !call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
-      ! FIXME: just set to current time
-      ymdtmp=ymd
-      UTsectmp=UTsec
+      call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
+      ! FIXME: just set to time of last neutral frame...
+      !ymdtmp=ymd
+      !UTsectmp=UTsec
 
       !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
       !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
       !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
       ! FIXME: need to keep self%ymd, etc. in sync?  Update will do this?  YES
-      self%tref(1)=UTsectmp-UTsec-2*self%dt
+      !self%tref(1)=UTsectmp-UTsec-2*self%dt
+      !self%tref(2)=self%tref(1)+self%dt
+
+      self%tref(1)=(UTsectmp-cfg%UTsec0)-2*self%dt
       self%tref(2)=self%tref(1)+self%dt
+
       !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
       !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
       !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
@@ -354,9 +358,12 @@ contains
 
       !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
       !  loads up a current state so that we get a proper interpolation for the first time step.
-      call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
+      !call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
+      call self%update(cfg,dtmodel,self%tref(2)+3/2*self%dt,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
 
       self%flagprimed=.true.
+
+      print*, 'prime times:  ',self%tref(1),self%tref(2)
     end if
   end subroutine prime_data
 
