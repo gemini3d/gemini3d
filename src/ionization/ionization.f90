@@ -1,7 +1,7 @@
 module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
-use ionize_fang, only: fang2008, fang2010
+use ionize_fang, only: fang2008, fang2010, fang2010_spectrum
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
@@ -195,36 +195,37 @@ contains
       end where
       photoionization(:,:,:,isp) = phototmp
     end do
-  end function photoionization
-  
-  
-  pure function ionrate_fang(W0, PhiWmWm2, nn, Tn, flag_fang, g1)
-    real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
-    real(wp), dimension(:,:,:,:), intent(in) :: nn
-    real(wp), dimension(:,:,:), intent(in) :: Tn
-    integer, intent(in) :: flag_fang
-    real(wp), dimension(:,:,:), intent(in) :: g1
-    real(wp) :: W0keV,PhiW
-    real(wp), dimension(1:size(nn,1)) :: massden,meanmass
-    integer :: ix2,ix3,lx2,lx3
-    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
-    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang
-    
-    
-    lx2=size(nn,2)
-    lx3=size(nn,3)
-    
-    !IONIZATION RATES ARE COMPUTED ON A PER-PROFILE BASIS
-    
-    !zero flux should really be check per field line
+end function photoionization
+
+
+  pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, g1, flag_fang, diff_num_flux, kappa, bimax_frac, W0_char)
+  real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: alt,Tn
+  integer, intent(in) :: flag_fang, diff_num_flux
+  real(wp), intent(in) :: kappa, bimax_frac, W0_char
+  real(wp), dimension(:,:,:), intent(in) :: g1
+  real(wp) :: W0keV, PhiW, W0_char_keV
+  real(wp), dimension(1:size(nn,1)) :: massden,meanmass
+  integer :: ix2,ix3,lx2,lx3
+  real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
+  real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang
+
+
+  lx2=size(nn,2)
+  lx3=size(nn,3)
+
+  !IONIZATION RATES ARE COMPUTED ON A PER-PROFILE BASIS
+
+  !zero flux should really be check per field line
     if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
-    
       do ix3=1,lx3
         do ix2=1,lx2
           !CONVERSION TO DIFFERENTIAL NUMBER FLUX
           PhiW=PhiWmWm2(ix2,ix3)*1e-3_wp/elchrg    !from mW/m^2 to eV/m^2/s
           PhiW=PhiW/1e3_wp/1e4_wp    !to keV/cm^2/s
           W0keV=W0(ix2,ix3)/1e3_wp
+          W0_char_keV=W0_char/1e3_wp
     
           massden=mn(1)*nn(:,ix2,ix3,1)+mn(2)*nn(:,ix2,ix3,2)+mn(3)*nn(:,ix2,ix3,3)
           !! mass densities are [kg m^-3] as per neutral/neutral.f90 "call meters(.true.)" for MSIS.
@@ -238,13 +239,16 @@ contains
             Ptot(:,ix2,ix3) = fang2008(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
           case (10, 2010)
             Ptot(:,ix2,ix3) = fang2010(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+          case (0) ! composite spectrum
+            Ptot(:,ix2,ix3) = fang2010_spectrum(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3), &
+              diff_num_flux, kappa, bimax_frac, W0_char_keV) * 1e6_wp
           case default
             error stop 'ERROR:ionization:ionrate_fang: unknown flag_fang'
           end select
         end do
       end do
     
-    
+  
       !NOW THAT TOTAL IONIZATION RATE HAS BEEN CALCULATED BREAK IT INTO DIFFERENT ION PRODUCTION RATES
       PO = 0
       PN2 = 0
@@ -253,14 +257,12 @@ contains
       where (nn(:,:,:,1) + nn(:,:,:,2) + nn(:,:,:,3) > 1e-10_wp )
               PN2 = Ptot * 0.94_wp * nn(:,:,:,2) / &
                                (nn(:,:,:,3) + 0.94_wp*nn(:,:,:,2) + 0.55_wp * nn(:,:,:,1))
-    
       endwhere
     
       where (nn(:,:,:,2) > 1e-10_wp)
         PO2 = PN2 * 1.07_wp * nn(:,:,:,3) / nn(:,:,:,2)
         PO = PN2 * 0.59_wp * nn(:,:,:,1) / nn(:,:,:,2)
       endwhere
-    
     
     
       !SPLIT TOTAL IONIZATION RATE PER VALLANCE JONES, 1973
