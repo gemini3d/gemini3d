@@ -1673,7 +1673,7 @@ contains
     end do
     deltav=maxv-minv
 
-    if (deltav > 25.0) flagrefine=.true.
+    if (deltav > 20.0) flagrefine=.true.
   end subroutine tag4refine_diff
 
 
@@ -1802,7 +1802,7 @@ contains
     end do
     deltav=maxv-minv
 
-    if (deltav < 10.0) flagcoarsening=.true.
+    if (deltav < 7.5) flagcoarsening=.true.
   end subroutine tag4coarsening_diff
 
 
@@ -1982,5 +1982,7 @@ contains
     real(wp), intent(inout) :: UTsec
 
     call dateinc(dt,ymd,UTsec)
+
+    !print*, 'Date updated to:  ',ymd,UTsec
   end subroutine dateinc_in
 end module gemini3d
