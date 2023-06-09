@@ -1,7 +1,7 @@
 module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
-use ionize_fang, only: fang2008, fang2010
+use ionize_fang, only: fang2008, fang2010, fang2010_spectrum
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
@@ -207,13 +207,14 @@ end do
 end function photoionization
 
 
-pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, flag_fang, g1)
+pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, g1, flag_fang, diff_num_flux, kappa, bimax_frac, W0_char)
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: alt,Tn
-integer, intent(in) :: flag_fang
+integer, intent(in) :: flag_fang, diff_num_flux
+real(wp), intent(in) :: kappa, bimax_frac, W0_char
 real(wp), dimension(:,:,:), intent(in) :: g1
-real(wp) :: W0keV,PhiW
+real(wp) :: W0keV, PhiW, W0_char_keV
 real(wp), dimension(1:size(nn,1)) :: massden,meanmass
 integer :: ix2,ix3,lx2,lx3
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
@@ -234,6 +235,7 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
       PhiW=PhiWmWm2(ix2,ix3)*1e-3_wp/elchrg    !from mW/m^2 to eV/m^2/s
       PhiW=PhiW/1e3_wp/1e4_wp    !to keV/cm^2/s
       W0keV=W0(ix2,ix3)/1e3_wp
+      W0_char_keV=W0_char/1e3_wp
 
       massden=mn(1)*nn(:,ix2,ix3,1)+mn(2)*nn(:,ix2,ix3,2)+mn(3)*nn(:,ix2,ix3,3)
       !! mass densities are [kg m^-3] as per neutral/neutral.f90 "call meters(.true.)" for MSIS.
@@ -247,6 +249,9 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
         Ptot(:,ix2,ix3) = fang2008(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
       case (10, 2010)
         Ptot(:,ix2,ix3) = fang2010(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+      case (0) ! composite spectrum
+        Ptot(:,ix2,ix3) = fang2010_spectrum(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3), &
+          diff_num_flux, kappa, bimax_frac, W0_char_keV) * 1e6_wp
       case default
         error stop 'ERROR:ionization:ionrate_fang: unknown flag_fang'
       end select

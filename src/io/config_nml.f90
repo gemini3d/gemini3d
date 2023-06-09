@@ -53,6 +53,8 @@ logical :: flaggravdrift
 logical :: flaglagrangian
 logical :: flagdiamagnetic
 logical :: flagnodivJ0
+integer :: diff_num_flux
+real(wp) :: kappa, bimax_frac, W0_char
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -61,6 +63,7 @@ namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, 
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /fang/ flag_fang
+namelist /fang_pars/ diff_num_flux, kappa, bimax_frac, W0_char
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
 namelist /neutral_BG/ flagneuBG,dtneuBG, msis_version
@@ -162,6 +165,22 @@ if (namelist_exists(u, "fang", verbose)) then
   cfg%flag_fang = flag_fang
 else
   cfg%flag_fang = 2008  !< legacy default
+endif
+
+if (namelist_exists(u, "fang_pars", verbose)) then
+  rewind(u)
+  read(u, nml=fang_pars, iostat=i)
+  call check_nml_io(i, cfg%infile, "fang_pars")
+  cfg%flag_fang = 0 ! force fang flag for integrated spectrum
+  cfg%diff_num_flux = diff_num_flux
+  cfg%kappa = kappa
+  cfg%bimax_frac = bimax_frac
+  cfg%W0_char = W0_char
+else
+  cfg%diff_num_flux = 0 ! Maxwellian, same as Fang et al. 2008 within 5% in most cases
+  cfg%kappa = 1e4_wp ! close to Maxwellian
+  cfg%bimax_frac = 1._wp ! Maxwellian
+  cfg%W0_char = 3000._wp ! same as W0BG default
 endif
 
 if (namelist_exists(u, "glow", verbose)) then

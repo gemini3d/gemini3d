@@ -110,6 +110,19 @@ dtE0 = 1.0                         ! time step between electric field file input
 E0_dir = 'test_data/test3d_glow/inputs/Efield_inputs/'
 /
 
+! (optional - default 2008) Use Fang et al. 2008,2010 parameterization to look-up impact ionization
+&fang
+flag_fang = 2008            ! version:  2008 - maxwellian; 2010 - monoenergetic; 0 - integrated spectrum (see fang_pars namelist)
+/
+
+! (optional - default off) Spectrum options for flag_fang = 0
+&fang_pars
+diff_num_flux = 0           ! type of differential number flux to use: 0 - maxwellian; 1 - kappa; 2 - bimaxwellian; 3 - accelerated
+kappa = 1e4                 ! kappa value for diff_num_flux = 1, kappa must be greater than 2 for finite <E>
+bimax_frac = 1              ! bi-maxwellian with primary at E0 and secondary at bimax_frac * E0 for diff_num_flux = 2
+W0_char = 3000              ! thermal energy in eV for diff_num_flux = 3. E0, W0 is now treated as acceleration energy
+/
+
 ! (optional - default off) Use glow to compute impact ionization, Cartesian grids only
 &glow
 flagglow = 1                ! use glow?  0 - no; 1 - yes

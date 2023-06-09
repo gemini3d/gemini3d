@@ -46,7 +46,12 @@ type :: gemini_cfg
   integer :: flagglow              ! whether or not to use glow to compute impact ionization
   real(wp) :: dtglow, dtglowout    ! time step between GLOW updates and outputs for GLOW emissions
 
-  integer :: flag_fang = 2008   !< configure Fang ionization model
+  !> fang parameters
+  integer :: flag_fang = 2008       ! configure Fang ionization model
+  integer :: diff_num_flux = 0      ! if flag_fang=0, select input differential number flux type
+  real(wp) :: kappa = 1e4_wp        ! for diff_num_flux=1, kappa distribution for kappa > 2
+  real(wp) :: bimax_frac = 1._wp    ! for diff_num_flux=2, bimaxwellian with second char. energy bimax_frac * E0
+  real(wp) :: W0_char = 3000._wp    ! for diff_num_flux=3, thermal/characteristic energy in eV
 
   !! parameters below this line can only be changed via the .nml input format
   !> equatorial ionization anomaly

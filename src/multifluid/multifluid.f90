@@ -341,11 +341,17 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
   if (gridflag/=0) then
     if (cfg%flagglow==0) then
-      !! Fang et al 2008 parameterization
+      !! Fang et al 2008/2010 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
-        Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang, x%g1)
-        !! calculation based on Fang et al [2008]
+        if (iprec==1) then ! background precipitation is hard-coded Fang et al. 2008 maxwellian
+          Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, x%g1 &
+            , 2008, cfg%diff_num_flux, cfg%kappa, cfg%bimax_frac, cfg%W0_char)
+        else ! any additional precipitation populations parameters are chosen by the user 
+          Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, x%g1 &
+            , cfg%flag_fang, cfg%diff_num_flux, cfg%kappa, cfg%bimax_frac, cfg%W0_char)
+        end if
+        !! calculation based on Fang et al [2008,2010]
         Prprecip=Prprecip+Prpreciptmp
       end do
       Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
