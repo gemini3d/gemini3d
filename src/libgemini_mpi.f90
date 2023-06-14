@@ -166,13 +166,6 @@ contains
 
     call find_milestone(cfg, t, ymdtmp, UTsectmp, filetmp)
     if ( t > 0 ) then
-      !! restart scenario
-      if (mpi_cfg%myid==0) then
-        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-        print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
-        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-      end if
-
       !! Set start variables accordingly and read in the milestone
       UTsec=UTsectmp
       ymd=ymdtmp
@@ -181,11 +174,14 @@ contains
       tdur=cfg%tdur
 
       if (mpi_cfg%myid==0) then
+        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+        print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
+        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
         print*, 'Treating the following file as initial conditions:  ',filetmp
         print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tremaining
+        print*, ' simulation start time:  ',t
+        if (tremaining<=1e-6_wp) error stop 'Cannot restart simulation from the final time step!'
       end if
-
-      if (tremaining <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
 
       !cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)

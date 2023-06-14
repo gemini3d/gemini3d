@@ -587,7 +587,8 @@ contains
     real(wp), intent(inout) :: t,tout,tglowout,tneuBG
 
     !> Initialize some variables need for time stepping and output
-    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
+!    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
+    it = 1; tout = t; tglowout = t; tneuBG=t
   end subroutine set_start_values_auxtimevars
 
 
