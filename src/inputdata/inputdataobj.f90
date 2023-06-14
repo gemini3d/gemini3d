@@ -364,6 +364,7 @@ contains
       self%flagprimed=.true.
 
       print*, 'prime times:  ',self%tref(1),self%tref(2)
+      print*, 'prime reference date:  ', self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
     end if
   end subroutine prime_data
 
