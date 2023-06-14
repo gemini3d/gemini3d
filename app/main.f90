@@ -87,7 +87,7 @@ contains
     !! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
 
     !> TEMPORAL VARIABLES
-    real(wp) :: t=0, dt=1e-6_wp
+    real(wp) :: t=0._wp, dt=1e-4_wp
     !! time from beginning of simulation (s) and time step (s)
     real(wp) :: tout
     !! time for next output and time between outputs
@@ -169,7 +169,7 @@ contains
     print*, 'Done with read_grid_in...'
 
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
+    call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t)
 
     !> initialize time stepping and some aux variables
     call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)

@@ -16,7 +16,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   double* fluidvars;
   double* fluidauxvars;
   double* electrovars;    // pointers modifiable by fortran
-  double t, dt=1e-6;
+  double t=0.0, dt=1e-4;
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
   int it, iupdate;
   int flagoutput;
@@ -82,7 +82,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
 
   /* initialize state variables from input file */
-  get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur);
+  get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur,&t);
   set_start_values_auxtimevars_C(&it,&t,&tout,&tglowout,&tneuBG);
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 

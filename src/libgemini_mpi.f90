@@ -84,8 +84,67 @@ contains
   end subroutine calc_subgrid_size_in
 
 
+!  !> load initial conditions and check if this is a restart run; set time variables accordingly
+!  subroutine get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
+!    type(gemini_cfg), intent(inout) :: cfg
+!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+!    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
+!    type(gemini_work), intent(inout) :: intvars
+!    class(curvmesh), intent(in) :: x
+!    real(wp), intent(inout) :: UTsec
+!    integer, dimension(3), intent(inout) :: ymd
+!    real(wp), intent(inout) :: tdur
+!
+!    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+!    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+!    integer, dimension(3) :: ymdtmp
+!    real(wp) :: UTsectmp,ttmp
+!    character(:), allocatable :: filetmp
+!
+!    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+!    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+!
+!    call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
+!    if ( ttmp > 0 ) then
+!      !! restart scenario
+!      if (mpi_cfg%myid==0) then
+!        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+!        print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
+!        print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+!      end if
+!
+!      !! Set start variables accordingly and read in the milestone
+!      UTsec=UTsectmp
+!      ymd=ymdtmp
+!
+!      ! FIXME: instead keep tdur and just adjust the start time of the simulation to be closer to endtime
+!      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
+!      ! FIXME: need to feed in the t variable and overwrite it if we are restarting.  
+!
+!      if (mpi_cfg%myid==0) then
+!        print*, 'Treating the following file as initial conditions:  ',filetmp
+!        print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur    ! FIXME: should be tdur-t once t adjusted
+!      end if
+!
+!      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
+!
+!      cfg%tdur=tdur         ! just to insure consistency
+!      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)
+!    else !! start at the beginning
+!      ! UTsec = cfg%UTsec0
+!      ! ymd = cfg%ymd0
+!      ! tdur = cfg%tdur
+!      call set_start_timefromcfg(cfg,ymd,UTsec,tdur)
+!
+!      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
+!      print*, 'Starting from beginning of simulation...'
+!      call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,intvars%Phiall)
+!    end if
+!  end subroutine get_initial_state
+
+
   !> load initial conditions and check if this is a restart run; set time variables accordingly
-  subroutine get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur)
+  subroutine get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t)
     type(gemini_cfg), intent(inout) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: electrovars
@@ -93,19 +152,20 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(inout) :: UTsec
     integer, dimension(3), intent(inout) :: ymd
-    real(wp), intent(inout) :: tdur
+    real(wp), intent(inout) :: tdur,t
 
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     integer, dimension(3) :: ymdtmp
-    real(wp) :: UTsectmp,ttmp
+    real(wp) :: UTsectmp
     character(:), allocatable :: filetmp
+    real(wp) :: tremaining
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
-    if ( ttmp > 0 ) then
+    call find_milestone(cfg, t, ymdtmp, UTsectmp, filetmp)
+    if ( t > 0 ) then
       !! restart scenario
       if (mpi_cfg%myid==0) then
         print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -116,21 +176,26 @@ contains
       !! Set start variables accordingly and read in the milestone
       UTsec=UTsectmp
       ymd=ymdtmp
-      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
+
+      tremaining=cfg%tdur-t    ! subtract off time that has elapsed to milestone
+      tdur=cfg%tdur
+
       if (mpi_cfg%myid==0) then
         print*, 'Treating the following file as initial conditions:  ',filetmp
-        print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
+        print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tremaining
       end if
 
-      if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
+      if (tremaining <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
 
-      cfg%tdur=tdur         ! just to insure consistency
+      !cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)
     else !! start at the beginning
       ! UTsec = cfg%UTsec0
       ! ymd = cfg%ymd0
       ! tdur = cfg%tdur
       call set_start_timefromcfg(cfg,ymd,UTsec,tdur)
+      t=0._wp
+      tdur=cfg%tdur
 
       if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
       print*, 'Starting from beginning of simulation...'
