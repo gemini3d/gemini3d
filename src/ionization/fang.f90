@@ -128,7 +128,7 @@ do k=1,lbins
       phi_keV = (Q0_keV/(E0_char_keV**2+(E0_char_keV+E0_keV)**2)) * (Ebin_keV/E0_char_keV) * exp(-1*(Ebin_keV-E0_keV)/E0_char_keV)
     end if
   case (4) ! Data used from Evans, D. S. (1974)
-    phi_keV = phi_Evans_keV(k)
+    phi_keV = (Q0_keV/7.28384_wp)*phi_Evans_keV(k) ! normalizes to Q0 map
   case default
     error stop 'ERROR:ionize_fang:fang2010_spectrum: unknown diff_num_flux'
   end select
