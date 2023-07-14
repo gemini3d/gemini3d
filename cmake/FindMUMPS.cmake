@@ -44,7 +44,7 @@ if(NOT OpenMP_FOUND)
   return()
 endif()
 
-list(APPEND CMAKE_REQUIRED_FLAGS ${OpenMP_Fortran_FLAGS} ${OpenMP_C_FLAGS})
+set(CMAKE_REQUIRED_FLAGS "${OpenMP_Fortran_FLAGS} ${OpenMP_C_FLAGS}")
 list(APPEND CMAKE_REQUIRED_INCLUDES ${OpenMP_Fortran_INCLUDE_DIRS} ${OpenMP_C_INCLUDE_DIRS})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${OpenMP_Fortran_LIBRARIES} ${OpenMP_C_LIBRARIES})
 
@@ -65,11 +65,6 @@ endfunction(mumps_openmp_check)
 
 function(mumps_scotch_check)
 
-find_package(Scotch COMPONENTS ESMUMPS)
-if(NOT Scotch_FOUND)
-  return()
-endif()
-
 list(APPEND CMAKE_REQUIRED_INCLUDES ${Scotch_INCLUDE_DIRS})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${Scotch_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
@@ -88,11 +83,6 @@ endfunction(mumps_scotch_check)
 
 
 function(mumps_metis_check)
-
-find_package(METIS)
-if(NOT METIS_FOUND)
-  return()
-endif()
 
 list(APPEND CMAKE_REQUIRED_INCLUDES ${METIS_INCLUDE_DIRS})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${METIS_LIBRARIES})
@@ -115,31 +105,6 @@ function(mumps_check)
 
 if(NOT (MUMPS_LIBRARY AND MUMPS_INCLUDE_DIR))
   message(VERBOSE "MUMPS: skip checks as not found")
-  return()
-endif()
-
-if(NOT SCALAPACK_FOUND)
-  find_package(SCALAPACK)
-endif()
-if(NOT SCALAPACK_FOUND)
-  message(VERBOSE "MUMPS: skip checks as SCALAPACK not found")
-  return()
-endif()
-
-if(NOT (MPI_C_FOUND AND MPI_Fortran_FOUND))
-  # factory FindMPI re-searches, slowing down configure, especialy when many subprojects use MPI
-  find_package(MPI COMPONENTS C Fortran)
-endif()
-if(NOT MPI_FOUND)
-  message(VERBOSE "MUMPS: skip link check as MPI not found")
-  return()
-endif()
-
-if(NOT LAPACK_FOUND)
-  find_package(LAPACK)
-endif()
-if(NOT LAPACK_FOUND)
-  message(VERBOSE "MUMPS: skip link check as LAPACK not found")
   return()
 endif()
 

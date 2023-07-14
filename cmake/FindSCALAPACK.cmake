@@ -58,18 +58,6 @@ set(SCALAPACK_LIBRARY)  # avoids appending to prior FindScalapack
 
 function(scalapack_check)
 
-if(NOT (MPI_C_FOUND AND MPI_Fortran_FOUND))
-  find_package(MPI COMPONENTS C Fortran)
-endif()
-
-if(NOT LAPACK_FOUND)
-  # otherwise can cause 32-bit lapack when 64-bit wanted
-  find_package(LAPACK)
-endif()
-if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
-  return()
-endif()
-
 # some OpenMPI builds need -pthread
 find_package(Threads)
 
@@ -184,6 +172,37 @@ set(SCALAPACK_MKL64_FOUND ${SCALAPACK_MKL64_FOUND} PARENT_SCOPE)
 
 endfunction(scalapack_mkl)
 
+
+function(scalapack_lib)
+
+if(BUILD_SHARED_LIBS)
+  set(_s shared)
+else()
+  set(_s static)
+endif()
+list(APPEND _s openmpi/lib mpich/lib)
+
+find_library(SCALAPACK_LIBRARY
+NAMES scalapack scalapack-openmpi scalapack-mpich
+NAMES_PER_DIR
+PATH_SUFFIXES ${_s}
+DOC "SCALAPACK library"
+)
+
+# some systems have libblacs as a separate file, instead of being subsumed in libscalapack.
+if(NOT DEFINED BLACS_ROOT)
+  get_filename_component(BLACS_ROOT ${SCALAPACK_LIBRARY} DIRECTORY)
+endif()
+
+find_library(BLACS_LIBRARY
+NAMES blacs
+NO_DEFAULT_PATH
+HINTS ${BLACS_ROOT}
+DOC "BLACS library"
+)
+
+endfunction(scalapack_lib)
+
 # === main
 
 set(scalapack_cray false)
@@ -229,24 +248,7 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS OR MKL64 IN_LIST SCALAPACK_FIND_COMPONE
 elseif(scalapack_cray)
   # Cray PE has Scalapack build into LibSci. Use Cray compiler wrapper.
 else()
-
-  find_library(SCALAPACK_LIBRARY
-  NAMES scalapack scalapack-openmpi scalapack-mpich
-  NAMES_PER_DIR
-  PATH_SUFFIXES openmpi/lib mpich/lib
-  DOC "SCALAPACK library"
-  )
-
-  # some systems have libblacs as a separate file, instead of being subsumed in libscalapack.
-  get_filename_component(BLACS_ROOT ${SCALAPACK_LIBRARY} DIRECTORY)
-
-  find_library(BLACS_LIBRARY
-  NAMES blacs
-  NO_DEFAULT_PATH
-  HINTS ${BLACS_ROOT}
-  DOC "BLACS library"
-  )
-
+  scalapack_lib()
 endif()
 
 if(STATIC IN_LIST SCALAPACK_FIND_COMPONENTS)
