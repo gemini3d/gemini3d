@@ -24,8 +24,6 @@ endif()
 
 option(dev "developer mode: extra compile warnings")
 
-option(cpp "also build Gemini3D C++ frontend prototype" on)
-
 option(glow "use NCAR GLOW airglow / aurora model" on)
 
 option(hwm14 "use HWM14 neutral winds model")

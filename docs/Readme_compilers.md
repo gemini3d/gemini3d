@@ -1,7 +1,9 @@
 # Gemini3D compilers
 
 GEMINI requires a Fortran compiler that handles standard Fortran syntax including "submodule" and "block".
-GEMINI requires a C++ compiler that handles [filesystem](https://en.cppreference.com/w/cpp/filesystem) stdlib.
+GEMINI requires a C++ compiler that handles
+[filesystem](https://en.cppreference.com/w/cpp/filesystem)
+stdlib.
 
 These compilers are known to work with GEMINI3D on Linux, MacOS, and Windows:
 

@@ -7,28 +7,20 @@
 set(gemini_test_sim_names)
 
 if(hwm14)
-  list(APPEND gemini_test_sim_names mini2dns_hwm14_fang mini2dew_hwm14_fang mini3d_hwm14_fang)
-  if(cpp)
-    list(APPEND gemini_test_sim_names mini2dns_hwm14_fang_cpp)
-  endif()
+  list(APPEND gemini_test_sim_names mini2dns_hwm14_fang mini2dew_hwm14_fang mini3d_hwm14_fang
+     mini2dns_hwm14_fang_cpp)
 
   if(glow)
-    list(APPEND gemini_test_sim_names mini2dns_hwm14_glow mini2dew_hwm14_glow mini3d_hwm14_glow)
-    if(cpp)
-      list(APPEND gemini_test_sim_names mini2dns_hwm14_glow_cpp)
-    endif()
+    list(APPEND gemini_test_sim_names mini2dns_hwm14_glow mini2dew_hwm14_glow mini3d_hwm14_glow
+      mini2dns_hwm14_glow_cpp)
   endif(glow)
 else()
-  list(APPEND gemini_test_sim_names mini2dns_fang mini2dew_fang mini3d_fang)
-  if(cpp)
-    list(APPEND gemini_test_sim_names mini2dns_fang_cpp)
-  endif()
+  list(APPEND gemini_test_sim_names mini2dns_fang mini2dew_fang mini3d_fang
+    mini2dns_fang_cpp)
 
   if(glow)
-    list(APPEND gemini_test_sim_names mini2dns_glow mini2dew_glow mini3d_glow)
-    if(cpp)
-      list(APPEND gemini_test_sim_names mini2dns_glow_cpp)
-    endif()
+    list(APPEND gemini_test_sim_names mini2dns_glow mini2dew_glow mini3d_glow
+      mini2dns_glow_cpp)
   endif(glow)
 endif()
 

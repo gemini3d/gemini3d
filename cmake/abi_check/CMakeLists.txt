@@ -12,8 +12,9 @@ add_test(NAME Fortran_main COMMAND main_f)
 
 add_library(addone_f OBJECT addone.f90)
 
-add_executable(main_cpp main.cpp $<TARGET_OBJECTS:addone_f>)
-add_test(NAME Cpp_main COMMAND main_cpp)
+# TODO: use libsc iniparser
+# add_executable(main_cpp main.cpp $<TARGET_OBJECTS:addone_f>)
+# add_test(NAME Cpp_main COMMAND main_cpp)
 
 add_executable(main_c main.c $<TARGET_OBJECTS:addone_f>)
 set_property(TARGET main_c PROPERTY LINKER_LANGUAGE C)

@@ -15,7 +15,6 @@ namespace fs = std::filesystem;
 #include <mpi.h>
 
 #include "gemini3d.h"
-#include "iniparser.h"
 #include "ffilesystem.h"
 
 int main(int argc, char **argv) {
@@ -53,6 +52,7 @@ int main(int argc, char **argv) {
 
     dictionary  *ini;
 
+    // TODO: use libsc ini parser
     ini = iniparser_load(ini_file.string().c_str());
     if (ini==NULL) {
         std::cerr << "gemini3d_ini: cannot parse file: " << ini_file << std::endl;

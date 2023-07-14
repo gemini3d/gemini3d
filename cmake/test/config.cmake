@@ -23,6 +23,7 @@ LABELS download
 # construct command
 set(test_cmd gemini3d.run ${out_dir})
 if(name MATCHES "_cpp$")
+  return()   # TODO: use libsc iniparser
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini_c.bin>)
 else()
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini.bin>)

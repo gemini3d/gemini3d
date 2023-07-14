@@ -38,14 +38,6 @@ if(NOT ffilesystem_FOUND)
   message(FATAL_ERROR ${need_gemext})
 endif()
 
-# for gemini_c C++ front end
-if(cpp)
-  find_package(iniparser CONFIG)
-  if(NOT iniparser_FOUND)
-    set(cpp false)
-  endif()
-endif()
-
 # --- MPI
 # NOTE: our find_package(MPI) needs to be before find_package(MUMPS), which also calls find_package(MPI)
 # Conda e.g. scikit-learn can cause problems with finding MPI, so exclude Conda from search

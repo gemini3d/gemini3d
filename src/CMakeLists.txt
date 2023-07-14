@@ -72,9 +72,9 @@ ionization
 inputdata precipdata efielddata
 gemini3d_sysinfo
 neutral
-neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx 
-neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi 
-neutraldata2D neutraldata2Daxisymm neutraldata2Dcart 
+neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
+neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi
+neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 PDEparabolic gbsv
@@ -99,9 +99,9 @@ ionization_mpi
 inputdata precipdata efielddata
 gemini3d_sysinfo
 neutral
-neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx 
-neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi 
-neutraldata2D neutraldata2Daxisymm neutraldata2Dcart 
+neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
+neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi
+neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 multifluid_mpi
@@ -198,8 +198,6 @@ install(TARGETS gemini.bin gemini3d gemini3d_mpi gemini3d_mpi_c gemini3d_c
 EXPORT ${PROJECT_NAME}-targets
 )
 
-if(cpp)
-
 # --- Gemini_c.bin
 # C++ main program just like Fortran gemini.bin
 
@@ -216,7 +214,6 @@ h5fortran::h5fortran
 MUMPS::MUMPS
 MPI::MPI_CXX
 $<$<BOOL:${glow}>:glow::glow>
-iniparser::iniparser
 ffilesystem::filesystem
 )
 target_compile_definitions(gemini3d_cpp PRIVATE
@@ -226,6 +223,9 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 #$<$<BOOL:${MSVC}>:_HAS_ITERATOR_DEBUGGING=1>
 #$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 install(TARGETS gemini3d_cpp EXPORT ${PROJECT_NAME}-targets)
+
+# TODO: use libsc iniparser
+return()
 
 add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
@@ -251,5 +251,3 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 )
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)
-
-endif(cpp)

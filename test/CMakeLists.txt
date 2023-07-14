@@ -66,7 +66,7 @@ LABELS unit
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_fortran)
 
 
-if(cpp)
+if(TARGET gemini_c.bin)
 
 add_test(NAME gemini_cpp COMMAND gemini_c.bin -h)
 set_tests_properties(gemini_cpp PROPERTIES
@@ -78,7 +78,6 @@ LABELS unit
 dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_cpp)
 
 endif()
-
 
 add_test(NAME gemini3d_run_ok COMMAND gemini3d.run)
 set_tests_properties(gemini3d_run_ok PROPERTIES
