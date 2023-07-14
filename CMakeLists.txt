@@ -69,7 +69,7 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
-
+find_package(SCALAPACK REQUIRED) # for MUMPS
 find_package(MUMPS REQUIRED COMPONENTS d)
 
 # --- climate models
