@@ -30,7 +30,7 @@ $<TARGET_OBJECTS:grid>
 )
 
 target_link_libraries(io PRIVATE
-calculus gemini3d_config const reader grid mpimod sanity_check timeutils
+calculus gemini3d_config const reader grid mpimod sanity_check timeutils gemini_work_def
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
