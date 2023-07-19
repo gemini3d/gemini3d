@@ -85,6 +85,18 @@ type :: gemini_cfg
 
   !> is the background current assumed to be divergence free?
   logical :: flagnodivJ0 = .false.
+
+  !> Farley-Buneman instability
+  integer :: flagFBI = 0
+  !! default: 0, which does not run FBI model.
+  !! 1: turn on only abnormal heating
+  !! 2: abnormal heating and non-linear current
+
+  !> electron rotational and vibrational cooling
+  integer :: flagevibcool = 1
+  !! default: 1, use new model
+  !! 0: use old model
+
 end type gemini_cfg
 
 interface

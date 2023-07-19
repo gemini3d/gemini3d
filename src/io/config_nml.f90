@@ -52,6 +52,9 @@ logical :: flaglagrangian
 logical :: flagdiamagnetic
 logical :: flagnodivJ0
 
+integer :: flagFBI
+integer :: flagevibcool
+
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput
@@ -72,6 +75,8 @@ namelist /gravdrift/ flaggravdrift
 namelist /lagrangian/ flaglagrangian
 namelist /diamagnetic/ flagdiamagnetic
 namelist /nodivJ0/ flagnodivJ0
+namelist /FBI/ flagFBI
+namelist /evibcool/ flagevibcool
 
 if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
 if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -185,7 +190,7 @@ else
   cfg%flagEIA=.false.
 end if
 
-!> neural background (optional)
+!> neutral background (optional)
 if (namelist_exists(u,'neutral_BG')) then
   rewind(u)
   read(u, nml=neutral_BG, iostat=i)
@@ -290,6 +295,25 @@ else
   cfg%flagnodivJ0=.false.
 end if
 
+if (namelist_exists(u, 'FBI')) then
+  rewind(u)
+  read(u, nml=FBI, iostat=i)
+  call check_nml_io(i, cfg%infile, "FBI")
+  cfg%flagFBI = flagFBI
+else
+  cfg%flagFBI = 0
+endif
+
+if (namelist_exists(u, 'evibcool')) then
+  rewind(u)
+  read(u, nml=evibcool, iostat=i)
+  call check_nml_io(i, cfg%infile, "evibcool")
+  cfg%flagevibcool = flagevibcool
+else
+  cfg%flagevibcool = 1
+endif
+
+!> close config.nml file handle
 close(u)
 
 end procedure read_nml
