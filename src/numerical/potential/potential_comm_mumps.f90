@@ -9,10 +9,11 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
+use gemini_work_def, only: gemini_work
 use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use efielddataobj, only: efielddata
-use collisions, only: conductivities, capacitance
+use collisions, only: conductivities, capacitance, NLConductivity
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
 use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput, compute_rootBGEfields
 use potential_mumps, only: potential3D_fieldresolved_decimate, &

@@ -481,7 +481,7 @@ contains
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec,intvars)
+  subroutine electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars

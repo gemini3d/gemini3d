@@ -1,10 +1,12 @@
 module gemini_work_def
 
+use phys_consts, only: wp
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use neutraldata3Dobj, only: neutraldata3D
 use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
+use neutral, only: neutral_info
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
