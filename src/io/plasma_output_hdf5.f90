@@ -51,8 +51,8 @@ module procedure output_root_stream_mpi_hdf5
       call hout%write('v3avgall', real(v3avgall(1:lx1,1:lx2all,1:lx3all)))
 
       ! Below here the user would add anything they want to output from intvars
-      call hout%write('sigP', real(sigPall(1:lx1,1:lx2all,1:lx3all)) )
-      call hout%write('sigH', real(sigHall(1:lx1,1:lx2all,1:lx3all)) )
+      call hout%write('sigPall', real(sigPall(1:lx1,1:lx2all,1:lx3all)) )
+      call hout%write('sigHall', real(sigHall(1:lx1,1:lx2all,1:lx3all)) )
   end select
 
   if (gridflag==1) then
