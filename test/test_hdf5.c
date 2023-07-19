@@ -19,6 +19,15 @@ hsize_t dims[1] = {1};
 
 float buf[1] = {42.0};
 
+unsigned int major, minor, release;
+
+if(H5get_libversion(&major, &minor, &release) < 0){
+  fprintf(stderr, "ERROR:hdf5_standalone_C:H5get_libversion: could not get HDF5 library version\n");
+  return EXIT_FAILURE;
+}
+printf("hdf5_standalone_C: HDF5 library version %d.%d.%d\n", major, minor, release);
+
+
 if ( (fid = H5Fcreate("test_hdf5_standalone_C.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT)) == H5I_INVALID_HID){
   fprintf(stderr, "ERROR:hdf5_standalone_C: could not create file\n");
   return EXIT_FAILURE;

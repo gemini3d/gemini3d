@@ -1,6 +1,7 @@
 program HDF5_standalone
 
-use hdf5, only : HID_T, HSIZE_T, H5_INTEGER_KIND, h5kind_to_type, h5open_f, h5close_f, h5fclose_f, h5fcreate_f, H5F_ACC_TRUNC_F
+use hdf5, only : HID_T, HSIZE_T, H5_INTEGER_KIND, h5kind_to_type, h5open_f, h5close_f, h5fclose_f, &
+    h5fcreate_f, H5F_ACC_TRUNC_F, H5get_libversion_f
 use h5lt, only : h5ltmake_dataset_f
 
 implicit none
@@ -8,8 +9,10 @@ implicit none
 integer :: i, p
 integer(HID_T) :: lid
 character(*), parameter :: filename='test_minimal.h5'
+integer :: major, minor, release
 
 p = 42
+
 
 !! check that repeated calls to h5open_f() do not cause problems as per docs
 !! not calling h5open_f() at all makes failures as library isn't initialized
@@ -22,6 +25,12 @@ if(i /= 0) error stop "ERROR:hdf5_standalone_fortran: h5open_f failed, call #2"
 
 call h5open_f(i)
 if(i /= 0) error stop "ERROR:hdf5_standalone_fortran: h5open_f failed, call #3"
+
+call H5get_libversion_f(major, minor, release, i)
+if (i /= 0) error stop "ERROR:hdf5_standalone_fortran:H5get_libversion: could not get HDF5 library version"
+
+print '(a,i0,a1,i0,a1,i0)', "hdf5_standalone_fortran: HDF5 library version ", major, ".", minor, ".", release
+
 
 call h5fcreate_f(filename, H5F_ACC_TRUNC_F, lid, i)
 if (i/=0) error stop 'ERROR:hdf5_standalone_fortran: could not create file'
