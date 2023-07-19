@@ -4,6 +4,8 @@ use calculus, only : grad3d1
 use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use meshobj, only : curvmesh
+use gemini3d_config, only: gemini_cfg
+
 
 implicit none (type, external)
 private
