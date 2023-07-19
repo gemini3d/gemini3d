@@ -146,14 +146,17 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
     integer :: flagdirich
     real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sigNCP,sigNCH
 
 
     !> update conductivities and mobilities
     call cpu_time(tstart)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-    call NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
-    sigP=sigP+sigNCP
-    sigH=sigH+sigNCH
+    if (cfg%flagFBI>1) then     ! need to accumulate nonlinear conductivities if user specifies
+      call NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
+      sigP=sigP+sigNCP
+      sigH=sigH+sigNCH
+    end if
     call cpu_time(tfin)
     if (mpi_cfg%myid==0) then
       if (cfg%flagcap/=0) then
