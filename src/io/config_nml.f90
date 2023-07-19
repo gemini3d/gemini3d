@@ -3,7 +3,7 @@ submodule(gemini3d_config) config_nml
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
-use filesystem, only : make_absolute
+use filesystem, only : make_absolute, suffix
 
 implicit none (type, external)
 
@@ -64,7 +64,8 @@ namelist /EIA/ flagEIA,v0equator
 namelist /neutral_BG/ flagneuBG,dtneuBG, msis_version
 namelist /precip_BG/ PhiWBG,W0BG
 namelist /Jpar/ flagJpar
-namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
+namelist /capacitance/ flagcap,magcap
+!! later need to regroup these in a way that is more logical now there are so many more inputs
 namelist /diffusion/ diffsolvetype
 namelist /milestone/ mcadence
 namelist /gravdrift/ flaggravdrift
@@ -297,8 +298,8 @@ end procedure read_nml
 logical function namelist_exists(u, nml, verbose)
 !! determines if Namelist exists in file
 
-character(*), intent(in) :: nml    ! FIXME:  is it bad to use a keyword as a variable name?
-integer, intent(in) :: u
+character(*), intent(in) :: nml
+integer, intent(in) :: u  !< Fortran file unit
 logical, intent(in), optional :: verbose
 
 logical :: debug

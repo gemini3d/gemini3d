@@ -1,6 +1,5 @@
 module gemini3d_config
 
-use filesystem, only : suffix
 use phys_consts, only : wp
 
 implicit none (type, external)
@@ -100,9 +99,6 @@ contains
     !! READS THE INPUT CONFIGURATION FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
     class(gemini_cfg), intent(inout) :: cfg
     logical, intent(in), optional :: verbose
-
-    !> READ CONFIG FILE FOR THIS SIMULATION
-    !! NOTE: Namelists must be read in order they appear in the Namelist file, or End of File error occurs
 
     call read_nml(cfg, verbose)
   end subroutine read_configfile
