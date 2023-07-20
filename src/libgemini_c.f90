@@ -685,7 +685,7 @@ contains
     integer(C_INT), intent(in) :: iparm
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
-    type(c_ptr), intent(in) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidvarsC
 
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -697,18 +697,21 @@ contains
 
 
   !> deal with null cell solutions
-  subroutine clean_param_after_regrid_C(iparm,xtype,xC,fluidvarsC) bind(C, name="clean_param_after_regrid_C")
+  subroutine clean_param_after_regrid_C(iparm,xtype,xC,fluidvarsC,intvarsC) bind(C, name="clean_param_after_regrid_C")
     integer(C_INT), intent(in) :: iparm
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
-    type(c_ptr), intent(in) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: intvarsC
 
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    type(gemini_work), pointer :: intvars   
 
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call clean_param_after_regrid_in(iparm,x,fluidvars)
+    call c_f_pointer(intvarsC,intvars)   
+    call clean_param_after_regrid_in(iparm,x,fluidvars,intvars)
   end subroutine clean_param_after_regrid_C
 
 

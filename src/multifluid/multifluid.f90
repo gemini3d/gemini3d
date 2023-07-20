@@ -710,7 +710,7 @@ end subroutine clean_param
 !> Deal with cells outside computation domain; do not touch ghost cells in any way - exercise caution in the way null cells are
 !    treated as compared to a "normal" clean.  Screen cells "near" null cells for excessively large parameter values that may
 !    result from interpolation artifacts.
-subroutine clean_param_after_regrid(x,paramflag,param)
+subroutine clean_param_after_regrid(x,paramflag,param,Tn)
   !------------------------------------------------------------
   !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
   !-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
@@ -718,6 +718,7 @@ subroutine clean_param_after_regrid(x,paramflag,param)
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: paramflag
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
+  real(wp), dimension(:,:,:), intent(in) :: Tn
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end,ix2beg
   integer :: ibuf
   integer, parameter :: lbuf=3     
@@ -785,12 +786,14 @@ subroutine clean_param_after_regrid(x,paramflag,param)
 
               if (ix1beg /= lx1) then    !only do this if we actually have null grid points
                 do ibuf=1,lbuf
-                  param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+                  param(ix1beg+ibuf-1,ix2,ix3,isp)=0._wp
                 end do
               end if
               if (ix1end /= lx1) then
                 do ibuf=1,lbuf
-                  param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+                  !param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+                  param(ix1end+ibuf-1,ix2,ix3,isp)=0._wp
                 end do
               end if
             end do
@@ -847,12 +850,14 @@ subroutine clean_param_after_regrid(x,paramflag,param)
 
               if (ix1beg /= lx1) then    !only do this if we actually have null grid points
                 do ibuf=1,lbuf
-                  param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+                  param(ix1beg+ibuf-1,ix2,ix3,isp)=Tn(ix1beg+ibuf-1,ix2,ix3)
                 end do
               end if
               if (ix1end /= lx1) then
                 do ibuf=1,lbuf
-                  param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+                  !param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+                  param(ix1end+ibuf-1,ix2,ix3,isp)=Tn(ix1end+ibuf-1,ix2,ix3)
                 end do
               end if
             end do

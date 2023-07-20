@@ -956,10 +956,11 @@ contains
 
 
   !> deal with null cell solutions
-  subroutine clean_param_after_regrid_in(iparm,x,fluidvars)
+  subroutine clean_param_after_regrid_in(iparm,x,fluidvars,intvars)
     integer, intent(in) :: iparm
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    type(gemini_work), intent(in) :: intvars
     real(wp), dimension(:,:,:,:), pointer :: parm
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -974,7 +975,7 @@ contains
       case default
         error stop '  libgemini:clean_params_C(); invalid parameter selected'
     end select
-    call clean_param_after_regrid(x,iparm,parm)
+    call clean_param_after_regrid(x,iparm,parm,intvars%atmos%Tn)
   end subroutine clean_param_after_regrid_in
 
 
