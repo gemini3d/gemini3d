@@ -12,8 +12,9 @@ contains
     real(wp), dimension(:,:,:), allocatable :: xitmp,yitmp,zitmp
     integer :: lx1tmp
     logical :: flagSH
-    integer :: ix1
+    integer :: ix1,ix2,ix3
     integer :: lx1,lx2,lx3
+    integer,dimension(3) :: ixs
 
 
     ! compute sizes from input arrays
@@ -29,7 +30,9 @@ contains
     !peel the grid in half (source hemisphere if closed dipole)
     if (gridflag==0) then    !closed dipole grid
 
-      ix1 = maxloc(pack(zimat(:,1,1),.true.), dim=1)    !apex is by definition the highest altitude along a given field line
+      ixs = maxloc(zimat(:,:,:))    !apex is by definition the highest altitude along a given field line
+      ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+
       if (flagSH) then
         lx1tmp=ix1                  !first piece of arrays
       else
@@ -61,46 +64,51 @@ contains
     !  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
     end if
 
-    !the min and max x are simply determined by longitude...
+
+    !the min and max x are simply determined by min/max over all longitudes in the grid.
     xnrange(1) = minval(xitmp)
     xnrange(2) = maxval(xitmp)
 
 
     !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
     if (flagSH) then
-      if (any(zitmp(:,1,1) - maxzn > 0)) then
-        ix1 = minloc(zitmp(:,1,1)-maxzn, dim=1, mask=zitmp(:,1,1) - maxzn > 0)
-      !! find the min distance from maxzn subject to constraint that it is > 0,
-      !! just use the first longitude slice since they will all have the same L-shell-field line relations
+      if (any(zitmp(:,:,:) - maxzn > 0)) then
+        ixs = minloc(zitmp(:,:,:)-maxzn, mask=zitmp(:,:,:) - maxzn > 0)
+        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+        !! find the min distance from maxzn subject to constraint that it is > 0,
       else
         ix1 = lx1
       end if
-      ynrange(2) = yitmp(ix1,1,1)
-      if (any(zitmp(:,lx2,1) < 0)) then
-        ix1 = minloc(zitmp(:,lx2,1), dim=1, mask=zitmp(:,lx2,1) < 0)
+      ynrange(2) = yitmp(ix1,ix2,ix3)
+      if (any(zitmp(:,:,:) < 0)) then
+        ixs = minloc(zitmp(:,:,:), mask=zitmp(:,:,:) < 0)
+        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
       else
         ix1 = 1
       end if
       !ix1=max(ix1,1)
-      ynrange(1)=yitmp(ix1,lx2,1)
+      ynrange(1)=yitmp(ix1,ix2,ix3)
     else    !things are swapped around in NH
-      if (any(zitmp(:,1,1) - maxzn > 0)) then
-        ix1 = minloc(zitmp(:,1,1)-maxzn, dim=1, mask=zitmp(:,1,1) - maxzn > 0)
+      if (any(zitmp(:,:,:) - maxzn > 0)) then
+        ixs = minloc(zitmp(:,:,:)-maxzn, mask=zitmp(:,:,:) - maxzn > 0)
+        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
         ! find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
       else
         ix1=1    ! default to first grid point
       end if
-      ynrange(1)=yitmp(ix1,1,1)
+      ynrange(1)=yitmp(ix1,ix2,ix3)
       !! an issue here is that the behavior in the case that the mask condition it not met is not well-defined so
       !!    we really need to check this separately and have the code do something sensible in this case.  I.e. if there is no
       !!    zero crossing then we just need to use the entire array.
-      if (any(zitmp(:,lx2,1) < 0)) then
-        ix1 = minloc(zitmp(:,lx2,1), dim=1, mask=zitmp(:,lx2,1) < 0)
+      if (any(zitmp(:,:,:) < 0)) then
+        ixs = minloc(zitmp(:,:,:), mask=zitmp(:,:,:) < 0)
+        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+
         ! northernmost edge is defined by the zero crossing (if any)
       else
         ix1=size(yitmp,1)     ! default in this case to last grid point
       end if
-      ynrange(2)=yitmp(ix1,lx2,1)
+      ynrange(2)=yitmp(ix1,ix2,ix3)
     end if
 
     deallocate(xitmp,yitmp,zitmp)
