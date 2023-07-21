@@ -15,6 +15,8 @@ contains
     integer :: ix1,ix2,ix3
     integer :: lx1,lx2,lx3
     integer,dimension(3) :: ixs
+    integer,dimension(2) :: ixs13
+    real(wp), dimension(:,:), allocatable :: zitmpslice
 
 
     ! compute sizes from input arrays
@@ -71,47 +73,54 @@ contains
 
 
     !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
+    allocate(zitmpslice(lx1tmp,lx3))
     if (flagSH) then
-      if (any(zitmp(:,:,:) - maxzn > 0)) then
-        ixs = minloc(zitmp(:,:,:)-maxzn, mask=zitmp(:,:,:) - maxzn > 0)
-        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+      zitmpslice=zitmp(:,1,:)
+      if (any(zitmpslice - maxzn > 0)) then
+        ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
+        ix1=ixs13(1); ix3=ixs13(2);
         !! find the min distance from maxzn subject to constraint that it is > 0,
       else
         ix1 = lx1
       end if
-      ynrange(2) = yitmp(ix1,ix2,ix3)
-      if (any(zitmp(:,:,:) < 0)) then
-        ixs = minloc(zitmp(:,:,:), mask=zitmp(:,:,:) < 0)
-        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+      ynrange(2) = yitmp(ix1,1,ix3)
+
+      zitmpslice=zitmp(:,lx2,:)
+      if (any(zitmpslice < 0)) then
+        ixs13 = minloc(zitmpslice, mask=zitmpslice < 0)
+        ix1=ixs13(1); ix3=ixs13(2);
       else
         ix1 = 1
       end if
       !ix1=max(ix1,1)
-      ynrange(1)=yitmp(ix1,ix2,ix3)
+      ynrange(1)=yitmp(ix1,lx2,ix3)
     else    !things are swapped around in NH
-      if (any(zitmp(:,:,:) - maxzn > 0)) then
-        ixs = minloc(zitmp(:,:,:)-maxzn, mask=zitmp(:,:,:) - maxzn > 0)
-        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+      zitmpslice=zitmp(:,1,:)
+      if (any(zitmpslice - maxzn > 0)) then
+        ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
+        ix1=ixs13(1); ix3=ixs13(2);
         ! find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
       else
         ix1=1    ! default to first grid point
       end if
-      ynrange(1)=yitmp(ix1,ix2,ix3)
+      ynrange(1)=yitmp(ix1,1,ix3)
+
       !! an issue here is that the behavior in the case that the mask condition it not met is not well-defined so
       !!    we really need to check this separately and have the code do something sensible in this case.  I.e. if there is no
       !!    zero crossing then we just need to use the entire array.
-      if (any(zitmp(:,:,:) < 0)) then
-        ixs = minloc(zitmp(:,:,:), mask=zitmp(:,:,:) < 0)
-        ix1=ixs(1); ix2=ixs(2); ix3=ixs(3);
+      zitmpslice=zitmp(:,lx2,:)
+      if (any(zitmp(:,lx2,:) < 0)) then
+        ixs13 = minloc(zitmpslice, mask=zitmpslice < 0)
+        ix1=ixs13(1); ix3=ixs13(2);
 
         ! northernmost edge is defined by the zero crossing (if any)
       else
         ix1=size(yitmp,1)     ! default in this case to last grid point
       end if
-      ynrange(2)=yitmp(ix1,ix2,ix3)
+      ynrange(2)=yitmp(ix1,lx2,ix3)
     end if
 
-    deallocate(xitmp,yitmp,zitmp)
+    deallocate(xitmp,yitmp,zitmp,zitmpslice)
   end procedure slabrange
 
 
