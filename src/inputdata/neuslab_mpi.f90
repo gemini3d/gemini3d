@@ -74,7 +74,7 @@ contains
 
     !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
     allocate(zitmpslice(lx1tmp,lx3))
-    if (flagSH) then
+    if (flagSH) then    ! in the southern hemisphere the min Lshell is northernmost latitude
       zitmpslice=zitmp(:,1,:)
       if (any(zitmpslice - maxzn > 0)) then
         ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
@@ -94,8 +94,9 @@ contains
       end if
       !ix1=max(ix1,1)
       ynrange(1)=yitmp(ix1,lx2,ix3)
-    else    !things are swapped around in NH
-      zitmpslice=zitmp(:,1,:)
+    else    !things are swapped around in NH, min L-shell is lowest latitude
+            !  southern edge is dictated by high altitudes in NH; this is ix1=1 in dipole indices
+      zitmpslice=zitmp(:,1,:)          
       if (any(zitmpslice - maxzn > 0)) then
         ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
         ix1=ixs13(1); ix3=ixs13(2);
@@ -122,6 +123,52 @@ contains
 
     deallocate(xitmp,yitmp,zitmp,zitmpslice)
   end procedure slabrange
+
+
+  !> Find the y/lat. coordinates of eight corners of a dipole mesh intersecting a reference altitude and the ground
+  subroutine find_corners(xi,yi,zi,zref,xrange0,xrangeref,yrange0,yrangeref)
+    real(wp), dimension(:,:,:), intent(in) :: yi,zi
+    real(wp), intent(in) :: zref         ! altitude of projection to indentify
+    real(wp), dimension(4), intent(inout) :: yrange0,yrangeref
+    integer :: ix1,ix2,ix3
+    integer, dimension(4), parameter :: ix2s=[1,lx2,1,lx2]
+    integer, dimension(4), parameter :: ix3s=[1,1,lx3,lx3]
+    integer :: icorner
+    real(wp), dimension(1:size(zi,1)) :: zislice
+
+    !! First check intersection with reference altitude specified in input arguments
+    do icorner=1,4
+      ix2=ix2s(icorner)
+      ix3=ix3s(icorner)
+      zislice=zi(:,ix2,ix3)
+      if (any(zislice - zred > 0)) then
+        ix1 = minloc(zislice-zref, mask=zislice-zref > 0)
+        ! find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+      else
+        ix1=1    ! default to first grid point
+      end if
+      xrangeref(icorner)=xi(ix1,ix2,ix3)
+      yrangeref(icorner)=yi(ix1,ix2,ix3)
+    end do
+
+    !! Now we must check intersection with ground...
+    !! an issue here is that the behavior in the case that the mask condition it not met is not well-defined so
+    !!    we really need to check this separately and have the code do something sensible in this case.  I.e. if there is no
+    !!    zero crossing then we just need to use the entire array.
+    do icorner=1,4
+      ix2=ix2s(icorner)
+      ix3=ix3s(icorner)
+      zislice=zi(:,ix2,ix3)
+      if (any(zislice < 0)) then
+        ix1 = maxloc(zislice, mask=zislice < 0)
+        ! northernmost edge is defined by the zero crossing (if any)
+      else
+        ix1=lx1     ! default in this case to last grid point
+      end if
+      xrange0(icorner)=xi(ix1,ix2,ix3) 
+      yrange0(icorner)=yi(ix1,ix2,ix3) 
+    end do
+  end subroutine find_corners
 
 
   !> determine where the slab described by ranges falls within the global neutral grid
