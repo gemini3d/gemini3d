@@ -125,7 +125,7 @@ contains
   end procedure slabrange
 
 
-  !> Find the y/lat. coordinates of eight corners of a dipole mesh intersecting a reference altitude and the ground
+  !> Find the y/lat. coordinates of eight "corners" of a dipole mesh intersecting a reference altitude and the ground
   subroutine find_corners(xi,yi,zi,zref,xrange0,xrangeref,yrange0,yrangeref)
     real(wp), dimension(:,:,:), intent(in) :: yi,zi
     real(wp), intent(in) :: zref         ! altitude of projection to indentify
@@ -169,6 +169,106 @@ contains
       yrange0(icorner)=yi(ix1,ix2,ix3) 
     end do
   end subroutine find_corners
+
+
+    ! ZZZ - also this is specific to dipole grids right now...
+  subroutine slabrange_orig
+    real(wp), dimension(:,:,:), allocatable :: xitmp,yitmp,zitmp
+    integer :: lx1tmp
+    logical :: flagSH
+    integer :: ix1
+    integer :: lx1,lx2,lx3
+
+
+    ! compute sizes from input arrays
+    lx1=size(zimat,1); lx2=size(zimat,2); lx3=size(zimat,3);
+
+    !in what hemisphere is our source?
+    if (sourcemlat<=0) then
+      flagSH=.true.
+    else
+      flagSH=.false.
+    end if
+
+    !peel the grid in half (source hemisphere if closed dipole)
+    if (gridflag==0) then    !closed dipole grid
+
+      ix1 = maxloc(pack(zimat(:,1,1),.true.), dim=1)    !apex is by definition the highest altitude along a given field line
+      if (flagSH) then
+        lx1tmp=ix1                  !first piece of arrays
+      else
+        lx1tmp=lx1-ix1    !second (end) piece of arrays
+      end if
+      allocate(xitmp(lx1tmp,lx2,lx3), &
+               yitmp(lx1tmp,lx2,lx3), &
+               zitmp(lx1tmp,lx2,lx3))
+      !! could this be done more less wastefully with pointers???
+
+      if(flagSH) then    !southern hemisphere
+        xitmp=ximat(1:ix1,1:lx2,1:lx3)          !select beginning of the array - the southern half
+        yitmp=yimat(1:ix1,1:lx2,1:lx3)
+        zitmp=zimat(1:ix1,1:lx2,1:lx3)
+      else               !northern hemisphere
+          xitmp=ximat(ix1+1:lx1,1:lx2,1:lx3)    !select end half of the array
+          yitmp=yimat(ix1+1:lx1,1:lx2,1:lx3)
+          zitmp=zimat(ix1+1:lx1,1:lx2,1:lx3)
+      end if
+    else     !this is not an interhemispheric grid so our approach is to just use all of the data
+      lx1tmp=lx1
+      allocate(xitmp(lx1tmp,lx2,lx3), &
+               yitmp(lx1tmp,lx2,lx3), &
+               zitmp(lx1tmp,lx2,lx3))
+      !! could this be done more less wastefully with pointers?
+      xitmp=ximat(1:lx1,1:lx2,1:lx3)
+      yitmp=yimat(1:lx1,1:lx2,1:lx3)
+      zitmp=zimat(1:lx1,1:lx2,1:lx3)
+    !  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
+    end if
+
+    !the min and max x are simply determined by longitude...
+    xnrange(1) = minval(xitmp)
+    xnrange(2) = maxval(xitmp)
+
+
+    !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
+    if (flagSH) then
+      if (any(zitmp(:,1,1) - maxzn > 0)) then
+        ix1 = minloc(zitmp(:,1,1)-maxzn, dim=1, mask=zitmp(:,1,1) - maxzn > 0)
+      !! find the min distance from maxzn subject to constraint that it is > 0,
+      !! just use the first longitude slice since they will all have the same L-shell-field line relations
+      else
+        ix1 = lx1
+      end if
+      ynrange(2) = yitmp(ix1,1,1)
+      if (any(zitmp(:,lx2,1) < 0)) then
+        ix1 = minloc(zitmp(:,lx2,1), dim=1, mask=zitmp(:,lx2,1) < 0)
+      else
+        ix1 = 1
+      end if
+      !ix1=max(ix1,1)
+      ynrange(1)=yitmp(ix1,lx2,1)
+    else    !things are swapped around in NH
+      if (any(zitmp(:,1,1) - maxzn > 0)) then
+        ix1 = minloc(zitmp(:,1,1)-maxzn, dim=1, mask=zitmp(:,1,1) - maxzn > 0)
+        ! find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+      else
+        ix1=1    ! default to first grid point
+      end if
+      ynrange(1)=yitmp(ix1,1,1)
+      !! an issue here is that the behavior in the case that the mask condition it not met is not well-defined so
+      !!    we really need to check this separately and have the code do something sensible in this case.  I.e. if there is no
+      !!    zero crossing then we just need to use the entire array.
+      if (any(zitmp(:,lx2,1) < 0)) then
+        ix1 = minloc(zitmp(:,lx2,1), dim=1, mask=zitmp(:,lx2,1) < 0)
+        ! northernmost edge is defined by the zero crossing (if any)
+      else
+        ix1=size(yitmp,1)     ! default in this case to last grid point
+      end if
+      ynrange(2)=yitmp(ix1,lx2,1)
+    end if
+
+    deallocate(xitmp,yitmp,zitmp)
+  end subroutine slabrange_orig
 
 
   !> determine where the slab described by ranges falls within the global neutral grid
