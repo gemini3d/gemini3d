@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY LABELS unit)
+set_property(DIRECTORY PROPERTY LABELS standalone_libraries)
 
 if(matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
@@ -6,41 +6,56 @@ endif(matlab)
 
 include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
 
-add_executable(test_mpi test_mpi.f90)
-target_link_libraries(test_mpi PRIVATE MPI::MPI_Fortran)
+# Libraries such as MPI, HDF5, Scalapack, MUMPS, are so important
+# we test each standalone to mitigate confusing build or runtime errors
+# if a particular library isn't working.
 
-add_test(NAME mpi_basic
-COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_mpi> ${Ncpu}
+# --- HDF5
+add_executable(test_hdf5_standalone_C test_hdf5.c)
+target_link_libraries(test_hdf5_standalone_C PRIVATE HDF5::HDF5)
+add_test(HDF5_standalone_C test_hdf5_standalone_C)
+
+add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
+target_link_libraries(test_hdf5_standalone_Fortran PRIVATE HDF5::HDF5)
+add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
+
+# --- MPI
+
+add_executable(test_mpi_standalone test_mpi.f90)
+target_link_libraries(test_mpi_standalone PRIVATE MPI::MPI_Fortran)
+
+add_test(NAME MPI_standalone
+COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_mpi_standalone> ${Ncpu}
 )
 
-set_tests_properties(mpi_basic PROPERTIES
+set_tests_properties(MPI_standalone PROPERTIES
 PROCESSORS ${Ncpu}
 FIXTURES_SETUP mpi_fxt
 )
 
 # --- SCALAPACK
 
-add_executable(gemini_scalapack test_scalapack.f90)
-target_link_libraries(gemini_scalapack PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+add_executable(test_scalapack_gemini test_scalapack.f90)
+target_link_libraries(test_scalapack_gemini PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
-add_test(NAME scalapack COMMAND gemini_scalapack)
-set_tests_properties(scalapack PROPERTIES
+add_test(NAME SCALAPACK_standalone COMMAND test_scalapack_gemini)
+set_tests_properties(SCALAPACK_standalone PROPERTIES
 FIXTURES_REQUIRED mpi_fxt
 FIXTURES_SETUP scalapack_fxt
 )
 
 # --- MUMPS
-add_executable(test_mumps test_mumps.f90)
-target_link_libraries(test_mumps PRIVATE mumps_interface
+add_executable(MUMPS_standalone test_mumps.f90)
+target_link_libraries(MUMPS_standalone PRIVATE mumps_interface
 MUMPS::MUMPS
 )
 # same link logic applied to gemini.bin
 
-add_test(NAME mumps_basic
-COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_mumps>
+add_test(NAME MUMPS_standalone
+COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:MUMPS_standalone>
 )
 
-set_tests_properties(mumps_basic PROPERTIES
+set_tests_properties(MUMPS_standalone PROPERTIES
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 PROCESSORS 2
 REQUIRED_FILES ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml
@@ -48,12 +63,12 @@ FIXTURES_REQUIRED scalapack_fxt
 FIXTURES_SETUP mumps_fxt
 )
 
-set_property(TEST mpi_basic mumps_basic PROPERTY RESOURCE_LOCK cpu_mpi)
+set_property(TEST MPI_standalone MUMPS_standalone PROPERTY RESOURCE_LOCK cpu_mpi)
 if(DEFINED mpi_tmpdir)
-  set_property(TEST mpi_basic mumps_basic PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
+  set_property(TEST MPI_standalone MUMPS_standalone PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
 endif()
 
-dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "scalapack;mumps_basic")
+dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "SCALAPACK_standalone;MUMPS_standalone")
 
 
 add_test(NAME gemini_fortran COMMAND gemini.bin -h)

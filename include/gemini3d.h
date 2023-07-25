@@ -96,7 +96,7 @@ extern void tag4refine_C(int*,void**,double**,double**,double**,void**,int*,bool
 extern void tag4coarsening_C(int*,void**,double**,double**,double**,void**,bool*);
 extern void get_grid_magcoords_C(int*,void**,double**,double**,double**);
 extern void get_grid_magcoordsi_C(int*,void**,double**,double**,double**);
-extern void clean_param_after_regrid_C(int*, int*, void**, double**);
+extern void clean_param_after_regrid_C(int*, int*, void**, double**,void**);
 extern void get_locationsi_C(void**,bool*,double*,double*,double*,double**,double**,double**,double**,int*,int*);
 extern void get_datainow_ptr_C(void**,double**);
 extern void set_datainow_C(void**);

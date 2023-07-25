@@ -56,6 +56,8 @@ include(cmake/openmpi.cmake)
 # --- end MPI
 
 find_package(h5fortran CONFIG REQUIRED)
+# this also implicitly finds HDF5.
+# h5fortran is a high-level, object-oriented HDF5 interface.
 
 include(cmake/compilers.cmake)
 
