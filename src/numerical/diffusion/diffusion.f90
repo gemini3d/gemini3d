@@ -106,13 +106,13 @@ contains
     integer, intent(in) :: gridflag
 
     if (gridflag==1) then
-      if (Teinf<1) then
+      if (Teinf<1.0) then
         BCtype=[1,0]
       else
         BCtype=[0,0]
       end if
     else if (gridflag==2) then
-      if (Teinf<1) then           
+      if (Teinf<1.0) then           
         BCtype=[0,1]
       else
         BCtype=[0,0]
