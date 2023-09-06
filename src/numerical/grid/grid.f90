@@ -87,7 +87,7 @@ contains
     real(wp), dimension(-1:), intent(in) :: x1,x2,x3
     integer :: xtype
 
-    if (maxval(abs(x2))<100) then
+    if (maxval(abs(x2))<1000) then
       print '(a)', 'Detected dipole grid...'
       xtype=2
     else
