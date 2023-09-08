@@ -357,12 +357,13 @@ contains
 
     ! Energy diffusion (thermal conduction) substep
     do isub=1,lsub
-      call cpu_time(tstart)
-      call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
-      call cpu_time(tfin)
-      if (myid==0 .and. debug) then
-        print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-      end if
+      ! FIXME: try to handle diffusion and sources together in call below
+      !call cpu_time(tstart)
+      !call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
+      !call cpu_time(tfin)
+      !if (myid==0 .and. debug) then
+      !  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      !end if
   
     ! cleanup and convert to specific internal energy density for sources substeps
     call clean_param_in(3,x,fluidvars)
