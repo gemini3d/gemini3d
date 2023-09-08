@@ -1675,7 +1675,7 @@ contains
     end do
     deltav=maxv-minv
 
-    if (deltav > 10.0) flagrefine=.true.
+    if (deltav > 5.0) flagrefine=.true.
   end subroutine tag4refine_diff
 
 
