@@ -161,17 +161,15 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
            Ts(1:lx1,1:lx2,1:lx3,isp2))/(ms(isp2)+ms(isp))
     nusj=Csj(isp,isp2)*ns(1:lx1,1:lx2,1:lx3,isp2)*1e-6_wp/Teff**1.5_wp
 
-    Phisj = 1
-    Psisj = 1  
-!    mred=ms(isp)*ms(isp2)/(ms(isp)+ms(isp2))
-!    Wsj=abs(vs1(1:lx1,1:lx2,1:lx3,isp)-vs1(1:lx1,1:lx2,1:lx3,isp2))/ &
-!          sqrt(2*kB*Teff/mred)
-!    Psisj=exp(-Wsj**2)
-!    where (Wsj<0.1_wp)
-!      Phisj=1
-!    elsewhere
-!      Phisj=3.0_wp/4*sqrt(pi)*erf(Wsj)/Wsj**3 - 3.0_wp/2/Wsj**2*Psisj
-!    end where
+    mred=ms(isp)*ms(isp2)/(ms(isp)+ms(isp2))
+    Wsj=abs(vs1(1:lx1,1:lx2,1:lx3,isp)-vs1(1:lx1,1:lx2,1:lx3,isp2))/ &
+          sqrt(2*kB*Teff/mred)
+    Psisj=exp(-Wsj**2)
+    where (Wsj<0.1_wp)
+      Phisj=1
+    elsewhere
+      Phisj=3.0_wp/4*sqrt(pi)*erf(Wsj)/Wsj**3 - 3.0_wp/2/Wsj**2*Psisj
+    end where
   end if
 end subroutine coulomb_colln
 

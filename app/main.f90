@@ -293,7 +293,7 @@ contains
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
-    integer :: isub,lsub=5   ! variables for controlling subcycling of terms
+    integer :: isub,lsub=1   ! variables for controlling subcycling of terms
 
     ! pull solar indices from module type
     call get_solar_indices(cfg,f107,f107a)
