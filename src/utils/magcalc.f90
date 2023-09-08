@@ -7,7 +7,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use magcalc_cli, only : cli
 use phys_consts, only : pi,mu0, wp, re, debug
-use grid, only : lx1, lx2, lx3, lx2all,lx3all,grid_size,read_grid
+use grid, only : lx1, lx2, lx3, lx2all,lx3all,grid_size,read_grid,calc_subgrid_size
 use meshobj, only : curvmesh
 use timeutils, only : dateinc,find_time_elapsed
 use gemini3d_config, only : gemini_cfg
@@ -133,6 +133,8 @@ else
 end if
 print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
 print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
+call calc_subgrid_size(lx2all,lx3all)
+print*, 'grid size:  ',lx1,lx2,lx3,lx2all,lx3all
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
 if (mpi_cfg%myid==0) then
@@ -205,6 +207,7 @@ zf(:)=rmean*sin(thetamean)*phi(:)
 
 
 !GET POSITIONS (CARTESIAN) SET UP FOR MAGNETIC COMPUTATIONS.  THESE ARE PRIMED COORDINATES (SOURCE COORDS, I.E. THE SIM GRID)
+if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> setting up field point x,y,z...'
 allocate(xp(lx1,lx2,lx3),yp(lx1,lx2,lx3),zp(lx1,lx2,lx3))
 xp(:,:,:)=x%alt(:,:,:)+Re                               !radial distance from Earth's center
 !yp(:,:,:)=xp(:,:,:)*x%theta(:,:,:)                      !southward distance (in the direction of the theta spherical coordinate)
@@ -216,6 +219,7 @@ zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 !print*, myid2,myid3,'--> field point min/max data:  ',minval(xp),maxval(xp),minval(yp),maxval(yp),minval(zp),maxval(zp)
 
 ! differential volumes for source coordinates/integrations
+if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> computing differential volumes for integral(s)...'
 allocate(dV(lx1,lx2,lx3))
 allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
 allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2),Rmagend(lx1,lx2))
@@ -269,18 +273,22 @@ else                  !plane geometry assumption
   end do
 end if
 
+
+if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> worker exchange of edge volumes...'
 ! FIXME: does this need message passing???  Seems like these coudl be computed locally since the ghost cell metric factors and differentials are already stored by workers...
 !> get "end" and "top" pieces for the grid so integrals are not missing any differential volumes
 !   The halo_end routine will pass my "begin" and "bottom" pieces of dV to neighbors on the process grid
 call halo_end(dV,dVend,dVtop,dVcorner,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
+if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> worker exchange of edge distances...'
 !> now get the "end" and "top" pieces for the source coordinates
 call halo_end(xp,xpend,xptop,xpcorner,tag%Rx)    !just reuse position tag
 call halo_end(yp,ypend,yptop,ypcorner,tag%Ry)
 call halo_end(zp,zpend,zptop,zpcorner,tag%Rz)
 
 !> Compute projections needed to rotate current density components into magnetic coordinates
+if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> calculating projections need for rotation of current densities...'
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
@@ -335,6 +343,9 @@ main : do while (t < cfg%tdur)
   dt=cfg%dtout    !only compute magnetic field at times when we've done output
 
   !READ IN THE FULL PLASMA AND FIELD DATA FROM THE OUTPUT FILE (NOTE THAT WE NEED TO KNOW OUTPUT TYPE DONE)
+  if (mpi_cfg%myid==0) then
+    print *, 'magcalc.f90 --> Reading input datafile for time:  ',ymd,UTsec
+  end if
   call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
   !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
