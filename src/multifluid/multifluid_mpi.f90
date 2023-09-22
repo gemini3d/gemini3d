@@ -8,7 +8,7 @@ private
 public :: halo_allparams, halo_fluidvars
 
 contains
-  !> halo all parameters in preparation for advection
+  !> halo all parameters that are solve time-dependently in preparation for advection
   subroutine halo_allparams(ns,rhovs1,rhoes,flagperiodic)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
     logical, intent(in) :: flagperiodic
