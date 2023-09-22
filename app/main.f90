@@ -369,9 +369,12 @@ contains
     !> all workers need to "agree" on a gravity and exospheric temperature
     call get_gavg_Tinf_in(intvars,gavg,Tninf)
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
                                     x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
     ! density to be cleaned after source/loss
     call clean_param_in(3,x,fluidvars)

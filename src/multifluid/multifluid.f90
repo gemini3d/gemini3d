@@ -106,7 +106,7 @@ subroutine sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
 end subroutine sweep2_allparams
 
 
-!> execute diffusion of energy and then source/loss terms for all equations
+!> execute source/loss terms for all parameters in sequence
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                    Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
                                    eprecip)
@@ -305,7 +305,7 @@ end subroutine compression
 
 
 !> Execute energy diffusion substep, no mpi required.  Upon entering this procedure the temperature needs to be have its
-!     most recently updated state.  Upon exit the temperature will be updated with diffusion properly applied.
+!     most recently updated state.  Upon exit the temperature will be updated.
 subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
@@ -316,7 +316,7 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), dimension(:,:,:), intent(in) :: Tn
   integer, intent(in) :: flagdiffsolve
   real(wp), intent(in) :: Teinf
-  real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param
+  real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param    ! could be a pointer to avoid wasting memory?
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
   integer :: isp,lsp
 
@@ -364,7 +364,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   integer :: iprec,lprec
   !! note PrprecipG and the like are module-scope variables
 
-  ! first check that our module-scope arrays are allocated before going on to calculations
+  ! First check that our module-scope arrays are allocated before going on to calculations.  
+  ! This may need to be passed in as arguments for compatibility with trees-GEMINI
   if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
     allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
     PrprecipG(:,:,:,:)=0

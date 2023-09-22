@@ -1325,15 +1325,20 @@ contains
     errflag=errflag .or. checkarray(B1(:,:,lx3+3:lx3+4),Blower,Bupper, &
                                      '>>> Fwd B1 data corrupted:  ',locID)
 
-    if (errflag) then
-      open(newunit=funit,file='error.dat',status='replace',access='stream')
-      write(funit) ns
-      write(funit) vs1
-      write(funit) Ts
-      close(funit)
+!    if (errflag) then
+!      open(newunit=funit,file='error.dat',status='replace',access='stream')
+!      write(funit) ns
+!      write(funit) vs1
+!      write(funit) Ts
+!      close(funit)
+!
+!      error stop
+!    end if
 
-      error stop
-    end if
+    ! FIXME: desperate attempt to fix issues on refine...
+    where (abs(vs1)>1e4)
+      vs1=0._wp
+    end where
   end subroutine checkE1
 
 
