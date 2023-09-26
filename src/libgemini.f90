@@ -1054,7 +1054,7 @@ contains
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     vplower=-1e4; vpupper=1e4;
-    Tlower=0; Tupper=100000;
+    Tlower=0; Tupper=10000;
 
     errflag=errflag .or. checkarray(ns(3:lx1+2,3:lx2+2,3:lx3+2,:),nlower,nupper, &
                                      '>>> Interior density data corrupted:  ',locID)
@@ -1335,10 +1335,23 @@ contains
 !      error stop
 !    end if
 
-    ! FIXME: desperate attempt to fix issues on refine...
+    ! FIXME: desperate attempt to fix issues following a refine+time step.  This is obviously not a great
+    !   solution but it does work to address many/most of the problems I see on the time step after refine.
+    !   I still don't know *why* these are happening but in the meantime this allows us to move forward and
+    !   do some testing and basic simulations.  
     where (abs(vs1)>1e4)
       vs1=0._wp
     end where
+    where (abs(vs2)>1e4)
+      vs2=0._wp
+    end where
+    where (abs(vs3)>1e4)
+      vs3=0._wp
+    end where
+    where (Ts>1.e4)
+      Ts=1.e4
+    end where
+    print*, minval(vs1),maxval(vs1),minval(vs2),maxval(vs2),minval(vs3),maxval(vs3),minval(Ts),maxval(Ts)
   end subroutine checkE1
 
 
