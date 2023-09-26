@@ -9,11 +9,11 @@ public :: cflcalc
 
 contains
   !> Compute the max cfl number of the entirety of the worker grid
-  subroutine cflcalc(Ts,vs1,vs2,vs3,dx1i,dx2i,dx3i,dt,maxcfl)
+  subroutine cflcalc(Ts,vs1,vs2,vs3,dl1i,dl2i,dl3i,dt,maxcfl)
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts,vs1,vs2,vs3
-    real(wp), dimension(:,:,:), intent(in) :: dx1i
-    real(wp), dimension(:,:,:), intent(in) :: dx2i
-    real(wp), dimension(:,:,:), intent(in) :: dx3i
+    real(wp), dimension(:,:,:), intent(in) :: dl1i
+    real(wp), dimension(:,:,:), intent(in) :: dl2i
+    real(wp), dimension(:,:,:), intent(in) :: dl3i
     real(wp), intent(in) :: dt
     real(wp), intent(out) :: maxcfl
     real(wp) :: vsnd
@@ -36,11 +36,11 @@ contains
               vsnd=0._wp
             end if
     
-            cfltmp=dt*(vsnd+abs(vs1(ix1,ix2,ix3,isp)))/dx1i(ix1,ix2,ix3)
+            cfltmp=dt*(vsnd+abs(vs1(ix1,ix2,ix3,isp)))/dl1i(ix1,ix2,ix3)
             if (cfltmp>maxcfl) maxcfl=cfltmp
-            cfltmp=dt*abs(vs2(ix1,ix2,ix3,isp))/dx2i(ix1,ix2,ix3)
+            cfltmp=dt*abs(vs2(ix1,ix2,ix3,isp))/dl2i(ix1,ix2,ix3)
             if (cfltmp>maxcfl) maxcfl=cfltmp
-            cfltmp=dt*abs(vs3(ix1,ix2,ix3,isp))/dx3i(ix1,ix2,ix3)
+            cfltmp=dt*abs(vs3(ix1,ix2,ix3,isp))/dl3i(ix1,ix2,ix3)
             if (cfltmp>maxcfl) maxcfl=cfltmp
           end do
         end do
