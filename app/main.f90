@@ -169,7 +169,7 @@ contains
     print*, 'Done with read_grid_in...'
 
     !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
-    call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t)
+    call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t,tmilestone)
 
     !> initialize time stepping and some aux variables
     call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)

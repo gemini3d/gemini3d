@@ -92,7 +92,7 @@ contains
 
 
   subroutine get_initial_state_C(cfgC,fluidvarsC,electrovarsC,intvarsC,xtype, &
-                  xC,UTsec,ymd,tdur,t) bind(C, name='get_initial_state_C')
+                  xC,UTsec,ymd,tdur,t,tmilestone) bind(C, name='get_initial_state_C')
     type(C_PTR), intent(inout) :: cfgC
     type(c_ptr), intent(inout) :: fluidvarsC, electrovarsC
     type(C_PTR), intent(inout) :: intvarsC
@@ -100,7 +100,7 @@ contains
     type(C_PTR), intent(inout) :: xC
     real(wp), intent(inout) :: UTsec
     integer(C_INT), dimension(3), intent(inout) :: ymd
-    real(wp), intent(inout) :: tdur,t
+    real(wp), intent(inout) :: tdur,t,tmilestone
 
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, electrovars
@@ -114,7 +114,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
 
-    call get_initial_state(cfg, fluidvars,electrovars,intvars, x, UTsec, ymd, tdur, t)
+    call get_initial_state(cfg, fluidvars,electrovars,intvars, x, UTsec, ymd, tdur, t, tmilestone)
   end subroutine get_initial_state_C
 
 

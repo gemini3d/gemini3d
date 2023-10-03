@@ -82,7 +82,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   read_grid_C(&cfgC, &xtype, &xC);                              // read the input grid from file, storage as fortran module object
 
   /* initialize state variables from input file */
-  get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur,&t);
+  get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur,&t,&tmilestone);
   set_start_values_auxtimevars_C(&it,&t,&tout,&tglowout,&tneuBG);
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
@@ -219,7 +219,6 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
   /* Sources substep and finalize solution for this time step */
   source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
-																		   //
   clean_param_C(&three, pxtype, &xC, &fluidvars);
   clean_param_C(&two, pxtype, &xC, &fluidvars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);
