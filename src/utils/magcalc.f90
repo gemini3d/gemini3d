@@ -209,12 +209,12 @@ zf(:)=rmean*sin(thetamean)*phi(:)
 !GET POSITIONS (CARTESIAN) SET UP FOR MAGNETIC COMPUTATIONS.  THESE ARE PRIMED COORDINATES (SOURCE COORDS, I.E. THE SIM GRID)
 if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> setting up field point x,y,z...'
 allocate(xp(lx1,lx2,lx3),yp(lx1,lx2,lx3),zp(lx1,lx2,lx3))
-xp(:,:,:)=x%alt(:,:,:)+Re                               !radial distance from Earth's center
+xp(:,:,:)=x%alt(1:lx1,1:lx2,1:lx3)+Re                               !radial distance from Earth's center
 !yp(:,:,:)=xp(:,:,:)*x%theta(:,:,:)                      !southward distance (in the direction of the theta spherical coordinate)
 !zp(:,:,:)=xp(:,:,:)*sin(x%theta(:,:,:))*x%phi(:,:,:)    !eastward distance
-yp(:,:,:)=rmean*x%theta(:,:,:)
+yp(:,:,:)=rmean*x%theta(1:lx1,1:lx2,1:lx3)
 !! the integrations are being treated as Cartesian so flatten out the local spherical coordinates into cartesian, as well
-zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
+zp(:,:,:)=rmean*sin(thetamean)*x%phi(1:lx1,1:lx2,1:lx3)
 
 !print*, myid2,myid3,'--> field point min/max data:  ',minval(xp),maxval(xp),minval(yp),maxval(yp),minval(zp),maxval(zp)
 
@@ -293,7 +293,7 @@ allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
 allocate(alt(lx1,lx2,lx3))
-alt(:,:,:)=x%alt
+alt(1:lx1,1:lx2,1:lx3)=x%alt
 proj_e1er(:,:,:)=sum(x%e1*x%er,4)
 !! fourth dimension of unit vectors is the 3 Cartesian components of each vector
 proj_e2er(:,:,:)=sum(x%e2*x%er,4)
@@ -534,7 +534,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
 
     !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
     if(mpi_cfg%myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
-    where (alt < 75000)
+    where (x%alt < 75000)
       J1=0
       J2=0
       J3=0
@@ -543,7 +543,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
     !  this code will remove these.
     ! x3 global grid edges
-    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts...'
+    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts, x3...'
     if (mpi_cfg%myid3==mpi_cfg%lid3-1) then
       if (lx3>2) then    !do a ZOH from the 3rd to last cell
         J1(:,:,lx3-1)=J1(:,:,lx3-2)
@@ -564,6 +564,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     end if
 
     ! x2 global grid edges
+    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts, x3...'
     if (mpi_cfg%myid2==mpi_cfg%lid2-1) then
       if (lx2>2) then
         J1(:,lx2-1,:)=J1(:,lx2-2,:)
