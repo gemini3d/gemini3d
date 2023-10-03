@@ -543,7 +543,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
     !  this code will remove these.
     ! x3 global grid edges
-    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts, x3...'
+    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts...'
     if (mpi_cfg%myid3==mpi_cfg%lid3-1) then
       if (lx3>2) then    !do a ZOH from the 3rd to last cell
         J1(:,:,lx3-1)=J1(:,:,lx3-2)
@@ -564,7 +564,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     end if
 
     ! x2 global grid edges
-    if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts, x3...'
+    !if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts, x3...'
     if (mpi_cfg%myid2==mpi_cfg%lid2-1) then
       if (lx2>2) then
         J1(:,lx2-1,:)=J1(:,lx2-2,:)
