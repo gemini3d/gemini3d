@@ -81,9 +81,17 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
     !! resonant
       if (isp==1 .and. isp2==4) then
         Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp) / 16
+        where(Teff>6000._wp)
+          Teff=6000._wp
+        end where
+
         nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1e-6_wp
       else
         Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
+        where(Teff>6000._wp)
+          Teff=6000._wp
+        end where
+
         nusn=C2sn1(isp,isp2)*(1 - C2sn2(isp,isp2)*log10(Teff))**2 * &
              (Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
       end if
@@ -92,27 +100,9 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
       nusn=Csn(isp,isp2)*nn(:,:,:,isp2)*1e-6_wp
     end if
   else
-  ! !! electron-neutral
-  !   Teff=Ts(1:lx1,1:lx2,1:lx3,isp)
-  
-  !   select case (isp2)
-  !     case (1)
-  !       nusn=8.9e-11_wp*(1.0+5.7e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
-  !     case (2)
-  !       nusn=2.33e-11_wp*(1.0-1.21e-4_wp*Teff)*(Teff)*nn(:,:,:,isp2)*1e-6_wp
-  !     case (3)
-  !       nusn=1.82e-10_wp*(1.0+3.6e-2_wp*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
-  !     case (4)
-  !       nusn=4.5e-9_wp*(1.0-1.35e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
-  !     case default
-  !       write(stderr,*) 'ERROR: isp2 value is unknown: ',isp2
-  !       error stop
-  !   end select
-  ! end if
-
-!!Matt fix, caps temperature when calculating cross sections (?)
-!! electron-neutral
+  !! electron-neutral
     Teff=Ts(1:lx1,1:lx2,1:lx3,isp)
+  
     select case (isp2)
       case (1)
         nusn=8.9e-11_wp*(1.0+5.7e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
@@ -134,6 +124,7 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
         write(stderr,*) 'ERROR: isp2 value is unknown: ',isp2
         error stop
     end select
+    if (any(nusn<0)) error stop 'ERROR:  negative collision frequency!!!'
   end if
 end subroutine maxwell_colln
 
@@ -170,7 +161,6 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
            Ts(1:lx1,1:lx2,1:lx3,isp2))/(ms(isp2)+ms(isp))
     nusj=Csj(isp,isp2)*ns(1:lx1,1:lx2,1:lx3,isp2)*1e-6_wp/Teff**1.5_wp
 
-
     mred=ms(isp)*ms(isp2)/(ms(isp)+ms(isp2))
     Wsj=abs(vs1(1:lx1,1:lx2,1:lx3,isp)-vs1(1:lx1,1:lx2,1:lx3,isp2))/ &
           sqrt(2*kB*Teff/mred)
@@ -184,45 +174,6 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
 end subroutine coulomb_colln
 
 
-! pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
-!   !! COMPUTE THERMAL CONDUCTIVITY.
-!   !! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
-!   !! Note that it is done on a per species basis
-  
-!   integer, intent(in) :: isp
-!   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
-  
-!   real(wp), dimension(:,:,:,:), intent(in) :: nn
-!   real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
-  
-!   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: lambda,beta
-!   !! intent(out)
-  
-!   integer :: lx1,lx2,lx3
-  
-  
-!   lx1=size(Ts,1)-4
-!   lx2=size(Ts,2)-4
-!   lx3=size(Ts,3)-4
-  
-!   if (isp<lsp) then
-!   !! ion species
-!   !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
-!     !! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
-!     lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
-!     beta=0.0
-!   else                  !electrons
-!     lambda=elchrg * 100 * 7.7e5_wp*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ &
-!         (1 + 3.22e4_wp*Ts(1:lx1,1:lx2,1:lx3)**2/ns(1:lx1,1:lx2,1:lx3)* &
-!           (nn(:,:,:,1)*1.1e-16_wp*(1+5.7e-4_wp*Ts(1:lx1,1:lx2,1:lx3)) + &
-!           nn(:,:,:,2)*2.82e-17_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))* &
-!           (1-1.21e-4_wp*Ts(1:lx1,1:lx2,1:lx3))+nn(:,:,:,3)* &
-!           2.2e-16_wp*(1+3.6e-2_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))) ))
-!     beta=5.0_wp/2 * kB/elchrg * J1(1:lx1,1:lx2,1:lx3)
-!   end if
-! end subroutine thermal_conduct
-
-! Matt version that caps thermal conduct
 pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   !! COMPUTE THERMAL CONDUCTIVITY.
   !! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
@@ -243,10 +194,14 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   lx3=size(Ts,3)-4
   
   if (isp<lsp) then
+    Tstmp=Ts(1:lx1,1:lx2,1:lx3)
+    where (Ts(1:lx1,1:lx2,1:lx3) > 6000.0)
+      Tstmp=6000.0
+    end where
   !! ion species
   !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
     !! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
-    lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
+    lambda=thermal_coeff(isp)*Tstmp**(5.0_wp/2)
     beta=0.0
   else                  !electrons
     Tstmp=Ts(1:lx1,1:lx2,1:lx3)
