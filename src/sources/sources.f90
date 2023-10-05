@@ -78,6 +78,7 @@ where (Teff>30000 .and. Teff<=70000)
     -7.3160029e-38_wp*(Teff)**6 
 end where
 
+
 ! where (Teff>30000)
 !   kreac=-1.52489e-11_wp &
 !     +7.67112e-13_wp*(100) &
