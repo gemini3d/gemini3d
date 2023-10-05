@@ -51,7 +51,7 @@ dv2=(vs1(1:lx1,1:lx2,1:lx3,1)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,1)-vn2)**2+ &
 !O+ + N2 --> NO+ + N
 Teff=28/(16+28._wp)*(16*amu/3/kB*(dv2) &
      + Ts(1:lx1,1:lx2,1:lx3,1) -Tn) + Tn
-
+Teff=min(Teff,70000._wp) !Capped at 70.000, since it is the upper boundary
 
 where (Teff<=3725)
   kreac=1.71676e-12_wp &
@@ -67,13 +67,22 @@ where (Teff>3725 .and. Teff<=30000)
     -1.30858e-15_wp*(Teff/300)**3 &
     +4.67756e-18_wp*(Teff/300)**4
 end where
-where (Teff>30000)
-  kreac=-1.52489e-11_wp &
-    +7.67112e-13_wp*(100) &
-    +1.19064e-13_wp*(100)**2 &
-    -1.30858e-15_wp*(100)**3 &
-    +4.67756e-18_wp*(100)**4
+where (Teff>30000 .and. Teff<=70000)
+  kreac=-3.2999846-9_wp &
+    +3.7832649e-13_wp*(Teff) &
+    -1.5807103e-17_wp*(Teff)**2 &
+    +3.5017809e-22_wp*(Teff)**3 &
+    -4.3053426e-27_wp*(Teff)**4 &
+    +2.7760068e-32_wp*(Teff)**5 &
+    -7.3160029e-38_wp*(Teff)**6 
 end where
+! where (Teff>30000)
+!   kreac=-1.52489e-11_wp &
+!     +7.67112e-13_wp*(100) &
+!     +1.19064e-13_wp*(100)**2 &
+!     -1.30858e-15_wp*(100)**3 &
+!     +4.67756e-18_wp*(100)**4
+! end where
 
 betanow=kreac*nn(:,:,:,2)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,1)
@@ -579,7 +588,7 @@ subroutine O2vib(nn,Tn,Ts,O2VibrationalLoss)
   
   !Define Te, no ghost cells
 !  Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
-  Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),7000._wp)
+  Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),6000._wp)
   Teaux=3800.0_wp
   
   !! Calculate Log10(Q(Te))
@@ -737,7 +746,7 @@ subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
   lx3=size(Ts,3)-4
   
   !Define Te, no ghost cells
-  Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),7000._wp)
+  Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),6000._wp)
   !Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
   
   !loop over all indexes in the grid
