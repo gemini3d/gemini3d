@@ -109,7 +109,7 @@ end subroutine sweep2_allparams
 !> execute diffusion of energy and then source/loss terms for all equations
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                    Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
-                                   eprecip)
+                                   eprecip,flagdiffsolve,Teinf,J1)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -125,11 +125,17 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   real(wp), dimension(:,:,:), intent(inout) :: iver
   real(wp), intent(in) :: gavg,Tninf
   type(precipdata), intent(inout) :: eprecip
+  integer, intent(in) :: flagdiffsolve
+  real(wp), intent(in) :: Teinf
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
   real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
   real(wp) :: tstart,tfin
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
+  integer :: isp, lsp
+  real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param
 
   !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
 
@@ -149,7 +155,35 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,v
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x,cfg)                     ! collisional interactions
-  call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+  !call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+
+  lsp=size(Ts,4)
+  do isp=1,lsp
+    param=Ts(:,:,:,isp)     !temperature for this species
+    call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+
+    call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+
+    ! go ahead and just put the source terms in with the diffusion solve so they can be resolved simultaneously.  
+    A=A-Lo(:,:,:,isp)
+    E=E+Pr(:,:,:,isp)*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
+    if (isp==lsp) E=E+Qeprecip*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
+
+    select case (flagdiffsolve)
+      case (1)
+        param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+      case (2)
+        param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+      case default
+        print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
+        error stop
+    end select
+
+    Ts(:,:,:,isp) = param
+    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
+  end do
+
+
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -890,3 +924,4 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
 end subroutine clean_param_after_regrid
 
 end module multifluid
+

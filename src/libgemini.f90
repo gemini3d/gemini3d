@@ -1007,7 +1007,8 @@ contains
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,intvars%Q,f107a,f107,intvars%atmos%nn, &
                                      intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
-                                     intvars%iver,gavg,Tninf,intvars%eprecip)
+                                     intvars%iver,gavg,Tninf,intvars%eprecip, &
+                                     cfg%diffsolvetype,cfg%Teinf,J1)
   end subroutine source_loss_allparams_in
 
 
