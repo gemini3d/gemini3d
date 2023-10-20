@@ -87,14 +87,15 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
-  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
+  init_inputdata_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+//  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
   pot2perpfield_C(&xtype,&xC,&electrovars);
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars);
-  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+//  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
   msisinit_C(&cfgC);
   init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
+//  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
   get_initial_drifts_C(&cfgC, &xtype, &xC, &fluidvars, &fluidauxvars, &electrovars, &intvars);

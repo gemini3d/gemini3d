@@ -116,6 +116,7 @@ extern void read_grid_C(void**, int*, void**);
 extern void outdir_fullgridvaralloc_C(void**, void**, int*, int*, int*);
 extern void calc_subgrid_size_in_C(int*, int*);
 extern void get_initial_state_C(void**, double**, double**, void**, int*, void**, double*, int*, double*, double*, double*);
+extern void init_inputdata_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void init_Efieldinput_C(void**, int*, void**, double*, double*, void**, int*, double*);
 extern void pot2perpfield_C(int*, void**, double**);
 extern void BGfield_Lagrangian_C(void**, int*, void**, double**, void**);
