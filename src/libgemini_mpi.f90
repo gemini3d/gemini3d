@@ -22,13 +22,13 @@ use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
-                      v2grid, v3grid, setv2v3, set_start_timefromcfg
+                      v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
-            get_initial_drifts, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
+            get_initial_drifts, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
@@ -370,6 +370,22 @@ contains
     print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
     print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
   end subroutine init_procgrid
+
+
+  !> initialize all inputdata classes (internals will check whether present in config file)
+  subroutine init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    type(gemini_work), intent(inout) :: intvars
+
+    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
+    call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
+  end subroutine init_inputdata_in
 
 
   !> initialize electric field input data
