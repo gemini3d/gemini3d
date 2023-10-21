@@ -86,6 +86,12 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: vs3i
   real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
 
+  !> Used to pass information about electron precipitation between procedures
+  integer, parameter :: lprec=2     ! number of precipitating electron populations
+  real(wp), dimension(:,:,:), pointer :: W0,PhiWmWm2
+  real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
+  real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
+
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos
 
@@ -260,6 +266,9 @@ contains
     intvars%vs2i=0._wp
     intvars%vs3i=0._wp
     intvars%Q=0._wp
+
+    allocate(intvars%W0(1:lx2,1:lx3,1:intvars%lprec))
+    allocate(intvars%PhiWmWm2,mold=intvars%W0)
 
     allocate(intvars%eprecip)
     allocate(intvars%efield)
@@ -996,6 +1005,18 @@ contains
   end subroutine energy_diffusion_in
 
 
+  !> update the precipitation inputdata if present
+  subroutine precip_perturb_in()
+
+
+    if (cfg%flagprecfile==1) then
+      call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
+    else
+      !! no file input specified, so just call 'regular' function
+      call precipBCs(cfg,W0,PhiWmWm2)
+    end if
+  end subroutine precip_perturb_in
+
   !> source/loss numerical solutions
   subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
@@ -1022,7 +1043,7 @@ contains
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
                                      intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
-                                     intvars%iver,gavg,Tninf,intvars%eprecip)
+                                     intvars%iver,gavg,Tninf,intvars%eprecip,intvars%W0,intvars%PhiWmWm2)
   end subroutine source_loss_allparams_in
 
 
