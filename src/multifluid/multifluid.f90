@@ -36,11 +36,6 @@ private
 public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid
 
-integer, parameter :: lprec=2
-!! number of precipitating electron populations
-real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
-real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
-
 real(wp), parameter :: xicon = 3
 !real(wp), parameter :: xicon = 0
 !! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
@@ -108,8 +103,9 @@ end subroutine sweep2_allparams
 
 !> execute source/loss terms for all parameters in sequence
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
-                                   eprecip)
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
+                                   PrprecipG,QeprecipG,iverG,gavg,Tninf, &
+                                   eprecip,W0,PhiWmWm2)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -123,30 +119,33 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   logical, intent(in) :: first
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), dimension(:,:,:), intent(inout) :: PrprecipG,QeprecipG
+  real(wp), dimension(:,:,:), intent(inout) :: iverG
   real(wp), intent(in) :: gavg,Tninf
   type(precipdata), intent(inout) :: eprecip
+  real(wp) dimension(:,:,:,:), intent(in) ::  W0,PhiWmWm2
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
-  real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
   real(wp) :: tstart,tfin
 
   !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
 
 
-  !> Establish top boundary conditions for electron precipitation
-  if (cfg%flagprecfile==1) then
-    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
-  else
-    !! no file input specified, so just call 'regular' function
-    call precipBCs(cfg,W0,PhiWmWm2)
-  end if
+!  !> Establish top boundary conditions for electron precipitation
+!  if (cfg%flagprecfile==1) then
+!    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
+!  else
+!    !! no file input specified, so just call 'regular' function
+!    call precipBCs(cfg,W0,PhiWmWm2)
+!  end if
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
   call cpu_time(tstart)
   Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
   Qeprecip=0.0
-  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
+  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+          PrprecipG,QeprecipG,iverG,ns,Ts,nn,Tn,first)   ! precipiting electrons
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
@@ -345,7 +344,8 @@ end subroutine energy_diffusion
 !> *Accumulates* ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
 !    rates from impact ionization these arrays will need to be initialized to zero before calling this
 !    procedure.  Note that this procedure does need updated density and temperature data (i.e. ns and Ts)
-subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
+subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+                PrprecipG,QeprecipG,iverG,ns,Ts,nn,Tn,first)
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: t,dt
   class(curvmesh), intent(in) :: x
@@ -356,6 +356,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
   real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
   real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), dimension(:,:,:), pointer, intent(inout) :: PrprecipG,QeprecipG
+  real(wp), dimension(:,:,:), pointer, intent(inout) :: iverG
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
