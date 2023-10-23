@@ -293,6 +293,7 @@ contains
     real(wp) :: tstart,tfin
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
+    integer :: isub,lsub=1   ! variables for controlling subcycling of terms
 
     ! pull solar indices from module type
     call get_solar_indices(cfg,f107,f107a)
@@ -355,13 +356,15 @@ contains
     end if
 
     ! Energy diffusion (thermal conduction) substep
-    call cpu_time(tstart)
-    call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
-    call cpu_time(tfin)
-    if (myid==0 .and. debug) then
-      print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-    end if
-
+    do isub=1,lsub
+      ! FIXME: try to handle diffusion and sources together in call below
+      !call cpu_time(tstart)
+      !call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
+      !call cpu_time(tfin)
+      !if (myid==0 .and. debug) then
+      !  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      !end if
+  
     ! cleanup and convert to specific internal energy density for sources substeps
     call clean_param_in(3,x,fluidvars)
     call T2rhoe_in(fluidvars,fluidauxvars)
@@ -372,15 +375,14 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
-                                    x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+                                    x,dt/lsub,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
 
     ! density to be cleaned after source/loss
     call clean_param_in(3,x,fluidvars)
     call clean_param_in(2,x,fluidvars)
     call clean_param_in(1,x,fluidvars)
 
+    end do
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv
 end program
