@@ -48,6 +48,8 @@ target_link_libraries(MUMPS_standalone PRIVATE mumps_interface
 MUMPS::MUMPS
 )
 # same link logic applied to gemini.bin
+target_include_directories(MUMPS_standalone PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
+# this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
 add_test(NAME MUMPS_standalone
 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:MUMPS_standalone>
