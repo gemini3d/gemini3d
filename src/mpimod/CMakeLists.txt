@@ -13,6 +13,8 @@ ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90
 $<TARGET_OBJECTS:autogrid>
 mpisend.f90 mpirecv.f90 mpihalo.f90
 )
+target_include_directories(mpimod PUBLIC ${MPI_Fortran_INCLUDE_DIRS})
+# this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 target_link_libraries(mpimod PRIVATE const
 MPI::MPI_Fortran
 )
