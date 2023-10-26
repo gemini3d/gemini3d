@@ -255,11 +255,11 @@ Scalapack include directories: ${SCALAPACK_INCLUDE_DIRS}")
     add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
     set_property(TARGET SCALAPACK::SCALAPACK PROPERTY INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARIES}")
     set_property(TARGET SCALAPACK::SCALAPACK PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${SCALAPACK_INCLUDE_DIR}")
-  endif()
 
-  # For MKL, we don't use FindLapack, so define LAPACK::LAPACK as alias
-  if(MKL_FOUND)
-    add_library(LAPACK::LAPACK ALIAS SCALAPACK::SCALAPACK)
+    # For MKL, we don't use FindLapack, so define LAPACK::LAPACK as alias
+    if(MKL_FOUND AND NOT TARGET LAPACK::LAPACK)
+      add_library(LAPACK::LAPACK ALIAS SCALAPACK::SCALAPACK)
+    endif()
   endif()
 endif()
 

@@ -77,8 +77,10 @@ find_package(h5fortran CONFIG REQUIRED)
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-find_package(LAPACK REQUIRED)
-find_package(SCALAPACK REQUIRED) # for MUMPS
+if(NOT DEFINED ENV{MKLROOT})
+  find_package(LAPACK REQUIRED)
+endif()
+find_package(SCALAPACK REQUIRED)
 find_package(MUMPS REQUIRED CONFIG)
 
 # --- climate models
