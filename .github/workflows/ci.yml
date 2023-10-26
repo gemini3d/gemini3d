@@ -85,6 +85,10 @@ jobs:
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
         -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
+    - name: print config log
+      if: ${{ failure() }}
+      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+
     - name: Debug build
       run: cmake --build --preset debug
 
