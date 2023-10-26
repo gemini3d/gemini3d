@@ -39,7 +39,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     # this must be before oneAPI script commands else the scripts do not exist on the image
 
     - name: cache install oneAPI
@@ -67,7 +67,7 @@ jobs:
 # install ninja needs to be own step as not cached by design
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/external
         path: gemext

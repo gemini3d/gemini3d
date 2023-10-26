@@ -49,7 +49,7 @@ jobs:
     steps:
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/external
         path: gemext
@@ -79,7 +79,7 @@ jobs:
       with:
         python-version: '3.8'
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Configure multi
       run: >-
