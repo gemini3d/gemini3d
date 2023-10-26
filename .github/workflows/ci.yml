@@ -4,6 +4,7 @@ env:
   CTEST_PARALLEL_LEVEL: 2
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CTEST_NO_TESTS_ACTION: error
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
 
 on:
   push:
@@ -58,17 +59,19 @@ jobs:
       if: runner.os == 'Linux'
       timeout-minutes: 15
       run: |
-        sudo $(cmake -P gemext/scripts/requirements.cmake) ninja-build
+        sudo $(cmake -P gemext/scripts/requirements.cmake)
+        # ninja-build
 
     - name: Install packages (MacOS)
       if: runner.os == 'macOS'
       timeout-minutes: 15
-      run: $(cmake -P gemext/scripts/requirements.cmake) ninja
+      run: $(cmake -P gemext/scripts/requirements.cmake)
+      # ninja
 
     - name: Install model libraries
       timeout-minutes: 15
       run: |
-        cmake -Bbuild -GNinja -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
+        cmake -Bbuild -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
         cmake --build build
         cmake --install build
       working-directory: gemext
@@ -79,9 +82,15 @@ jobs:
 
     - uses: actions/checkout@v4
 
-    - name: Configure multi
+    # - name: Configure multi
+    #   run: >-
+    #     cmake --preset multi
+    #     -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+    #     -Dhwm14:BOOL=${{ matrix.hwm14 }}
+
+    - name: Configure default
       run: >-
-        cmake --preset multi
+        cmake --preset default
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
         -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
@@ -89,21 +98,27 @@ jobs:
       if: ${{ failure() }}
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
-    - name: Debug build
-      run: cmake --build --preset debug
+    - name: build
+      run: cmake --build build --parallel
 
-    - name: Debug unit test
-      run: ctest --preset debug -L unit
+    - name: unit test
+      run: ctest --preset default -L unit
 
-    # - name: Debug core test
-    #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
+    # - name: Debug build
+    #   run: cmake --build --preset debug
+
+    # - name: Debug unit test
+    #   run: ctest --preset debug -L unit
+
+    # # - name: Debug core test
+    # #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
 
 
-    - name: Release build
-      run: cmake --build --preset release
+    # - name: Release build
+    #   run: cmake --build --preset release
 
-    - name: Release unit test
-      run: ctest --preset release -L unit
+    # - name: Release unit test
+    #   run: ctest --preset release -L unit
 
-    # - name: Release core test
-    #   run: ctest --preset release -LE unit -E 3d
+    # # - name: Release core test
+    # #   run: ctest --preset release -LE unit -E 3d

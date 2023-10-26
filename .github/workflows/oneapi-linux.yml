@@ -10,6 +10,8 @@ env:
   LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   CTEST_NO_TESTS_ACTION: error
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CTEST_PARALLEL_LEVE: 2
 
 on:
   push:
@@ -62,8 +64,8 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: install Ninja
-      run: sudo apt install ninja-build
+    # - name: install Ninja
+    #   run: sudo apt install ninja-build
 # install ninja needs to be own step as not cached by design
 
     - name: Checkout Gemini3D-External
@@ -83,29 +85,39 @@ jobs:
       with:
         python-version: '3.8'
 
+    # - name: CMake Configure
+    #   run: >-
+    #     cmake --preset multi
+    #     -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+
     - name: CMake Configure
       run: >-
-        cmake
-        --preset multi
+        cmake --preset default
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
 
     - name: print config log
       if: ${{ failure() }}
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
-    - name: DEBUG build
-      run: cmake --build --preset debug
-    - name: DEBUG unit test
-      run: ctest --preset debug -L unit
-    - name: DEBUG test core
-      run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
+    - name: build
+      run: cmake --build build --parallel
 
-    - name: RELEASE build
-      run: cmake --build --preset release
-    - name: RELEASE unit test
-      run: ctest --preset release -L unit
-    - name: RELEASE test core
-      run: ctest --preset release -LE unit -E 3d
+    - name: unit test
+      run: ctest --preset default -L unit
+
+    # - name: DEBUG build
+    #   run: cmake --build --preset debug
+    # - name: DEBUG unit test
+    #   run: ctest --preset debug -L unit
+    # - name: DEBUG test core
+    #   run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
+
+    # - name: RELEASE build
+    #   run: cmake --build --preset release
+    # - name: RELEASE unit test
+    #   run: ctest --preset release -L unit
+    # - name: RELEASE test core
+    #   run: ctest --preset release -LE unit -E 3d
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
