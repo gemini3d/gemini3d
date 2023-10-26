@@ -3,10 +3,6 @@ cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_TLS_VERIFY on)
 
-if(CMAKE_VERSION VERSION_LESS 3.19)
-  include(${CMAKE_CURRENT_LIST_DIR}/../Modules/JsonParse.cmake)
-endif()
-
 function(download_archive url archive exp_hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
@@ -37,12 +33,7 @@ if(NOT EXISTS ${arc_json_file} OR _size EQUAL 0)
 
   file(READ ${CMAKE_CURRENT_LIST_DIR}/../libraries.json _libj)
 
-  if(CMAKE_VERSION VERSION_LESS 3.19)
-    sbeParseJson(meta _libj)
-    set(url ${meta.ref_data.url})
-  else()
-    string(JSON url GET ${_libj} ref_data url)
-  endif()
+  string(JSON url GET ${_libj} ref_data url)
 
   file(DOWNLOAD ${url} ${arc_json_file}
   INACTIVITY_TIMEOUT 15
@@ -67,16 +58,9 @@ else()
   set(url_name ${name})
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.19)
-  sbeParseJson(meta _refj)
-  set(url ${meta.tests.${url_name}.url})
-  set(archive_name ${meta.tests.${url_name}.archive})
-  set(hash ${meta.tests.${url_name}.sha256})
-else()
-  string(JSON url GET ${_refj} tests ${url_name} url)
-  string(JSON archive_name GET ${_refj} tests ${url_name} archive)
-  string(JSON hash GET ${_refj} tests ${url_name} sha256)
-endif()
+string(JSON url GET ${_refj} tests ${url_name} url)
+string(JSON archive_name GET ${_refj} tests ${url_name} archive)
+string(JSON hash GET ${_refj} tests ${url_name} sha256)
 
 set(archive ${refroot}/${archive_name})
 
