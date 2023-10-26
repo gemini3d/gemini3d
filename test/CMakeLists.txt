@@ -4,8 +4,6 @@ if(matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
 endif(matlab)
 
-include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
-
 # Libraries such as MPI, HDF5, Scalapack, MUMPS, are so important
 # we test each standalone to mitigate confusing build or runtime errors
 # if a particular library isn't working.

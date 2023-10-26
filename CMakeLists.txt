@@ -38,15 +38,19 @@ if(NOT ffilesystem_FOUND)
   message(FATAL_ERROR ${need_gemext})
 endif()
 
+# find python before excluding Anaconda
+include(cmake/python.cmake)
+
 # --- MPI
 # NOTE: our find_package(MPI) needs to be before find_package(MUMPS), which also calls find_package(MPI)
 # Conda e.g. scikit-learn can cause problems with finding MPI, so exclude Conda from search
+# --- avoid Anaconda libraries
 if(DEFINED ENV{CONDA_PREFIX})
-  set(mpi_ignore_path
-    $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include
-    $ENV{CONDA_PREFIX}/Library/bin $ENV{CONDA_PREFIX}/Library/lib $ENV{CONDA_PREFIX}/Library/include
-  )
-  list(APPEND CMAKE_IGNORE_PATH ${mpi_ignore_path})
+  list(APPEND CMAKE_IGNORE_PREFIX_PATH $ENV{CONDA_PREFIX})
+  list(APPEND CMAKE_IGNORE_PATH $ENV{CONDA_PREFIX}/bin)
+  # need CMAKE_IGNORE_PATH for CMake < 3.23
+  # and to ensure system env var PATH doesn't interfere
+  # despite CMAKE_IGNORE_PREFIX_PATH
 endif()
 set(MPI_DETERMINE_LIBRARY_VERSION true)
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
@@ -64,7 +68,7 @@ include(cmake/compilers.cmake)
 # --- linear algebra libraries
 find_package(LAPACK REQUIRED)
 find_package(SCALAPACK REQUIRED) # for MUMPS
-find_package(MUMPS REQUIRED COMPONENTS d)
+find_package(MUMPS REQUIRED CONFIG)
 
 # --- climate models
 if(glow)
@@ -75,7 +79,7 @@ if(hwm14)
   find_package(hwm14 CONFIG REQUIRED)
 endif()
 
-# --- MSISE00 or MSIS 2.0
+# --- MSISE00 or MSIS 2.x
 find_package(msis CONFIG REQUIRED)
 # WORKAROUND: MSIS shared Rpath fail
 # Rpath is defined in MSIS, but ld fails to use it
@@ -83,12 +87,6 @@ get_target_property(msis_loc msis::msis_ifc LOCATION)
 get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
 
 # END WORKAROUND
-
-# pop off ignored paths so rest of script can find Python
-if(DEFINED CMAKE_IGNORE_PATH)
-  list(REMOVE_ITEM CMAKE_IGNORE_PATH "${mpi_ignore_path}")
-endif()
-
 
 # unit test DLL paths
 include(cmake/DllTestPath.cmake)
