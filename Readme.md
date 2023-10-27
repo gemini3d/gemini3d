@@ -66,14 +66,9 @@ Install Gemini3D prerequisite libraries. This is a one-time process used by any 
 ```sh
 git clone https://github.com/gemini3d/external.git
 
-cmake -B external/build -S external -DCMAKE_INSTALL_PREFIX=~/libgem
-# the libgem name/location is arbitrary
-
-cmake --build external/build
+cmake -P external/build-online.cmake
+# installs under ~/libgem_gnu by default
 ```
-
-Note: if the external build fails and you don't see the error message, run the build command `cmake --build external/build` once or twice more see if you can scroll back to it.
-The build is massively in parallel and so sometimes the error is many screens back up.
 
 ---
 
@@ -81,18 +76,8 @@ Set environment variables `CMAKE_PREFIX_PATH` and edit PATH environment variable
 On **Linux** add to ~/.bashrc, or on **MacOS** add to ~/.zshrc:
 
 ```sh
-export CMAKE_PREFIX_PATH=~/libgem
-export PATH=$HOME/libgem/bin:$PATH
+export CMAKE_PREFIX_PATH=~/libgem_gnu
 ```
-
-On **Windows** from Windows Terminal / Command Prompt:
-
-```pwsh
-rundll32 sysdm.cpl,EditEnvironmentVariables
-```
-
-Then add "New" variable `CMAKE_PREFIX_PATH` with value `~/libgem`.
-"Edit" variable `Path` with New value `%USERPROFILE%\libgem\bin`.
 
 ---
 
