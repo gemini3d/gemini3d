@@ -53,7 +53,7 @@ if (mpi_cfg%myid==0) then
   print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
   if(cfg%flagdneu==1) then
-    call assert_is_dir(cfg%sourcedir)
+    if (.not. (cfg%interptype==5 .or. cfg%interptype==6)) call assert_is_dir(cfg%sourcedir)
     print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
     print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
     print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
