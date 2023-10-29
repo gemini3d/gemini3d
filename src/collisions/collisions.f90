@@ -82,17 +82,17 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
       if (isp==1 .and. isp2==4) then
         Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp) / 16
 
-        ! where(Teff>7000._wp)
-        !   Teff=7000._wp
-        ! end where
+        where(Teff>7000._wp)
+          Teff=7000._wp
+        end where
 
         nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1e-6_wp
       else
         Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
 
-        ! where(Teff>000._wp)
-        !   Teff=7000._wp
-        ! end where
+        where(Teff>000._wp)
+          Teff=7000._wp
+        end where
 
         nusn=C2sn1(isp,isp2)*(1 - C2sn2(isp,isp2)*log10(Teff))**2 * &
              (Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
@@ -198,9 +198,9 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   if (isp<lsp) then
     Tstmp=Ts(1:lx1,1:lx2,1:lx3)
 
-    ! where (Ts(1:lx1,1:lx2,1:lx3) > 7000.0)
-    !   Tstmp=7000.0
-    ! end where
+    where (Ts(1:lx1,1:lx2,1:lx3) > 7000.0)
+      Tstmp=7000.0
+    end where
 
   !! ion species
   !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
