@@ -29,12 +29,15 @@ end interface
 contains
 
 
-function photoionization(x,nn,chi,f107,f107a,gavg,Tninf)
+function photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf)
 
 !------------------------------------------------------------
 !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
 !------------------------------------------------------------
 
+real(wp), intent(in) :: t
+integer, intent(in), dimension(3) :: ymd
+real(wp), intent(in) :: UTsec
 class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 !real(wp), dimension(:,:,:), intent(in) :: Tn

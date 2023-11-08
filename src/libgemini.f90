@@ -1822,7 +1822,7 @@ contains
     end do
     deltav=maxv-minv
 
-    if (deltav < 5.0) flagcoarsening=.true.
+    if (deltav < 2.5) flagcoarsening=.true.
   end subroutine tag4coarsening_diff
 
 
