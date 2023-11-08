@@ -450,7 +450,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   end if
 
   ! solar fluxes and resulting ionization rates
-  Prpreciptmp=photoionization(x,nn,chi,f107,f107a,gavg,Tninf)
+  Prpreciptmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf)
   !if (mpi_cfg%myid==0 .and. debug) then
   if (debug) then
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
