@@ -52,21 +52,8 @@ if(DEFINED ENV{CONDA_PREFIX})
   # and to ensure system env var PATH doesn't interfere
   # despite CMAKE_IGNORE_PREFIX_PATH
 endif()
-set(MPI_DETERMINE_LIBRARY_VERSION true)
-find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
-find_file(mpi_f08_mod NAMES mpi_f08.mod
-NO_DEFAULT_PATH
-HINTS ${MPI_Fortran_INCLUDE_DIRS}
-)
-message(STATUS "MPI Library Version: ${MPI_C_LIBRARY_VERSION_STRING}
-MPI_Fortran_INCLUDE_DIRS: ${MPI_Fortran_INCLUDE_DIRS}
-MPI-3 Fortran module: ${mpi_f08_mod}
-")
 
-if(NOT mpi_f08_mod)
-  message(FATAL_ERROR "Fortran MPI ${MPI_Fortran_VERSION} doesn't have MPI-3 Fortran mpi_f08.mod, searched using ${MPI_Fortran_INCLUDE_DIRS}")
-endif()
-include(cmake/openmpi.cmake)
+include(cmake/mpi.cmake)
 
 # --- end MPI
 
