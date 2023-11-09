@@ -166,9 +166,9 @@ function find_exe(name) result(exe)
 
 character(*), intent(in) :: name
 
-character(:), allocatable :: exe, work
+character(:), allocatable :: exe
+character(8000) :: work, buf !< avoid quirks with reallocating, arbitrary lenght
 logical :: exists
-character(1000) :: buf
 
 if(len_trim(name) > 0) then
   inquire(file=name, exist=exists)
@@ -202,18 +202,18 @@ if(len_trim(name) == 0) then
 
   inquire(file=work, exist=exists)
   if (exists) then
-    exe = work
+    exe = trim(work)
     return
   else
-    inquire(file=work // '.exe', exist=exists)
+    inquire(file=trim(work) // '.exe', exist=exists)
     if(exists) then
-      exe = work // '.exe'
+      exe = trim(work) // '.exe'
       return
     endif
   endif
 endif
 
-error stop "gemini3d.run: did not find " // exe // " from " // name // &
+error stop "gemini3d.run: did not find " // exe // " from " // name // " using " // trim(work) // &
   " : please specify path to MPI runnable executable with option 'gemini3d.run -exe path/to/my.bin'"
 
 end function find_exe

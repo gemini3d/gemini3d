@@ -2,15 +2,16 @@ include(FeatureSummary)
 
 # --- recommendations
 
-if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.5.0)
-  message(WARNING "GCC older than 7.5.0 has bugs that are likely to cause Gemini3D (and other modern programs) to fail to build.")
-endif()
-
 if(CMAKE_GENERATOR MATCHES "Visual Studio")
   message(WARNING "Visual Studio generator ${CMAKE_GENERATOR} is not supported. Please use \"MinGW Makefiles\" or Ninja:
 
   cmake -G Ninja -B ${PROJECT_BINARY_DIR}
+  ")
+endif()
 
+if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.27.0 AND CMAKE_VERSION VERSION_LESS 3.27.8)
+  message(WARNING "CMake 3.27.0..3.27.7 has a bug with Ninja causing build failures. Suggest using CMake outside this range or
+  cmake -Bbuild -G \"Unix Makefiles\"
   ")
 endif()
 

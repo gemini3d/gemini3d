@@ -396,7 +396,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   logical, intent(in) :: first  !< first time step
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
   integer :: iprec,lprec
-  !! note PrprecipG and the like are module-scope variables
+  !! FIXME:  PrprecipG and the like are module-scope variables and cannot be used with forestGEMINI
 
   ! First check that our module-scope arrays are allocated before going on to calculations.  
   ! This may need to be passed in as arguments for compatibility with trees-GEMINI

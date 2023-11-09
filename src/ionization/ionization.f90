@@ -152,6 +152,8 @@ nO2col=nn(:,:,:,3)*H*Chfn
 
 !PHOTON FLUX
 do il=1,ll
+  ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
+  !   computing photon fluxes.  
   Iflux(:,:,:,il)=Iinf(il)*exp(-(sigmaO(il)*nOcol+sigmaN2(il)*nN2col+sigmaO2(il)*nO2col))
 end do
 

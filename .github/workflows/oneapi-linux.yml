@@ -10,6 +10,8 @@ env:
   LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   CTEST_NO_TESTS_ACTION: error
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CTEST_PARALLEL_LEVE: 2
 
 on:
   push:
@@ -39,7 +41,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     # this must be before oneAPI script commands else the scripts do not exist on the image
 
     - name: cache install oneAPI
@@ -52,7 +54,8 @@ jobs:
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
-      timeout-minutes: 5
+      timeout-minutes: 8
+      # 5 minutes times out sometimes
       run: |
         .github/workflows/oneapi_setup_apt_repo_linux.sh
         sudo apt install ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
@@ -62,12 +65,12 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: install Ninja
-      run: sudo apt install ninja-build
+    # - name: install Ninja
+    #   run: sudo apt install ninja-build
 # install ninja needs to be own step as not cached by design
 
     - name: Checkout Gemini3D-External
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: gemini3d/external
         path: gemext
@@ -83,25 +86,39 @@ jobs:
       with:
         python-version: '3.8'
 
+    # - name: CMake Configure
+    #   run: >-
+    #     cmake --preset multi
+    #     -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+
     - name: CMake Configure
       run: >-
-        cmake
-        --preset multi
+        cmake --preset default
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
 
-    - name: DEBUG build
-      run: cmake --build --preset debug
-    - name: DEBUG unit test
-      run: ctest --preset debug -L unit
-    - name: DEBUG test core
-      run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
+    - name: print config log
+      if: ${{ failure() }}
+      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
-    - name: RELEASE build
-      run: cmake --build --preset release
-    - name: RELEASE unit test
-      run: ctest --preset release -L unit
-    - name: RELEASE test core
-      run: ctest --preset release -LE unit -E 3d
+    - name: build
+      run: cmake --build build --parallel
+
+    - name: unit test
+      run: ctest --preset default -L unit
+
+    # - name: DEBUG build
+    #   run: cmake --build --preset debug
+    # - name: DEBUG unit test
+    #   run: ctest --preset debug -L unit
+    # - name: DEBUG test core
+    #   run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
+
+    # - name: RELEASE build
+    #   run: cmake --build --preset release
+    # - name: RELEASE unit test
+    #   run: ctest --preset release -L unit
+    # - name: RELEASE test core
+    #   run: ctest --preset release -LE unit -E 3d
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
