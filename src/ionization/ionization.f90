@@ -167,9 +167,9 @@ do il=1,ll
         if (flagmask) then
           maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)*exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)
         else
-          maskval=1.0
+          maskval=0.0
         end if
-        Iflux(ix1,ix2,ix3,il)=maskval*Iinf(il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
+        Iflux(ix1,ix2,ix3,il)=(1.0-maskval)*Iinf(il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
                 sigmaO2(il)*nO2col(ix1,ix2,ix3)))
       end do
     end do
