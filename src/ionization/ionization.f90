@@ -118,7 +118,7 @@ Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
 
 
 !O COLUMN DENSITY
-H=kB*Tninf/mn(1)/gavg      !scalar scale height
+H=kB*Tninf/mn(1)/gavg                         !scalar scale height
 bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H          !a reduced altitude
 y=sqrt(bigX/2._wp)*abs(cos(chi))
 Chfn=0
@@ -167,7 +167,7 @@ do il=1,ll
         if (flagmask) then
           maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
                     !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
-                    exp(-(t-ectime)**2/2/ecdtime**2)
+                    exp(-(UTsec-ectime)**2/2/ecdtime**2)
         else
           maskval=0.0
         end if
