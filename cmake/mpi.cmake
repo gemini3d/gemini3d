@@ -1,5 +1,14 @@
 include(CheckSourceCompiles)
 
+if(NOT DEFINED MPI_ROOT AND DEFINED ENV{MPI_ROOT})
+  set(MPI_ROOT $ENV{MPI_ROOT})
+endif()
+if(MPI_ROOT)
+  message(STATUS "Using MPI_ROOT=${MPI_ROOT}")
+else()
+  message(STATUS "MPI_ROOT not set, using default MPI search paths")
+endif()
+
 set(MPI_DETERMINE_LIBRARY_VERSION true)
 
 find_package(MPI COMPONENTS C CXX Fortran REQUIRED)
