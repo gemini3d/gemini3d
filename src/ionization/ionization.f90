@@ -55,6 +55,10 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
 real(wp) :: H
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
+real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
+logical, parameter :: flagmask=.true.
+integer :: ix1,ix2,ix3
+real(wp) :: maskval
 
 
 !WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
@@ -156,8 +160,20 @@ nO2col=nn(:,:,:,3)*H*Chfn
 !PHOTON FLUX
 do il=1,ll
   ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
-  !   computing photon fluxes.  
-  Iflux(:,:,:,il)=Iinf(il)*exp(-(sigmaO(il)*nOcol+sigmaN2(il)*nN2col+sigmaO2(il)*nO2col))
+  !   computing photon fluxes. 
+  do ix3=1,x%lx3
+    do ix2=1,x%lx2
+      do ix1=1,x%lx1 
+        if (flagmask) then
+          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)*exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)
+        else
+          maskval=1.0
+        end if
+        Iflux(ix1,ix2,ix3,il)=maskval*Iinf(il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
+                sigmaO2(il)*nO2col(ix1,ix2,ix3)))
+      end do
+    end do
+  end do
 end do
 
 
