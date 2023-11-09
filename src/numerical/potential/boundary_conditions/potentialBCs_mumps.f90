@@ -293,9 +293,9 @@ contains
             if (z<=150e3_wp) then
               E03all(ix1,ix2,ix3) = 0
             elseif ((z>=150e3_wp) .and. (z<=300e3_wp)) then
-              E03all(ix1,ix2,ix3) = -(veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
+              E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
             elseif (z>300e3_wp) then
-              E03all(ix1,ix2,ix3) = -veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
+              E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
             end if
           end do
         end do
