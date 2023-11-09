@@ -165,7 +165,8 @@ do il=1,ll
     do ix2=1,x%lx2
       do ix1=1,x%lx1 
         if (flagmask) then
-          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)*exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
+          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
+                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
                     exp(-(t-ectime)**2/2/ecdtime**2)
         else
           maskval=0.0
