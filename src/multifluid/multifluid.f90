@@ -83,7 +83,7 @@ end subroutine sweep2_allparams
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                    Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
                                    gavg,Tninf, &
-                                   eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Pr,Lo)
+                                   eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Prionize,Qeionize,Pr,Lo)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -100,8 +100,8 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   real(wp), intent(in) :: gavg,Tninf
   type(precipdata), intent(inout) :: eprecip
   real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
-  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
-  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip,Prionize
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip,Qeionize
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
   real(wp) :: tstart,tfin
 
@@ -118,13 +118,13 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
   call cpu_time(tstart)
-  Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
-  Qeprecip=0.0
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
           ns,Ts,nn,Tn,first)   ! precipiting electrons
-  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
+  Prionize=Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
+  Qeionize=Qeprecip
+  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
-  call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+  call energy_source_loss(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -144,7 +144,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !ALL MASS SOURCES
   call cpu_time(tstart)
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  call mass_source_loss(dt,Pr,Lo,Prionize,ns)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -337,6 +337,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:), intent(in) :: Tn
   logical, intent(in) :: first  !< first time step
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
+  real(wp), dimension(1:size(iver,1),1:size(iver,2),1:size(iver,3)) :: ivertmp
   integer :: iprec,lprec
   !! FIXME:  PrprecipG and the like are module-scope variables and cannot be used with forestGEMINI
 
@@ -359,6 +361,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
   if (gridflag/=0) then
     if (cfg%flagglow==0) then
+      Prprecip=0.0; Qeprecip=0.0;
       !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
@@ -367,16 +370,18 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
         Prprecip=Prprecip+Prpreciptmp
       end do
       Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
-      Qeprecip = eheating(nn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
+      Qeprecip = eheating(nn,Prprecip,ns)       ! once we have total ionization rate (all populations) compute the elec. heating rate
     else
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
         !if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
-        iver=0;
+        ivertmp=0; Prpreciptmp=0; Qepreciptmp=0
         call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,1:lx2,1:lx3),x%glon(1,1:lx2,1:lx3), &
                             x%alt(1:lx1,1:lx2,1:lx3),nn,Tn,ns,Ts, &
-                            Qeprecip, iver, Prprecip)    ! bit messy but this will internally iterate over populations
-        Prprecip=max(Prprecip, 1e-5_wp)
+                            Qepreciptmp, ivertmp, Prpreciptmp)    ! bit messy but this will internally iterate over populations
+        Prprecip=max(Prpreciptmp, 1e-5_wp)
+        Qeprecip=Qepreciptmp
+        iver=ivertmp
       end if
     end if
   else

@@ -90,8 +90,8 @@ type gemini_work
   !> Used to pass information about electron precipitation between procedures
   integer :: lprec=2     ! number of precipitating electron populations
   real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()
-  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null()
-  real(wp), dimension(:,:,:), pointer :: QePrecip=>null()
+  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()
+  real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()
 
   !> Neutral information for top-level gemini program
@@ -275,9 +275,13 @@ contains
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
     allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
-    intvars%Prprecip(:,:,:,:)=0
+    intvars%Prprecip(:,:,:,:)=0.0
     allocate(intvars%Qeprecip(1:lx1,1:lx2,1:lx3))
-    intvars%Qeprecip(:,:,:)=0
+    intvars%Qeprecip(:,:,:)=0.0
+    allocate(intvars%Prionize,mold=intvars%Prprecip)
+    intvars%Prionize(:,:,:,:)=0.0
+    allocate(intvars%Qeionize,mold=intvars%Qeprecip)
+    intvars%Qeionize(:,:,:)=0.0
 
     allocate(intvars%Pr(1:lx1,1:lx2,1:lx3,1:lsp))
     allocate(intvars%Lo,mold=intvars%Pr)
@@ -318,6 +322,8 @@ contains
 
     deallocate(intvars%Prprecip)
     deallocate(intvars%Qeprecip)
+    deallocate(intvars%Prionize)
+    deallocate(intvars%Qeionize)
     if(associated(intvars%iver)) deallocate(intvars%iver)
 
     deallocate(intvars%Pr,intvars%Lo)
@@ -1033,7 +1039,6 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     if (cfg%flagprecfile==1) then
-      print*, 'definitely updating precip...'
       call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%W0,intvars%PhiWmWm2,intvars%eprecip)
     else
       !! no file input specified, so just call 'regular' function
@@ -1069,7 +1074,9 @@ contains
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver, &
                                      gavg,Tninf, &
                                      intvars%eprecip,intvars%W0,intvars%PhiWmWm2, &
-                                     intvars%Prprecip,intvars%Qeprecip,intvars%Pr,intvars%Lo)
+                                     intvars%Prprecip,intvars%Qeprecip, &
+                                     intvars%Prionize,intvars%Qeionize, &
+                                     intvars%Pr,intvars%Lo)
   end subroutine source_loss_allparams_in
 
 
