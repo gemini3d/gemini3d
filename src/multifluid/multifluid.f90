@@ -25,7 +25,6 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
-use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
 use gemini3d_config, only: gemini_cfg
@@ -83,8 +82,8 @@ end subroutine sweep2_allparams
 !> execute source/loss terms for all parameters in sequence
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                    Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
-                                   PrprecipG,QeprecipG,iverG,gavg,Tninf, &
-                                   eprecip,W0,PhiWmWm2)
+                                   gavg,Tninf, &
+                                   eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Pr,Lo)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -98,15 +97,12 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   logical, intent(in) :: first
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:), intent(inout) :: iver
-  real(wp), dimension(:,:,:,:), intent(inout) :: PrprecipG
-  real(wp), dimension(:,:,:), intent(inout) :: QeprecipG
-  real(wp), dimension(:,:,:), intent(inout) :: iverG
   real(wp), intent(in) :: gavg,Tninf
   type(precipdata), intent(inout) :: eprecip
   real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
   real(wp) :: tstart,tfin
 
   !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
@@ -125,7 +121,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
   Qeprecip=0.0
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
-          PrprecipG,QeprecipG,iverG,ns,Ts,nn,Tn,first)   ! precipiting electrons
+          ns,Ts,nn,Tn,first)   ! precipiting electrons
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
@@ -325,7 +321,7 @@ end subroutine energy_diffusion
 !    rates from impact ionization these arrays will need to be initialized to zero before calling this
 !    procedure.  Note that this procedure does need updated density and temperature data (i.e. ns and Ts)
 subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
-                PrprecipG,QeprecipG,iverG,ns,Ts,nn,Tn,first)
+                ns,Ts,nn,Tn,first)
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: t,dt
   class(curvmesh), intent(in) :: x
@@ -336,9 +332,6 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
   real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
   real(wp), dimension(:,:,:), intent(inout) :: iver
-  real(wp), dimension(:,:,:,:), intent(inout) :: PrprecipG
-  real(wp), dimension(:,:,:), intent(inout) :: QeprecipG
-  real(wp), dimension(:,:,:), intent(inout) :: iverG
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
@@ -379,15 +372,12 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
         !if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
-        PrprecipG=0; QeprecipG=0; iverG=0;
+        iver=0;
         call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,1:lx2,1:lx3),x%glon(1,1:lx2,1:lx3), &
                             x%alt(1:lx1,1:lx2,1:lx3),nn,Tn,ns,Ts, &
-                            QeprecipG, iverG, PrprecipG)    ! bit messy but this will internally iterate over populations
-        PrprecipG=max(PrprecipG, 1e-5_wp)
+                            Qeprecip, iver, Prprecip)    ! bit messy but this will internally iterate over populations
+        Prprecip=max(Prprecip, 1e-5_wp)
       end if
-      Prprecip=PrprecipG    ! glow returns rates from all populations so this becomes a straight assignments instead of accumlation
-      Qeprecip=QeprecipG
-      iver=iverG            ! store integrated VER computed by GLOW
     end if
   else
     !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)

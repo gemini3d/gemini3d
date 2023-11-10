@@ -49,6 +49,7 @@ use potential_nompi, only: set_fields_test,velocities_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
+use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 
 implicit none (type, external)
 private
@@ -87,10 +88,11 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: Q=>null()    ! artificial viscosity
 
   !> Used to pass information about electron precipitation between procedures
-  integer, parameter :: lprec=2     ! number of precipitating electron populations
+  integer :: lprec=2     ! number of precipitating electron populations
   real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()
-  real(wp), dimension(:,:,:,:), pointer :: PrPrecipG=>null()
-  real(wp), dimension(:,:,:), pointer :: QePrecipG=>null(), iverG=>null()
+  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null()
+  real(wp), dimension(:,:,:), pointer :: QePrecip=>null()
+  real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()
 
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
@@ -272,18 +274,13 @@ contains
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
-    if ((cfg%flagglow/=0).and.(.not.associated(intvars%PrprecipG))) then
-      allocate(intvars%PrprecipG(1:lx1,1:lx2,1:lx3,1:lsp)
-      intvars%PrprecipG(:,:,:,:)=0
-    end if
-    if ((cfg%flagglow/=0).and.(.not.associated(intvar%QeprecipG))) then
-      allocate(QeprecipG(1:lx1,1:lx2,1:lx3)
-      intvars%QeprecipG(:,:,:)=0
-    end if
-    if ((cfg%flagglow/=0).and.(.not.associated(intvars%iverG))) then
-      allocate(intvars%iverG(size(intvars%iver,1),size(intvars%iver,2),size(intvars%iver,3)))
-      intvars%iverG(:,:,:)=0
-    end if
+    allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp))
+    intvars%Prprecip(:,:,:,:)=0
+    allocate(intvars%Qeprecip(1:lx1,1:lx2,1:lx3))
+    intvars%Qeprecip(:,:,:)=0
+
+    allocate(intvars%Pr(1:lx1,1:lx2,1:lx3,1:lsp))
+    allocate(intvars%Lo,mold=intvars%Pr)
 
     allocate(intvars%eprecip)
     allocate(intvars%efield)
@@ -319,9 +316,11 @@ contains
     if (associated(intvars%efield)) deallocate(intvars%efield)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
 
-    if (associated(intvars%PrprecipG) deallocate(intvars%PrprecipG)
-    if (associated(intvars%QeprecipG) deallocate(intvars%QeprecipG)
-    if (associated(intvars%iverG) deallocate(intvars%iverG)
+    deallocate(intvars%Prprecip)
+    deallocate(intvars%Qeprecip)
+    if(associated(intvars%iver)) deallocate(intvars%iver)
+
+    deallocate(intvars%Pr,intvars%Lo)
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
@@ -397,7 +396,7 @@ contains
     ! error checking
     if (glatctr<-90._wp .or. glatctr>90._wp) then
       error stop ' grid_from_extents:  prior to calling must use read_size_gridcenter or set_size_gridcenter to assign &
-                   module variables glonctr,glatctr'
+                   &module variables glonctr,glatctr'
     end if
 
     ! create temp space
@@ -1025,14 +1024,19 @@ contains
 
 
   !> update the precipitation inputdata if present
-  subroutine precip_perturb_in()
-
+  subroutine precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
+    real(wp), intent(in) :: t,dt
+    type(gemini_cfg), intent(in) :: cfg
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(in) :: x
+    type(gemini_work), intent(inout) :: intvars
 
     if (cfg%flagprecfile==1) then
-      call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
+      call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%W0,intvars%PhiWmWm2,intvars%eprecip)
     else
       !! no file input specified, so just call 'regular' function
-      call precipBCs(cfg,W0,PhiWmWm2)
+      call precipBCs(cfg,intvars%W0,intvars%PhiWmWm2)
     end if
   end subroutine precip_perturb_in
 
@@ -1061,9 +1065,10 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
                                      intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
-                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
-                                     intvars%PrprecipG,intvars%QeprecipG,intvars%iver,gavg,Tninf, &
-                                     intvars%eprecip,intvars%W0,intvars%PhiWmWm2)
+                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver, &
+                                     gavg,Tninf, &
+                                     intvars%eprecip,intvars%W0,intvars%PhiWmWm2, &
+                                     intvars%Prprecip,intvars%Qeprecip,intvars%Pr,intvars%Lo)
   end subroutine source_loss_allparams_in
 
 
