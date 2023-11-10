@@ -373,7 +373,6 @@ contains
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
-    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
                                     x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
