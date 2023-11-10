@@ -69,7 +69,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             get_fullgrid_lims_in,checkE1,get_cfg_timevars,electrodynamics_test,forceZOH_all, permute_fluidvars, &
             ipermute_fluidvars, tag4refine_location, tag4refine_vperp, clean_param_after_regrid_in, get_locationsi_in, &
             set_datainow_in, get_datainow_ptr_in, swap_statevars, interp3_in, interp2_in, tag4refine_diff, &
-            tag4refine_grad, tag4coarsening_diff
+            tag4refine_grad, tag4coarsening_diff, precip_perturb_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -274,7 +274,7 @@ contains
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
-    allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp))
+    allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
     intvars%Prprecip(:,:,:,:)=0
     allocate(intvars%Qeprecip(1:lx1,1:lx2,1:lx3))
     intvars%Qeprecip(:,:,:)=0
@@ -702,7 +702,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_precipinput(dt, cfg,ymd,UTsec,x,intvars%eprecip)
+    call init_precipinput(dt,cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
 
 
@@ -1033,6 +1033,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     if (cfg%flagprecfile==1) then
+      print*, 'definitely updating precip...'
       call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%W0,intvars%PhiWmWm2,intvars%eprecip)
     else
       !! no file input specified, so just call 'regular' function

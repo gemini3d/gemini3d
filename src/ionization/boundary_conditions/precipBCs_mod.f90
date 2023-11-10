@@ -28,6 +28,7 @@ contains
     class(curvmesh), intent(in) :: x
     type(precipdata), intent(inout) :: eprecip
 
+    print*, "Definitely initializing precipitation input..."
     if (cfg%flagprecfile==1) then    !all workers must have this info
       call eprecip%init(cfg,cfg%precdir,x,dt,cfg%dtprec,ymd,UTsec)
     end if
