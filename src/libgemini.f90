@@ -75,25 +75,25 @@ real(wp), protected :: v2grid,v3grid
 
 !> type encapsulating internal arrays and parameters needed by gemini.  This is basically a catch-all for any data
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
-!    doesn't conform to simple array shapes.
+!    doesn't conform to simple array shapes or needs to be stored on a per-instance basis rather than globally.
 type gemini_work
   real(wp), dimension(:,:,:), pointer :: Phiall=>null()    !! full-grid potential solution.  To store previous time step value
-  real(wp), dimension(:,:,:), pointer :: iver    !! integrated volume emission rate of aurora calculated by GLOW
+  real(wp), dimension(:,:,:), pointer :: iver=>null()    !! integrated volume emission rate of aurora calculated by GLOW
 
   !> Other variables used by the fluid solvers
-  real(wp), dimension(:,:,:,:), pointer :: vs1i
-  real(wp), dimension(:,:,:,:), pointer :: vs2i
-  real(wp), dimension(:,:,:,:), pointer :: vs3i
-  real(wp), dimension(:,:,:,:), pointer :: Q    ! artificial viscosity
+  real(wp), dimension(:,:,:,:), pointer :: vs1i=>null()
+  real(wp), dimension(:,:,:,:), pointer :: vs2i=>null()
+  real(wp), dimension(:,:,:,:), pointer :: vs3i=>null()
+  real(wp), dimension(:,:,:,:), pointer :: Q=>null()    ! artificial viscosity
 
   !> Used to pass information about electron precipitation between procedures
   integer, parameter :: lprec=2     ! number of precipitating electron populations
-  real(wp), dimension(:,:,:), pointer :: W0,PhiWmWm2
-  real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
-  real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
+  real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()
+  real(wp), dimension(:,:,:,:), pointer :: PrPrecipG=>null()
+  real(wp), dimension(:,:,:), pointer :: QePrecipG=>null(), iverG=>null()
 
   !> Neutral information for top-level gemini program
-  type(neutral_info), pointer :: atmos
+  type(neutral_info), pointer :: atmos=>null()
 
   !> Inputdata objects that are needed for each subgrid
   type(precipdata), pointer :: eprecip=>null()
@@ -270,6 +270,21 @@ contains
     allocate(intvars%W0(1:lx2,1:lx3,1:intvars%lprec))
     allocate(intvars%PhiWmWm2,mold=intvars%W0)
 
+    ! First check that our module-scope arrays are allocated before going on to calculations.  
+    ! This may need to be passed in as arguments for compatibility with trees-GEMINI
+    if ((cfg%flagglow/=0).and.(.not.associated(intvars%PrprecipG))) then
+      allocate(intvars%PrprecipG(1:lx1,1:lx2,1:lx3,1:lsp)
+      intvars%PrprecipG(:,:,:,:)=0
+    end if
+    if ((cfg%flagglow/=0).and.(.not.associated(intvar%QeprecipG))) then
+      allocate(QeprecipG(1:lx1,1:lx2,1:lx3)
+      intvars%QeprecipG(:,:,:)=0
+    end if
+    if ((cfg%flagglow/=0).and.(.not.associated(intvars%iverG))) then
+      allocate(intvars%iverG(size(intvars%iver,1),size(intvars%iver,2),size(intvars%iver,3)))
+      intvars%iverG(:,:,:)=0
+    end if
+
     allocate(intvars%eprecip)
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
@@ -303,6 +318,10 @@ contains
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
+
+    if (associated(intvars%PrprecipG) deallocate(intvars%PrprecipG)
+    if (associated(intvars%QeprecipG) deallocate(intvars%QeprecipG)
+    if (associated(intvars%iverG) deallocate(intvars%iverG)
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
@@ -1043,7 +1062,8 @@ contains
     call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
                                      intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
                                      intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
-                                     intvars%iver,gavg,Tninf,intvars%eprecip,intvars%W0,intvars%PhiWmWm2)
+                                     intvars%PrprecipG,intvars%QeprecipG,intvars%iver,gavg,Tninf, &
+                                     intvars%eprecip,intvars%W0,intvars%PhiWmWm2)
   end subroutine source_loss_allparams_in
 
 
