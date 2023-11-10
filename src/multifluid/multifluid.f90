@@ -387,8 +387,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   end if
 
   !if (mpi_cfg%myid==0) then
-  !  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
-  !    minval(Prprecip), maxval(Prprecip)
+    if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
+      minval(Prprecip), maxval(Prprecip)
   !end if
   !if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
   !  if (cfg%flagglow/=0 .and. debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
