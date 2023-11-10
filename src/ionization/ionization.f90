@@ -56,7 +56,7 @@ real(wp) :: H
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
-logical, parameter :: flagmask=.true.
+logical, parameter :: flagmask=.false.
 integer :: ix1,ix2,ix3
 real(wp) :: maskval
 
