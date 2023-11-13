@@ -587,8 +587,7 @@ subroutine O2vib(nn,Tn,Ts,O2VibrationalLoss)
   lx3=size(Ts,3)-4
   
   !Define Te, no ghost cells
-!  Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
-  Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),6000._wp)
+  Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
   Teaux=3800.0_wp
   
   !! Calculate Log10(Q(Te))
@@ -747,7 +746,6 @@ subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
   
   !Define Te, no ghost cells
   Te=min(Ts(1:lx1,1:lx2,1:lx3,lsp),6000._wp)
-  !Te=Ts(1:lx1,1:lx2,1:lx3,lsp)
   
   !loop over all indexes in the grid
   do ix3=1,lx3
@@ -778,7 +776,6 @@ subroutine N2vib(nn,Tn,Ts,N2VibrationalLoss)
           vibloss(ix1,ix2,ix3)=nni*1e-6_wp*(1-EXP(-E1/Tni))*Sterm0+ &
                                nni*1e-6_wp*(1-EXP(-E1/Tni))*EXP(-E1/Tni)*Sterm0
         else 
-          !Tei=6000 !the to max temperature value and do the same as above
           do isp=1,10
             LQ0Te=A0(isp)+Tei*B0(isp)+Tei**2*C0(isp)+Tei**3*D0(isp)+Tei**4*F0(isp)-16.0_wp;
             Q0Te=EXP(LQ0Te*LOG(10.0_wp))
