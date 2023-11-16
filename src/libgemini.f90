@@ -113,11 +113,6 @@ type, bind(C) :: c_params
 end type c_params
 
 
-interface checkarray
-  procedure :: checkarray3D,checkarray4D
-end interface checkarray
-
-
 contains
   !> interface subroutine from which we can read in ONLY the grid sizes
   subroutine grid_size_in(cfg)
@@ -887,30 +882,6 @@ contains
   end subroutine clean_param_in
 
 
-  !> deal with null cell solutions
-  subroutine clean_param_after_regrid_in(iparm,x,fluidvars,intvars)
-    integer, intent(in) :: iparm
-    class(curvmesh), intent(in) :: x
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
-    type(gemini_work), intent(in) :: intvars
-    real(wp), dimension(:,:,:,:), pointer :: parm
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    select case (iparm)
-      case (1)
-        parm=>ns
-      case (2)
-        parm=>vs1
-      case (3)
-        parm=>Ts
-      case default
-        error stop '  libgemini:clean_params_C(); invalid parameter selected'
-    end select
-    call clean_param_after_regrid(x,iparm,parm,intvars%atmos%Tn)
-  end subroutine clean_param_after_regrid_in
-
-
   !> diffusion of energy
   subroutine energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
     type(gemini_cfg), intent(in) :: cfg
@@ -1033,37 +1004,6 @@ contains
 !    print*, '======================================================================='
 !!    error stop
   end subroutine electrodynamics_test
-
-
-  !> utility procedure to check that array values are in a certain bounds
-  logical function checkarray4D(array,lower,upper,errmsg,locID) result(errflag)
-    real(wp), dimension(:,:,:,:), intent(in) :: array
-    real(wp), intent(in) :: lower,upper
-    character(*), intent(in) :: errmsg
-    integer, intent(in) :: locID
-
-    if (minval(array) < lower .or. maxval(array) > upper) then
-      print*, locID,' ',errmsg,minval(array),maxval(array),minloc(array),maxloc(array)
-      errflag=.true.
-    else
-      errflag=.false.
-    end if
-  end function checkarray4D
-
-
-  logical function checkarray3D(array,lower,upper,errmsg,locID) result(errflag)
-    real(wp), dimension(:,:,:), intent(in) :: array
-    real(wp), intent(in) :: lower,upper
-    character(*), intent(in) :: errmsg
-    integer, intent(in) :: locID
-
-    if (minval(array) < lower .or. maxval(array) > upper) then
-      print*, locID,' ',errmsg,minval(array),maxval(array),minloc(array),maxloc(array)
-      errflag=.true.
-    else
-      errflag=.false.
-    end if
-  end function checkarray3D
 
 
   !> return the maximum cfl over the grid
