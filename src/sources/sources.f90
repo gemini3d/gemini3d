@@ -53,22 +53,23 @@ Teff=28/(16+28._wp)*(16*amu/3/kB*(dv2) &
      + Ts(1:lx1,1:lx2,1:lx3,1) -Tn) + Tn
 Teff=min(Teff,70000._wp) !Capped at 70.000, since it is the upper boundary
 
-where (Teff<=3725)
+where (Teff<=3725._wp)
   kreac=1.71676e-12_wp &
     -7.19934e-13_wp*(Teff/300) &
     +1.33276e-13_wp*(Teff/300)**2 &
     -9.28213e-15_wp*(Teff/300)**3 &
     +6.39557e-16_wp*(Teff/300)**4
 end where
-where (Teff>3725 .and. Teff<=30000)
+where (Teff>3725._wp .and. Teff<=30000._wp)
   kreac=-1.52489e-11_wp &
     +7.67112e-13_wp*(Teff/300) &
     +1.19064e-13_wp*(Teff/300)**2 &
     -1.30858e-15_wp*(Teff/300)**3 &
     +4.67756e-18_wp*(Teff/300)**4
 end where
-where (Teff>30000 .and. Teff<=70000)
-  kreac=-3.2999846-9_wp &
+! This is what JP says should happen above 30.000
+where (Teff>30000._wp .and. Teff<=70001._wp)
+  kreac=-3.2999846e-9_wp &
     +3.7832649e-13_wp*(Teff) &
     -1.5807103e-17_wp*(Teff)**2 &
     +3.5017809e-22_wp*(Teff)**3 &
@@ -76,6 +77,9 @@ where (Teff>30000 .and. Teff<=70000)
     +2.7760068e-32_wp*(Teff)**5 &
     -7.3160029e-38_wp*(Teff)**6 
 end where
+
+
+
 ! where (Teff>30000)
 !   kreac=-1.52489e-11_wp &
 !     +7.67112e-13_wp*(100) &
@@ -83,6 +87,9 @@ end where
 !     -1.30858e-15_wp*(100)**3 &
 !     +4.67756e-18_wp*(100)**4
 ! end where
+
+
+
 
 betanow=kreac*nn(:,:,:,2)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,1)

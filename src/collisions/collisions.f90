@@ -68,7 +68,7 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
     real(wp), dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)), intent(inout) :: nusn
   !! intent(out)
   integer :: lx1,lx2,lx3
-  real(wp),dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)) :: Teff
+  real(wp),dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)) :: Teff, Teaux
   
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
@@ -82,16 +82,18 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
       if (isp==1 .and. isp2==4) then
         Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp) / 16
 
-        where(Teff>6000._wp)
-          Teff=6000._wp
+        where(Teff>7000._wp)
+          Teff=7000._wp
         end where
 
         nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1e-6_wp
       else
         Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
 
-        where(Teff>6000._wp)
-          Teff=6000._wp
+        Teaux=10**(1/C2sn2(isp,isp2))-1000._wp ! Find the point where goes -, substract 1000. 
+
+        where(Teff>Teaux)
+          Teff=Teaux
         end where
 
         nusn=C2sn1(isp,isp2)*(1 - C2sn2(isp,isp2)*log10(Teff))**2 * &
@@ -109,16 +111,22 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
       case (1)
         nusn=8.9e-11_wp*(1.0+5.7e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
       case (2)
-        where (Teff>6000._wp)    ! avoids negative collision frequency!1/1.12e-4=8.264e3
-          Teff=6000._wp
+
+        Teaux=(1/1.21e-4_wp)-1000._wp ! Find the point where goes -, substract 1000. 
+
+        where (Teff>Teaux)    ! avoids negative collision frequency!1/1.12e-4=8.264e3
+          Teff=Teaux
         end where
 
         nusn=2.33e-11_wp*(1.0-1.21e-4_wp*Teff)*(Teff)*nn(:,:,:,isp2)*1e-6_wp
       case (3)
         nusn=1.82e-10_wp*(1.0+3.6e-2_wp*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
       case (4)
-        where (Teff>6000._wp)
-          Teff=6000._wp
+
+        Teaux=(1/1.35e-4_wp)-1000._wp ! Find the point where goes -, substract 1000. 
+
+        where (Teff>Teaux)
+          Teff=Teaux
         end where
 
         nusn=4.5e-9_wp*(1.0-1.35e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
@@ -187,7 +195,7 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: lambda,beta
   !! intent(out)
-  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: Tstmp
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: Tstmp, Teaux
   integer :: lx1,lx2,lx3
   
   
@@ -209,9 +217,13 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
     beta=0.0
   else                  !electrons
     Tstmp=Ts(1:lx1,1:lx2,1:lx3)
-    where (Ts(1:lx1,1:lx2,1:lx3) > 6000.0)
-      Tstmp=6000.0
+
+    Teaux=(1/1.21e-4_wp)-1000._wp ! Find the point where goes -, substract 1000. 
+
+    where (Ts(1:lx1,1:lx2,1:lx3) > Teaux)
+      Tstmp=Teaux
     end where
+
     lambda=elchrg * 100 * 7.7e5_wp*Tstmp**(5.0_wp/2)/ &
         (1 + 3.22e4_wp*Tstmp**2/ns(1:lx1,1:lx2,1:lx3)* &
           (nn(:,:,:,1)*1.1e-16_wp*(1+5.7e-4_wp*Tstmp) + &
