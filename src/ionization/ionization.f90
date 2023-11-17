@@ -55,8 +55,12 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
 real(wp) :: H
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
-real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
-logical, parameter :: flagmask=.false.
+!> 2D mask below
+!real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
+real(wp), dimension(2), parameter :: ecglat=[49.0,-5.0], ecglong=[213,331], ectime=[56700.0,69183.33]
+real(wp), parameter :: ecwidth=5.0, ecdtime=1800.0, maskmax=0.9
+real(wp) :: ecglatnow,ecglonnow
+logical, parameter :: flagmask=.true.
 integer :: ix1,ix2,ix3
 real(wp) :: maskval
 
@@ -165,9 +169,19 @@ do il=1,ll
     do ix2=1,x%lx2
       do ix1=1,x%lx1 
         if (flagmask) then
+          ecglatnow=ecglat(1)+(eclgat(2)-ecglat(1))/(ectime(2)-ectime(1))
+          ecglonnow=ecglon(2)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
+!> 2D mask
+!          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
+!                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
+!                    exp(-(UTsec-ectime)**2/2/ecdtime**2)
+
+          if (UTsec>ectime(1) .and. UTsec<extime(2) then
           maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
-                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
-                    exp(-(UTsec-ectime)**2/2/ecdtime**2)
+                    exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)
+          else
+            maskval=0.0
+          end if
         else
           maskval=0.0
         end if
