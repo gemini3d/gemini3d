@@ -170,7 +170,7 @@ do il=1,ll
       do ix1=1,x%lx1 
         if (flagmask) then
           ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))
-          ecglonnow=ecglon(2)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
+          ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
 !> 2D mask
 !          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
 !                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
