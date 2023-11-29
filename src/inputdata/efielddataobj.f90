@@ -44,6 +44,7 @@ type, extends(inputdata) :: efielddata
   real(wp), dimension(:,:), pointer :: Vminx1inow,Vmaxx1inow
   real(wp), dimension(:), pointer :: Vminx2isnow,Vmaxx2isnow    !only slices because field lines (x1-dimension) are equipotentials
   real(wp), dimension(:), pointer :: Vminx3isnow,Vmaxx3isnow
+
   contains
     ! overriding procedures
     procedure :: set_sizes=>set_sizes_efield
@@ -215,6 +216,15 @@ contains
     call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
     print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
+    if (self%llon==-1 .and. self%llat==-1) then
+      print*, ' !!!!! efielddata detected a direct fill of input arrays (no interpolation) !!!!!'
+      if (.not. self%flagsizes) error stop ' flagsizes not set but attempting to access size vars!'
+      self%llon=self%lc2i
+      self%llat=self%lc3i
+      self%flagnointerp=.true.
+    end if
+
+    ! Any other values < 1 are an error and require the user to regenerate their input files correctly
     if (self%llon < 1 .or. self%llat < 1) then
      print*, '  efielddata grid size must be strictly positive: ' //  self%sourcedir
      error stop
@@ -360,6 +370,8 @@ contains
   !> destructor needs to clear memory out
   subroutine destructor(self)
     type(efielddata), intent(inout) :: self
+
+    self%flagnointerp=.false.
 
     call self%dissociate_pointers()
   end subroutine destructor
