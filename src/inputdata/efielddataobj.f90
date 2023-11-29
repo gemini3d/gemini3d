@@ -104,6 +104,12 @@ contains
     !  error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
     !end if
 
+    !> if we are doing a direct fill we need to harmonize the input and interpolation sizes here
+    if (self%flagnointerp) then
+      self%llon=self%lc2i
+      self%llat=self%lc3i
+    end if
+
     ! flag sizes as assigned
     self%flagsizes=.true.
   end subroutine set_sizes_efield
@@ -218,14 +224,14 @@ contains
     print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
     if (self%llon==-1 .and. self%llat==-1) then
       print*, ' !!!!! efielddata detected a direct fill of input arrays (no interpolation) !!!!!'
-      if (.not. self%flagsizes) error stop ' flagsizes not set but attempting to access size vars!'
-      self%llon=self%lc2i
-      self%llat=self%lc3i
+      !if (.not. self%flagsizes) error stop ' flagsizes not set but attempting to access size vars!'
+      !self%llon=self%lc2i
+      !self%llat=self%lc3i
       self%flagnointerp=.true.
     end if
 
     ! Any other values < 1 are an error and require the user to regenerate their input files correctly
-    if (self%llon < 1 .or. self%llat < 1) then
+    if ( (self%llon < 1 .or. self%llat < 1) .and. (.not. self%flagnointerp)) then
      print*, '  efielddata grid size must be strictly positive: ' //  self%sourcedir
      error stop
     end if
