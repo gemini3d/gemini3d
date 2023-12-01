@@ -39,7 +39,7 @@ module procedure potential_root_mpi_curv
   !> store a cached ordering for later use (improves performance substantially)
   perflag=.true.
 
-  call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+  call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,nusn,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
 
 
@@ -278,7 +278,8 @@ module procedure potential_root_mpi_curv
   if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
-  call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+!  call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+  call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
   if (cfg%flagdiamagnetic) then
     call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
   end if

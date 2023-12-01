@@ -46,14 +46,14 @@ end interface potential_root_mpi
 
 interface ! potential_worker.f90
   module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
-                                            muP,muH, &
+                                            muP,muH,nusn, &
                                             incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                             flagdirich,E02src,E03src,Vminx1slab,Vmaxx1slab, &
                                             E1,E2,E3,J1,J2,J3)
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
     real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
-    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
     real(wp), dimension(:,:,:), intent(in) ::  incap
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
     real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
@@ -74,7 +74,7 @@ end interface
 
 interface !< potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
-                                              muP,muH, &
+                                              muP,muH,nusn, &
                                               incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                               flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                               Vminx1slab,Vmaxx1slab, &
@@ -82,7 +82,7 @@ interface !< potential_root.f90
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
     real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
-    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
     real(wp), dimension(:,:,:), intent(in) ::  incap
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
     real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
@@ -196,12 +196,12 @@ contains
       call cpu_time(tstart)
       if (mpi_cfg%myid/=0) then
         !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-        call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
+        call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3, &
                                      vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
                                      Vminx1slab,Vmaxx1slab, &
                                      E1,E2,E3,J1,J2,J3)
       else
-        call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+        call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                   flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                   Vminx1slab,Vmaxx1slab, &
                                   E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
@@ -390,7 +390,7 @@ contains
   end subroutine velocities
 
 
-  subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+  subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,nusn,ns,Ts,x, &
                                    flaggravdrift,flagdiamagnetic,flagnodivJ0,srcterm)
     !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
     !   should be able to use this routine
@@ -398,7 +398,7 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     !! ghost cells
-    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     !! ghost cells
     class(curvmesh), intent(in) :: x
@@ -423,7 +423,9 @@ contains
       call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
-    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
+!    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
+    call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)     ! always include wind effects
+    
     if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
     if (flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
@@ -476,19 +478,42 @@ contains
   end subroutine acc_perpconductioncurrents
 
 
-  subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+!  subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+!    !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
+!    !    routine for additional caveats.
+!    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+!    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
+!    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
+!    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+!
+!    !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
+!    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
+!                            sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+!    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
+!                            sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  end subroutine acc_perpwindcurrents
+
+
+  subroutine acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
     !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
     !    routine for additional caveats.
-    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
     real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+    real(wp), dimension(1:size(vn2,1),1:size(vn2,2),1:size(vn2,3)) :: muPprime,muHprime
+    integer :: isp
 
-    !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
-    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
-                            sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
-                            sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+    muPprime=0.0
+    muHprime=0.0
+    do isp=1,lsp
+      muPprime=muPprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muP(:,:,:,isp)
+      muHprime=muHprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muH(:,:,:,isp)
+    end do
+
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+muPprime*vn2-muHprime*vn3
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+muHprime*vn2+muPprime*vn3
   end subroutine acc_perpwindcurrents
 
 
