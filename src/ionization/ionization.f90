@@ -162,6 +162,8 @@ nO2col=nn(:,:,:,3)*H*Chfn
 
 
 !PHOTON FLUX
+ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))*(UTsec-ectime(1))
+ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))*(UTsec-ectime(1))
 do il=1,ll
   ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
   !   computing photon fluxes. 
@@ -169,8 +171,6 @@ do il=1,ll
     do ix2=1,x%lx2
       do ix1=1,x%lx1 
         if (flagmask) then
-          ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))
-          ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
 !> 2D mask
 !          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
 !                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
