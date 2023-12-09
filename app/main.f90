@@ -296,6 +296,9 @@ contains
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
 
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars2
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars2
+
     ! pull solar indices from module type
     call get_solar_indices(cfg,f107,f107a)
 
@@ -320,11 +323,27 @@ contains
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    allocate(fluidvars2,mold=fluidvars)
+    allocate(fluidauxvars2,mold=fluidauxvars)
+    fluidvars2=fluidvars
+    fluidauxvars2=fluidauxvars
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
     call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call rhov12v1_in(fluidvars,fluidauxvars)
+
+    call sweep2_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
+    call sweep1_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
+    call halo_allparams_in(x,fluidvars2,fluidauxvars2)
+    call sweep3_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
+    call rhov12v1_in(fluidvars2,fluidauxvars2)
+
+    !Combine the two splits
+    fluidvars=0.5*(fluidvars+fluidvars2)
+    fluidauxvars=0.5*(fluidauxvars+fluidauxvars2)
+
+    deallocate(fluidvars2,fluidauxvars2)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
       print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart

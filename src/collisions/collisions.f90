@@ -256,20 +256,12 @@ do isp=1,lsp
     mubase=qs(lsp)/ms(lsp)/nusn(:,:,:,isp)
   end if
 
-  !! modified mobilities for neutral wind calculations.
-  !! these are deprecated since we output collision freq.
-!  muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
-!  muHvn(:,:,:,isp)= -nu*OMs/(nu**2+OMs**2)
-
   !electrical mobilities
-  muP(:,:,:,isp)=mubase*nusn(:,:,:,isp)**2/(nusn(:,:,:,isp)**2+OMs**2)                !Pederson
-!  if (isp==lsp) then
-!    print*, 'Flipping electron mobility signs:  ',lsp
-!    print*, minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
-!    muP(:,:,:,lsp)=-1.0*muP(:,:,:,lsp)
-!    print*, minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
-!  end if
-  muH(:,:,:,isp) = mubase*-1*nusn(:,:,:,isp)*OMs/(nusn(:,:,:,isp)**2+OMs**2)       !Hall
+!  muP(:,:,:,isp)=mubase*nusn(:,:,:,isp)**2/(nusn(:,:,:,isp)**2+OMs**2)                !Pederson
+!  muH(:,:,:,isp) = mubase*-1*nusn(:,:,:,isp)*OMs/(nusn(:,:,:,isp)**2+OMs**2)          !Hall
+  muP(:,:,:,isp)=mubase*1.0/(1.0+(OMs/nusn(:,:,:,isp))**2)                !Pederson
+  muH(:,:,:,isp) = mubase*-1*(OMs/nusn(:,:,:,isp))/(1.0+(OMs/nusn(:,:,:,isp))**2)          !Hall
+
 
   !gravity mobilities???
 end do

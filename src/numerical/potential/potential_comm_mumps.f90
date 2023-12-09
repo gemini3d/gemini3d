@@ -107,7 +107,7 @@ end interface
 
 contains
   subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,efield, &
-                           E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+                           E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec,v2grid,v3grid)
     !! THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !! PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
     !! CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO
@@ -133,6 +133,7 @@ contains
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: v2grid,v3grid
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
@@ -146,6 +147,8 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
     integer :: flagdirich
     real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
+
+    integer :: isp
 
 
     !> update conductivities and mobilities
@@ -185,23 +188,32 @@ contains
     end if
 
     !> must set these variables regardless of whether the solve is done because they are added to the field later
-    if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
-      E02src=0._wp; E03src=0._wp
-    else                             ! Eulerian grid, use background fields
+!    if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
+!      E02src=0._wp; E03src=0._wp
+!    else                             ! Eulerian grid, use background fields
       E02src=E02; E03src=E03
-    end if
+!    end if
 
     !> Now solve specifically for the *disturbance* potential.  The background electric field will be included in returned electric field and current density values
     if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
       call cpu_time(tstart)
       if (mpi_cfg%myid/=0) then
         !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
+!        call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3, &
+!                                     vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
+!                                     Vminx1slab,Vmaxx1slab, &
+!                                     E1,E2,E3,J1,J2,J3)
         call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3, &
-                                     vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
+                                     vn2+v2grid,vn3+v3grid,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
                                      Vminx1slab,Vmaxx1slab, &
                                      E1,E2,E3,J1,J2,J3)
       else
-        call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+!        call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+!                                  flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+!                                  Vminx1slab,Vmaxx1slab, &
+!                                  E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+        call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,nusn,incap,vs2,vs3,vn2+v2grid,vn3+v3grid, &
+                                  cfg,B1,ns,Ts,x, &
                                   flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                   Vminx1slab,Vmaxx1slab, &
                                   E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
@@ -228,7 +240,17 @@ contains
     E3(1:lx1,1:lx2,1:lx3)=E3(1:lx1,1:lx2,1:lx3)+E03src
 
     !> velocities should be computed irrespective of whether a solve was done
-    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+!    call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+    call velocities(muP,muH,nusn,E2,E3,vn2+v2grid,vn3+v3grid,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+    if (cfg%flaglagrangian) then
+      E2(1:lx1,1:lx2,1:lx3)=E2(1:lx1,1:lx2,1:lx3)-E02src
+      E3(1:lx1,1:lx2,1:lx3)=E3(1:lx1,1:lx2,1:lx3)-E03src
+    end if
+    do isp=1,lsp
+      vs2(:,:,:,isp)=vs2(:,:,:,isp)-v2grid
+      vs3(:,:,:,isp)=vs3(:,:,:,isp)-v3grid
+    end do
+
     if (mpi_cfg%myid==0) then
       if (debug) print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
     end if
@@ -412,6 +434,10 @@ contains
     !! one extra grid point on either end to facilitate derivatives
     !! haloing assumes existence of two ghost cells
 
+    integer :: ios,u
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp
+    real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J2all,J3all,E02all,E03all,vn2all,vn3all
+
     !-------
     !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
     J1 = 0
@@ -423,9 +449,18 @@ contains
       call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
-!    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
-    call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)     ! always include wind effects
-    
+
+!    print*, '==================================================================================='
+!    print*, minval(J2(1:lx1,1:lx2,1:lx3)),maxval(J2(1:lx1,1:lx2,1:lx3)),minval(J3(1:lx1,1:lx2,1:lx3)),maxval(J3(1:lx1,1:lx2,1:lx3))
+!    print*, '==================================================================================='
+
+    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
+!    call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)     ! always include wind effects
+
+!    print*, '***********************************************************************************'
+!    print*, minval(J2(1:lx1,1:lx2,1:lx3)),maxval(J2(1:lx1,1:lx2,1:lx3)),minval(J3(1:lx1,1:lx2,1:lx3)),maxval(J3(1:lx1,1:lx2,1:lx3))
+!    print*, '***********************************************************************************'
+
     if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
     if (flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
@@ -440,10 +475,54 @@ contains
     call halo_pot(J2,tag%J2,x%flagper,.false.)
     call halo_pot(J3,tag%J3,x%flagper,.false.)
 
+!    print*, '###################################################################################'
+!    print*, minval(J2(1:lx1,1:lx2,1:lx3)),maxval(J2(1:lx1,1:lx2,1:lx3)),minval(J3(1:lx1,1:lx2,1:lx3)),maxval(J3(1:lx1,1:lx2,1:lx3))
+!    print*, '###################################################################################'
+
+!    if (mpi_cfg%myid==0) then
+!      Jtmp=J2(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%J2,J2all)
+!      Jtmp=J3(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%J3,J3all)
+!      Jtmp=E02(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%E02,E02all)
+!      Jtmp=E03(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%E03,E03all)
+!      Jtmp=vn2(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%v2,vn2all)
+!      Jtmp=vn3(1:lx1,1:lx2,1:lx3)
+!      call gather_recv(Jtmp,tag%v3,vn3all)
+!
+!      open(newunit=u, file='Jdebug.dat', access='stream', status='replace', action='write', iostat=ios)
+!      write(u) J2all(1:lx1,1:lx2all,1:lx3all),J3all(1:lx1,1:lx2all,1:lx3all)
+!      write(u) E02all(1:lx1,1:lx2all,1:lx3all),E03all(1:lx1,1:lx2all,1:lx3all)
+!      write(u) vn2all(1:lx1,1:lx2all,1:lx3all),vn3all(1:lx1,1:lx2all,1:lx3all)
+!      close(u)
+!      !error stop 'Debug potential sourceterm output written...'
+!    else
+!      Jtmp=J2(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%J2)
+!      Jtmp=J3(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%J3)
+!      Jtmp=E02(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%E02)
+!      Jtmp=E03(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%E03)
+!      Jtmp=vn2(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%v2)
+!      Jtmp=vn3(1:lx1,1:lx2,1:lx3)
+!      call gather_send(Jtmp,tag%v3)
+!    end if
+
     divtmp=div3D(J1(0:lx1+1,0:lx2+1,0:lx3+1),J2(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)
     !-------
+
+!    print*, '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+!    print*, minval(srcterm),maxval(srcterm)
+!    print*, '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+
   end subroutine potential_sourceterms
 
 
@@ -478,43 +557,50 @@ contains
   end subroutine acc_perpconductioncurrents
 
 
-!  subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
-!    !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
-!    !    routine for additional caveats.
-!    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
-!    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
-!    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
-!    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-!
-!    !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
-!    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
-!                            sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-!    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
-!                            sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  end subroutine acc_perpwindcurrents
-
-
-  subroutine acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
+  subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
     !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
     !    routine for additional caveats.
-    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
+    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
     real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
-    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
-    real(wp), dimension(1:size(vn2,1),1:size(vn2,2),1:size(vn2,3)) :: muPprime,muHprime
-    integer :: isp
 
-    muPprime=0.0
-    muHprime=0.0
-    do isp=1,lsp
-      muPprime=muPprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muP(:,:,:,isp)
-      muHprime=muHprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muH(:,:,:,isp)
-    end do
-
-    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+muPprime*vn2-muHprime*vn3
-    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+muHprime*vn2+muPprime*vn3
+    !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+ &
+                            sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)- &
+                            sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpwindcurrents
+
+
+!  subroutine acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
+!    !> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
+!    !    routine for additional caveats.
+!    real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
+!    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
+!    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
+!    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
+!    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+!    real(wp), dimension(1:size(vn2,1),1:size(vn2,2),1:size(vn2,3)) :: muPprime,muHprime
+!    integer :: isp
+!
+!    muPprime=0.0
+!    muHprime=0.0
+!    do isp=1,lsp
+!      muPprime=muPprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muP(:,:,:,isp)
+!      muHprime=muHprime+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nusn(:,:,:,isp)*muH(:,:,:,isp)
+!    end do 
+!
+!    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+muPprime*vn2-muHprime*vn3
+!    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+muHprime*vn2+muPprime*vn3
+!
+!!    print*, '===============================================++===================================================='   
+!!    print*, J2(:,lx2/2,lx3/2)
+!!    print*, '===============================================++===================================================='
+!!    print*, '====================================================================================================='   
+!!    print*, J3(:,lx2/2,lx3/2)
+!!    print*, '====================================================================================================='
+!  end subroutine acc_perpwindcurrents
 
 
   subroutine acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)

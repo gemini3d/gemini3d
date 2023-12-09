@@ -36,8 +36,10 @@ module procedure potential_root_mpi_curv
   integer :: ix1
   real(wp) :: tstart,tfin
 
+  integer :: ios,u
+
   !> store a cached ordering for later use (improves performance substantially)
-  perflag=.true.
+  perflag=.false.
 
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,nusn,ns,Ts,x, &
                              cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
@@ -113,6 +115,12 @@ module procedure potential_root_mpi_curv
                                    Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                    dt,x,Phislab0,perflag,it)
           !! note that this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
+
+!          open(newunit=u, file='potdebug.dat', access='stream', status='replace', action='write', iostat=ios)
+!          write(u) srctermintall,Phislab
+!          close(u)
+!          error stop 'Debug potential solve output written...'
+
         else
           if (debug) print *, '!!!User selected periodic solve...'
           Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
@@ -277,9 +285,15 @@ module procedure potential_root_mpi_curv
   J2(1:lx1,1:lx2,1:lx3)=0._wp; J3(1:lx1,1:lx2,1:lx3)=0._wp    ! must be zeroed out before we accumulate currents
   if (.not. cfg%flagnodivJ0) call acc_perpBGconductioncurrents(sigP,sigH,E02src,E03src,J2,J3)
   !^ note that out input background fields to this procedure have already been tweaked to account for lagrangian vs. eulerian grids so we can just blindly add these in without worry
+
+!  print*, '====================================================================================================='
+!  print*, minval(vn2(lx1,:,:)),maxval(vn2(lx1,:,:)),minval(vn3(lx1,:,:)),maxval(vn3(lx1,:,:))
+!  print*, '====================================================================================================='
+
+
   call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
-!  call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
-  call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
+  call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+!  call acc_perpwindcurrents(muP,muH,nusn,vn2,vn3,ns,B1,J2,J3)
   if (cfg%flagdiamagnetic) then
     call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
   end if
