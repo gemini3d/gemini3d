@@ -78,30 +78,14 @@ extern void source_loss_allparams_C(void**, double**, double**, double**, void**
 extern void check_dryrun_C(void**);
 extern void maxcfl_C(double**, int*, void**, double*, double*);
 extern void dateinc_C(double*, int*, double*);
-extern void interp_file2subgrid_C(void**, int*, void**, double**, double**);
 extern void plasma_output_nompi_C(void**, int*, double*, double**, double**, int*, double*, double*, double*);
 extern void read_fullsize_gridcenter_C(void**);
-extern void grid_from_extents_C(double*,double*,double*,double*,double*,int*,int*,int*,void**);
-extern void gemini_grid_alloc_C(double*,double*,double*,int*,int*,int*,int*,void**);
 extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
 extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
-extern void checkE1_C(double**, double**, double**, int*);
 extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**,void**);
-extern void forceZOH_all_C(double**);
-extern void permute_fluidvars_C(double**);
-extern void ipermute_fluidvars_C(double**);
-extern void tag4refine_C(int*,void**,double**,double**,double**,void**,int*,bool*);
-extern void tag4coarsening_C(int*,void**,double**,double**,double**,void**,bool*);
-extern void get_grid_magcoords_C(int*,void**,double**,double**,double**);
-extern void get_grid_magcoordsi_C(int*,void**,double**,double**,double**);
-extern void clean_param_after_regrid_C(int*, int*, void**, double**,void**);
-extern void get_locationsi_C(void**,bool*,double*,double*,double*,double**,double**,double**,double**,int*,int*);
-extern void get_datainow_ptr_C(void**,double**);
-extern void set_datainow_C(void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
-extern void swap_statevars_C(double**, double**);
 extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double**,int*,int*,
 		double*,double*,double*,double**,double**);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,
@@ -116,6 +100,7 @@ extern void read_grid_C(void**, int*, void**);
 extern void outdir_fullgridvaralloc_C(void**, void**, int*, int*, int*);
 extern void calc_subgrid_size_in_C(int*, int*);
 extern void get_initial_state_C(void**, double**, double**, void**, int*, void**, double*, int*, double*, double*, double*);
+extern void init_inputdata_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void init_Efieldinput_C(void**, int*, void**, double*, double*, void**, int*, double*);
 extern void pot2perpfield_C(int*, void**, double**);
 extern void BGfield_Lagrangian_C(void**, int*, void**, double**, void**);

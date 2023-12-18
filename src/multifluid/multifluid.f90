@@ -25,7 +25,6 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
-use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
 use gemini3d_config, only: gemini_cfg
@@ -35,11 +34,6 @@ implicit none (type, external)
 private
 public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid
-
-integer, parameter :: lprec=2
-!! number of precipitating electron populations
-real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
-real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 real(wp), parameter :: xicon = 3
 !real(wp), parameter :: xicon = 0
@@ -52,31 +46,10 @@ subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
-!  if (minval(rhoes) < 0) then
-!    print*, '1 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
-!    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
-!    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
-!    open(newunit=funit,file='error.dat',status='replace',access='stream')
-!    write(funit) ns
-!    write(funit) vs3i
-!    close(funit)
-!    error stop
-!  end if
 
   call sweep3_allspec(ns,vs3i,dt,x,0,6)
   call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
   call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
-
-!  if (minval(rhoes) < 0) then
-!    print*, '2 rhoes data trashed:  ',minval(rhoes),maxval(rhoes),minloc(rhoes),maxloc(rhoes)
-!    print*, 'vs3i:  ',minval(vs3i),maxval(vs3i),minloc(vs3i),maxloc(vs3i)
-!    print*, 'ns:  ',minval(ns),maxval(ns),minloc(ns),maxloc(ns)
-!    open(newunit=funit,file='error.dat',status='replace',access='stream')
-!    write(funit) ns
-!    write(funit) vs3i
-!    close(funit)
-!    error stop
-!  end if
 end subroutine sweep3_allparams
 
 
@@ -108,8 +81,9 @@ end subroutine sweep2_allparams
 
 !> execute source/loss terms for all parameters in sequence
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
-                                   eprecip)
+                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
+                                   gavg,Tninf, &
+                                   eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Prionize,Qeionize,Pr,Lo)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -125,31 +99,32 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   real(wp), dimension(:,:,:), intent(inout) :: iver
   real(wp), intent(in) :: gavg,Tninf
   type(precipdata), intent(inout) :: eprecip
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip
-  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
-  real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
+  real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip,Prionize
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip,Qeionize
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
   real(wp) :: tstart,tfin
 
   !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
 
 
-  !> Establish top boundary conditions for electron precipitation
-  if (cfg%flagprecfile==1) then
-    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
-  else
-    !! no file input specified, so just call 'regular' function
-    call precipBCs(cfg,W0,PhiWmWm2)
-  end if
+!  !> Establish top boundary conditions for electron precipitation
+!  if (cfg%flagprecfile==1) then
+!    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
+!  else
+!    !! no file input specified, so just call 'regular' function
+!    call precipBCs(cfg,W0,PhiWmWm2)
+!  end if
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
   call cpu_time(tstart)
-  Prprecip=0.0    ! procedures accumulate rates so need to initialize to zero each time step before rates are updated
-  Qeprecip=0.0
-  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)   ! precipiting electrons
-  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
+  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+          ns,Ts,nn,Tn,first)   ! precipiting electrons
+  Prionize=Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
+  Qeionize=Qeprecip
+  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
-  call energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)                         ! source/loss numerical solution
+  call energy_source_loss(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -169,7 +144,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   !ALL MASS SOURCES
   call cpu_time(tstart)
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+  call mass_source_loss(dt,Pr,Lo,Prionize,ns)
   call cpu_time(tfin)
   !if (mpi_cfg%myid==0 .and. debug) then
   !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
@@ -345,7 +320,8 @@ end subroutine energy_diffusion
 !> *Accumulates* ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
 !    rates from impact ionization these arrays will need to be initialized to zero before calling this
 !    procedure.  Note that this procedure does need updated density and temperature data (i.e. ns and Ts)
-subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver,ns,Ts,nn,Tn,first)
+subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+                ns,Ts,nn,Tn,first)
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: t,dt
   class(curvmesh), intent(in) :: x
@@ -361,28 +337,31 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:), intent(in) :: Tn
   logical, intent(in) :: first  !< first time step
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
+  real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
+  real(wp), dimension(1:size(iver,1),1:size(iver,2),1:size(iver,3)) :: ivertmp
   integer :: iprec,lprec
   !! FIXME:  PrprecipG and the like are module-scope variables and cannot be used with forestGEMINI
 
-  ! First check that our module-scope arrays are allocated before going on to calculations.  
-  ! This may need to be passed in as arguments for compatibility with trees-GEMINI
-  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
-    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-    PrprecipG(:,:,:,:)=0
-  end if
-  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
-    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-    QeprecipG(:,:,:)=0
-  end if
-  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
-    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-    iverG(:,:,:)=0
-  end if
+!  ! First check that our module-scope arrays are allocated before going on to calculations.  
+!  ! This may need to be passed in as arguments for compatibility with trees-GEMINI
+!  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
+!    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
+!    PrprecipG(:,:,:,:)=0
+!  end if
+!  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
+!    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
+!    QeprecipG(:,:,:)=0
+!  end if
+!  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
+!    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
+!    iverG(:,:,:)=0
+!  end if
 
   ! compute impact ionization given input boundary conditions
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
   if (gridflag/=0) then
     if (cfg%flagglow==0) then
+      Prprecip=0.0; Qeprecip=0.0;
       !! Fang et al 2008 parameterization
       do iprec=1,lprec
         !! loop over the different populations of precipitation (2 here?), accumulating production rates
@@ -391,20 +370,19 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
         Prprecip=Prprecip+Prpreciptmp
       end do
       Prprecip = max(Prprecip, 1e-5_wp)         ! should resort to fill values only after all populations accumulated
-      Qeprecip = eheating(nn,Prprecip,ns)    ! once we have total ionization rate (all populations) compute the elec. heating rate
+      Qeprecip = eheating(nn,Prprecip,ns)       ! once we have total ionization rate (all populations) compute the elec. heating rate
     else
       !! glow model
       if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
         !if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
-        PrprecipG=0; QeprecipG=0; iverG=0;
+        ivertmp=0; Prpreciptmp=0; Qepreciptmp=0
         call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,1:lx2,1:lx3),x%glon(1,1:lx2,1:lx3), &
                             x%alt(1:lx1,1:lx2,1:lx3),nn,Tn,ns,Ts, &
-                            QeprecipG, iverG, PrprecipG)    ! bit messy but this will internally iterate over populations
-        PrprecipG=max(PrprecipG, 1e-5_wp)
+                            Qepreciptmp, ivertmp, Prpreciptmp)    ! bit messy but this will internally iterate over populations
+        Prprecip=max(Prpreciptmp, 1e-5_wp)
+        Qeprecip=Qepreciptmp
+        iver=ivertmp
       end if
-      Prprecip=PrprecipG    ! glow returns rates from all populations so this becomes a straight assignments instead of accumlation
-      Qeprecip=QeprecipG
-      iver=iverG            ! store integrated VER computed by GLOW
     end if
   else
     !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
@@ -414,8 +392,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   end if
 
   !if (mpi_cfg%myid==0) then
-  !  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
-  !    minval(Prprecip), maxval(Prprecip)
+    if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
+      minval(Prprecip), maxval(Prprecip)
   !end if
   !if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
   !  if (cfg%flagglow/=0 .and. debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &

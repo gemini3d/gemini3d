@@ -30,6 +30,8 @@ type, abstract :: inputdata
   logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
   logical :: flagfirst=.true.           ! true prior to performing first update
   logical :: flagdipmesh=.false.        ! are we interpolating to a dipole mesh?
+  logical :: flagnointerp=.false.       ! indicates that we should just do a straight copy of input data input spatial arrays;
+                                        !   the base class will never change this -- extensions must handle
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -94,6 +96,7 @@ type, abstract :: inputdata
     procedure :: set_source            ! set the source directory for the input data
     procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
     procedure :: spaceinterp           ! interpolate spatially
+    procedure :: nospaceinterp         ! do not interpolate; fill arrays directly from input data (assuming flag checks pass)
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
     procedure :: dissociate_pointers   ! clear out memory and reset and allocation status flags
     procedure :: prime_data            ! load data buffers so that the object is ready for the first time step
@@ -424,8 +427,12 @@ contains
       !Read in neutral data from a file
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
 
-      !Spatial interpolation for the frame we just read in
-      call self%spaceinterp()
+      !Spatial interpolation for the frame we just read in (or copying)
+      if (self%flagnointerp) then
+        call self%nospaceinterp()
+      else
+        call self%spaceinterp()
+      end if
 
       !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
       self%tref(1)=self%tref(2)
@@ -440,6 +447,140 @@ contains
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
   end subroutine update_simple
+
+
+  !> use data input arrays in order to 
+  subroutine nospaceinterp(self)
+    class(inputdata),intent(inout) :: self
+    integer :: iparm
+    integer :: lc1i,lc2i,lc3i,lc1,lc2,lc3
+    real(wp), dimension(:), pointer :: coord1,coord2,coord3
+    real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i
+    real(wp), dimension(:), pointer :: coord1iax1,coord2iax2,coord3iax3
+    real(wp), dimension(:), pointer :: coord2iax23,coord3iax23
+    real(wp), dimension(:), pointer :: coord1iax12,coord2iax12
+    real(wp), dimension(:), pointer :: coord1iax13,coord3iax13
+
+    ! FIXME: possibly needs some more error checking
+
+    ! for convenience
+    lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
+    lc1=self%lc1; lc2=self%lc2; lc3=self%lc3;
+    coord1=>self%coord1; coord2=>self%coord2; coord3=>self%coord3;
+    coord1i=>self%coord1i; coord2i=>self%coord2i; coord3i=>self%coord3i;
+    coord1iax1=>self%coord1iax1; coord2iax2=>self%coord2iax2; coord3iax3=>self%coord3iax3;
+    coord2iax23=>self%coord2iax23; coord3iax23=>self%coord3iax23;
+    coord1iax12=>self%coord1iax12; coord2iax12=>self%coord2iax12;
+    coord1iax13=>self%coord1iax13; coord3iax13=>self%coord3iax13;
+
+    !> 1D arrays varying along the 1-axis
+    if (self%l1Dax1>0) then
+      self%data1Dax1i(:,:,1)=self%data1Dax1i(:,:,2)     ! save old data!!!
+      do iparm=1,self%l1Dax1
+        self%data1Dax1i(:,iparm,2)=self%data1Dax1(:,iparm)
+      end do
+    end if
+
+    !> 1D arrays varying along the 2-axis
+    if (self%l1Dax2>0) then
+      self%data1Dax2i(:,:,1)=self%data1Dax2i(:,:,2)
+      do iparm=1,self%l1Dax2
+        self%data1Dax2i(:,iparm,2)=self%data1Dax2(:,iparm)
+      end do
+    end if
+
+    !> 1D arrays varying along the 3-axis
+    if (self%l1Dax3>0) then
+      self%data1Dax3i(:,:,1)=self%data1Dax3i(:,:,2)
+      do iparm=1,self%l1Dax3
+        self%data1Dax3i(:,iparm,2)=self%data1Dax3(:,iparm)
+      end do
+    end if
+
+    !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp shape accordingly
+    if (self%l2Dax23>0) then
+      self%data2Dax23i(:,:,:,1)=self%data2Dax23i(:,:,:,2)
+      if (lc2>1 .and. lc3>1 .or. self%flagforcenative) then    ! normal 2D dataset
+        do iparm=1,self%l2Dax23
+          self%data2Dax23i(:,:,iparm,2)=self%data2Dax23(:,:,iparm)
+        end do
+      else if (lc2>1 .and. lc3==1) then
+        do iparm=1,self%l2Dax23
+          self%data2Dax23i(:,:,iparm,2)=reshape(self%data2Dax23(:,1,iparm),[lc2i,lc3i])
+        end do
+      else if (lc2==1 .and. lc3>1) then
+        do iparm=1,self%l2Dax23
+          self%data2Dax23i(:,:,iparm,2)=reshape(self%data2Dax23(1,:,iparm),[lc2i,lc3i])
+        end do
+      else
+        error stop 'inputdata:nospaceinterp() - cannot determine type of interpolation for data2Dax23'
+      end if
+    end if
+
+    !> 2D arrays varying along the 1,2 axes
+    if (self%l2Dax12>0) then
+      self%data2Dax12i(:,:,:,1)=self%data2Dax12i(:,:,:,2)
+      if (lc1>1 .and. lc2>1 .or. self%flagforcenative) then
+        do iparm=1,self%l2Dax12
+          self%data2Dax12i(:,:,iparm,2)=self%data2Dax12(:,:,iparm)
+        end do
+      else if (lc1>1 .and. lc2==1) then
+        do iparm=1,self%l2Dax12
+          self%data2Dax12i(:,:,iparm,2)=reshape(self%data2Dax12(:,1,iparm),[lc1i,lc2i])
+        end do
+      else if (lc1==1 .and. lc2>1) then
+        do iparm=1,self%l2Dax12
+          self%data2Dax12i(:,:,iparm,2)=reshape(self%data2Dax12(1,:,iparm),[lc1i,lc2i])
+        end do
+      else
+        error stop 'inputdata:nospaceinterp() - cannot determine type of interpolation for data2Dax12'
+      end if
+    end if
+
+    !> 2D arrays varying along the 1,3 axes
+    if (self%l2Dax13>0) then
+      self%data2Dax13i(:,:,:,1)=self%data2Dax13i(:,:,:,2)
+      if (lc1>1 .and. lc3>1 .or. self%flagforcenative) then
+        do iparm=1,self%l2Dax13
+          self%data2Dax13i(:,:,iparm,2)=self%data2Dax13(:,:,iparm)
+        end do
+      else if (lc1>1 .and. lc3==1) then
+        do iparm=1,self%l2Dax13
+          self%data2Dax13i(:,:,iparm,2)=reshape(self%data2Dax13(:,1,iparm),[lc1i,lc3i])
+        end do
+      else if (lc1==1 .and. lc3>1) then
+        do iparm=1,self%l2Dax13
+          self%data2Dax13i(:,:,iparm,2)=reshape(self%data2Dax13(1,:,iparm),[lc1i,lc3i])
+        end do
+      else
+        error stop 'inputdata:nospaceinterp() - cannot determine type of interpolation for data2Dax13'
+      end if
+    end if
+
+    !> 3D arrays varying along all axes, check for singleton axes...
+    if (self%l3D>0) then
+      self%data3Di(:,:,:,:,1)=self%data3Di(:,:,:,:,2)
+      if (lc1>1 .and. lc2>1 .and. lc3>1 .or. self%flagforcenative) then    ! forcenative because sometimes we interp 2D->3D, e.g. for neutral axisymmetric inputs
+        do iparm=1,self%l3D
+          self%data3Di(:,:,:,iparm,2)=self%data3D(:,:,:,iparm)
+        end do
+      else if (lc1>1 .and. lc2>1 .and. lc3==1) then
+        do iparm=1,self%l3D
+          self%data3Di(:,:,:,iparm,2)=reshape(self%data3D(:,:,1,iparm),[lc1i,lc2i,lc3i])
+        end do
+      else if (lc1>1 .and. lc2==1 .and. lc3>1) then
+        do iparm=1,self%l3D
+          self%data3Di(:,:,:,iparm,2)=reshape(self%data3D(:,1,:,iparm),[lc1i,lc2i,lc3i])
+        end do
+      else if (lc1==1 .and. lc2>1 .and. lc3>1) then
+        do iparm=1,self%l3D
+          self%data3Di(:,:,:,iparm,2)=reshape(self%data3D(1,:,:,iparm),[lc1i,lc2i,lc3i])
+        end do
+      else
+        error stop 'inputdata:nospaceinterp() - cannot determine type of interpolation for data3D'
+      end if
+    end if
+  end subroutine nospaceinterp
 
 
   !> use data stored in input arrays to interpolate onto grid sites for "next" dataset.  There may be a need here to
