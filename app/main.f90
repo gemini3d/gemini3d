@@ -328,22 +328,27 @@ contains
     fluidvars2=fluidvars
     fluidauxvars2=fluidauxvars
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+!    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
     call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call rhov12v1_in(fluidvars,fluidauxvars)
 
     call sweep2_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
-    call sweep1_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
+!    call sweep1_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
     call halo_allparams_in(x,fluidvars2,fluidauxvars2)
     call sweep3_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
     call rhov12v1_in(fluidvars2,fluidauxvars2)
 
-    !Combine the two splits
+    !Combine the two splits for x2,x3
     fluidvars=0.5*(fluidvars+fluidvars2)
     fluidauxvars=0.5*(fluidauxvars+fluidauxvars2)
 
     deallocate(fluidvars2,fluidauxvars2)
+
+    call halo_allparams_in(x,fluidvars,fluidauxvars)
+    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call rhov12v1_in(fluidvars,fluidauxvars)
+
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
       print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
