@@ -641,6 +641,46 @@ contains
 !    if (deltav > 10.0) flagrefine=.true.
 !  end subroutine tag4refine_diff
 
+!  subroutine tag4refine_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
+!    class(curvmesh), intent(in) :: x
+!    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
+!    type(gemini_work) :: intvars
+!    logical, intent(inout) :: flagrefine
+!    integer :: ix1,ix2,ix3    
+!    real(wp) :: mlat,mlon,alt
+!    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+!    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+!    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+!    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+!    real(wp) :: minv,maxv,deltav
+!    
+!    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+!    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+!    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+!
+!    flagrefine=.false.
+!    deltav=0.0
+!    minv=0.0
+!    maxv=0.0
+!    do ix3=1,x%lx3
+!      do ix2=1,x%lx2
+!        do ix1=1,x%lx1
+!          mlon=x%phi(ix1,ix2,ix3)*180.0/pi
+!          mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
+!          alt=x%alt(ix1,ix2,ix3)
+!          if (alt > 80e3 .and. alt < 300e3) then      ! only update min/max v if in region of interest
+!            if (intvars%atmos%vn1(ix1,ix2,ix3) < minv) minv=intvars%atmos%vn1(ix1,ix2,ix3)
+!            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxv) maxv=intvars%atmos%vn1(ix1,ix2,ix3)
+!          end if
+!        end do
+!      end do
+!    end do
+!    deltav=maxv-minv
+!
+!    if (deltav > 5.0) flagrefine=.true.
+!  end subroutine tag4refine_diff
+
+
   subroutine tag4refine_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagrefine)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
@@ -653,6 +693,7 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     real(wp) :: minv,maxv,deltav
+    real(wp) :: minvinner,maxvinner,deltavinner
     
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -662,22 +703,26 @@ contains
     deltav=0.0
     minv=0.0
     maxv=0.0
-    do ix3=1,x%lx3
+    do ix1=1,x%lx1
+      deltavinner=0.0
+      minvinner=0.0
+      maxvinner=0.0
       do ix2=1,x%lx2
-        do ix1=1,x%lx1
+        do ix3=1,x%lx3
           mlon=x%phi(ix1,ix2,ix3)*180.0/pi
           mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
           alt=x%alt(ix1,ix2,ix3)
           if (alt > 80e3 .and. alt < 300e3) then      ! only update min/max v if in region of interest
-            if (intvars%atmos%vn1(ix1,ix2,ix3) < minv) minv=intvars%atmos%vn1(ix1,ix2,ix3)
-            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxv) maxv=intvars%atmos%vn1(ix1,ix2,ix3)
+            if (intvars%atmos%vn1(ix1,ix2,ix3) < minvinner) minvinner=intvars%atmos%vn1(ix1,ix2,ix3)
+            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxvinner) maxvinner=intvars%atmos%vn1(ix1,ix2,ix3)
           end if
         end do
       end do
+      deltavinner=maxvinner-minvinner
+      if (deltav < deltavinner) deltav=deltavinner
     end do
-    deltav=maxv-minv
 
-    if (deltav > 5.0) flagrefine=.true.
+    if (deltav > 50.0) flagrefine=.true.
   end subroutine tag4refine_diff
 
 
@@ -770,7 +815,47 @@ contains
 !    if (deltav < 5.0) flagcoarsening=.true.
 !  end subroutine tag4coarsening_diff
 
-  subroutine tag4coarsening_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagcoarsening)
+!  subroutine tag4coarsening_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagcoarsening)
+!    class(curvmesh), intent(in) :: x
+!    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
+!    type(gemini_work) :: intvars
+!    logical, intent(inout) :: flagcoarsening
+!    integer :: ix1,ix2,ix3    
+!    real(wp) :: mlat,mlon,alt
+!    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+!    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+!    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+!    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+!    real(wp) :: minv,maxv,deltav
+!    
+!    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+!    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+!    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+!
+!    flagcoarsening=.false.
+!    deltav=0.0
+!    minv=0.0
+!    maxv=0.0
+!    do ix3=1,x%lx3
+!      do ix2=1,x%lx2
+!        do ix1=1,x%lx1
+!          mlon=x%phi(ix1,ix2,ix3)*180.0/pi
+!          mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
+!          alt=x%alt(ix1,ix2,ix3)
+!          if (alt > 80e3 .and. alt < 300e3) then      ! only update min/max v if in region of interest
+!            if (intvars%atmos%vn1(ix1,ix2,ix3) < minv) minv=intvars%atmos%vn1(ix1,ix2,ix3)
+!            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxv) maxv=intvars%atmos%vn1(ix1,ix2,ix3)
+!          end if
+!        end do
+!      end do
+!    end do
+!    deltav=maxv-minv
+!
+!    if (deltav < 2.5) flagcoarsening=.true.
+!  end subroutine tag4coarsening_diff
+
+
+    subroutine tag4coarsening_diff(x,fluidvars,fluidauxvars,electrovars,intvars,flagcoarsening)
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars,fluidauxvars,electrovars
     type(gemini_work) :: intvars
@@ -782,6 +867,7 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     real(wp) :: minv,maxv,deltav
+    real(wp) :: minvinner,maxvinner,deltavinner
     
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -791,23 +877,28 @@ contains
     deltav=0.0
     minv=0.0
     maxv=0.0
-    do ix3=1,x%lx3
+    do ix1=1,x%lx1
+      deltavinner=0.0
+      minvinner=0.0
+      maxvinner=0.0
       do ix2=1,x%lx2
-        do ix1=1,x%lx1
+        do ix3=1,x%lx3
           mlon=x%phi(ix1,ix2,ix3)*180.0/pi
           mlat=90.0-x%theta(ix1,ix2,ix3)*180.0/pi
           alt=x%alt(ix1,ix2,ix3)
           if (alt > 80e3 .and. alt < 300e3) then      ! only update min/max v if in region of interest
-            if (intvars%atmos%vn1(ix1,ix2,ix3) < minv) minv=intvars%atmos%vn1(ix1,ix2,ix3)
-            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxv) maxv=intvars%atmos%vn1(ix1,ix2,ix3)
+            if (intvars%atmos%vn1(ix1,ix2,ix3) < minvinner) minvinner=intvars%atmos%vn1(ix1,ix2,ix3)
+            if (intvars%atmos%vn1(ix1,ix2,ix3) > maxvinner) maxvinner=intvars%atmos%vn1(ix1,ix2,ix3)
           end if
         end do
       end do
+      deltavinner=maxvinner-minvinner
+      if (deltav < deltavinner) deltav=deltavinner
     end do
-    deltav=maxv-minv
 
-    if (deltav < 2.5) flagcoarsening=.true.
+    if (deltav < 25.0) flagcoarsening=.true.
   end subroutine tag4coarsening_diff
+
 
 
   !> if refinement is being done it may be advantageous to have refine/interpolate done with drift and temperature
