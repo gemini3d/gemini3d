@@ -33,7 +33,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
-                      gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in
+                      gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, fluidvar_pointers
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
@@ -232,7 +232,7 @@ contains
 
       !> compute potential solution
       call cpu_time(tstart)
-      call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
+      !call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -296,8 +296,10 @@ contains
     real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
 
-    real(wp), dimension(:,:,:,:), pointer :: fluidvars2
-    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars2
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars2,fluidvarshalf
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars2,fluidauxvarshalf
+    reaL(wp), dimension(:,:,:,:), pointer :: ns,Ts,vs1,vs2,vs3
+    reaL(wp), dimension(:,:,:,:), pointer :: nshalf,Tshalf,vs1half,vs2half,vs3half
 
     ! pull solar indices from module type
     call get_solar_indices(cfg,f107,f107a)
@@ -318,6 +320,7 @@ contains
     ! call halo_allparams_in(x,fluidvars,fluidauxvars)
 
     ! New haloing code; probably very little performance penalty here
+    call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,10,t,dt/2.0,ymd,UTsec)   ! compute drift at time level t
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     call halo_fluidvars_in(x,fluidvars,fluidauxvars)
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
@@ -325,6 +328,39 @@ contains
 
     allocate(fluidvars2,mold=fluidvars)
     allocate(fluidauxvars2,mold=fluidauxvars)
+    allocate(fluidvarshalf,mold=fluidvars)
+    allocate(fluidauxvarshalf,mold=fluidauxvars)
+
+    ! Advance solution to t+dt/2 and re-evaluate the electric field
+    fluidvars2=fluidvars
+    fluidauxvars2=fluidauxvars
+    fluidvarshalf=fluidvars
+    fluidauxvarshalf=fluidauxvars
+    call sweep3_allparams_in(fluidvarshalf,fluidauxvarshalf,intvars,x,dt/2.0)
+    call halo_allparams_in(x,fluidvarshalf,fluidauxvarshalf)
+    call sweep2_allparams_in(fluidvarshalf,fluidauxvarshalf,intvars,x,dt/2.0)
+    call rhov12v1_in(fluidvarshalf,fluidauxvarshalf)
+
+    call sweep2_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt/2.0)
+    call halo_allparams_in(x,fluidvars2,fluidauxvars2)
+    call sweep3_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt/2.0)
+    call rhov12v1_in(fluidvars2,fluidauxvars2)
+
+    !Combine the two splits for x2,x3 at t+dt/2
+    fluidvarshalf=0.5*(fluidvarshalf+fluidvars2)
+    fluidauxvarshalf=0.5*(fluidauxvarshalf+fluidauxvars2)
+
+    call electrodynamics_in(cfg,fluidvarshalf,fluidauxvarshalf,electrovars,intvars,x,10,t,dt,ymd,UTsec)   ! compute drift at time level t+dt/2
+    
+    ! patch in the t+dt/2 results for drifts
+    call fluidvar_pointers(fluidvarshalf,ns,vs1half,vs2half,vs3half,Ts)
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)    ! reassign ns,Ts pointers
+    vs2=vs2half; vs3=vs3half;
+
+    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+
     fluidvars2=fluidvars
     fluidauxvars2=fluidauxvars
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -339,15 +375,15 @@ contains
     call sweep3_allparams_in(fluidvars2,fluidauxvars2,intvars,x,dt)
     call rhov12v1_in(fluidvars2,fluidauxvars2)
 
-    !Combine the two splits for x2,x3
+    !Combine the two splits for x2,x3 for t+dt
     fluidvars=0.5*(fluidvars+fluidvars2)
     fluidauxvars=0.5*(fluidauxvars+fluidauxvars2)
 
-    deallocate(fluidvars2,fluidauxvars2)
+    deallocate(fluidvars2,fluidauxvars2,fluidvarshalf,fluidauxvarshalf)
 
-    call halo_allparams_in(x,fluidvars,fluidauxvars)
-    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call rhov12v1_in(fluidvars,fluidauxvars)
+!    call halo_allparams_in(x,fluidvars,fluidauxvars)
+!    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+!    call rhov12v1_in(fluidvars,fluidauxvars)
 
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
