@@ -722,7 +722,7 @@ contains
       if (deltav < deltavinner) deltav=deltavinner
     end do
 
-    if (deltav > 50.0) flagrefine=.true.
+    if (deltav > 10.0) flagrefine=.true.
   end subroutine tag4refine_diff
 
 
@@ -896,7 +896,7 @@ contains
       if (deltav < deltavinner) deltav=deltavinner
     end do
 
-    if (deltav < 25.0) flagcoarsening=.true.
+    if (deltav < 2.0) flagcoarsening=.true.
   end subroutine tag4coarsening_diff
 
 
