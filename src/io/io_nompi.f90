@@ -282,7 +282,7 @@ contains
            '- use a script to interpolate up/down to the simulation grid'
     end if
 
-    print*, 'opening hdf5 file...'
+    !print*, 'opening hdf5 file...'
     call hf%open(indatfile, action='r')
 
 !    print*, 'test setting values...'

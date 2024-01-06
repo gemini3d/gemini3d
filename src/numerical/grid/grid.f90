@@ -88,10 +88,10 @@ contains
     integer :: xtype
 
     if (maxval(abs(x2))<1000) then
-      print '(a)', 'Detected dipole grid...'
+      !print '(a)', 'Detected dipole grid...'
       xtype=2
     else
-      print '(a)', 'Detected Cartesian grid...'
+      !print '(a)', 'Detected Cartesian grid...'
       xtype=1
     end if
   end function detect_gridtype
@@ -472,7 +472,7 @@ contains
     character(*), intent(in) :: indatsize
 
     call get_simsize3(indatsize, lx1, lx2all, lx3all)
-    print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
+    !print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
     call set_total_grid_sizes(lx1,lx2all,lx3all)    !! set module global sizes for use on other contexts
   end subroutine grid_size
 end module grid

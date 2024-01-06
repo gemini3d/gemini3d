@@ -77,7 +77,7 @@ contains
     call neutralBG_denstemp(atmos)
     !if (mpi_cfg%myid == 0) then
       call cpu_time(tfin)
-      print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+      !print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
     !end if
 
     !> Horizontal wind model initialization/background
@@ -89,7 +89,7 @@ contains
     !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
     !if (mpi_cfg%myid == 0) then
       call cpu_time(tfin)
-      print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+      !print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
     !end if
   end subroutine init_neutralBG
 
