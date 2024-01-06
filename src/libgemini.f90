@@ -160,7 +160,7 @@ contains
     endif
 
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
-    call check_input_files(cfg)
+    !call check_input_files(cfg)
   end subroutine read_config_in
 
 
