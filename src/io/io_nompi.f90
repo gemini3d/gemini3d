@@ -48,7 +48,7 @@ contains
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
 
     ! read in the ICs size and allocate data
-    print*, 'indatsize;  ',indatsize
+    !print*, 'indatsize;  ',indatsize
     call get_simsize3(indatsize,lx1in,lx2in,lx3in)
     allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
     allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -77,7 +77,7 @@ contains
     deallocate(x1imat,x2imat,x3imat)    ! nuke these as soon as we are done with them
 
     ! get the input grid coordinates
-    print*, 'indatgrid:  ',indatgrid
+    !print*, 'indatgrid:  ',indatgrid
     call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
 
     !print*, x1in(1:lx1in)
@@ -85,7 +85,7 @@ contains
     !print*, x1(1:lx1)
 
     ! we must make sure that the target coordinates do not range outside the input file coordinates
-    print*, 'check grid extents'
+    !print*, 'check grid extents'
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
       error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
     end if
@@ -97,10 +97,10 @@ contains
     end if
 
     ! read in the input initial conditions, only hdf5 files are support for this functionality
-    print*, 'read file'
+    !print*, 'read file'
     call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
-    print*, 'interp_file2subgrid:  error checking complete...'
+    !print*, 'interp_file2subgrid:  error checking complete...'
 
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
@@ -117,7 +117,7 @@ contains
     parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
                        x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
-    print*, 'interp_file2subgrid:  interpolations complete...'
+    !print*, 'interp_file2subgrid:  interpolations complete...'
 
     ! at this point to be totally safe we should set the ghost cells, use a zero-order hold as a total guess
     call forceinputZOH(ns)
