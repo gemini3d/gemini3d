@@ -274,8 +274,8 @@ contains
 
     !> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
     call get_simsize3(indatsize, lx1in, lx2in, lx3in)
-    print '(2A,3I6)', indatsize,' input dimensions:',lx1in,lx2in,lx3in
-    print '(A,3I6)', 'Target (output) grid structure dimensions:',lx1,lx2,lx3
+    !print '(2A,3I6)', indatsize,' input dimensions:',lx1in,lx2in,lx3in
+    !print '(A,3I6)', 'Target (output) grid structure dimensions:',lx1,lx2,lx3
 
     if (.not. (lx1==lx1in .and. lx2==lx2in .and. lx3==lx3in)) then
       error stop 'ERROR:gemini3d: The input data must be the same size as the grid which you are running the simulation on' // &
