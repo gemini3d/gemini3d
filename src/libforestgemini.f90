@@ -60,7 +60,7 @@ contains
     logical :: errflag=.false.
     real(wp) :: nlower,nupper,vlower,vupper,Tlower,Tupper
 
-    print*, 'Initiating tiled/interpolate input...'
+    !print*, 'Initiating tiled/interpolate input...'
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     call interp_file2subgrid(cfg%indatsize,cfg%indatfile,cfg%indatgrid,x%x1,x%x2,x%x3,ns,vs1,Ts,Phi)
@@ -82,12 +82,12 @@ contains
     nlower=0; nupper=1e14;
     vlower=-1e4; vupper=1e4;
     Tlower=0; Tupper=20000;
-    print*, 'In fortran file i/o...'
+    !print*, 'In fortran file i/o...'
     errflag=errflag .or. checkarray(ns,nlower,nupper,'>>> Full density corrupted:  ',0)
     errflag=errflag .or. checkarray(vs1,vlower,vupper,'>>> Full velocity corrupted:  ',0)
     errflag=errflag .or. checkarray(Ts,Tlower,Tupper,'>>> Full temperature corrupted:  ',0)
     if (errflag) error stop
-    print*, 'Exiting fortran file i/o...'
+    !print*, 'Exiting fortran file i/o...'
   end subroutine interp_file2subgrid_in
 
 
