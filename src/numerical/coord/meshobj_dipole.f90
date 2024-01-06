@@ -136,7 +136,7 @@ subroutine make_dipolemesh(self)
   allocate(phispher(-1:lqg-2, -1:lpg-2, -1:lphig-2))
 
 ! array sizes without ghost cells for convenience
-  print "(A,1X,I0,1X,I0,1X,I0)", 'make_dipolemesh:  allocating space for grid of size:',lqg,lpg,lphig
+  !print "(A,1X,I0,1X,I0,1X,I0)", 'make_dipolemesh:  allocating space for grid of size:',lqg,lpg,lphig
   lq=lqg-4; lp=lpg-4; lphi=lphig-4;
   allocate(rqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
   allocate(thetaqint,phiqint, mold=rqint)
@@ -144,19 +144,19 @@ subroutine make_dipolemesh(self)
   allocate(thetapint,phipint, mold=rpint)
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
-  print*, 'make_dipolemesh:  converting cell centers to spherical coordinates...'
+  !print*, 'make_dipolemesh:  converting cell centers to spherical coordinates...'
   call self%native2ECEFspher(self%glonctr,self%glatctr,self%q,self%p,self%phidip,r,theta,phispher)
 
   ! locations of the cell interfaces in q-dimension (along field lines)
-  print*, 'make_dipolemesh:  converting cell interfaces in q...'
+  !print*, 'make_dipolemesh:  converting cell interfaces in q...'
   call self%native2ECEFspher(self%glonctr,self%glatctr,self%qint,self%p(1:lp),self%phidip(1:lphi),rqint,thetaqint,phiqint)
 
   ! locations of cell interfaces in p-dimesion (along constant L-shell)
-  print*, 'make_dipolemesh:  converting cell interfaces in p...'
+  !print*, 'make_dipolemesh:  converting cell interfaces in p...'
   call self%native2ECEFspher(self%glonctr,self%glatctr,self%q(1:lq),self%pint,self%phidip(1:lphi),rpint,thetapint,phipint)
 
   ! compute and store the metric factors; these need to include ghost cells
-  print*, 'make_dipolemesh:  metric factors for cell centers...'
+  !print*, 'make_dipolemesh:  metric factors for cell centers...'
   self%hq(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h1(r,theta,phispher)
   self%hp(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h2(r,theta,phispher)
   self%hphi(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h3(r,theta,phispher)
@@ -167,22 +167,22 @@ subroutine make_dipolemesh(self)
   self%phi=phispher(-1:lq+2,-1:lp+2,-1:lphi+2)
 
   ! compute the geographic coordinates
-  print*, 'make_dipolemesh:  geographic coordinates from magnetic...'
+  !print*, 'make_dipolemesh:  geographic coordinates from magnetic...'
   call self%calc_geographic()
 
   ! q cell interface metric factors
-  print*, 'make_dipolemesh:  metric factors for cell q-interfaces...'
+  !print*, 'make_dipolemesh:  metric factors for cell q-interfaces...'
   self%hqqi=self%calc_h1(rqint,thetaqint,phispher)
   self%hpqi=self%calc_h2(rqint,thetaqint,phispher)
   self%hphiqi=self%calc_h3(rqint,thetaqint,phispher)
 
   ! p cell interface metric factors
-  print*, 'make_dipolemesh:  metric factors for cell p-intefaces...'
+  !print*, 'make_dipolemesh:  metric factors for cell p-intefaces...'
   self%hqpi=self%calc_h1(rpint,thetapint,phispher)
   self%hppi=self%calc_h2(rpint,thetapint,phispher)
   self%hphipi=self%calc_h3(rpint,thetapint,phispher)
 
-  print*, 'make_dipolemesh:  metric factors for cell phi-interfaces...'
+  !print*, 'make_dipolemesh:  metric factors for cell phi-interfaces...'
   !print*, shape(self%hqphii),shape(self%hpphii),shape(self%hphiphii)
   !print*, shape(self%hq), shape(self%hp), shape(self%hphi)
   self%hqphii(1:lq,1:lp,1:lphi)=self%hq(1:lq,1:lp,1:lphi)         ! note these are not a function of x3 so can just copy things across
@@ -197,36 +197,36 @@ subroutine make_dipolemesh(self)
   deallocate(rqint,thetaqint,rpint,thetapint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
-  print*, 'make_dipolemesh:  spherical ECEF unit vectors...'
+  !print*, 'make_dipolemesh:  spherical ECEF unit vectors...'
   call self%calc_er()
   call self%calc_etheta()
   call self%calc_ephi()
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
-  print*, 'make_dipolemesh:  dipole unit vectors...'
+  !print*, 'make_dipolemesh:  dipole unit vectors...'
   call self%calc_e1()
   call self%calc_e2()
   call self%calc_e3()
 
   ! magnetic field magnitude
-  print*, 'make_dipolemesh:  magnetic fields...'
+  !print*, 'make_dipolemesh:  magnetic fields...'
   call self%calc_Bmag()
 
   ! gravity components
-  print*, 'make_dipolemesh:  gravity...'
+  !print*, 'make_dipolemesh:  gravity...'
   call self%calc_grav()
 
   ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
 
   ! now finish by calling procedures from base type
-  print*, 'make_dipolemesh:  base type-bound procedure calls...'
+  !print*, 'make_dipolemesh:  base type-bound procedure calls...'
   call self%calc_difflengths()     ! differential lengths (units of m)
   call self%calc_inull()           ! null points (non computational)
   call self%calc_gridflag()        ! compute and store grid type
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
-  print*, 'make_dipolemesh:  inclination angle...'
+  !print*, 'make_dipolemesh:  inclination angle...'
   call self%calc_inclination()
 end subroutine make_dipolemesh
 
@@ -495,7 +495,7 @@ subroutine destructor(self)
   type(dipolemesh), intent(inout) :: self
 
   call self%dissociate_pointers()
-  print*, '  dipolemesh destructor completed successfully'
+  !print*, '  dipolemesh destructor completed successfully'
 end subroutine destructor
 
 end module meshobj_dipole
