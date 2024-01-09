@@ -1,3 +1,4 @@
+include(CheckCompilerFlag)
 # NOTE: don't use -march=native as GCC doesn't support all CPU arches with that option.
 # add_compile_options(-mtune=native)
 
@@ -23,7 +24,7 @@ endif()
 add_compile_options($<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-fno-backtrace>)
 
 # Wdo-subscript is known to warn on obvious non-problems
-check_fortran_compiler_flag(-Wdo-subscript dosubflag)
+check_compiler_flag(Fortran -Wdo-subscript dosubflag)
 if(dosubflag)
   add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-do-subscript>)
 endif()

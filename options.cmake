@@ -32,7 +32,7 @@ option(python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab-based self-checks")
 
-set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
+option(CMAKE_TLS_VERIFY "verify TLS certificates when downloading data" on)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
@@ -41,11 +41,6 @@ set(CMAKE_DEBUG_POSTFIX .debug)
 
 # to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
-
-# Rpath options necessary for shared library install to work correctly in user projects
-set(CMAKE_INSTALL_NAME_DIR ${CMAKE_INSTALL_FULL_LIBDIR})
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH true)
 
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
