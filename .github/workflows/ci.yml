@@ -31,21 +31,20 @@ jobs:
 
     strategy:
       matrix:
-        # hwm14: [true, false]
         hwm14: [false]
-        # TODO: temp workaround for fclaw_prep3
-        img: [{os: ubuntu-latest, cc: gcc-9, cxx: g++-9, fc: gfortran-9},
-              {os: ubuntu-latest, cc: gcc-10, cxx: g++-10, fc: gfortran-10},
-              {os: ubuntu-latest, cc: gcc-11, cxx: g++-11, fc: gfortran-11},
-              {os: ubuntu-latest, cc: gcc-12, cxx: g++-12, fc: gfortran-12},
-              {os: macos-latest, cc: clang, cxx: clang++, fc: gfortran-12}]
+        os: [ubuntu-latest]
+        gcc: [9,10,11,12,13]
+        include:
+        - os: macos-latest
+          gcc: 13
+          hwm14: false
 
     env:
-      CC: ${{ matrix.img.cc }}
-      CXX: ${{ matrix.img.cxx }}
-      FC: ${{ matrix.img.fc }}
+      CC: gcc-${{ matrix.gcc }}
+      CXX: g++-${{ matrix.gcc }}
+      FC: gfortran-${{ matrix.gcc }}
 
-    runs-on: ${{ matrix.img.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
 
