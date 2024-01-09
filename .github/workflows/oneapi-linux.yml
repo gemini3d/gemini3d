@@ -4,18 +4,20 @@ env:
   CC: icx
   CXX: icpx
   FC: ifx
-  LINUX_CPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+  LINUX_CPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp
   LINUX_FORTRAN_COMPONENTS: intel-oneapi-compiler-fortran
   LINUX_MKL_COMPONENTS: intel-oneapi-mkl intel-oneapi-mkl-devel
   LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   CTEST_NO_TESTS_ACTION: error
   CMAKE_BUILD_PARALLEL_LEVEL: 4
-  CTEST_PARALLEL_LEVE: 2
+  CMAKE_BUILD_TYPE: Release
+  # debug triggers asan build errors, peculiar to GitHub Actions
 
 on:
   push:
     paths:
+      - "**.c"
       - "**.cpp"
       - "**.f90"
       - "**.F90"
@@ -77,41 +79,20 @@ jobs:
 
     - name: Install numeric libraries
       timeout-minutes: 15
-      run: |
-        cmake -S gemext -B gemext/build -Dfind:BOOL=true -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}
-        cmake --build gemext/build --parallel
-        cmake --install gemext/build
-
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-
-    # - name: CMake Configure
-    #   run: >-
-    #     cmake --preset multi
-    #     -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+      run: cmake -P gemext/build-online.cmake
 
     - name: CMake Configure
-      run: >-
-        cmake --preset default
-        -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
+      run: cmake --preset default
 
     - name: print config log
       if: ${{ failure() }}
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: build
-      run: cmake --build build --parallel
+      run: cmake --build --preset default
 
     - name: unit test
       run: ctest --preset default -L unit
-
-    # - name: DEBUG build
-    #   run: cmake --build --preset debug
-    # - name: DEBUG unit test
-    #   run: ctest --preset debug -L unit
-    # - name: DEBUG test core
-    #   run: ctest --preset debug -LE unit -E 3d --repeat until-pass:2
 
     # - name: RELEASE build
     #   run: cmake --build --preset release
