@@ -95,6 +95,8 @@ include(cmake/DllTestPath.cmake)
 add_subdirectory(src)
 # Gemini3D source code
 
+include(cmake/test/launcher.cmake) # for MPI tests
+
 add_subdirectory(test)
 # fundamental tests of MPI and numeric libraries essential for Gemini3D
 
