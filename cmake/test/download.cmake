@@ -90,19 +90,7 @@ endif()
 
 # extract archive
 message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
-if(CMAKE_VERSION VERSION_LESS 3.18)
-  file(MAKE_DIRECTORY ${ref_dir})
-
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${archive}
-  WORKING_DIRECTORY ${ref_dir}
-  RESULT_VARIABLE ret
-  )
-  if(NOT ret EQUAL 0)
-    message(FATAL_ERROR "${name}: extract ${archive} => ${ref_dir}    ${ret}")
-  endif()
-else()
-  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
-endif()
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
 
 if(NOT IS_DIRECTORY ${ref_dir}/inputs)
   message(FATAL_ERROR "${name}: missing ${ref_dir}/inputs directory, it appears ${archive} failed to extract.")

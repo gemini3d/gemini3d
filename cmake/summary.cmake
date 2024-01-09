@@ -9,8 +9,9 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
   ")
 endif()
 
-if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.27.0 AND CMAKE_VERSION VERSION_LESS 3.27.8)
-  message(WARNING "CMake 3.27.0..3.27.7 has a bug with Ninja causing build failures. Suggest using CMake outside this range or
+if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.27.0 AND CMAKE_VERSION VERSION_LESS 3.27.9)
+  message(WARNING "CMake 3.27.0..3.27.8 has a bug with Ninja causing build failures.
+  Suggest using CMake outside this range or:
   cmake -Bbuild -G \"Unix Makefiles\"
   ")
 endif()
