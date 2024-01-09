@@ -12,6 +12,7 @@ COMMAND ${CMAKE_COMMAND}
   -Doutdir:PATH=${out_dir}
   -Drefroot:PATH=${ref_root}
   -Darc_json_file:FILEPATH=${arc_json_file}
+  -DCMAKE_TLS_VERIFY:BOOL=${CMAKE_TLS_VERIFY}
   -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
@@ -89,9 +90,3 @@ DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 
 endfunction(setup_magcalc_test)
-
-
-# add_test(NAME internetConnectivity
-# COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/connectivity.cmake)
-# set_property(TEST internetConnectivity PROPERTY TIMEOUT 10)
-# set_property(TEST internetConnectivity PROPERTY FIXTURES_SETUP internet_fxt)

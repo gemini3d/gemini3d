@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 # .zst requires CMake 3.15+
 
-set(CMAKE_TLS_VERIFY on)
-
 function(download_archive url archive exp_hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
