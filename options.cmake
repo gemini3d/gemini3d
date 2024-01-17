@@ -32,6 +32,8 @@ option(python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab-based self-checks")
 
+option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${PROJECT_IS_TOP_LEVEL})
+
 option(CMAKE_TLS_VERIFY "verify TLS certificates when downloading data" on)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
@@ -41,9 +43,15 @@ set(CMAKE_DEBUG_POSTFIX .debug)
 
 # to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
+# to avoid race condition with imported targets consumed by parent project, create this directory
+file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
+
+if(PROJECT_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/local" CACHE PATH "..." FORCE)
+endif()
 
 # --- CMAKE_PREFIX_PATH auto-detection
 if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})

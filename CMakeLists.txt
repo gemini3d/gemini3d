@@ -24,10 +24,6 @@ VERSION 1.7.0
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
-if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
-  set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
-endif()
-
 include(cmake/package/git_rev.cmake)
 include(options.cmake)
 
