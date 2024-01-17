@@ -20,7 +20,6 @@ target_include_directories(gemini_potential2d PRIVATE ${MPI_Fortran_INCLUDE_DIRS
 
 add_test(NAME gemini_potential2d COMMAND gemini_potential2d ${_potential2d_testfile})
 test_mpi_launcher(gemini_potential2d ${Ncpu})
-dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" gemini_potential2d)
 
 add_test(NAME potential2d:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential2d_testfile}
@@ -45,7 +44,6 @@ target_include_directories(gemini_potential3d PRIVATE ${MPI_Fortran_INCLUDE_DIRS
 
 add_test(NAME gemini_potential3d COMMAND gemini_potential3d ${_potential3d_testfile})
 test_mpi_launcher(gemini_potential3d ${Ncpu})
-dll_test_path("h5fortran::h5fortran;MUMPS::MUMPS" gemini_potential3d)
 
 set_tests_properties(gemini_potential2d gemini_potential3d PROPERTIES
 FIXTURES_SETUP gemini_potential_fxt

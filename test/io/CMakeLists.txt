@@ -41,5 +41,4 @@ foreach(t root worker input)
   LABELS unit
   )
 
-  dll_test_path("h5fortran::h5fortran;HDF5::HDF5" "gemini:dump:${t};gemini:dump:check:${t}")
 endforeach()

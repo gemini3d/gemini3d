@@ -31,5 +31,3 @@ LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
 test_mpi_launcher(gemini_projection 2)
-
-dll_test_path("ffilesystem::filesystem" gemini_projection)

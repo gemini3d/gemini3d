@@ -5,7 +5,6 @@ target_link_libraries(test_fang PRIVATE fang fang_run assert const msis::msis_if
 
 add_test(NAME fangIonize COMMAND test_fang)
 set_property(TEST fangIonize PROPERTY LABELS unit)
-dll_test_path(msis::msis_ifc fangIonize)
 
 if(H5PY_FOUND)
   add_test(NAME fangIonize:python

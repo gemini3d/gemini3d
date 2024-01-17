@@ -20,7 +20,6 @@ FIXTURES_SETUP gemini_diffusion_fxt
 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 # WORKING_DIRECTORY is needed to write output file to repeatable path.
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" diffusion1)
 
 add_test(NAME diffusion1:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}

@@ -45,7 +45,6 @@ RESOURCE_LOCK cpu_ram
 FIXTURES_SETUP gemini_interp3_fxt
 )
 
-dll_test_path("h5fortran::h5fortran;ZLIB::ZLIB;LAPACK::LAPACK" "interp2;interp3")
 
 
 add_test(NAME interp2:python

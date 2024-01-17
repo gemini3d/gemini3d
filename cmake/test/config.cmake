@@ -48,8 +48,6 @@ FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
 )
 
-dll_test_path("ffilesystem::filesystem;gemini3d;h5fortran::h5fortran;HDF5::HDF5" "gemini:${name}:dryrun;gemini:${name}")
-
 set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${out_dir}/inputs/config.nml
@@ -87,6 +85,5 @@ FIXTURES_REQUIRED magcalc:${name}:setup
 LABELS core
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
-dll_test_path("h5fortran::h5fortran;HDF5::HDF5" magcalc:${name})
 
 endfunction(setup_magcalc_test)

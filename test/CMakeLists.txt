@@ -59,8 +59,6 @@ test_mpi_launcher(gemini_mumps_standalone 2)
 
 set_property(TEST gemini_mpi_standalone gemini_mumps_standalone PROPERTY RESOURCE_LOCK cpu_mpi)
 
-dll_test_path("SCALAPACK::SCALAPACK;MUMPS::MUMPS" "SCALAPACK_standalone;gemini_mumps_standalone")
-
 
 add_test(NAME gemini_fortran COMMAND gemini.bin -h)
 set_tests_properties(gemini_fortran PROPERTIES
@@ -69,7 +67,6 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
 LABELS unit
 )
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_fortran)
 
 
 if(TARGET gemini_c.bin)
@@ -81,7 +78,6 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
 LABELS unit
 )
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;LAPACK::LAPACK;HDF5::HDF5" gemini_cpp)
 
 endif()
 
@@ -90,10 +86,6 @@ set_tests_properties(gemini3d_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
 FIXTURES_SETUP gemini_exe_fxt
 )
-
-# --- Windows needs DLLs on path
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" gemini3d_run_ok)
-
 
 add_subdirectory(compare)
 
@@ -117,9 +109,6 @@ add_test(NAME magcalc_run_ok COMMAND magcalc.run)
 set_tests_properties(magcalc_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
 )
-
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" "magcalc_exe_ok;magcalc_run_ok")
-
 
 
 add_subdirectory(coord)

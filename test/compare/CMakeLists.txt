@@ -70,7 +70,6 @@ REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
 DISABLED $<NOT:$<TARGET_EXISTS:gemini3d.compare>>
 )
-dll_test_path("ffilesystem::filesystem;h5fortran::h5fortran;HDF5::HDF5" gemini:compare:${name})
 
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.

@@ -88,9 +88,6 @@ get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
 
 # END WORKAROUND
 
-# unit test DLL paths
-include(cmake/DllTestPath.cmake)
-
 
 add_subdirectory(src)
 # Gemini3D source code
