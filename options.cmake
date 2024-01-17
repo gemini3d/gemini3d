@@ -75,6 +75,7 @@ if(NOT CMAKE_PREFIX_PATH)
 
   if(IS_DIRECTORY ${home}/libgem_${compiler_id})
     set(CMAKE_PREFIX_PATH ${home}/libgem_${compiler_id} CACHE PATH "prefix path for gemini3d/external libs")
+    message(STATUS "Auto-selecting CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
   endif()
 endif()
 
