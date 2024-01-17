@@ -5,7 +5,6 @@ function(download_archive url archive exp_hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
 file(DOWNLOAD ${url} ${archive}
-INACTIVITY_TIMEOUT 15
 STATUS ret LOG log
 EXPECTED_HASH SHA256=${exp_hash}
 )
@@ -34,7 +33,6 @@ if(NOT EXISTS ${arc_json_file} OR _size EQUAL 0)
   string(JSON url GET ${_libj} ref_data url)
 
   file(DOWNLOAD ${url} ${arc_json_file}
-  INACTIVITY_TIMEOUT 15
   STATUS ret LOG log
   )
   list(GET ret 0 stat)
