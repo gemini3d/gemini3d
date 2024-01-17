@@ -25,14 +25,12 @@ enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
 include(cmake/package/git_rev.cmake)
+include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
 # Fortran filesystem library "ffilesystem"
-find_package(ffilesystem CONFIG)
-# this is the first package to find, so make a special error message for users
-if(NOT ffilesystem_FOUND)
-  message(FATAL_ERROR ${need_gemext})
-endif()
+git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
+add_subdirectory(ffilesystem)
 
 # find python before excluding Anaconda
 include(cmake/python.cmake)
@@ -53,9 +51,13 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
-find_package(h5fortran CONFIG REQUIRED)
+find_package(h5fortran CONFIG)
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
+# this is the first package to find, so make a special error message for users
+if(NOT h5fortran_FOUND)
+  message(FATAL_ERROR ${need_gemext})
+endif()
 
 include(cmake/compilers.cmake)
 
