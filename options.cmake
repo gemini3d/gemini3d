@@ -36,8 +36,6 @@ option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${PROJECT_IS_TOP_LEV
 
 option(CMAKE_TLS_VERIFY "verify TLS certificates when downloading data" on)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)
 

@@ -28,6 +28,8 @@ include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 # Fortran filesystem library "ffilesystem"
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 add_subdirectory(ffilesystem)
