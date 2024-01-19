@@ -51,13 +51,10 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
-find_package(h5fortran CONFIG)
+git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
+add_subdirectory(h5fortran)
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
-# this is the first package to find, so make a special error message for users
-if(NOT h5fortran_FOUND)
-  message(FATAL_ERROR ${need_gemext})
-endif()
 
 include(cmake/compilers.cmake)
 
@@ -66,7 +63,11 @@ if(NOT DEFINED ENV{MKLROOT})
   find_package(LAPACK REQUIRED)
 endif()
 find_package(SCALAPACK REQUIRED)
-find_package(MUMPS REQUIRED CONFIG)
+
+find_package(MUMPS CONFIG)
+if(NOT MUMPS_FOUND)
+  message(FATAL_ERROR ${need_gemext})
+endif()
 
 # --- climate models
 if(glow)
