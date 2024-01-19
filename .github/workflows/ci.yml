@@ -1,7 +1,7 @@
 name: ci
 
 env:
-  CTEST_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 4
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CTEST_NO_TESTS_ACTION: error
   CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -98,7 +98,7 @@ jobs:
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: build
-      run: cmake --build build --parallel
+      run: cmake --build build
 
     - name: unit test
       run: ctest --preset default -L unit

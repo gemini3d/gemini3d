@@ -12,6 +12,7 @@ env:
   CTEST_NO_TESTS_ACTION: error
   CMAKE_BUILD_PARALLEL_LEVEL: 4
   CMAKE_BUILD_TYPE: Release
+  CTEST_PARALLEL_LEVEL: 4
   # oneAPI Debug triggers asan errors on Linux in general on any project
 
 on:
@@ -48,7 +49,7 @@ jobs:
 
     - name: cache install oneAPI
       id: cache-install
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           /opt/intel/oneapi
