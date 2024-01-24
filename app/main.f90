@@ -240,6 +240,7 @@ contains
 
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
+      call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)         
       call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,(it==1),lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)

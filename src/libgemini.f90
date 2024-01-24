@@ -39,9 +39,9 @@ use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
 use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
-use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
+use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
-            rhov12v1,v12rhov1,clean_param_after_regrid
+            rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
@@ -940,39 +940,102 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
-    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)   
+!    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)   
+
+!    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+!    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+!    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+!    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
+!                                     intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
+!                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver, &
+!                                     gavg,Tninf, &
+!                                     intvars%eprecip,intvars%W0,intvars%PhiWmWm2, &
+!                                     intvars%Prprecip,intvars%Qeprecip, &
+!                                     intvars%Prionize,intvars%Qeionize, &
+!                                     intvars%Pr,intvars%Lo)
+
+    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  end subroutine source_loss_allparams_in
+
+
+  !> Solve for plasma mass source/losses for all species
+  subroutine source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)    ! not needed
+
+    call source_loss_mass(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
+            intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,intvars%Pr,intvars%Lo,dt,intvars%Prionize)
+  end subroutine source_loss_mass_in
+
+
+  !> Momentum sources, all species
+  subroutine source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,intvars%Q,f107a,f107,intvars%atmos%nn, &
-                                     intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
-                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,intvars%iver, &
-                                     gavg,Tninf, &
-                                     intvars%eprecip,intvars%W0,intvars%PhiWmWm2, &
-                                     intvars%Prprecip,intvars%Qeprecip, &
-                                     intvars%Prionize,intvars%Qeionize, &
-                                     intvars%Pr,intvars%Lo)
-  end subroutine source_loss_allparams_in
+    call source_loss_momentum(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,E1, &
+            intvars%Q,x,intvars%Pr,intvars%Lo,dt,rhovs1)
+  end subroutine source_loss_momentum_in
 
 
-!  !> Solve for plasma mass source/losses for all species
-!  subroutine source_loss_mass_in
-!
-!  end subroutine source_loss_mass_in
-!
-!
-!  !> Momentum sources, all species
-!  subroutine source_loss_momentum_in
-!
-!  end subroutine source_loss_momentum_in
-!
-!
-!  !> Energy sources, all species
-!  subroutine source_loss_energy_in
-!
-!  end subroutine source_loss_energy_in
+  !> Energy sources, all species
+  subroutine source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: f107a,f107
+    logical, intent(in) :: first
+    real(wp), intent(in) :: gavg,Tninf
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,intvars%Prprecip,intvars%Qeprecip, &
+            intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn, &
+            first,intvars%Prionize, &
+            intvars%Qeionize,gavg,Tninf,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
+            vs1,vs2,vs3,rhoes,intvars%Pr,intvars%Lo,intvars%Q)
+  end subroutine source_loss_energy_in
 
 
 
