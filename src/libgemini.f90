@@ -75,29 +75,29 @@ real(wp), protected :: v2grid,v3grid
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
 !    doesn't conform to simple array shapes or needs to be stored on a per-instance basis rather than globally.
 type gemini_work
-  real(wp), dimension(:,:,:), pointer :: Phiall=>null()    !! full-grid potential solution.  To store previous time step value
-  real(wp), dimension(:,:,:), pointer :: iver=>null()    !! integrated volume emission rate of aurora calculated by GLOW
+  real(wp), dimension(:,:,:), pointer :: Phiall=>null()    ! full-grid potential solution.  To store previous time step value
+  real(wp), dimension(:,:,:), pointer :: iver=>null()      ! integrated volume emission rate of aurora calculated by GLOW
 
   !> Other variables used by the fluid solvers
-  real(wp), dimension(:,:,:,:), pointer :: vs1i=>null()
+  real(wp), dimension(:,:,:,:), pointer :: vs1i=>null()    ! cell interface velocities for the 1,2, and 3 directions
   real(wp), dimension(:,:,:,:), pointer :: vs2i=>null()
   real(wp), dimension(:,:,:,:), pointer :: vs3i=>null()
-  real(wp), dimension(:,:,:,:), pointer :: Q=>null()    ! artificial viscosity
+  real(wp), dimension(:,:,:,:), pointer :: Q=>null()       ! artificial viscosity
 
   !> Used to pass information about electron precipitation between procedures
-  integer :: lprec=2     ! number of precipitating electron populations
-  real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()
-  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()
-  real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()
-  real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()
+  integer :: lprec=2                                                            ! number of precipitating electron populations
+  real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()            ! characteristic energy and total energy flux arrays
+  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()   ! ionization rates from precipitation and solar sources
+  real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and solar
+  real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
 
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip=>null()
-  type(efielddata), pointer :: efield=>null()
-  class(neutraldata), pointer :: atmosperturb=>null()   ! not associated by default and may never be associated
+  type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
+  type(efielddata), pointer :: efield=>null()           ! contains input electric field data
+  class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
 end type gemini_work
 
 
@@ -895,6 +895,8 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    ! depending on the value of diffsolvetype we may want to call a completely different solver
     call energy_diffusion(dt,x,ns,Ts,J1,intvars%atmos%nn,intvars%atmos%Tn,cfg%diffsolvetype,cfg%Teinf)
   end subroutine energy_diffusion_in
 
@@ -916,7 +918,9 @@ contains
     end if
   end subroutine precip_perturb_in
 
-  !> source/loss numerical solutions
+  !> source/loss numerical solutions for all state variables; calls source/loss solutions for individual state
+  !    variables, which alternatively could be called from the main program instead of this routine if one needed
+  !    finer-grained control over solutions.
   subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
@@ -951,6 +955,25 @@ contains
                                      intvars%Prionize,intvars%Qeionize, &
                                      intvars%Pr,intvars%Lo)
   end subroutine source_loss_allparams_in
+
+
+!  !> Solve for plasma mass source/losses for all species
+!  subroutine source_loss_mass_in
+!
+!  end subroutine source_loss_mass_in
+!
+!
+!  !> Momentum sources, all species
+!  subroutine source_loss_momentum_in
+!
+!  end subroutine source_loss_momentum_in
+!
+!
+!  !> Energy sources, all species
+!  subroutine source_loss_energy_in
+!
+!  end subroutine source_loss_energy_in
+
 
 
   !> For purposes of testing we just want to set some values for the electric fields and comput drifts.

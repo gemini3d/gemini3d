@@ -33,7 +33,8 @@ use precipdataobj, only: precipdata
 implicit none (type, external)
 private
 public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,source_loss_allparams,VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid
+            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
+            source_loss_mass,source_loss_momentum,source_loss_energy
 
 real(wp), parameter :: xicon = 3
 !real(wp), parameter :: xicon = 0
@@ -82,8 +83,8 @@ end subroutine sweep2_allparams
 !> execute source/loss terms for all parameters in sequence
 subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
                                    Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
-                                   gavg,Tninf, &
-                                   eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Prionize,Qeionize,Pr,Lo)
+                                   gavg,Tninf,eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Prionize, &
+                                   Qeionize,Pr,Lo)
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
@@ -105,19 +106,84 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
   real(wp) :: tstart,tfin
 
-  !print*, 'Begin src/loss:  ',minval(E1),maxval(E1)
+  ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
+  !call cpu_time(tstart)
+  call source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+          ns,Ts,nn,Tn,first,Prionize,Qeionize,gavg,Tninf,vn1,vn2,vn3,vs1,vs2,vs3,rhoes,Pr,Lo,Q)
+  !call cpu_time(tfin)
+  !if (mpi_cfg%myid==0 .and. debug) then
+  !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !end if
+
+  !ALL VELOCITY SOURCES
+  !call cpu_time(tstart)
+  call source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
+  !call cpu_time(tfin)
+  !if (mpi_cfg%myid==0 .and. debug) then
+  !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !end if
+
+  !call cpu_time(tstart)
+  call source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prionize)
+  !call cpu_time(tfin)
+  !if (mpi_cfg%myid==0 .and. debug) then
+  !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  !end if
+end subroutine source_loss_allparams
 
 
-!  !> Establish top boundary conditions for electron precipitation
-!  if (cfg%flagprecfile==1) then
-!    call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2,eprecip)
-!  else
-!    !! no file input specified, so just call 'regular' function
-!    call precipBCs(cfg,W0,PhiWmWm2)
-!  end if
+subroutine source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prionize)
+  real(wp), intent(in) :: dt
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prionize
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
+
+  !ALL MASS SOURCES
+  call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+  call mass_source_loss(dt,Pr,Lo,Prionize,ns)
+end subroutine source_loss_mass
+
+
+subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
+  real(wp), dimension(:,:,:,:), intent(in) :: Q
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
+
+  !ALL VELOCITY SOURCES
+  call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
+  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+end subroutine source_loss_momentum
+
+
+subroutine source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
+          ns,Ts,nn,Tn,first,Prionize,Qeionize,gavg,Tninf,vn1,vn2,vn3,vs1,vs2,vs3,rhoes,Pr,Lo,Q)
+  real(wp), intent(in) :: dt,t
+  type(gemini_cfg), intent(in) :: cfg
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: Q
+  real(wp), intent(in) :: f107a,f107
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  logical, intent(in) :: first
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhoes,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), intent(in) :: gavg,Tninf
+  real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip,Prionize
+  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip,Qeionize
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
+  real(wp) :: tstart,tfin
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
-  call cpu_time(tstart)
   call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
           ns,Ts,nn,Tn,first)   ! precipiting electrons
   Prionize=Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
@@ -125,31 +191,7 @@ subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2
   call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
   call energy_source_loss(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
-
-  !print*, 'After energy substep:  ',minval(E1),maxval(E1)
-
-  !ALL VELOCITY SOURCES
-  call cpu_time(tstart)
-  call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
-
-  !ALL MASS SOURCES
-  call cpu_time(tstart)
-  call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prionize,ns)
-  call cpu_time(tfin)
-  !if (mpi_cfg%myid==0 .and. debug) then
-  !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-  !end if
-end subroutine source_loss_allparams
+end subroutine source_loss_energy
 
 
 !> Compute temperatures from internal energy densities
