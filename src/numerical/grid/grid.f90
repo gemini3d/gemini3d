@@ -200,7 +200,8 @@ contains
     ! create temp space
     !allocate(x1(lx1wg),x2(lx2wg),x3(lx3wg))
 
-    ! see if we need to allocate x1 module variable or if it is already set up
+    ! see if we need to allocate x1 module variable or if it is already set up.  FIXME, but x1 declared local within procedure
+    ! scope!!!
     if (.not. allocated(x1)) then
       allocate(x1(lx1wg))
       x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]    ! usually x1 is nonuniform and already set up here but if not allocate and set using uniform forcing.  If already allocated then the limits will be ignored.
