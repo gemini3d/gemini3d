@@ -86,6 +86,7 @@ extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
 extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**,void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
+extern void precip_perturb_C(void**,void**,int*,void**,double*,double*,int*,double*);
 extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double**,int*,int*,
 		double*,double*,double*,double**,double**);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,

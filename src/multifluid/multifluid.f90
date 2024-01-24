@@ -80,58 +80,6 @@ subroutine sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
 end subroutine sweep2_allparams
 
 
-!!> execute source/loss terms for all parameters in sequence
-!subroutine source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,Q,f107a,f107,nn,vn1,vn2,vn3, &
-!                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver, &
-!                                   gavg,Tninf,eprecip,W0,PhiWmWm2,Prprecip,Qeprecip,Prionize, &
-!                                   Qeionize,Pr,Lo)
-!  real(wp), intent(in) :: dt,t
-!  type(gemini_cfg), intent(in) :: cfg
-!  integer, dimension(3), intent(in) :: ymd
-!  real(wp), intent(in) :: UTsec
-!  class(curvmesh), intent(in) :: x
-!  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
-!  real(wp), dimension(:,:,:,:), intent(in) :: Q
-!  real(wp), intent(in) :: f107a,f107
-!  real(wp), dimension(:,:,:,:), intent(in) :: nn
-!  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-!  logical, intent(in) :: first
-!  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes,vs1,vs2,vs3,Ts
-!  real(wp), dimension(:,:,:), intent(inout) :: iver
-!  real(wp), intent(in) :: gavg,Tninf
-!  type(precipdata), intent(inout) :: eprecip
-!  real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
-!  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip,Prionize
-!  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip,Qeionize
-!  real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
-!  real(wp) :: tstart,tfin
-!
-!  ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
-!  !call cpu_time(tstart)
-!  call source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
-!          ns,Ts,nn,Tn,first,Prionize,Qeionize,gavg,Tninf,vn1,vn2,vn3,vs1,vs2,vs3,rhoes,Pr,Lo,Q)
-!  !call cpu_time(tfin)
-!  !if (mpi_cfg%myid==0 .and. debug) then
-!  !  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-!  !end if
-!
-!  !ALL VELOCITY SOURCES
-!  !call cpu_time(tstart)
-!  call source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
-!  !call cpu_time(tfin)
-!  !if (mpi_cfg%myid==0 .and. debug) then
-!  !  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-!  !end if
-!
-!  !call cpu_time(tstart)
-!  call source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prionize)
-!  !call cpu_time(tfin)
-!  !if (mpi_cfg%myid==0 .and. debug) then
-!  !  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
-!  !end if
-!end subroutine source_loss_allparams
-
-
 subroutine source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prionize)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(in) :: nn

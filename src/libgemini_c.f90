@@ -43,7 +43,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
-            set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, interp3_in, interp2_in
+            set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
+            precip_perturb_in, interp3_in, interp2_in
             
 implicit none (type, external)
 
@@ -758,6 +759,27 @@ contains
     call c_f_pointer(cfgC,cfg)
     interptype=cfg%interptype
   end subroutine get_neutralperturb_interptype 
+
+
+  subroutine precip_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='precip_perturb_C')
+    type(C_PTR), intent(in) :: cfgC
+    type(C_PTR), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(C_PTR), intent(in) :: xC
+    real(wp), intent(in) :: dt,t
+    integer(C_INT), dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    type(gemini_cfg), pointer :: cfg
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+
+    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
+  end subroutine precip_perturb_C
 
 
   !> call gemini's internal interpolation code

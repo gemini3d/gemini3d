@@ -132,6 +132,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // advance the fluid state variables
     first=it==1;
+    precip_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC, intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 
