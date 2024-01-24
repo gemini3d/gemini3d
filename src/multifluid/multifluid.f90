@@ -32,7 +32,10 @@ use precipdataobj, only: precipdata
 
 implicit none (type, external)
 private
-public :: sweep3_allparams,sweep1_allparams,sweep2_allparams,VNRicht_artvisc,compression, &
+public ::   sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
+            sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
+            sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
+            VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
             source_loss_mass,source_loss_momentum,source_loss_energy
 
@@ -41,19 +44,6 @@ real(wp), parameter :: xicon = 3
 !! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 contains
-!> sweep advection for all plasma parameters in the x3 direction
-subroutine sweep3_allparams(dt,x,vs3i,ns,rhovs1,rhoes)
-  real(wp), intent(in) :: dt
-  class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:,:), intent(in) :: vs3i
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
-
-  call sweep3_allspec_mass(dt,x,vs3i,ns)
-  call sweep3_allspec_momentum(dt,x,vs3i,rhovs1)
-  call sweep3_allspec_energy(dt,x,vs3i,rhoes)
-end subroutine sweep3_allparams
-
-
 !> thin layers for accessing individual state parameter sweep3's
 subroutine sweep3_allspec_mass(dt,x,vs3i,ns)
   real(wp), intent(in) :: dt
@@ -79,19 +69,6 @@ subroutine sweep3_allspec_energy(dt,x,vs3i,rhoes)
 
   call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
 end subroutine sweep3_allspec_energy
-
-
-!> sweep all parameters in the x1 direction
-subroutine sweep1_allparams(dt,x,vs1i,ns,rhovs1,rhoes)
-  real(wp), intent(in) :: dt
-  class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:,:), intent(in) :: vs1i
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
-
-  call sweep1_allspec_mass(dt,x,vs1i,ns)     ! sweep1 doesn't need to know the rank of the advected quantity
-  call sweep1_allspec_momentum(dt,x,vs1i,rhovs1)
-  call sweep1_allspec_energy(dt,x,vs1i,rhoes)
-end subroutine sweep1_allparams
 
 
 !>vthin layers for access sweep1's
@@ -121,44 +98,31 @@ subroutine sweep1_allspec_energy(dt,x,vs1i,rhoes)
 end subroutine sweep1_allspec_energy
 
 
-!> sweep all parameters in the x2 direction
-subroutine sweep2_allparams(dt,x,vs2i,ns,rhovs1,rhoes)
-  real(wp), intent(in) :: dt
-  class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:,:), intent(in) :: vs2i
-  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
-
-  call sweep2_allparams_mass(dt,x,vs2i,ns)
-  call sweep2_allparams_momentum(dt,x,vs2i,rhovs1)
-  call sweep2_allparams_energy(dt,x,vs2i,rhoes)
-end subroutine sweep2_allparams
-
-
 !> thin layers for sweep2's
-subroutine sweep2_allparams_mass(dt,x,vs2i,ns)
+subroutine sweep2_allspec_mass(dt,x,vs2i,ns)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
 
   call sweep2_allspec(ns,vs2i,dt,x,0,6)
-end subroutine sweep2_allparams_mass
-subroutine sweep2_allparams_momentum(dt,x,vs2i,rhovs1)
+end subroutine sweep2_allspec_mass
+subroutine sweep2_allspec_momentum(dt,x,vs2i,rhovs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
   call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
-end subroutine sweep2_allparams_momentum
-subroutine sweep2_allparams_energy(dt,x,vs2i,rhoes)
+end subroutine sweep2_allspec_momentum
+subroutine sweep2_allspec_energy(dt,x,vs2i,rhoes)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
 
   call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
-end subroutine sweep2_allparams_energy
+end subroutine sweep2_allspec_energy
 
 
 

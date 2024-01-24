@@ -39,7 +39,11 @@ use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
 use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
-use multifluid, only : sweep3_allparams,sweep1_allparams,sweep2_allparams,VNRicht_artvisc,compression, &
+use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
+            sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
+            sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
+            !sweep3_allparams, sweep1_allparams, sweep2_allparams, &
+            VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
@@ -766,8 +770,54 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
+
+    !call sweep3_allparams(dt,x,intvars%vs3i,ns,rhovs1,rhoes)
+    call sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allparams_in
+  subroutine sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep3_allspec_mass(dt,x,intvars%vs3i,ns)
+  end subroutine sweep3_allspec_mass_in
+  subroutine sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep3_allspec_momentum(dt,x,intvars%vs3i,rhovs1)
+  end subroutine sweep3_allspec_momentum_in
+  subroutine sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep3_allspec_energy(dt,x,intvars%vs3i,rhoes)
+  end subroutine sweep3_allspec_energy_in
 
 
   subroutine sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -782,8 +832,54 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
+
+    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)  
+    call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep1_allparams_in
+  subroutine sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep1_allspec_mass(dt,x,intvars%vs1i,ns)
+  end subroutine sweep1_allspec_mass_in
+  subroutine sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep1_allspec_momentum(dt,x,intvars%vs1i,rhovs1)
+  end subroutine sweep1_allspec_momentum_in
+  subroutine sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep1_allspec_energy(dt,x,intvars%vs1i,rhoes)
+  end subroutine sweep1_allspec_energy_in
 
 
   subroutine sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -798,8 +894,54 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
+
+    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)   
+    call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep2_allparams_in
+  subroutine sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep2_allspec_mass(dt,x,intvars%vs2i,ns)
+  end subroutine sweep2_allspec_mass_in
+  subroutine sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep2_allspec_momentum(dt,x,intvars%vs2i,rhovs1)
+  end subroutine sweep2_allspec_momentum_in
+  subroutine sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call sweep2_allspec_energy(dt,x,intvars%vs2i,rhoes)
+  end subroutine sweep2_allspec_energy_in
 
 
   !> conversion of momentum density to velocity
