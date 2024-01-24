@@ -65,7 +65,9 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
             sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                 
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
-            energy_diffusion_in, source_loss_allparams_in, &
+            energy_diffusion_in, &
+            source_loss_allparams_in, &
+            source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             read_fullsize_gridcenter_in, &

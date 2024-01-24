@@ -28,11 +28,14 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_in, &
                       set_update_cadence, neutral_atmos_winds, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, &
+                      sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
                       sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
                       sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
                       sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &              
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
-                      source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
+                      source_loss_allparams_in, &
+                      source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &                     
+                      dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
                       gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in
@@ -385,8 +388,12 @@ contains
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
-    call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
-                                    x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+    !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
+    !                                x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)    
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
