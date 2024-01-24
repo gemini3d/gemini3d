@@ -42,7 +42,6 @@ use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutr
 use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
-            !sweep3_allparams, sweep1_allparams, sweep2_allparams, &
             VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
@@ -60,8 +59,11 @@ private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
             set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_in, &
             set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
-            sweep1_allparams_in, sweep2_allparams_in, &
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
+            sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
+            sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
+            sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                 
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &

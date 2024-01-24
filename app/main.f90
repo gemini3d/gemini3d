@@ -27,8 +27,10 @@ use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
                       set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_in, &
                       set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-                      v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, sweep3_allparams_in, &
-                      sweep1_allparams_in, sweep2_allparams_in, &
+                      v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, &
+                      sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
+                      sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
+                      sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &              
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
                       source_loss_allparams_in,dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
@@ -321,10 +323,19 @@ contains
     call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
-    call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+    call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
     call rhov12v1_in(fluidvars,fluidauxvars)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
