@@ -187,10 +187,19 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   interface_vels_allspec_C(&fluidvars,&intvars,plsp);
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  sweep3_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
-  sweep1_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  //sweep3_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep3_allspec_mass_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep3_allspec_momentum_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep3_allspec_energy_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  //sweep1_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep1_allspec_mass_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep1_allspec_momentum_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep1_allspec_energy_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   halo_allparams_C(pxtype, &xC, &fluidvars, &fluidauxvars);
-  sweep2_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  //sweep2_allparams_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep2_allspec_mass_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep2_allspec_momentum_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
+  sweep2_allspec_energy_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   rhov12v1_C(&fluidvars,&fluidauxvars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);
   clean_param_C(&two, pxtype, &xC, &fluidvars);
@@ -220,7 +229,11 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
   get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
   /* Sources substep and finalize solution for this time step */
-  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
+  //source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
+  source_loss_mass_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
+  source_loss_momentum_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
+  source_loss_energy_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,
+		  pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf); 
   clean_param_C(&three, pxtype, &xC, &fluidvars);
   clean_param_C(&two, pxtype, &xC, &fluidvars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);

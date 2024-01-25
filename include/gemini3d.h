@@ -65,8 +65,17 @@ extern void v12rhov1_C(double**, double**);
 extern void T2rhoe_C(double**, double**);
 extern void interface_vels_allspec_C(double**, void**, int*);
 extern void sweep3_allparams_C(double**, double**, void**, int*, void**, double*);
+extern void sweep3_allspec_mass_C(double**, double**, void**, int*, void**, double*);
+extern void sweep3_allspec_momentum_C(double**, double**, void**, int*, void**, double*);
+extern void sweep3_allspec_energy_C(double**, double**, void**, int*, void**, double*);
 extern void sweep1_allparams_C(double**, double**, void**, int*, void**, double*);
+extern void sweep1_allspec_mass_C(double**, double**, void**, int*, void**, double*);
+extern void sweep1_allspec_momentum_C(double**, double**, void**, int*, void**, double*);
+extern void sweep1_allspec_energy_C(double**, double**, void**, int*, void**, double*);
 extern void sweep2_allparams_C(double**, double**, void**, int*, void**, double*);
+extern void sweep2_allspec_mass_C(double**, double**, void**, int*, void**, double*);
+extern void sweep2_allspec_momentum_C(double**, double**, void**, int*, void**, double*);
+extern void sweep2_allspec_energy_C(double**, double**, void**, int*, void**, double*);
 extern void rhov12v1_C(double**, double**);
 extern void clean_param_C(int*, int*, void**, double**);
 extern void VNRicht_artvisc_C(double**, void**);
@@ -74,6 +83,10 @@ extern void compression_C(double**, double**, void**, int*, void**, double*);
 extern void rhoe2T_C(double**, double**);
 extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**, double*);
 extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
+                                      double*, double*, int*, double*, double*, double*, bool*, double*, double*);
+extern void source_loss_mass_C(double**,double**,double**,void**,int*,void**,double*);
+extern void source_loss_momentum_C(double**,double**,double**,void**,int*,void**,double*);
+extern void source_loss_energy_C(void**, double**, double**, double**, void**, int*, void**, 
                                       double*, double*, int*, double*, double*, double*, bool*, double*, double*);
 extern void check_dryrun_C(void**);
 extern void maxcfl_C(double**, int*, void**, double*, double*);

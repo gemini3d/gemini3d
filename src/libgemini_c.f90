@@ -34,10 +34,14 @@ use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
             init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
-            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, sweep3_allparams_in, &
-            sweep1_allparams_in, sweep2_allparams_in, &
+            v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
+            sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
+            sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
+            sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                  
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
+            source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &           
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             read_fullsize_gridcenter_in, &
@@ -522,6 +526,63 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allparams_C
+  subroutine sweep3_allspec_mass_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep3_allspec_mass_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC, intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)   
+    call sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep3_allspec_mass_C
+  subroutine sweep3_allspec_momentum_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep3_allspec_momentum_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC, intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)   
+    call sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep3_allspec_momentum_C
+  subroutine sweep3_allspec_energy_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep3_allspec_energy_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC, intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)   
+    call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep3_allspec_energy_C
 
 
   subroutine sweep1_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name='sweep1_allparams_C')
@@ -543,6 +604,63 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep1_allparams_C
+  subroutine sweep1_allspec_mass_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name='sweep1_allspec_mass_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep1_allspec_mass_C
+  subroutine sweep1_allspec_momentum_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name='sweep1_allspec_momentum_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep1_allspec_momentum_C
+  subroutine sweep1_allspec_energy_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name='sweep1_allspec_energy_C')
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep1_allspec_energy_C
 
 
   subroutine sweep2_allparams_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep2_allparams_C")
@@ -564,6 +682,63 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep2_allparams_C
+  subroutine sweep2_allspec_mass_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep2_allspec_mass_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep2_allspec_mass_C
+  subroutine sweep2_allspec_momentum_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep2_allspec_momentum_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep2_allspec_momentum_C
+  subroutine sweep2_allspec_energy_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep2_allspec_energy_C")
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    real(wp), intent(in) :: dt
+
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+  end subroutine sweep2_allspec_energy_C
 
 
   !> conversion of momentum density to velocity
@@ -703,6 +878,88 @@ contains
     call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,logical(first),gavg,Tninf)
   end subroutine source_loss_allparams_C
+
+
+  subroutine source_loss_mass_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) bind(C, name="source_loss_mass_C")
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  end subroutine source_loss_mass_C
+
+
+  subroutine source_loss_momentum_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
+                  bind(C, name="source_loss_momentum_C")
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+    call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  end subroutine source_loss_momentum_C
+
+
+  subroutine source_loss_energy_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf) bind(C, name="source_loss_energy_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(inout) :: fluidauxvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: dt,t
+    integer(C_INT), dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: f107a,f107
+    logical(C_BOOL), intent(in) :: first
+    real(wp), intent(in) :: gavg,Tninf
+
+    type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,logical(first),gavg,Tninf)
+  end subroutine source_loss_energy_C
+
 
 
   !> call a routine to generate test
