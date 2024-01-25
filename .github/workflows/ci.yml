@@ -59,13 +59,14 @@ jobs:
       timeout-minutes: 15
       run: |
         sudo $(cmake -P gemext/scripts/requirements.cmake)
-        # ninja-build
+        sudo apt install ninja-build
 
     - name: Install packages (MacOS)
       if: runner.os == 'macOS'
       timeout-minutes: 15
-      run: $(cmake -P gemext/scripts/requirements.cmake)
-      # ninja
+      run: |
+        $(cmake -P gemext/scripts/requirements.cmake)
+        brew install ninja
 
     - name: Install model libraries
       timeout-minutes: 15
@@ -77,19 +78,13 @@ jobs:
 
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.9'
 
     - uses: actions/checkout@v4
 
-    # - name: Configure multi
-    #   run: >-
-    #     cmake --preset multi
-    #     -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
-    #     -Dhwm14:BOOL=${{ matrix.hwm14 }}
-
-    - name: Configure default
+    - name: Configure multi
       run: >-
-        cmake --preset default
+        cmake --preset multi
         -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
         -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
@@ -97,27 +92,21 @@ jobs:
       if: ${{ failure() }}
       run: cat build/CMakeFiles/CMakeConfigureLog.yaml
 
-    - name: build
-      run: cmake --build build
+    - name: Debug build
+      run: cmake --build --preset debug
 
-    - name: unit test
-      run: ctest --preset default -L unit
+    - name: Debug unit test
+      run: ctest --preset debug -L unit
 
-    # - name: Debug build
-    #   run: cmake --build --preset debug
-
-    # - name: Debug unit test
-    #   run: ctest --preset debug -L unit
-
-    # # - name: Debug core test
-    # #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
+    # - name: Debug core test
+    #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
 
 
-    # - name: Release build
-    #   run: cmake --build --preset release
+    - name: Release build
+      run: cmake --build --preset release
 
-    # - name: Release unit test
-    #   run: ctest --preset release -L unit
+    - name: Release unit test
+      run: ctest --preset release -L unit
 
     # # - name: Release core test
     # #   run: ctest --preset release -LE unit -E 3d
