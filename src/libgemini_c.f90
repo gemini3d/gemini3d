@@ -42,6 +42,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
             source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &           
+            clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             read_fullsize_gridcenter_in, &
@@ -942,6 +943,70 @@ contains
     call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_energy_C
 
+
+  subroutine clear_ionization_arrays_C(intvarsC) bind(C, name="clear_ionization_arrays_C")
+    type(c_ptr), intent(in) :: intvarsC
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)
+    call clear_ionization_arrays(intvars)          
+  end subroutine clear_ionization_arrays_C
+
+
+  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
+                  UTsec,f107a,f107,first,gavg,Tninf) &
+                  bind(C, name="impact_ionization_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
+    integer(C_INT), intent(in) :: ymd(3)
+    real(wp), intent(in) :: UTsec,f107,f107a
+    logical, intent(in) :: first
+    real(wp), intent(in) :: gavg,Tninf
+
+    type(gemini_cfg), pointer :: cfg    
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(intvarsC,intvars)
+    call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
+  end subroutine impact_ionization_C
+
+
+  subroutine solar_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,t,ymd, &
+                  UTsec,f107a,f107,gavg,Tninf) &
+                  bind(C, name="solar_ionization_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: t
+    integer(C_INT), intent(in) :: ymd(3)
+    real(wp), intent(in) :: UTsec,f107,f107a
+    real(wp), intent(in) :: gavg,Tninf
+
+    type(gemini_cfg), pointer :: cfg    
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(intvarsC,intvars)
+    call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd, &
+                                        UTsec,f107a,f107,gavg,Tninf)
+  end subroutine solar_ionization_C
 
 
   !> call a routine to generate test

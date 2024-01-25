@@ -1178,12 +1178,10 @@ contains
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
-  subroutine impact_ionization_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+  subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt,t
@@ -1203,7 +1201,7 @@ contains
 
 
   !> Compute photoionization and *add* results to intvars%Prioinize and intvars%Qeionize
-  subroutine solar_ionization_in(cfg,fluidvars,intvars,t,x,ymd,UTsec,f107a,f107,gavg,Tninf)
+  subroutine solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars

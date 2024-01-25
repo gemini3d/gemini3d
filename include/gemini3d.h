@@ -86,8 +86,10 @@ extern void source_loss_allparams_C(void**, double**, double**, double**, void**
                                       double*, double*, int*, double*, double*, double*, bool*, double*, double*);
 extern void source_loss_mass_C(double**,double**,double**,void**,int*,void**,double*);
 extern void source_loss_momentum_C(double**,double**,double**,void**,int*,void**,double*);
-extern void source_loss_energy_C(void**, double**, double**, double**, void**, int*, void**, 
-                                      double*, double*, int*, double*, double*, double*, bool*, double*, double*);
+extern void source_loss_energy_C(double**,double**,double**,void**,int*,void**,double*);
+extern void clear_ionization_arrays_C(void**);
+extern void impact_ionization_C(void**,double**,void**,int*,void**,double*,double*,int*,double*,double*,double*,bool*,double*,double*);
+extern void solar_ionization_C(void**,double**,void**,int*,void**,double*,int*,double*,double*,double*,double*,double*);
 extern void check_dryrun_C(void**);
 extern void maxcfl_C(double**, int*, void**, double*, double*);
 extern void dateinc_C(double*, int*, double*);

@@ -390,9 +390,9 @@ contains
 
     !> Compute ionization sources for the present time step
     call clear_ionization_arrays(intvars)
-    call impact_ionization_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+    call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
-    call solar_ionization_in(cfg,fluidvars,intvars,t,x,ymd,UTsec,f107a,f107,gavg,Tninf)
+    call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
