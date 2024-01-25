@@ -36,7 +36,8 @@ public ::   sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
             VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
+            energy_diffusion,impact_ionization,solar_ionization,clean_param, &
+            rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
             source_loss_mass,source_loss_momentum,source_loss_energy
 
 real(wp), parameter :: xicon = 3
@@ -136,7 +137,7 @@ subroutine source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prioniz
 
   !ALL MASS SOURCES
   call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
-  call mass_source_loss(dt,Pr,Lo,Prionize,ns)
+  call mass_source_loss_solve(dt,Pr,Lo,Prionize,ns)
 end subroutine source_loss_mass
 
 
@@ -152,39 +153,25 @@ subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhov
 
   !ALL VELOCITY SOURCES
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-  call momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  call momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1)
 end subroutine source_loss_momentum
 
 
-subroutine source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
-          ns,Ts,nn,Tn,first,Prionize,Qeionize,gavg,Tninf,vn1,vn2,vn3,vs1,vs2,vs3,rhoes,Pr,Lo,Q)
-  real(wp), intent(in) :: dt,t
-  type(gemini_cfg), intent(in) :: cfg
-  integer, dimension(3), intent(in) :: ymd
-  real(wp), intent(in) :: UTsec
+subroutine source_loss_energy(dt,x,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
+                vs1,vs2,vs3,rhoes,Pr,Lo,Q)
+  real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: Q
-  real(wp), intent(in) :: f107a,f107
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-  logical, intent(in) :: first
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhoes,vs1,vs2,vs3,Ts
-  real(wp), dimension(:,:,:), intent(inout) :: iver
-  real(wp), intent(in) :: gavg,Tninf
-  real(wp), dimension(:,:,:), intent(in) ::  W0,PhiWmWm2
-  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip,Prionize
-  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip,Qeionize
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prionize
+  real(wp), dimension(:,:,:), intent(inout) :: Qeionize
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
-  real(wp) :: tstart,tfin
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
-  call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
-          ns,Ts,nn,Tn,first)   ! precipiting electrons
-  Prionize=Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
-  Qeionize=Qeprecip
-  call solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf)     ! solar ionization source
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
-  call energy_source_loss(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
+  call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
 
 
@@ -353,9 +340,11 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
 end subroutine energy_diffusion
 
 
-!> *Accumulates* ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
+!> Compute and copy ionization and heating rates into Prprecip,Qeprecip arrays; note that if you want only
 !    rates from impact ionization these arrays will need to be initialized to zero before calling this
-!    procedure.  Note that this procedure does need updated density and temperature data (i.e. ns and Ts)
+!    procedure.
+!  Upon entry:  this procedure does need updated density and temperature data (i.e. ns and Ts)
+!  Upon exit:  impact ionization and heating rates have been placed into Prprecip and Qeprecip arrays
 subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W0,PhiWmWm2,iver, &
                 ns,Ts,nn,Tn,first)
   type(gemini_cfg), intent(in) :: cfg
@@ -376,22 +365,6 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
   real(wp), dimension(1:size(iver,1),1:size(iver,2),1:size(iver,3)) :: ivertmp
   integer :: iprec,lprec
-  !! FIXME:  PrprecipG and the like are module-scope variables and cannot be used with forestGEMINI
-
-!  ! First check that our module-scope arrays are allocated before going on to calculations.  
-!  ! This may need to be passed in as arguments for compatibility with trees-GEMINI
-!  if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
-!    allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-!    PrprecipG(:,:,:,:)=0
-!  end if
-!  if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
-!    allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-!    QeprecipG(:,:,:)=0
-!  end if
-!  if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
-!    allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-!    iverG(:,:,:)=0
-!  end if
 
   ! compute impact ionization given input boundary conditions
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
@@ -438,7 +411,9 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
 end subroutine impact_ionization
 
 
-!> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want soley solar sources :)
+!> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want solely solar sources :)
+!  Upon entry:  we assume any photoinization has already been computed and placed in results arrays
+!  Upson exit:  intvars%Prionize and intvars%Qeionize include added solar sources
 subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
@@ -486,7 +461,7 @@ end subroutine solar_ionization
 
 !> Energy source/loss solutions.  Upon entry the energy density should have the most recently updated state.  Upon exit
 !    both the energy density and temperature are fully updated.
-subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
+subroutine energy_source_loss_solve(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
   real(wp), dimension(:,:,:,:), intent(in) :: Lo
@@ -507,12 +482,12 @@ subroutine energy_source_loss(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
   end do
-end subroutine energy_source_loss
+end subroutine energy_source_loss_solve
 
 
 !>  Momentum source/loss processes.  Upon entry the momentum density should be updated to most recent; upon exit
 !     both momentum density and velocity will be updated.
-subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
+subroutine momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: Pr
@@ -523,17 +498,6 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
   integer :: isp,lsp
 
-!   if (maxval(abs(vs1(1:lx1,1:lx2,1:lx3,:))) > 1e4) then
-!     print*, maxloc(abs(vs1(1:lx1,1:lx2,1:lx3,:)))
-!     print*, 'Data corrupted before momentum source solve!'
-!     print*, vs1(1:lx1,lx2,lx3,6)
-!     print*, 'Data corrupted before momentum source solve!'
-!     print*, vs1(1:lx1,lx2-1,lx3-1,6)
-!     print*, 'Data corrupted before momentum source solve!'
-!     print*, vs1(1:lx1,lx2-2,lx3-2,6)
-!     error stop
-!   end if
-
   lsp=size(rhovs1,4)
   do isp=1,lsp-1
     paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
@@ -541,10 +505,6 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
     rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
   end do
-
-   !print*, 'vs1 source/loss middle:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
 
   ! Update velocity and momentum for electrons
   ! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
@@ -555,15 +515,11 @@ subroutine momentum_source_loss(dt,x,Pr,Lo,ns,rhovs1,vs1)
   !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
   vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
   rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)              ! update electron momentum in case it is ever used
-
-   !print*, 'vs1 source/loss end:  ',shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       maxval(vs1(1:lx1,1:lx2,1:lx3,:)), &
-   !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
-end subroutine momentum_source_loss
+end subroutine momentum_source_loss_solve
 
 
 !> Mass source and loss processes
-subroutine mass_source_loss(dt,Pr,Lo,Prprecip,ns)
+subroutine mass_source_loss_solve(dt,Pr,Lo,Prprecip,ns)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
   real(wp), dimension(:,:,:,:), intent(in) :: Lo
@@ -580,7 +536,7 @@ subroutine mass_source_loss(dt,Pr,Lo,Prprecip,ns)
     ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
   end do
   ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-end subroutine mass_source_loss
+end subroutine mass_source_loss_solve
 
 
 !> Deal with cells outside computation domain; i.e. apply fill values.

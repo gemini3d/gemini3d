@@ -33,6 +33,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
                       sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &              
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
+                      clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
                       source_loss_allparams_in, &
                       source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &                     
                       dateinc_in,get_subgrid_size, get_fullgrid_size, &
@@ -386,12 +387,17 @@ contains
     !> all workers need to "agree" on a gravity and exospheric temperature
     call get_gavg_Tinf_in(intvars,gavg,Tninf)
 
+
+    !> Compute ionization sources for the present time step
+    call clear_ionization_arrays(intvars)
+    call impact_ionization_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,first,gavg,Tninf)
+    call solar_ionization_in(cfg,fluidvars,intvars,t,x,ymd,UTsec,f107a,f107,gavg,Tninf)
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
-    !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars, &
-    !                                x,dt,t,ymd,UTsec,f107a,f107,first,gavg,Tninf)
-    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+    !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)    
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

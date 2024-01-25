@@ -43,7 +43,7 @@ use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspe
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
             VNRicht_artvisc,compression, &
-            energy_diffusion,impact_ionization,clean_param,rhoe2T,T2rhoe, &
+            energy_diffusion,impact_ionization,solar_ionization, clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
@@ -68,6 +68,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             energy_diffusion_in, &
             source_loss_allparams_in, &
             source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
+            clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             read_fullsize_gridcenter_in, &
@@ -95,8 +96,8 @@ type gemini_work
   !> Used to pass information about electron precipitation between procedures
   integer :: lprec=2                                                            ! number of precipitating electron populations
   real(wp), dimension(:,:,:), pointer :: W0=>null(),PhiWmWm2=>null()            ! characteristic energy and total energy flux arrays
-  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()   ! ionization rates from precipitation and solar sources
-  real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and solar
+  real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()   ! ionization rates from precipitation and total sources
+  real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
 
   !> Neutral information for top-level gemini program
@@ -1067,24 +1068,13 @@ contains
   !> source/loss numerical solutions for all state variables; calls source/loss solutions for individual state
   !    variables, which alternatively could be called from the main program instead of this routine if one needed
   !    finer-grained control over solutions.
-  subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
-    type(gemini_cfg), intent(in) :: cfg
+  subroutine source_loss_allparams_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
-    real(wp), intent(in) :: dt,t
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: f107a,f107
-    logical, intent(in) :: first
-    real(wp), intent(in) :: gavg,Tninf
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
-    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+    real(wp), intent(in) :: dt
 
 !    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)   
 
@@ -1101,8 +1091,7 @@ contains
 !                                     intvars%Prionize,intvars%Qeionize, &
 !                                     intvars%Pr,intvars%Lo)
 
-    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+    call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_allparams_in
@@ -1153,7 +1142,43 @@ contains
 
 
   !> Energy sources, all species
-  subroutine source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
+  subroutine source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
+    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call source_loss_energy(dt,x,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,intvars%Prionize, &
+            intvars%Qeionize,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,vs1,vs2,vs3,rhoes, &
+            intvars%Pr,intvars%Lo,intvars%Q)
+  end subroutine source_loss_energy_in
+
+
+  !> Ionization and heating rates must be re-accumulated each time so initialize to zero.  The precip arrays
+  !    are not cleared here because these need to persist between time steps, e.g. glow only runs every N steps as
+  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of 
+  !    intvars%Prprecip and intvars%Qeprecip
+  subroutine clear_ionization_arrays(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    intvars%Prionize=0._wp
+    intvars%Qeionize=0._wp
+  end subroutine clear_ionization_arrays
+
+
+  !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
+  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
+  subroutine impact_ionization_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
@@ -1165,24 +1190,35 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: f107a,f107
-    logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
+    logical, intent(in) :: first
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
-    real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
-    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,intvars%Prprecip,intvars%Qeprecip, &
+            intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,first)   ! precipiting electrons
+    intvars%Prionize=intvars%Prionize+intvars%Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
+    intvars%Qeionize=intvars%Qeionize+intvars%Qeprecip
+  end subroutine impact_ionization_in
 
-    call source_loss_energy(cfg,t,dt,x,ymd,UTsec,f107a,f107,intvars%Prprecip,intvars%Qeprecip, &
-            intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn, &
-            first,intvars%Prionize, &
-            intvars%Qeionize,gavg,Tninf,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
-            vs1,vs2,vs3,rhoes,intvars%Pr,intvars%Lo,intvars%Q)
-  end subroutine source_loss_energy_in
 
+  !> Compute photoionization and *add* results to intvars%Prioinize and intvars%Qeionize
+  subroutine solar_ionization_in(cfg,fluidvars,intvars,t,x,ymd,UTsec,f107a,f107,gavg,Tninf)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: f107a,f107
+    real(wp), intent(in) :: gavg,Tninf
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call solar_ionization(t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
+            intvars%atmos%nn,intvars%atmos%Tn,gavg,Tninf)     ! solar ionization source
+  end subroutine solar_ionization_in
 
 
   !> For purposes of testing we just want to set some values for the electric fields and comput drifts.
@@ -1204,18 +1240,6 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
 
-!    print*, '-----------------------------------------------------------------------'
-!!    print*, '                      ',minval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!!    print*, '                      ',minval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!    print*, '                      ',minval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
-!                                       minval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
-!                                       minval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!!    print*, '                      ',maxloc(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!!    print*, '                      ',shape(vs2),lbound(vs2)
-!    print*, '                      ',minval(intvars%atmos%vn2),maxval(intvars%atmos%vn2), &
-!                                       minval(intvars%atmos%vn3),maxval(intvars%atmos%vn3)
-!    print*, '-----------------------------------------------------------------------'
-
     !call set_fields_test(x,E1,E2,E3)
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
@@ -1223,18 +1247,6 @@ contains
     call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-
-!    print*, '======================================================================='
-!!    print*, '                      ',minval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(Ts(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!!    print*, '                      ',minval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(ns(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!    print*, '                      ',minval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
-!                                       minval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs3(3:lx1+2,3:lx2+2,3:lx3+2,:)), &
-!                                       minval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:)),maxval(vs1(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!!    print*, '                      ',maxloc(vs2(3:lx1+2,3:lx2+2,3:lx3+2,:))
-!    print*, '                      ',minval(intvars%atmos%vn2),maxval(intvars%atmos%vn2), &
-!                                       minval(intvars%atmos%vn3),maxval(intvars%atmos%vn3)
-!    print*, '======================================================================='
-!!    error stop
   end subroutine electrodynamics_test
 
 
