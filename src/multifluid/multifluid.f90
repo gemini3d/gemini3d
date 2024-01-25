@@ -304,6 +304,8 @@ end subroutine compression
 
 !> Execute energy diffusion substep, no mpi required.  Upon entering this procedure the temperature needs to be have its
 !     most recently updated state.  Upon exit the temperature will be updated.
+!  Upon entry:  temperature arrays must be current
+!  Upon exit:   temperature array updated with diffusion solution
 subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
