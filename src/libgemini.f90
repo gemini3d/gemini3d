@@ -34,7 +34,7 @@ use filesystem, only : expanduser
 use temporal, only: cflcalc
 use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_gridcenter, get_gridcenter, &
                   grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
-                  grid_internaldata_generate, get_x1coords, get_fullgrid_lims
+                  grid_internaldata_generate, get_fullgrid_lims
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput
 use msis_interface, only : msisinit
