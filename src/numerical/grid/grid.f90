@@ -25,7 +25,8 @@ private
 public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
              get_grid3_coords_hdf5, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
-             grid_from_extents, grid_internaldata_alloc, grid_internaldata_generate, &
+             grid_from_extents, &
+             grid_internaldata_alloc, grid_internaldata_generate, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
@@ -145,7 +146,7 @@ contains
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
     call alloc_x1coords(lx1)    ! module-scope
     allocate(x2all(-1:lx2all+2),x3all(-1:lx3all+2))
-    call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)
+    call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)    ! sets module-scope x1 coords.
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
     !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
     call set_fullgrid_lims(x2all,x3all)
@@ -179,7 +180,7 @@ contains
   end subroutine get_fullgrid_lims
 
 
-  !! FIXME: deprecated?
+  !! Currently this is only used by the full_grid_dipole_regen test program...
   !> Generate grid from a set of extents and sizes - e.g. similar to what is used in forestcalw.  input
   !    sizes should include ghost cells.  WARNING: this function will always just assume you are using a
   !    local grid, i.e. one that doesn't need knowledge of the full grid extents!  This requires that
