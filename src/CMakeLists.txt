@@ -140,15 +140,9 @@ endif()
 if(hwm14)
   # HWM14 data files
   # due to legacy coding style, HWM14 files need to be in binary directory
-  get_target_property(_def hwm14::hwm14 INTERFACE_COMPILE_DEFINITIONS)
-  string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
-  if(NOT CMAKE_MATCH_1)
-    message(FATAL_ERROR "HWM14 ${hwm14_VERSION} package may be out of date--hwm14::hwm14 DATADIR not defined")
-  endif()
-  set(hwm14_data_dir "${CMAKE_MATCH_1}")
-  if(NOT IS_DIRECTORY "${hwm14_data_dir}")
-    message(FATAL_ERROR "HWM14 data directory not found: ${_def}
-    ${hwm14_data_dir}")
+  set(hwm14_data_dir "${hwm14_SOURCE_DIR}/data/")
+  if(NOT IS_DIRECTORY ${hwm14_data_dir})
+    message(FATAL_ERROR "HWM14 data directory not found: ${hwm14_data_dir}")
   endif()
 
   set(hwm14_RESOURCE_FILES

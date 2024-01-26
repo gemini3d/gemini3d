@@ -10,3 +10,6 @@
 [submodule "glow"]
 	path = glow
 	url = https://github.com/gemini3d/glow
+[submodule "hwm14"]
+	path = hwm14
+	url = https://github.com/gemini3d/hwm14

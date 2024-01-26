@@ -80,7 +80,8 @@ if(glow)
 endif()
 
 if(hwm14)
-  find_package(hwm14 CONFIG REQUIRED)
+  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
+  add_subdirectory(hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
