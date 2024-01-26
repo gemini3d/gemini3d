@@ -25,7 +25,7 @@ else()
 endif()
 
 
-foreach(_s ${gemini_test_sim_names})
+foreach(_s IN LISTS gemini_test_sim_names)
   setup_gemini_test(${_s})
 
   if(python)

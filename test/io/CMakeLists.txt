@@ -24,7 +24,7 @@ h5fortran::h5fortran
 add_executable(test_dump_read test_dump_read.f90)
 target_link_libraries(test_dump_read PRIVATE h5fortran::h5fortran)
 
-foreach(t root worker input)
+foreach(t IN ITEMS root worker input)
   set(f ${CMAKE_CURRENT_BINARY_DIR}/dump_${t}.h5)
 
   add_test(NAME gemini:dump:${t} COMMAND test_dump_write ${t} ${f})
