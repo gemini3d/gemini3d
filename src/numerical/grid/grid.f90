@@ -17,12 +17,11 @@ integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
 real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
-real(wp), dimension(:), pointer, protected :: x1=>null()
 logical, protected :: flaglims=.false.
 !!^ These variables will be shared between all workers/patches so they can be module-scope variables.
 
 private
-public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
+public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords_hdf5, &
              set_total_grid_sizes,set_subgrid_sizes,set_gridflag,grid_size, &
              grid_from_extents, &
@@ -30,7 +29,7 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag,x1, &
              grid_internaldata_ungenerate, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
-             x1lims,x2alllims,x3alllims,get_x1coords,get_fullgrid_lims, alloc_x1coords, &
+             x1lims,x2alllims,x3alllims,get_fullgrid_lims, &
              read_grid, grid_check, grid_drift, calc_subgrid_size
 
              !, generate_worker_grid
@@ -118,44 +117,25 @@ contains
   end subroutine get_gridcenter
 
 
-  subroutine alloc_x1coords(lx1)
-    integer, intent(in) :: lx1
-
-    allocate(x1(-1:lx1+2))
-  end subroutine alloc_x1coords
-
-
-  !> retrieve the x1 coordinate array from module
-  subroutine get_x1coords(x1out)
-    real(wp), dimension(:), pointer, intent(inout) :: x1out
-
-    if (associated(x1)) then
-      x1out=>x1
-    else
-      print*, 'WARNING - grid:get_x1coords - x1 variable is not allocated/set, check call sequence.'
-    end if
-  end subroutine get_x1coords
-
-
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
   !    generation of Cartesian meshes and put in in a module-scope variable.
   subroutine read_size_gridcenter(indatsize,indatgrid)
     character(*), intent(in) :: indatsize,indatgrid
-    real(wp), dimension(:), allocatable :: x2all,x3all
+    real(wp), dimension(:), allocatable :: x1,x2all,x3all
 
     call get_simsize3(indatsize,lx1,lx2all,lx3all)
-    call alloc_x1coords(lx1)    ! module-scope
-    allocate(x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+    allocate(x1(-1:lx1+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
     call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)    ! sets module-scope x1 coords.
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
     !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
-    call set_fullgrid_lims(x2all,x3all)
-    deallocate(x2all,x3all)
+    call set_fullgrid_lims(x1,x2all,x3all)
+    deallocate(x1,x2all,x3all)
   end subroutine read_size_gridcenter
 
 
   !> set the fullgrid limit variables in the model, e.g. for detecting if we are on a global boundary
-  subroutine set_fullgrid_lims(x2all,x3all)
+  subroutine set_fullgrid_lims(x1,x2all,x3all)
+    real(wp), dimension(-1:) :: x1
     real(wp), dimension(-1:) :: x2all
     real(wp), dimension(-1:) :: x3all
 
@@ -203,10 +183,10 @@ contains
 
     ! see if we need to allocate x1 module variable or if it is already set up.  FIXME, but x1 declared local within procedure
     ! scope!!!
-    if (.not. allocated(x1)) then
+!    if (.not. allocated(x1)) then
       allocate(x1(lx1wg))
       x1=[(x1lims(1) + (x1lims(2)-x1lims(1))/(lx1wg-1)*(ix1-1),ix1=1,lx1wg)]    ! usually x1 is nonuniform and already set up here but if not allocate and set using uniform forcing.  If already allocated then the limits will be ignored.
-    end if
+!    end if
     ! make uniformly spaced coordinate arrays
     allocate(x2(lx2wg),x3(lx3wg))
     x2=[(x2lims(1) + (x2lims(2)-x2lims(1))/(lx2wg-1)*(ix2-1),ix2=1,lx2wg)]
@@ -217,7 +197,7 @@ contains
     call grid_internaldata_generate(x)
 
     ! get rid of temp. arrays
-    deallocate(x2,x3)
+    deallocate(x1,x2,x3)
   end subroutine grid_from_extents
 
 

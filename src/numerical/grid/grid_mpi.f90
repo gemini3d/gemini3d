@@ -34,7 +34,7 @@ contains
 
   module procedure read_grid
 
-    real(wp), dimension(:), allocatable :: x2,x3,x2all,x3all
+    real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
     integer :: islstart,islfin
     integer, dimension(2) :: indsgrid
     real(wp) :: glonctr,glatctr
@@ -51,11 +51,11 @@ contains
     !call calc_subgrid_size(lx2all,lx3all)
     !! everyone computes what the size of their subgrid should be
     !^ this is now done as a separate step from the main application through libgemini_mpi calls
-    call alloc_x1coords(lx1)
-    allocate(x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
+    !call alloc_x1coords(lx1)
+    allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
     !! tmp space for coords from file
     call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
-    call set_fullgrid_lims(x2all,x3all)
+    call set_fullgrid_lims(x1,x2all,x3all)
     !! read the grid coordinates in from a file only need ctr location for certain grid types
 
     !> each worker needs to set their specific subgrid coordinates
@@ -83,7 +83,7 @@ contains
     call read_grid_cartdip(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)    ! dipole grid doesn't use ctr coords
 
     !> just to be careful explicitly deallocate temp arrays
-    deallocate(x2,x3,x2all,x3all)
+    deallocate(x1,x2,x3,x2all,x3all)
   end procedure read_grid
 
 
