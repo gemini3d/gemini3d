@@ -209,7 +209,7 @@ contains
   end subroutine init_procgrid_C
 
 
-  subroutine init_inputdata_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C,name='init_inputdata_c')
+  subroutine init_inputdata_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C,name='init_inputdata_C')
     type(C_PTR), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC

@@ -36,43 +36,16 @@ int main(int argc, char **argv) {
   }
 
   // simulation directory
-  char odir[4096];
-  fs_expanduser(argv[1], odir, 4096);
+  char odir[FS_MAX_PATH];
+  fs_expanduser(argv[1], odir, FS_MAX_PATH);
   fs::path out_dir(odir);
 
   if(! fs::is_directory(out_dir))
     throw std::runtime_error("Gemini3D simulation output directory does not exist: " + out_dir.string());
 
-  // Read gemini_config.ini, if it exists
-  fs::path ini_file = out_dir / "inputs/gemini_config.ini";
-  if(fs::is_regular_file(ini_file)) {
-
-    dictionary  *ini;
-
-    // TODO: use libsc ini parser
-    ini = iniparser_load(ini_file.string().c_str());
-    if (!ini)
-        throw std::runtime_error("Gemini3d: cannot parse file: " + ini_file.string());
-
-    std::string ini_str, t_str;
-    std::vector<int> ymd;
-
-    ini_str = iniparser_getstring(ini, "base:ymd", "");
-    if(ini_str.empty())
-      throw std::runtime_error("Gemini3D: base:ymd not found in " + ini_file.string());
-
-    std::stringstream sini(ini_str);
-
-    while(std::getline(sini, t_str, ',')) ymd.push_back(stoi(t_str));
-    if(ymd.size() != 3)
-      throw std::runtime_error("Gemini3d: base:ymd must have 3 elements: " + ini_file.string());
-    iniparser_freedict(ini);  // close the file
-
-    s.fortran_nml = false;
-  }
-  else {
-    s.fortran_nml = true;
-  }
+  // we don't have a C++ parser for Fortran namelist files,
+  // so read the namelist file directly in Fortran as usual.
+  s.fortran_nml = true;
 
   // Prepare Gemini3D struct
   std::strcpy(s.out_dir, out_dir.generic_string().c_str());

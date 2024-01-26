@@ -24,6 +24,8 @@ VERSION 1.7.0
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
+set(CMAKE_CXX_STANDARD 20)
+
 include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)

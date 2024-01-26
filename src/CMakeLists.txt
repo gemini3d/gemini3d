@@ -183,7 +183,7 @@ add_library(gemini3d_mpi_c libgemini_mpi_c.f90)
 target_link_libraries(gemini3d_mpi_c PRIVATE gemini3d_mpi gemini3d_c)
 
 foreach(l IN LISTS gemini_internal_mods)
-  foreach(t gemini3d gemini.bin gemini3d_c)
+  foreach(t IN ITEMS gemini3d gemini.bin gemini3d_c)
     target_sources(${t} PRIVATE $<TARGET_OBJECTS:${l}>)
   endforeach()
 endforeach()
@@ -224,9 +224,7 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 #$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
 install(TARGETS gemini3d_cpp EXPORT ${PROJECT_NAME}-targets)
 
-# TODO: use libsc iniparser
-return()
-
+# C++ Gemini3D executable
 add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -245,9 +243,6 @@ gemini3d_mpi
 gemini3d_c
 gemini3d
 )
-target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
-target_compile_definitions(gemini_c.bin PRIVATE
-$<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
-)
+target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)

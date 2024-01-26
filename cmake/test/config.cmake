@@ -24,7 +24,6 @@ LABELS download
 # construct command
 set(test_cmd gemini3d.run ${out_dir})
 if(name MATCHES "_cpp$")
-  return()   # TODO: use libsc iniparser
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini_c.bin>)
 else()
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini.bin>)
@@ -48,13 +47,16 @@ FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
 )
 
+# WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
 set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${out_dir}/inputs/config.nml
 LABELS core
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
 )
-# WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
+if(name MATCHES "_cpp$")
+  set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY LABELS "core;Cpp")
+endif()
 if(DEFINED mpi_tmpdir)
   set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
 endif()
