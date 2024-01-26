@@ -12,9 +12,6 @@ set(Ncpu ${Ncpu} PARENT_SCOPE)
 
 endfunction(cmake_cpu_count)
 
-if(DEFINED ENV{CTEST_PARALLEL_LEVEL})
-  set(Ncpu $ENV{CTEST_PARALLEL_LEVEL})
-else()
-  cmake_cpu_count()
-endif()
+cmake_cpu_count()
+
 message(STATUS "parallel CTest Ncpu = ${Ncpu}")
