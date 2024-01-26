@@ -11,12 +11,10 @@ $<TARGET_OBJECTS:grid>
 )
 
 if(glow)
-  get_target_property(_def glow::glow INTERFACE_COMPILE_DEFINITIONS)
-  string(REGEX MATCH "^DATADIR\=\"(.+)\"$" _def "${_def}")
-  set(glow_data_dir "${CMAKE_MATCH_1}")
-  if(NOT IS_DIRECTORY "${glow_data_dir}")
-    message(FATAL_ERROR "GLOW data directory not found: ${_def}
-    ${glow_data_dir}")
+  # must have trailing slash in path
+  set(glow_data_dir "${glow_SOURCE_DIR}/data/")
+  if(NOT EXISTS ${glow_data_dir}/ssflux_hint.dat)
+    message(FATAL_ERROR "GLOW data directory is missing ssflux_hint.dat: ${glow_data_dir}")
   endif()
 
   configure_file(glow_run.in.f90 glow_run.f90 @ONLY)

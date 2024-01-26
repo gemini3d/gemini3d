@@ -7,3 +7,6 @@
 [submodule "msis"]
 	path = msis
 	url = https://github.com/gemini3d/msis
+[submodule "glow"]
+	path = glow
+	url = https://github.com/gemini3d/glow

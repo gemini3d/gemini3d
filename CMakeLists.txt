@@ -75,7 +75,8 @@ endif()
 
 # --- climate models
 if(glow)
-  find_package(glow CONFIG REQUIRED)
+  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
+  add_subdirectory(glow)
 endif()
 
 if(hwm14)

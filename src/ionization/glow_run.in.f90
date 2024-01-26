@@ -82,7 +82,7 @@ phitoptmp=0
 
 phitop=phitoptmp
 do j = 1, size(PhiWmWm2,1)    !this index loops over population number
-  call maxt(real(PhiWmWm2(j), sp),real(W0(j), sp),ener,del,nbins,0,0,0,phitoptmp)
+  call maxt(real(PhiWmWm2(j), sp), real(W0(j), sp), ener, del, nbins, 0, 0._sp, 0._sp, phitoptmp)
   phitop = phitop + phitoptmp
 end do
 
