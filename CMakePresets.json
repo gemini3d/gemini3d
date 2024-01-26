@@ -62,13 +62,6 @@
   }
 },
 {
-  "name": "offline", "inherits": "default",
-  "displayName": "Run tests without network access",
-  "filter": {
-    "exclude": {"name": "internetConnectivity", "fixtures": {"setup": "internet_fxt"}}
-  }
-},
-{
   "name": "release", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Release"
