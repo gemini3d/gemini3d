@@ -73,7 +73,8 @@ contains
         call c_f_pointer(xC,xdipole)
         x=>xdipole
       case default
-        error stop 'unable to identify object type during conversion from C to fortran class pointer'
+        print*, 'ERROR:  Unable to identify object type during conversion from C to fortran class pointer:  ',xtype,xC
+        error stop 
     end select
   end function set_gridpointer_dyntype
 
