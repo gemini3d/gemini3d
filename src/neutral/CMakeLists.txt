@@ -10,7 +10,7 @@ inputdata neutraldata neutraldata3D_mpi
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
-msis::msis_ifc
+msis::msis
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
@@ -25,7 +25,7 @@ neutral neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_mpi neutrald
 neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
-msis::msis_ifc
+msis::msis
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )

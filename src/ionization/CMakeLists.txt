@@ -4,7 +4,7 @@ add_library(fang OBJECT fang.f90)
 target_link_libraries(fang PRIVATE const)
 
 add_library(fang_run OBJECT fang_run.f90)
-target_link_libraries(fang_run PRIVATE fang msis::msis_ifc const)
+target_link_libraries(fang_run PRIVATE fang msis::msis const)
 
 add_library(ionization OBJECT ionization.f90
 $<TARGET_OBJECTS:grid>

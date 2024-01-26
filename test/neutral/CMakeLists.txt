@@ -15,7 +15,7 @@ target_include_directories(gemini_projection PRIVATE ${PROJECT_BINARY_DIR}/inclu
 target_link_libraries(gemini_projection PRIVATE
 gemini3d_config const reader inputdata timeutils mpimod gemini3d_sysinfo
 MPI::MPI_Fortran
-msis::msis_ifc
+msis::msis
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")

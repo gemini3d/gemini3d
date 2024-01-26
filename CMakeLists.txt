@@ -82,19 +82,17 @@ if(hwm14)
   find_package(hwm14 CONFIG REQUIRED)
 endif()
 
-# --- MSISE00 or MSIS 2.x
-find_package(msis CONFIG REQUIRED)
-# WORKAROUND: MSIS shared Rpath fail
-# Rpath is defined in MSIS, but ld fails to use it
-get_target_property(msis_loc msis::msis_ifc LOCATION)
-get_filename_component(msis_dir "${msis_loc}" DIRECTORY)
+# --- MSISE00 / MSIS 2.x
+set(msis2 on)
+set(msis_BUILD_UITLS on)
+set(msis_BUILD_TESTING on) # so we know MSIS is working as it's fundamental to Gemini3D
+git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
+add_subdirectory(msis)
 
-# END WORKAROUND
-
-
+# --- Gemini3D library
 add_subdirectory(src)
-# Gemini3D source code
 
+# --- Gemini3D self test
 include(cmake/test/launcher.cmake) # for MPI tests
 
 add_subdirectory(test)

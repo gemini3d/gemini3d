@@ -48,7 +48,7 @@ h5fortran::h5fortran
 ${MPI_Fortran_LIBRARIES}
 $<$<BOOL:${glow}>:glow::glow>
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
-msis::msis_ifc
+msis::msis
 ffilesystem::filesystem
 )
 # need to have this explicit include for use of Gemini3D from ExternalProject
@@ -136,8 +136,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
-# MSIS WORKAROUND
-target_link_options(gemini3d PUBLIC ${CMAKE_LIBRARY_PATH_FLAG}${msis_dir})
 
 if(hwm14)
   # HWM14 data files

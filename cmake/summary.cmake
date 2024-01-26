@@ -16,36 +16,6 @@ if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.27.
   ")
 endif()
 
-# --- summary
-set_package_properties(GLOW PROPERTIES
-TYPE OPTIONAL
-URL "https://www2.hao.ucar.edu/modeling/glow/code"
-DESCRIPTION "NCAR GLOW model")
-#PURPOSE "Gemini uses GLOW for modeling of auroral emissions vs. wavelength.")
-
-set_package_properties(MPI PROPERTIES
-TYPE REQUIRED
-DESCRIPTION "GEMINI3D MPI standard parallelization")
-#PURPOSE "MPI gives massively parallel computation")
-
-set_package_properties(MUMPS PROPERTIES
-TYPE REQUIRED
-URL "https://mumps-solver.org/"
-DESCRIPTION "parallel direct sparse solver"
-PURPOSE "MUMPS solves potential")
-
-set_package_properties(SCALAPACK PROPERTIES
-TYPE REQUIRED
-URL "http://www.netlib.org/scalapack/"
-DESCRIPTION "parallel linear algebra"
-PURPOSE "MUMPS solves potential in parallel using Scalapack")
-
-set_package_properties(LAPACK PROPERTIES
-TYPE REQUIRED
-URL "http://www.netlib.org/lapack/"
-DESCRIPTION "linear algebra library"
-PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
-
 # --- options
 
 add_feature_info(DevMode dev "Gemini developer mode")

@@ -1,7 +1,7 @@
 set_property(DIRECTORY PROPERTY  LABELS ionization)
 
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang fang_run assert const msis::msis_ifc)
+target_link_libraries(test_fang PRIVATE fang fang_run assert const msis::msis)
 
 add_test(NAME fangIonize COMMAND test_fang)
 set_property(TEST fangIonize PROPERTY LABELS unit)
