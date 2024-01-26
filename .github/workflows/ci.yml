@@ -76,10 +76,6 @@ jobs:
         cmake --install build
       working-directory: gemext
 
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-
     - uses: actions/checkout@v4
 
     - name: Configure multi
