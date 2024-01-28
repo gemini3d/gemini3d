@@ -367,7 +367,7 @@ contains
       !ACCUMULATE ALL FORCES
     !      Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1+Epol1) &
       Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1filt+Epol1) &
-                    -pressure*gradlp1(1:lx1,1:lx2,1:lx3) &
+                    -pressure(1:lx1,1:lx2,1:lx3)*gradlp1(1:lx1,1:lx2,1:lx3) &
                     -gradQ &
                     +geom &
                     +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*x%g1
