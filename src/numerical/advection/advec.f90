@@ -30,60 +30,66 @@ contains
     integer :: idleft,idright,idup,iddown
     real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
     real(wp) :: tstart,tfini
-    logical :: flagupedge,flagdownedge,flagleftedge,flagrightedge
+    logical :: flagminx1edge,flagmaxx1edge,flagupedge,flagdownedge,flagleftedge,flagrightedge
     real(wp), dimension(-1:size(ns,2)-2,-1:size(ns,3)-2) :: Tbndry
-    
+   
+    ! convenience sizes
     lx1=size(vs1,1)-4
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
     
-    !> GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
-    do ix3=1,lx3
-      do ix2=1,lx2
-        !> logical bottom
-        coeff=ns(2,ix2,ix3,isp)/ns(3,ix2,ix3,isp)
-        ns(0,ix2,ix3,isp)=min(coeff*ns(1,ix2,ix3,isp),ns(1,ix2,ix3,isp))
-        ns(-1,ix2,ix3,isp)=min(coeff*ns(0,ix2,ix3,isp),ns(0,ix2,ix3,isp))
-    
-        !> logical top
-        coeff=ns(lx1-1,ix2,ix3,isp)/ns(lx1-2,ix2,ix3,isp)
-        ns(lx1+1,ix2,ix3,isp)=min(coeff*ns(lx1,ix2,ix3,isp),ns(lx1,ix2,ix3,isp))
-        ns(lx1+2,ix2,ix3,isp)=min(coeff*ns(lx1+1,ix2,ix3,isp),ns(lx1+1,ix2,ix3,isp))
+    ! x1 global boundary detection; this needs to be a detection relative to local patch/worker grid data..
+    if ( abs(x%x1(1)-x1lims(1)) < abs(x%x1(2)-x%x1(1)) ) then     ! we are closer to global edge than next nearest cell
+      flagminx1edge=.true.
+    else
+      flagminx1edge=.false.
+    end if
+    if ( abs(x%x1(lx1)-x1lims(2)) < abs(x%x1(lx1)-x%x1(lx1-1)) ) then
+      flagmaxx1edge=.true.
+    else
+      flagmaxx1edge=.false.
+    end if
+
+    !> x1-ghost cell density values (these need to be done last to avoid being overwritten by send/recv's!!!)
+    if (flagminx1edge) then
+      do ix3=1,lx3
+        do ix2=1,lx2
+          !> logical bottom
+          coeff=ns(2,ix2,ix3,isp)/ns(3,ix2,ix3,isp)
+          ns(0,ix2,ix3,isp)=min(coeff*ns(1,ix2,ix3,isp),ns(1,ix2,ix3,isp))
+          ns(-1,ix2,ix3,isp)=min(coeff*ns(0,ix2,ix3,isp),ns(0,ix2,ix3,isp))
+        end do
       end do
-    end do
-    
-    !FOR X1 MOMENTUM DENSITY
-    rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
-    !! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway for a fully dimensionally split advection method; unsplit methods will need to reconsider.  
-    rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
-    rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
-    rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)
-    
-    rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
-    !! now convert to momentum density
-    rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
-    
-    !> FOR INTERNAL ENERGY, note that x1 boundaries need to assume constant *temperature* not constant specific internal energy density
-    Tbndry=rhoes(1,:,:,isp)/ns(1,:,:,isp)    ! proportional to temperature :)
-    !rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
-    !rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
-    rhoes(0,:,:,isp)=Tbndry*ns(0,:,:,isp)
-    rhoes(-1,:,:,isp)=Tbndry*ns(-1,:,:,isp)
-    Tbndry=rhoes(lx1,:,:,isp)/ns(lx1,:,:,isp)
-    !rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
-    !rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
-    rhoes(lx1+1,:,:,isp)=Tbndry*ns(lx1+1,:,:,isp)
-    rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
 
+      rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
+      !! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway for a fully dimensionally split advection method; unsplit methods will need to reconsider.  
+      rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
+      rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)    ! now convert to momentum density
 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    ! What follows requires determining where we are on with respect to the edges of the global grid
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
-    ! determine x2 edge status for this worker/patch
-!    iddown=mpi_cfg%myid2-1
-!    idup=mpi_cfg%myid2+1
-!    flagdownedge=iddown==-1
-!    flagupedge=idup==mpi_cfg%lid2
+      Tbndry=rhoes(1,:,:,isp)/ns(1,:,:,isp)    ! proportional to temperature :)
+      rhoes(0,:,:,isp)=Tbndry*ns(0,:,:,isp)
+      rhoes(-1,:,:,isp)=Tbndry*ns(-1,:,:,isp)
+    end if 
+    if (flagmaxx1edge) then
+      do ix3=1,lx3
+        do ix2=1,lx2     
+          !> logical top
+          coeff=ns(lx1-1,ix2,ix3,isp)/ns(lx1-2,ix2,ix3,isp)
+          ns(lx1+1,ix2,ix3,isp)=min(coeff*ns(lx1,ix2,ix3,isp),ns(lx1,ix2,ix3,isp))
+          ns(lx1+2,ix2,ix3,isp)=min(coeff*ns(lx1+1,ix2,ix3,isp),ns(lx1+1,ix2,ix3,isp))
+        end do
+      end do
+
+      rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
+      rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)   
+      rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
+    
+      !> FOR INTERNAL ENERGY, note that x1 boundaries need to assume constant *temperature* not constant specific internal energy density
+      Tbndry=rhoes(lx1,:,:,isp)/ns(lx1,:,:,isp)
+      rhoes(lx1+1,:,:,isp)=Tbndry*ns(lx1+1,:,:,isp)
+      rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
+    end if
+
 
     ! this needs to be a detection relative to local patch/worker grid data...
     if ( abs(x%x2(1)-x2alllims(1)) < abs(x%x2(2)-x%x2(1)) ) then     ! we are closer to global edge than next nearest cell
@@ -124,10 +130,6 @@ contains
     
     !> NOW DEAL WITH ADVECTION ALONG X3
     ! determine edge status along x3 for this worker/patch
-!    idleft=mpi_cfg%myid3-1
-!    idright=mpi_cfg%myid3+1
-!    flagleftedge=idleft==-1
-!    flagrightedge=idright==mpi_cfg%lid3
     if ( abs(x%x3(1)-x3alllims(1)) < abs(x%x3(2)-x%x3(1)) ) then     ! we are closer to global edge than next nearest cell
       flagleftedge=.true.
     else
@@ -166,7 +168,6 @@ contains
         rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp)
       end if
     end if
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   end subroutine set_global_boundaries
   
   
