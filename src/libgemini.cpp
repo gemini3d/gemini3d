@@ -237,6 +237,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
 
   /* Sources substep and finalize solution for this time step */
 //  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
+  set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);    // for source derivatives...
   //source_loss_allparams_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
   source_loss_energy_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt); 
   source_loss_momentum_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);

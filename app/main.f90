@@ -396,6 +396,7 @@ contains
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
     !> solve all source/loss processes
+    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)     ! reassert x1 boundary since derivatives (dx1) done for momentum sources
     !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
