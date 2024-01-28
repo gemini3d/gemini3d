@@ -139,7 +139,7 @@ contains
     real(wp), dimension(-1:) :: x2all
     real(wp), dimension(-1:) :: x3all
 
-    x1lims=[x1(1),x1(lx1)]
+    x1lims=[x1(1),x1(lx1)]                ! this should be the *global* x1 coordinate array
     x2alllims=[x2all(1),x2all(lx2all)]
     x3alllims=[x3all(1),x3all(lx3all)]
     flaglims=.true.
