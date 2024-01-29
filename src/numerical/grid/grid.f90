@@ -30,7 +30,8 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              get_grid3_coords,read_size_gridcenter,detect_gridtype,set_size_gridcenter, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
              x1lims,x2alllims,x3alllims,get_fullgrid_lims, &
-             read_grid, grid_check, grid_drift, calc_subgrid_size
+             read_grid, grid_check, grid_drift, calc_subgrid_size, &
+             isglobalx1min,isglobalx1max,isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max
 
              !, generate_worker_grid
 
@@ -441,6 +442,68 @@ contains
     gridflag=gridflagin
   end subroutine set_gridflag
 
+
+  !> functions to check to see whether an input (sub)grid lies on the global boundary for the simulation
+  function isglobalx1min(x)
+    class(curvmesh), intent(in) :: x
+    logical :: isglobalx1min
+    
+    if ( abs(x%x1(1)-x1lims(1)) < abs(x%x1(2)-x%x1(1)) ) then     ! we are closer to global edge than next nearest cell
+      isglobalx1min=.true.
+    else
+      isglobalx1min=.false.
+    end if
+  end function isglobalx1min
+  function isglobalx1max(x)
+    class(curvmesh), intent(in) :: x
+    logical :: isglobalx1max
+    
+    if ( abs(x%x1(lx1)-x1lims(2)) < abs(x%x1(lx1)-x%x1(lx1-1)) ) then
+      isglobalx1max=.true.
+    else
+      isglobalx1max=.false.
+    end if  
+  end function isglobalx1max
+  function isglobalx2min(x)
+    class(curvmesh), intent(in) :: x
+    logical :: isglobalx2min
+
+    if ( abs(x%x2(1)-x2alllims(1)) < abs(x%x2(2)-x%x2(1)) ) then     ! we are closer to global edge than next nearest cell
+      isglobalx2min=.true.
+    else
+      isglobalx2min=.false.
+    end if
+  end function isglobalx2min
+  function isglobalx2max(x)
+    class(curvmesh), intent(in) :: x
+    logical :: isglobalx2max
+
+    if ( abs(x%x2(lx2)-x2alllims(2)) < abs(x%x2(lx2)-x%x2(lx2-1)) ) then
+      isglobalx2max=.true.
+    else
+      isglobalx2max=.false.
+    end if
+  end function isglobalx2max
+  function isglobalx3min(x)
+    class(curvmesh), intent(in) :: x
+    logical isglobalx3min
+
+    if ( abs(x%x3(1)-x3alllims(1)) < abs(x%x3(2)-x%x3(1)) ) then     ! we are closer to global edge than next nearest cell
+      isglobalx3min=.true.
+    else
+      isglobalx3min=.false.
+    end if
+  end function isglobalx3min
+  function isglobalx3max(x)
+    class(curvmesh), intent(in) :: x
+    logical isglobalx3max
+
+    if ( abs(x%x3(lx3)-x3alllims(2)) < abs(x%x3(lx3)-x%x3(lx3-1)) ) then
+      isglobalx3max=.true.
+    else
+      isglobalx3max=.false.
+    end if
+  end function isglobalx3max
 
 !  subroutine bind_grav_ptrs(g1in,g2in,g3in)
 !    real(wp), dimension(:,:,:), pointer, intent(in) :: g1in,g2in,g3in

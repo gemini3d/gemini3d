@@ -3,7 +3,8 @@ module advec
 !> this module contains advection-related procedures that are independent on mpi library calls
 
 use phys_consts, only: lsp,ms,wp
-use grid, only : gridflag, x1lims,x2alllims,x3alllims
+use grid, only : gridflag, x1lims,x2alllims,x3alllims, isglobalx1min,isglobalx1max, &
+        isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max
 use meshobj, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
 
@@ -30,7 +31,6 @@ contains
     integer :: idleft,idright,idup,iddown
     real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
     real(wp) :: tstart,tfini
-    logical :: flagminx1edge,flagmaxx1edge,flagupedge,flagdownedge,flagleftedge,flagrightedge
     real(wp), dimension(-1:size(ns,2)-2,-1:size(ns,3)-2) :: Tbndry
    
     ! convenience sizes
@@ -38,20 +38,8 @@ contains
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
     
-    ! x1 global boundary detection; this needs to be a detection relative to local patch/worker grid data..
-    if ( abs(x%x1(1)-x1lims(1)) < abs(x%x1(2)-x%x1(1)) ) then     ! we are closer to global edge than next nearest cell
-      flagminx1edge=.true.
-    else
-      flagminx1edge=.false.
-    end if
-    if ( abs(x%x1(lx1)-x1lims(2)) < abs(x%x1(lx1)-x%x1(lx1-1)) ) then
-      flagmaxx1edge=.true.
-    else
-      flagmaxx1edge=.false.
-    end if
-
     !> x1-ghost cell density values (these need to be done last to avoid being overwritten by send/recv's!!!)
-    if (flagminx1edge) then
+    if (isglobalx1min(x)) then
       do ix3=1,lx3
         do ix2=1,lx2
           !> logical bottom
@@ -70,7 +58,7 @@ contains
       rhoes(0,:,:,isp)=Tbndry*ns(0,:,:,isp)
       rhoes(-1,:,:,isp)=Tbndry*ns(-1,:,:,isp)
     end if 
-    if (flagmaxx1edge) then
+    if (isglobalx1max(x)) then
       do ix3=1,lx3
         do ix2=1,lx2     
           !> logical top
@@ -90,22 +78,9 @@ contains
       rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
     end if
 
-
-    ! this needs to be a detection relative to local patch/worker grid data...
-    if ( abs(x%x2(1)-x2alllims(1)) < abs(x%x2(2)-x%x2(1)) ) then     ! we are closer to global edge than next nearest cell
-      flagdownedge=.true.
-    else
-      flagdownedge=.false.
-    end if
-    if ( abs(x%x2(lx2)-x2alllims(2)) < abs(x%x2(lx2)-x%x2(lx2-1)) ) then
-      flagupedge=.true.
-    else
-      flagupedge=.false.
-    end if
-
-    !> SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.
+    !> SET THE GLOBAL X2 BOUNDARY CELLS
     !> THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
-    if (flagdownedge) then
+    if (isglobalx2min(x)) then
       vs2(:,0,:,isp)=vs2(:,1,:,isp)
       vs2(:,-1,:,isp)=vs2(:,1,:,isp)    ! set both ghost cells just in case used for error checking
     
@@ -116,7 +91,7 @@ contains
       rhoes(:,0,:,isp)=rhoes(:,1,:,isp)
       rhoes(:,-1,:,isp)=rhoes(:,1,:,isp)
     end if
-    if (flagupedge) then
+    if (isglobalx2max(x)) then
       vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
       vs2(:,lx2+2,:,isp)=vs2(:,lx2,:,isp)
     
@@ -128,22 +103,9 @@ contains
       rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp)
     end if
     
-    !> NOW DEAL WITH ADVECTION ALONG X3
-    ! determine edge status along x3 for this worker/patch
-    if ( abs(x%x3(1)-x3alllims(1)) < abs(x%x3(2)-x%x3(1)) ) then     ! we are closer to global edge than next nearest cell
-      flagleftedge=.true.
-    else
-      flagleftedge=.false.
-    end if
-    if ( abs(x%x3(lx3)-x3alllims(2)) < abs(x%x3(lx3)-x%x3(lx3-1)) ) then
-      flagrightedge=.true.
-    else
-      flagrightedge=.false.
-    end if
-
-    !> SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
+    !> SET THE GLOBAL x3 BOUNDARY CELLS
     if (.not. isperiodic) then
-      if (flagleftedge) then
+      if (isglobalx3min(x)) then
         !! left side is at global boundary, assume haloing won't overwrite
         vs3(:,:,0,isp)=vs3(:,:,1,isp)
         !! copy first cell to first ghost (vs3 not advected so only need only ghost)
@@ -156,7 +118,7 @@ contains
         rhoes(:,:,0,isp)=rhoes(:,:,1,isp)
         rhoes(:,:,-1,isp)=rhoes(:,:,1,isp)
       end if
-      if (flagrightedge) then    !my right boundary is the global boundary, assume haloing won't overwrite
+      if (isglobalx3max(x)) then    !my right boundary is the global boundary, assume haloing won't overwrite
         vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
         vs3(:,:,lx3+2,isp)=vs3(:,:,lx3,isp)
     
