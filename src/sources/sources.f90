@@ -4,6 +4,7 @@ use calculus, only : grad3d1
 use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use meshobj, only : curvmesh
+use grid, only: isglobalx1max
 
 implicit none (type, external)
 private
@@ -294,12 +295,14 @@ contains
     !! intent(out)
     integer :: lx1,lx2,lx3,isp,isp2
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
-    real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: pressure,gradlp1     ! include 1 ghost cell for x1
+    real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: pressure,gradlp1       ! include 1 ghost cell for x1
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: pressureng,gradlp1ng     ! in case computing without a ghost cell
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Epol1,gradQ
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
     real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1,geom
     real(wp), dimension(size(E1,1)-4,size(E1,2)-4,size(E1,3)-4) :: E1filt
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: ionpressterm
     integer :: ix1,ix2,ix3
     
     lx1=size(Ts,1)-4
@@ -317,9 +320,15 @@ contains
     dh2dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
     
     !AMBIPOLAR ELECTRIC FIELD
-    pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,lsp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,lsp)
-    gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)
-    Epol1(1:lx1,1:lx2,1:lx3)=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1(1:lx1,1:lx2,1:lx3)
+    if (.not. isglobalx1max(x)) then    ! we are interior and need to compute a centered diff (assume haloing has been done)
+      pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,lsp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,lsp)
+      gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)
+      Epol1(1:lx1,1:lx2,1:lx3)=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1(1:lx1,1:lx2,1:lx3)
+    else                                ! we are on the global top and need to use the default differentiation (which seems to work better)
+      pressureng(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,lsp)*kB*Ts(1:lx1,1:lx2,1:lx3,lsp)
+      gradlp1ng(1:lx1,1:lx2,1:lx3)=grad3D1(log(pressureng),x,1,lx1,1,lx2,1,lx3)
+      Epol1(1:lx1,1:lx2,1:lx3)=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1ng(1:lx1,1:lx2,1:lx3)
+    end if
     
     !THE FIELD INTEGRATED SOLVE ELECTRIC FIELDS ARE NOT RELIABLE BELOW 100KM - AT LEAST NOT ENOUGH TO USE IN THIS CALCULATION
     do ix3=1,lx3
@@ -353,9 +362,17 @@ contains
       end do
     
       !ION PRESSURE
-      pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,isp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,isp)
-      gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)                         !derivative should be from 1:lx1
-      !might need to limit the gradient to non-null points like 2D MATLAB code
+      if (.not. isglobalx1max(x)) then
+        pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,isp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,isp)
+        gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)
+        !might need to limit the gradient to non-null points like 2D MATLAB code
+        ionpressterm(1:lx1,1:lx2,1:lx3)=pressure(1:lx1,1:lx2,1:lx3)*gradlp1(1:lx1,1:lx2,1:lx3)
+      else
+        pressureng(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+        gradlp1ng(1:lx1,1:lx2,1:lx3)=grad3D1(log(pressureng),x,1,lx1,1,lx2,1,lx3)
+        !might need to limit the gradient to non-null points like 2D MATLAB code
+        ionpressterm(1:lx1,1:lx2,1:lx3)=pressureng(1:lx1,1:lx2,1:lx3)*gradlp1ng(1:lx1,1:lx2,1:lx3)
+      end if
     
       !ARTIFICIAL VISCOSITY
       gradQ=grad3D1(Q(:,:,:,isp),x,1,lx1,1,lx2,1,lx3)                         !derivative should be from 1:lx1
@@ -367,7 +384,8 @@ contains
       !ACCUMULATE ALL FORCES
     !      Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1+Epol1) &
       Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1filt+Epol1) &
-                    -pressure(1:lx1,1:lx2,1:lx3)*gradlp1(1:lx1,1:lx2,1:lx3) &
+!                    -pressure(1:lx1,1:lx2,1:lx3)*gradlp1(1:lx1,1:lx2,1:lx3) &
+                    -ionpressterm &
                     -gradQ &
                     +geom &
                     +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*x%g1
