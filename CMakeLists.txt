@@ -57,8 +57,18 @@ include(cmake/mpi.cmake)
 
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
 add_subdirectory(h5fortran)
+message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
+
+# HDF5 bug #3663 for HDF5 1.14.2, 1.14.3, ...?
+# https://github.com/HDFGroup/hdf5/issues/3663
+if(WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+if(HDF5_VERSION MATCHES "1.14.[2-3]")
+  message(VERBOSE "HDF5: applying workaround for HDF5 bug #3663 with Intel oneAPI on Windows")
+  set(oneapi_hdf5_bug3663 shlwapi)
+endif()
+endif()
 
 include(cmake/compilers.cmake)
 

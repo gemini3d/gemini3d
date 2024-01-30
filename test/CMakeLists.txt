@@ -10,11 +10,11 @@ endif(matlab)
 
 # --- HDF5
 add_executable(test_hdf5_standalone_C test_hdf5.c)
-target_link_libraries(test_hdf5_standalone_C PRIVATE HDF5::HDF5)
+target_link_libraries(test_hdf5_standalone_C PRIVATE HDF5::HDF5 ${oneapi_hdf5_bug3663})
 add_test(HDF5_standalone_C test_hdf5_standalone_C)
 
 add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
-target_link_libraries(test_hdf5_standalone_Fortran PRIVATE HDF5::HDF5)
+target_link_libraries(test_hdf5_standalone_Fortran PRIVATE HDF5::HDF5 ${oneapi_hdf5_bug3663})
 add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
 
 # --- MPI
