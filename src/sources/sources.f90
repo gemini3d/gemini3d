@@ -4,7 +4,7 @@ use calculus, only : grad3d1
 use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use meshobj, only : curvmesh
-use grid, only: isglobalx1max
+use grid, only: isglobalx1max,isglobalx1min
 
 implicit none (type, external)
 private
@@ -320,7 +320,7 @@ contains
     dh2dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
     
     !AMBIPOLAR ELECTRIC FIELD
-    if (.not. isglobalx1max(x)) then    ! we are interior and need to compute a centered diff (assume haloing has been done)
+    if (.not. (isglobalx1max(x) .or. isglobalx1min(x)) ) then    ! we are interior and need to compute a centered diff (assume haloing has been done)
       pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,lsp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,lsp)
       gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)
       Epol1(1:lx1,1:lx2,1:lx3)=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1(1:lx1,1:lx2,1:lx3)
@@ -362,7 +362,7 @@ contains
       end do
     
       !ION PRESSURE
-      if (.not. isglobalx1max(x)) then
+      if (.not. (isglobalx1max(x) .or. isglobalx1min(x)) ) then
         pressure(0:lx1+1,1:lx2,1:lx3)=ns(0:lx1+1,1:lx2,1:lx3,isp)*kB*Ts(0:lx1+1,1:lx2,1:lx3,isp)
         gradlp1(0:lx1+1,1:lx2,1:lx3)=grad3D1(log(pressure),x,0,lx1+1,1,lx2,1,lx3)
         !might need to limit the gradient to non-null points like 2D MATLAB code
