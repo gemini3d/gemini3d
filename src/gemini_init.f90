@@ -114,7 +114,7 @@ if (mpi_cfg%myid==0) then
 
   print*, 'Inertial capacitance calculation type:  ',cfg%flagcap
 
-  print*, 'Diffusion solve type:  ',cfg%diffsolvetype
+  print*, 'Diffusion solve type:  ************************************************************  ',cfg%diffsolvetype
 
   if (cfg%mcadence > 0) then
     print*, 'Milestone output selected; cadence (every nth output) of:  ',cfg%mcadence
