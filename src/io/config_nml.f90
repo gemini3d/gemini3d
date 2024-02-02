@@ -243,7 +243,7 @@ if (namelist_exists(u,'diffusion')) then
   call check_nml_io(i, cfg%infile, "diffusion")
   cfg%diffsolvetype=diffsolvetype
 else
-  cfg%diffsolvetype=1     !default to TRBDF2 - it almost always works. Changed to 1 for FBI
+  cfg%diffsolvetype=2     !default to TRBDF2 - it almost always works. 
 end if
 
 !> information about milestone outputs (optional)
