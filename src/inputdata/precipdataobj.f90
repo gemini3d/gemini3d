@@ -4,7 +4,7 @@ module precipdataobj
 ! distribution.
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-use phys_consts, only: wp,debug,pi
+use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
@@ -193,17 +193,25 @@ contains
     class(precipdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg     ! presently not used but possibly eventually?
     class(curvmesh), intent(in) :: x
-    integer :: ix2,ix3,iflat
+    integer :: ix2,ix3,iflat,ix1ref,ix2ref,ix3ref,ix1offset,ix2offset,ix3offset
 
     iflat = cfg%potsolve
     !! avoid unused argument warning
 
+    ! source arrays in the grid object may have ghost cells; these are offsets for arrays that do not
+    !   preserve lbound and ubound, e.g. array(:,1,1) and the like
+    ix1offset=1-lbound(x%rall,1)
+    ix2offset=1-lbound(x%rall,2)
+    ix3offset=1-lbound(x%rall,3)
+
     ! set full 2D target coordinates along axes 2,3 - these are the only targets we have for precipitation data
+    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 120e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
+    ix1ref=ix1ref-ix1offset
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         iflat=(ix3-1)*x%lx2+ix2
-        self%coord2iax23(iflat)=x%phi(x%lx1,ix2,ix3)*180._wp/pi
-        self%coord3iax23(iflat)=90._wp - x%theta(x%lx1,ix2,ix3)*180._wp/pi
+        self%coord2iax23(iflat)=x%phi(ix1ref,ix2,ix3)*180._wp/pi
+        self%coord3iax23(iflat)=90._wp - x%theta(ix1ref,ix2,ix3)*180._wp/pi
       end do
     end do
 

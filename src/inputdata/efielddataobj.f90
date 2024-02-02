@@ -287,7 +287,7 @@ contains
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     !! These are the coordinates for inputs varying along axes 2,3
-    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
+    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 120e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
     ix1ref=ix1ref-ix1offset
     do ix3=1,lx3all
       do ix2=1,lx2all
