@@ -14,4 +14,4 @@ endfunction(cmake_cpu_count)
 
 cmake_cpu_count()
 
-message(STATUS "parallel CTest Ncpu = ${Ncpu}")
+message(STATUS "CMake detected CPU count: ${Ncpu}")

@@ -97,8 +97,8 @@ unsigned int CPUCountWindows(){
   typedef BOOL(WINAPI * GetLogicalProcessorInformationType)(
     PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, PDWORD);
   static GetLogicalProcessorInformationType pGetLogicalProcessorInformation =
-    (GetLogicalProcessorInformationType)GetProcAddress(
-      GetModuleHandleW(L"kernel32"), "GetLogicalProcessorInformation");
+    reinterpret_cast<GetLogicalProcessorInformationType>(GetProcAddress(
+      GetModuleHandleW(L"kernel32"), "GetLogicalProcessorInformation"));
 
   if (!pGetLogicalProcessorInformation) {
     return 0;
@@ -147,7 +147,9 @@ unsigned int RetrieveInformationFromCpuInfoFile(){
   std::string buffer;
 
   FILE* fd = fopen("/proc/cpuinfo", "r");
-  if (!fd) return 0;
+  if (!fd) {
+    return 0;
+  }
 
   size_t fileSize = 0;
   while (!feof(fd)) {
@@ -155,6 +157,9 @@ unsigned int RetrieveInformationFromCpuInfoFile(){
     fileSize++;
   }
   fclose(fd);
+  if (fileSize < 2) {
+    return 0;
+  }
   buffer.resize(fileSize - 2);
   // Number of logical CPUs (combination of multiple processors, multi-core
   // and SMT)
@@ -163,8 +168,9 @@ unsigned int RetrieveInformationFromCpuInfoFile(){
     pos = buffer.find("processor\t", pos + 1);
   }
 
-  // Count sockets.
   size_t CurrentPositionInFile;
+#if defined(__linux) || defined(__CYGWIN__)
+  // Count sockets.
   std::set<int> PhysicalIDs;
   std::string idc = ExtractValueFromCpuInfoFile(buffer, "physical id", CurrentPositionInFile);
   while (CurrentPositionInFile != std::string::npos) {
@@ -186,7 +192,13 @@ unsigned int RetrieveInformationFromCpuInfoFile(){
   auto NumberOfCoresPerSocket = (unsigned int)atoi(Cores.c_str());
   NumberOfCoresPerSocket = std::max(NumberOfCoresPerSocket, 1u);
   NumberOfPhysicalCPU = NumberOfCoresPerSocket * (unsigned int)NumberOfSockets;
-
+#else
+  // For systems which do not have "physical id" entries, neither "cpu cores"
+  // this has to be fixed for hyper-threading.
+  std::string cpucount =
+    ExtractValueFromCpuInfoFile(buffer, "cpu count", CurrentPositionInFile);
+  NumberOfPhysicalCPU = atoi(cpucount.c_str());
+#endif
   return NumberOfPhysicalCPU;
 
 }
