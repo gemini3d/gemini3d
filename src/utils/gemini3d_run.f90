@@ -13,18 +13,16 @@ character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra
 logical :: plan
 character(1000) :: buf
 
-call cli_parser(plan, Ncpu, path, gem_exe, mpiexec, extra)
+call cli_parser(plan, path, gem_exe, mpiexec, extra)
 
-Ncpu = get_Ncpu(Ncpu)
+Ncpu = get_Ncpu()
+
+if (Ncpu <= 1) error stop 'Ncpu must be > 1. use mpiexec with gemini.bin'
 
 !> setup run
 call get_simsize3(path // '/inputs/simsize.h5', lx1, lx2all, lx3all)
 
-if(Ncpu > 1) then
-  lid = max_mpi(lx2all, lx3all, Ncpu)
-else
-  lid = 1
-endif
+lid = max_mpi(lx2all, lx3all, Ncpu)
 
 !> checks consistency
 call grid_auto(lx2all, lx3all, lid, lid2, lid3)

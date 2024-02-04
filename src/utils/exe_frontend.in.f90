@@ -26,10 +26,9 @@ cpu_count = int(cpu_count_c())
 end function
 
 
-subroutine cli_parser(plan, Ncpu, path, exe, mpiexec, extra)
+subroutine cli_parser(plan, path, exe, mpiexec, extra)
 
 logical, intent(out) :: plan
-integer, intent(out) :: Ncpu
 character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
 
 character(1000) :: buf
@@ -69,7 +68,6 @@ call assert_is_dir(path)
 
 plan = .false.
 extra = ""
-Ncpu = 0
 
 do i = 2, argc
   call get_command_argument(i, buf)
@@ -77,10 +75,6 @@ do i = 2, argc
 
   select case (buf)
 
-  case ('-n')
-    call get_command_argument(i+1, buf, length=L, status=ierr)
-    if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -n missing parameter"
-    read(buf, '(I6)') Ncpu
   case ('-exe')
     call get_command_argument(i+1, buf, length=L, status=ierr)
     if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -exe missing parameter"
@@ -122,42 +116,57 @@ if(.not.allocated(mpiexec)) mpiexec = find_mpiexec("")
 end subroutine cli_parser
 
 
-integer function get_Ncpu(N) result(Ncpu)
+integer function get_Ncpu() result(Ncpu)
 
-integer, intent(in) :: N
 integer :: i
-character(1000) :: buf
-
-if (N > 0) then
-  Ncpu = N
-  print '(A,I0)', "run: CLI specified CPU count: ", Ncpu
-  return
-endif
+character(6) :: buf
 
 call get_environment_variable("GEMINI_CPU", buf, status=i)
 if (i==0) then
   read(buf,'(I6)', iostat=i) Ncpu
-  if (i==0) print '(A,I0)', "run: GEMINI_CPU CPU job count: ", Ncpu
-endif
-if(i/=0) then
-  call get_environment_variable("NSLOTS", buf, status=i)
   if (i==0) then
-    read(buf,'(I6)', iostat=i) Ncpu
-    if (i==0) print '(A,I0)', "run: SGE CPU job count: ", Ncpu
+    print '(A,I0)', "gemini3d.run: GEMINI_CPU CPU count: ", Ncpu
+    return
+  else
+    write(stderr,'(A)') "ERROR: gemini3d.run:get_Ncpu: GEMINI_CPU env var content not understood: " // buf
   endif
 endif
-if(i/=0) then
-  call get_environment_variable("SLURM_NTASKS", buf, status=i)
-  if(i==0) then
-    read(buf, '(I6)', iostat=i) Ncpu
-    if(i==0) print '(A,I0)', "run: SLURM CPU job count: ", Ncpu
-  endif
-endif
-if (i/=0) then
-  Ncpu = cpu_count()
 
-  print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
+print '(A)', "gemini3d.run: GEMINI_CPU env var not found"
+call get_environment_variable("NSLOTS", buf, status=i)
+if (i==0) then
+  read(buf,'(I6)', iostat=i) Ncpu
+  if (i==0) then
+    print '(A,I0)', "gemini3d.run: NSLOTS CPU count: ", Ncpu
+    return
+  else
+    write(stderr,'(A)') "ERROR: gemini3d.run:get_Ncpu: NSLOTS env var content not understood: " // buf
+  endif
 endif
+
+print '(A)', "gemini3d.run: NSLOTS env var not found"
+call get_environment_variable("SLURM_NTASKS", buf, status=i)
+if(i==0) then
+  read(buf, '(I6)', iostat=i) Ncpu
+  if(i==0) then
+    print '(A,I0)', "gemini3d.run: SLURM_NTASKS CPU count: ", Ncpu
+    return
+  else
+    write(stderr,'(A)') "ERROR: gemini3d.run:get_Ncpu: SLURM_NTASKS env var content not understood: " // buf
+  endif
+endif
+
+print '(A)', "gemini3d.run: SLURM_NTASKS env var not found"
+write(stderr,'(A)') "NOTE: gemini3d.run: CPU count not found in environment variables, using cpu_count.cpp." // &
+  " If you're on an HPC, this will be wasteful as only one node will be used!"
+Ncpu = cpu_count()
+if (Ncpu <= 1) then
+  write(stderr,'(a,i0)') "ERROR: gemini3d.run:get_Ncpu: run mpiexec with gemini.bin" // &
+    "as CPU count wan not detected ", Ncpu
+  error stop
+endif
+
+print '(A,I0)', 'gemini3d.run: cpu_count.cpp: ', Ncpu
 
 end function get_Ncpu
 
