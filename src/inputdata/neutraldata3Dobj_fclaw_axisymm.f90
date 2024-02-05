@@ -261,6 +261,7 @@ contains
     type(neutraldata3D_fclaw_axisymm) :: self
 
     deallocate(self%coord1,self%coord2,self%coord3)
+    deallocate(self%lc1,self%lc2,self%lc3)
     deallocate(self%coord1i,self%coord2i,self%coord3i)
 
     ! deallocate arrays from base inputdata class
