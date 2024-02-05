@@ -68,9 +68,12 @@ contains
     class(neutraldata3D_fclaw), intent(inout) :: self
     class(curvmesh), intent(in) :: x
 
-    self%lc1=x%lx1
-    self%lc2=x%lx2
-    self%lc3=x%lx3
+    ! we don't actually store source data so just set to small size
+    self%lc1=1
+    self%lc2=1
+    self%lc3=1
+
+    ! needed to pass error checking during construction of inputdata object
     self%flagdatasize=.true.
   end subroutine set_sizeflag
 
