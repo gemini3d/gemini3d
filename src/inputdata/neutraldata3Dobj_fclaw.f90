@@ -64,9 +64,13 @@ end type neutraldata3D_fclaw
 
 contains
   !> just force the size flag to be set
-  subroutine set_sizeflag(self)
+  subroutine set_sizeflag(self,x)
     class(neutraldata3D_fclaw), intent(inout) :: self
+    class(curvmesh), intent(in) :: x
 
+    self%lc1=x%lx1
+    self%lc2=x%lx2
+    self%lc3=x%lx3
     self%flagdatasize=.true.
   end subroutine set_sizeflag
 
@@ -137,7 +141,7 @@ contains
     !    source grid points for each worker until you have root compute the entire grid and slice everything up
     allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
     self%lzn=>self%lc1; self%lxn=>self%lc2; self%lyn=>self%lc3;              ! these referenced while reading size and grid data
-    call self%set_sizeflag()
+    call self%set_sizeflag(x)
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
              0, 0, 0, &    ! number 1D data along each axis
