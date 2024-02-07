@@ -315,9 +315,9 @@ contains
     !CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH OF THE SPECIES CALCULATIONS
     h1h2h3=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
     tmpderiv=grad3D1(x%h2(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
-    dh3dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
-    tmpderiv=grad3D1(x%h3(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
     dh2dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
+    tmpderiv=grad3D1(x%h3(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
+    dh3dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
     
     !AMBIPOLAR ELECTRIC FIELD
     if (.not. (isglobalx1max(x) .or. isglobalx1min(x)) ) then    ! we are interior and need to compute a centered diff (assume haloing has been done)
