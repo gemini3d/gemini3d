@@ -7,27 +7,21 @@ This program is typically used from CMake as a unit test for Fang ionization.
 It can also be used by a human to plot ionization profiles to compare with the original
 Fang 2008 and Fang 2010 papers.
 """
-import numpy as np
+
+import typing
 import subprocess
-from pathlib import Path
 import shutil
 import sys
 import io
 import argparse
 
-Rb = Path(__file__).resolve().parents[2] / "build/src/ionization"
+import numpy as np
 
 
-def checker(exe: str, doplot: bool, params: dict = None):
-    if not exe:
-        if not Rb.is_dir():
-            raise FileNotFoundError(
-                f"build directory does not exist, did you build Gemini with CMake?  {Rb}"
-            )
-        exe = shutil.which("test_fang", path=str(Rb))
+def checker(exe: str, doplot: bool, params: dict | None = None):
 
     if not shutil.which(exe):
-        print("test_fang executable not found:", exe, file=sys.stderr)
+        print("ERROR:test_fang executable not found:", exe, file=sys.stderr)
         raise SystemExit(77)
 
     if params:
@@ -45,10 +39,10 @@ def checker(exe: str, doplot: bool, params: dict = None):
                 params["doy"],
                 params["utsec"],
             ],
-            universal_newlines=True,
+            text=True,
         )
     else:
-        ret = subprocess.check_output(exe, universal_newlines=True)
+        ret = subprocess.check_output(exe, text=True)
 
     keV = list(map(float, ret.split("\n")[0].split()[1:]))
     dat = np.loadtxt(io.StringIO(ret), skiprows=1, max_rows=191)
@@ -70,7 +64,7 @@ def checker(exe: str, doplot: bool, params: dict = None):
         return
 
     fg = figure()
-    axs = fg.subplots(1, 2, sharey=True)
+    axs: typing.Any = fg.subplots(1, 2, sharey=True)
     fg.suptitle(r"Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.")
     # %% Fang 2008 plot
     ax = axs[0]

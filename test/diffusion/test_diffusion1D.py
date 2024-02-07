@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
+
+import typing
 from pathlib import Path
-import numpy as np
-import h5py
 import argparse
 import sys
 
+import numpy as np
+import h5py
+
 
 def read_diffusion1D(fn: Path, doplot: bool = False):
-
     fn = Path(fn).expanduser()
     if not fn.is_file():
         print(fn, "not found", file=sys.stderr)
@@ -39,7 +41,7 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         return
 
     fg = figure()
-    ax = fg.subplots(1, 3, sharey=True, sharex=True)
+    ax: typing.Any = fg.subplots(1, 3, sharey=True, sharex=True)
 
     h = ax[0].pcolormesh(t, x1[2:-2], TsEuler, cmap="bwr")
     fg.colorbar(h, ax=ax[0])

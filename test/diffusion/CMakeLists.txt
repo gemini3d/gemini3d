@@ -17,9 +17,7 @@ COMMAND test_diffusion1d ${_tmpdifffn}
 set_tests_properties(diffusion1 PROPERTIES
 LABELS unit
 FIXTURES_SETUP gemini_diffusion_fxt
-WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-# WORKING_DIRECTORY is needed to write output file to repeatable path.
 
 add_test(NAME diffusion1:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}

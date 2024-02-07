@@ -5,7 +5,6 @@ import argparse
 
 
 def compare_interp(fn: Path, doplot: bool = False) -> None:
-
     with h5py.File(Path(fn).expanduser(), "r") as f:
         lx1 = f["/lx1"][()]
         lx2 = f["/lx2"][()]
@@ -41,7 +40,7 @@ def compare_interp(fn: Path, doplot: bool = False) -> None:
     hi = ax.pcolormesh(x3, x1, fx1x2x3[:, ix2, :].transpose(), shading="nearest")
     ax.set_xlabel("$x_3$")
     ax.set_ylabel("$x_1$")
-    f2.colorbar(hi, ax=ax).set_label("$f(x_3, x_1)$" +  f" {lx3}, {lx1}")
+    f2.colorbar(hi, ax=ax).set_label("$f(x_3, x_1)$" + f" {lx3}, {lx1}")
     ax.set_title("$f(x_3, x_1) x_2$= " + f"{ix2}")
 
     f3 = figure()
