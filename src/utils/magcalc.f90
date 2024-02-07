@@ -458,9 +458,25 @@ main : do while (t < cfg%tdur)
   if (mpi_cfg%myid ==0) then
     if(debug) print *, 'Attempting reduction of magnetic field...'
   end if
-  call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
-  call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
-  call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD)
+
+  call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD, ierr)
+  if (ierr /= 0) then
+    write(stderr, '(a,i0)') 'MAGCALC:mpi_reduce Br', ierr
+    error stop
+  end if
+
+  call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD, ierr)
+  if (ierr /= 0) then
+    write(stderr, '(a,i0)') 'MAGCALC:mpi_reduce Btheta', ierr
+    error stop
+  end if
+
+  call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD, ierr)
+  if (ierr /= 0) then
+    write(stderr, '(a,i0)') 'MAGCALC:mpi_reduce Bphi', ierr
+    error stop
+  end if
+
   if (mpi_cfg%myid == 0) then
     if(debug) print *, 'magcalc.f90 --> Reduced magnetic field...'
     if(debug) print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &

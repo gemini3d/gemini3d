@@ -150,7 +150,8 @@ contains
     class(neutraldata3D_mpi), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
-    integer :: izn,iid                                  ! local copies for root, eventually these need to be stored in object
+    integer :: izn,iid                                ! local copies for root, eventually these need to be stored in object
+    integer :: ierr, ierr2
     real(wp) :: maxzn
     real(wp), dimension(2) :: xnrange,ynrange                ! these eventually get stored in extents
     integer, dimension(6) :: indices                         ! these eventually get stored in indx
@@ -179,8 +180,12 @@ contains
       self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
       maxzn=maxval(self%zn)
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(self%lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD)
-        call mpi_send(self%zn,self%lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD)
+        call mpi_send(self%lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD, ierr)
+        call mpi_send(self%zn,self%lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD, ierr2)
+        if (ierr/=0 .or. ierr2/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_send: ierr = ',ierr
+          error stop 'send z-grid to workers'
+        end if
       end do
 
       !Define a neutral grid (input data) x,y extent by assuming that the spacing is constant
@@ -201,8 +206,15 @@ contains
       !receive extents of each of the other workers: extents(mpi_cfg%lid,6)
       print*, 'Receiving xn and yn ranges from workers...'
       do iid=1,mpi_cfg%lid-1
-        call mpi_recv(xnrange,2,mpi_realprec,iid,tag%xnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-        call mpi_recv(ynrange,2,mpi_realprec,iid,tag%ynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+
+        call mpi_recv(xnrange,2,mpi_realprec,iid,tag%xnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+        call mpi_recv(ynrange,2,mpi_realprec,iid,tag%ynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr2)
+        if (ierr/=0 .or. ierr2/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_recv: ierr = ',ierr
+          error stop 'receive ranges from workers'
+        end if
+
+
         self%extents(iid,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]     !need to store values as xnrange overwritten for each worker
         print*, 'Subgrid extents:  ',iid,self%extents(iid,:)
       end do
@@ -222,13 +234,25 @@ contains
         lxn=self%indx(iid,4)-self%indx(iid,3)+1
         lyn=self%indx(iid,6)-self%indx(iid,5)+1
         self%slabsizes(iid,1:2)=[lxn,lyn]
-        call mpi_send(lyn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD)
-        call mpi_send(lxn,1,MPI_INTEGER,iid,tag%lx,MPI_COMM_WORLD)
+
+        call mpi_send(lyn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD, ierr)
+        call mpi_send(lxn,1,MPI_INTEGER,iid,tag%lx,MPI_COMM_WORLD, ierr2)
+        if (ierr/=0 .or. ierr2/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_send: ierr = ',ierr
+          error stop 'send sizes to workers'
+        end if
+
         allocate(xn(lxn),yn(lyn))
         xn=self%xnall(self%indx(iid,3):self%indx(iid,4))
         yn=self%ynall(self%indx(iid,5):self%indx(iid,6))
-        call mpi_send(xn,lxn,mpi_realprec,iid,tag%xn,MPI_COMM_WORLD)
-        call mpi_send(yn,lyn,mpi_realprec,iid,tag%yn,MPI_COMM_WORLD)
+
+        call mpi_send(xn,lxn,mpi_realprec,iid,tag%xn,MPI_COMM_WORLD, ierr)
+        call mpi_send(yn,lyn,mpi_realprec,iid,tag%yn,MPI_COMM_WORLD, ierr2)
+        if (ierr/=0 .or. ierr2/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_send: ierr = ',ierr
+          error stop 'send xn,yn subgrids to workers'
+        end if
+
         deallocate(xn,yn)
       end do
 
@@ -247,35 +271,56 @@ contains
       self%yn=self%ynall(self%indx(0,5):self%indx(0,6))
     else                 !workers
       !get the z-grid from root so we know what the max altitude we have to deal with will be
-      call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      if (ierr/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_recv: ierr = ',ierr
+        error stop 'get the z-grid from root'
+      end if
 
       ! allocate space for target coordinate and bind alias
       allocate(self%coord1(self%lzn))
       self%zn=>self%coord1
 
       ! receive data from root
-      call mpi_recv(self%zn,self%lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(self%zn,self%lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      if (ierr/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_recv: ierr = ',ierr
+        error stop 'recieve data from root'
+      end if
+
       maxzn=maxval(self%zn)
 
       !calculate the extent of my grid
       call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange,gridflag)
 
       !send ranges to root
-      call mpi_send(xnrange,2,mpi_realprec,0,tag%xnrange,MPI_COMM_WORLD)
-      call mpi_send(ynrange,2,mpi_realprec,0,tag%ynrange,MPI_COMM_WORLD)
+      call mpi_send(xnrange,2,mpi_realprec,0,tag%xnrange,MPI_COMM_WORLD, ierr)
+      call mpi_send(ynrange,2,mpi_realprec,0,tag%ynrange,MPI_COMM_WORLD, ierr2)
+      if (ierr/=0 .or. ierr2/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_send: ierr = ',ierr
+        error stop 'send ranges to root'
+      end if
 
       !receive my sizes from root, allocate then receive my pieces of the grid
-      call mpi_recv(self%lxn,1,MPI_INTEGER,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-      call mpi_recv(self%lyn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(self%lxn,1,MPI_INTEGER,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      call mpi_recv(self%lyn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr2)
+      if (ierr/=0 .or. ierr2/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_recv: ierr = ',ierr
+        error stop 'recieve my size from root'
+      end if
 
       ! at this point we can allocate space for the source coordinates and bind aliases as needed
       allocate(self%coord2(self%lxn),self%coord3(self%lyn))
       self%xn=>self%coord2; self%yn=>self%coord3;        ! input data coordinates
 
       ! recieve data from root
-      call mpi_recv(self%xn,self%lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-      call mpi_recv(self%yn,self%lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-    end if
+      call mpi_recv(self%xn,self%lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      call mpi_recv(self%yn,self%lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr2)
+      if (ierr/=0 .or. ierr2/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:load_sizeandgrid_neu3D:mpi_recv: ierr = ',ierr
+        error stop 'recieve data from root'
+      end if
+    endif
 
     self%flagdatasize=.true.
   end subroutine load_sizeandgrid_neu3D

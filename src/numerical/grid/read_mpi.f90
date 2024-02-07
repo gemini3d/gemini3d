@@ -138,6 +138,7 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
   real(wp), dimension(:,:), intent(inout) :: refalt,refglon,refglat
   integer :: iid,iid3
   integer :: lx1,lx2
+  integer :: ierr,ierr2,ierr3
 
   ! set sizes for convenience
   lx1=size(refalt,1); lx2=size(refalt,2);
@@ -146,15 +147,23 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
   if (mpi_cfg%myid3==0) then
     do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid
       iid=grid2ID(mpi_cfg%myid2,iid3)
-      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD)
-      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD)
-      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD)
+      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD, ierr)
+      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD, ierr2)
+      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD, ierr3)
+      if(ierr/=0 .or. ierr2/=0 .or. ierr3/=0) then
+        write(stderr, '(a,i0,1x,i0,1x,i0)') "ERROR:gemini3d:gather_ref_meridian:MPI_Send failed with ierr=", ierr, ierr2, ierr3
+        error stop
+      endif
     end do
   else
     iid=grid2ID(mpi_cfg%myid2,0)
-    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr2)
+    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr3)
+    if(ierr/=0 .or. ierr2/=0 .or. ierr3/=0) then
+      write(stderr, '(a,i0,1x,i0,1x,i0)') "ERROR:gemini3d:gather_ref_meridian:MPI_Recv failed with ierr=", ierr, ierr2, ierr3
+      error stop
+    endif
   end if
 end subroutine gather_ref_meridian
 

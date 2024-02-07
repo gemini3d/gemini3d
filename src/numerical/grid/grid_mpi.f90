@@ -121,7 +121,7 @@ contains
 
 
   module procedure grid_drift
-    integer :: iid
+    integer :: iid, ierr, ierr2
     real(wp) :: E2ref,E3ref,Bref
 
     ! Root decides grid drift speed by examining initial background field in this center of its subdomain...
@@ -135,12 +135,20 @@ contains
       v3grid=-1*E2ref/Bref
       ! FIXME:  error checking to make sure input is sensible for this???
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD)
-        call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD)
+        call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD, ierr)
+        call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD, ierr2)
+        if(ierr/=0 .or. ierr2/=0) then
+          write(stderr, '(a,i0,1x,i0)') "ERROR:gemini3d: grid_drift: mpi_send failed on v2grid ierr ", ierr, ierr2
+          error stop
+        endif
       end do
     else
-      call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-      call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr2)
+      if(ierr/=0 .or. ierr2/=0) then
+        write(stderr, '(a,i0,1x,i0)') "ERROR:gemini3d: grid_drift: mpi_recv failed on v2grid ierr ", ierr, ierr2
+        error stop
+      endif
     end if
   end procedure grid_drift
 

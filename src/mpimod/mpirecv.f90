@@ -17,7 +17,7 @@ module procedure gather_recv2D_23
 !! THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE ANY GHOST CELLS!!!!
 
 integer :: lx2,lx3
-integer :: iid
+integer :: iid, ierr
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
 
@@ -29,8 +29,14 @@ lx3=size(paramtrim,2)
 paramtrimall(1:lx2,1:lx3)=paramtrim   !copy root's data into full-grid array
 
 do iid=1,mpi_cfg%lid-1
+
   call mpi_recv(paramtmp,lx2*lx3, &
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+  if (ierr /=0) then
+    write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv2D_23:mpi_recv returned ierr=", ierr
+    error stop
+  endif
+
   inds=slabinds(iid,lx2,lx3)
   paramtrimall(inds(1):inds(2),inds(3):inds(4))=paramtmp
   !! note the exclusion of the ghost cells
@@ -52,7 +58,7 @@ module procedure gather_recv3D_23
 !! THIS VERSION ALSO WORKS ON A PROCESS GRID
 
 integer :: lx1,lx2,lx3
-integer :: iid
+integer :: iid, ierr
 integer, dimension(4) :: i
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
 !! buffer space for mpi receive, includes only x1 ghost cells
@@ -71,8 +77,13 @@ lx3=size(paramtrim,3)
 paramtrimall(:,1:lx2,1:lx3)=paramtrim(:,1:lx2,1:lx3)    !store root's piece of data
 do iid=1,mpi_cfg%lid-1
   !! must loop over all processes in the grid, don't enter loop if only root is present
+
   call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+  if (ierr /=0) then
+    write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv3D_23:mpi_recv returned ierr=", ierr
+    error stop
+  endif
   !! receive chunk of data into buffer
   i = slabinds(iid, lx2, lx3)
   paramtrimall(1:lx1, i(1):i(2), i(3):i(4)) = paramtmp    !note the exclusion of the ghost cells
@@ -95,7 +106,7 @@ module procedure gather_recv4D_23
 !------------------------------------------------------------
 
 integer :: lx1,lx2,lx3,isp
-integer :: iid
+integer :: iid, ierr
 integer, dimension(4) :: inds
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 !! buffer space for mpi receive, includes only x1 ghost cells
@@ -117,7 +128,11 @@ do isp=1,lsp
   do iid=1,mpi_cfg%lid-1
     !! must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr /=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv4D_23:mpi_recv returned ierr=", ierr
+      error stop
+    endif
     !! receive chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x2,3 ghost cells
@@ -131,7 +146,7 @@ end procedure gather_recv4D_23
 module procedure gather_recv3D_ghost_23
 
   integer :: lx1,lx2,lx3
-  integer :: iid
+  integer :: iid, ierr
   real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
   integer, dimension(4) :: inds
 
@@ -146,7 +161,11 @@ module procedure gather_recv3D_ghost_23
   do iid=1,mpi_cfg%lid-1
     !! must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr /=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv3D_ghost_23:mpi_recv returned ierr=", ierr
+      error stop
+    endif
     !! recieve chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(-1:lx1+2,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)=paramtmp(-1:lx1+2,-1:lx2+2,-1:lx3+2)    !note the inclusion of x2,3 ghost cells
@@ -157,7 +176,7 @@ end procedure gather_recv3D_ghost_23
 module procedure gather_recv3D_x2i_23
 
   integer :: lx1,lx2,lx3
-  integer :: iid
+  integer :: iid, ierr
   real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
 
@@ -172,7 +191,11 @@ module procedure gather_recv3D_x2i_23
   do iid=1,mpi_cfg%lid-1
     !! must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1)*(lx2+1)*(lx3), &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr /=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv3D_x2i_23:mpi_recv returned ierr=", ierr
+      error stop
+    endif
     !! recieve chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(1:lx1,inds(1):inds(2)+1,inds(3):inds(4))=paramtmp(1:lx1,1:lx2+1,1:lx3)    !note the inclusion of x2,3 ghost cells
@@ -183,7 +206,7 @@ end procedure gather_recv3D_x2i_23
 module procedure gather_recv3D_x3i_23
 
   integer :: lx1,lx2,lx3
-  integer :: iid
+  integer :: iid, ierr
   real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
 
@@ -198,7 +221,11 @@ module procedure gather_recv3D_x3i_23
   do iid=1,mpi_cfg%lid-1
     !! must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1)*(lx2)*(lx3+1), &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr /=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:gather_recv3D_x3i_23:mpi_recv returned ierr=", ierr
+      error stop
+    endif
     !! recieve chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(1:lx1,inds(1):inds(2),inds(3):inds(4)+1)=paramtmp(1:lx1,1:lx2,1:lx3+1)    !note the inclusion of x2,3 ghost cells
@@ -215,12 +242,16 @@ module procedure bcast_recv1D_old3
 !! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx
+integer :: lx, ierr
 
 lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv1D_old3:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv1D_old3
 
@@ -234,12 +265,16 @@ module procedure bcast_recv1D_23_2
 !! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx
+integer :: lx, ierr
 
 lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv1D_23_2:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv1D_23_2
 
@@ -253,12 +288,16 @@ module procedure bcast_recv1D_23_3
 !! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx
+integer :: lx, ierr
 
 lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(param,(lx+4), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv1D_23_3:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv1D_23_3
 
@@ -272,14 +311,18 @@ module procedure bcast_recv2D_23
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx2,lx3
+integer :: lx2,lx3, ierr
 
 lx2=size(paramtrim,1)
 lx3=size(paramtrim,2)
 
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx2*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(paramtrim,lx2*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv2D_23:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv2D_23
 
@@ -293,7 +336,7 @@ module procedure bcast_recv3D_23
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx1,lx2,lx3
+integer :: lx1,lx2,lx3, ierr
 
 !> note here that paramtrim does not have ghost cells
 lx1=size(paramtrim,1)
@@ -302,7 +345,11 @@ lx3=size(paramtrim,3)
 
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx1*lx2*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(paramtrim,lx1*lx2*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv3D_23:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv3D_23
 
@@ -316,7 +363,7 @@ module procedure bcast_recv3D_x3i_23
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx1,lx2,lx3
+integer :: lx1,lx2,lx3, ierr
 
 !>note here that paramtrim does not have ghost cells
 lx1=size(paramtrim,1)
@@ -324,7 +371,11 @@ lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)-1  ! `lx3` is an interfaced quantity
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx1*lx2*(lx3+1), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(paramtrim,lx1*lx2*(lx3+1), mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv3D_x3i_23:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv3D_x3i_23
 
@@ -338,7 +389,7 @@ module procedure bcast_recv3D_x2i_23
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx1,lx2,lx3
+integer :: lx1,lx2,lx3, ierr
 
 !>note here that paramtrim does not have ghost cells
 lx1=size(paramtrim,1)
@@ -346,7 +397,11 @@ lx2=size(paramtrim,2)-1    !x2 is the interfaced direction here
 lx3=size(paramtrim,3)
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx1*(lx2+1)*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+call mpi_recv(paramtrim,lx1*(lx2+1)*lx3, mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv3D_x2i_23:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv3D_x2i_23
 
@@ -360,7 +415,7 @@ module procedure bcast_recv3D_ghost_23
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! GHOST CELLS!
 
-integer :: lx1,lx2,lx3
+integer :: lx1,lx2,lx3, ierr
 
 !> note here that param has ghost cells
 lx1=size(param,1)-4
@@ -370,7 +425,11 @@ lx3=size(param,3)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+if (ierr /=0) then
+  write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv3D_ghost_23:mpi_recv returned ierr=", ierr
+  error stop
+endif
 
 end procedure bcast_recv3D_ghost_23
 
@@ -386,7 +445,7 @@ module procedure bcast_recv4D_23
 !-------GHOST CELLS!
 !------------------------------------------------------------
 
-integer :: lx1,lx2,lx3,isp
+integer :: lx1,lx2,lx3,isp, ierr
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 
 lx1=size(param,1)-4
@@ -397,7 +456,11 @@ lx3=size(param,3)-4
 !WORKERS RECEIVE THE IC DATA FROM ROOT
 do isp=1,lsp
   call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
-                 mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+                 mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+  if (ierr /=0) then
+    write(stderr, '(a,i0)') "ERROR:gemini3d:mpirecv:bcast_recv4D_23:mpi_recv returned ierr=", ierr
+    error stop
+  endif
   param(-1:lx1+2,1:lx2,1:lx3,isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)
 end do
 

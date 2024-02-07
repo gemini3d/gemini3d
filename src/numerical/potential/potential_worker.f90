@@ -22,6 +22,7 @@ module procedure potential_workers_mpi
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   integer :: flagsolve
+  integer :: ierr
 
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
   perflag=.false.
@@ -99,7 +100,11 @@ module procedure potential_workers_mpi
       call gather_send(sig0scaled,tag%sig0)
       call gather_send(srcterm,tag%src)
 
-      call mpi_recv(flagsolve,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(flagsolve,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') "ERROR:gemini3d:potential_worker:mpi_recv: ierr=", ierr
+        error stop
+      endif
 
       if (flagsolve/=0) then
         call elliptic_workers()

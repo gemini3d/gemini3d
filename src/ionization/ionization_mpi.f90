@@ -1,5 +1,7 @@
 module ionization_mpi
 
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+
 use phys_consts, only: wp,debug
 use grid, only: lx1,lx2,lx3
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
@@ -18,7 +20,7 @@ contains
     type(neutral_info), intent(in) :: atmos
     real(wp), intent(out) :: gavg,Tninf
     real(wp) :: Tninftmp
-    integer :: iid
+    integer :: iid, ierr
 
     ! use an average value for the gravitational field; FIXME: perhaps should be done via averaging over all workers???
     !allocate(g(1:lx1,1:lx2,1:lx3))
@@ -31,20 +33,36 @@ contains
     !both g and Tinf need to be computed as average over the entire grid...
     if (mpi_cfg%myid==0) then     !root
       do iid=1,mpi_cfg%lid-1
-          call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+          call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+          if (ierr /= 0) then
+            write(stderr, '(a,i0)') 'Error in get_gavg_Tinf:  mpi_recv failed ', ierr
+            error stop
+          endif
           if (Tninf < Tninftmp) Tninf=Tninftmp
       end do
 
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD)
+        call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD, ierr)
+        if (ierr /= 0) then
+          write(stderr, '(a,i0)') 'Error in get_gavg_Tinf:  mpi_send failed ', ierr
+          error stop
+        endif
       end do
 
       if (debug) print *, 'Exospheric temperature used for photoionization:  ',Tninf
     else                  !workders
-      call mpi_send(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD)
+      call mpi_send(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') 'Error in get_gavg_Tinf:  mpi_send failed ', ierr
+        error stop
+      endif
       !! send what I think Tninf should be
 
-      call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(Tninf,1,mpi_realprec,0,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') 'Error in get_gavg_Tinf:  mpi_recv failed ', ierr
+        error stop
+      endif
       !! receive roots decision
     end if
     !deallocate(g)

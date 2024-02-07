@@ -7,6 +7,7 @@ module potential_comm
 !! NOTE THAT ONLY THE CURVILINEAR FUNCTION ARE UP TO DATE.
 
 use, intrinsic :: ieee_arithmetic
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
 use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all
@@ -260,9 +261,10 @@ contains
     !! intent(out)
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! intent(out)
-    !local work arrays
+
+    !> local work arrays
     real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
-    integer :: iid
+    integer :: iid, ierr
     real(wp) :: tstart,tfin
     real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1buf,Vmaxx1buf
 
@@ -282,7 +284,11 @@ contains
 
     do iid=1,mpi_cfg%lid-1
       !! communicate intent for solve to workers so they know whether or not to call mumps fn.
-      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
+      call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d:BGfields_boundaries_root:mpi_send: ierr = ',ierr
+        error stop
+      end if
     end do
     if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
 
@@ -309,7 +315,13 @@ contains
     real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! intent(out)
 
-    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    integer :: ierr
+
+    call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') 'ERROR:gemini3d:BGfields_boundaries_worker:mpi_recv: ierr = ',ierr
+      error stop 'Error in BGfields_boundaries_worker'
+    end if
 
     !Need to broadcast background fields from root
     !Need to also broadcast x1 boundary conditions for source term calculations.

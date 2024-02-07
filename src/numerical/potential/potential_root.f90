@@ -32,7 +32,7 @@ module procedure potential_root_mpi_curv
   !real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: Phitmp
-  integer :: iid
+  integer :: iid, ierr
   integer :: ix1
   real(wp) :: tstart,tfin
 
@@ -170,7 +170,11 @@ module procedure potential_root_mpi_curv
      !                   x,flagdirich,perflag,it)
       !if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
         do iid=1,mpi_cfg%lid-1
-          call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD)
+          call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD, ierr)
+          if(ierr/=0) then
+            write(stderr, "(a,i0)") "ERROR:gemini3d:potential_root_mpi_curv:mpi_send ierr=", ierr
+            error stop
+          endif
         end do
         !Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
         !                           Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &

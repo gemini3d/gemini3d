@@ -11,6 +11,8 @@ module temporal_mpi
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg
 use meshobj, only:  curvmesh
@@ -33,20 +35,34 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(out) :: dt
     real(wp), dimension(lsp) :: cour1,cour2,cour3
-    integer :: iid,isp
+    integer :: iid,isp, ierr
     real(wp) :: dttmp
 
     call dt_calc(cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,cfg%potsolve,cour1,cour2,cour3,dt)
 
     if (mpi_cfg%myid/=0) then
-      call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD)
+
+      call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD, ierr)
+      if (ierr/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d: dt_comm: mpi_send failed with error code ', ierr
+        error stop
+      end if
       !! send what I think dt should be
-      call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+      call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+      if (ierr/=0) then
+        write(stderr, '(a,i0)') 'ERROR:gemini3d: dt_comm: mpi_recv failed with error code ', ierr
+        error stop
+      end if
       !! receive roots decision
     else
       !> FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
       do iid=1,mpi_cfg%lid-1
-        call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+
+        call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+        if (ierr/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d: dt_comm: mpi_recv failed with error code ', ierr
+          error stop
+        end if
 
         if (dttmp < dt) dt=dttmp
       end do
@@ -68,7 +84,12 @@ contains
 
       !! SEND GLOBAL DT TO ALL WORKERS
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD)
+
+        call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD, ierr)
+        if (ierr/=0) then
+          write(stderr, '(a,i0)') 'ERROR:gemini3d: dt_comm: mpi_send failed with error code ', ierr
+          error stop
+        end if
       end do
 
       if (debug) then

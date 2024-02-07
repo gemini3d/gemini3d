@@ -36,6 +36,7 @@ module procedure halo_23
   integer :: lx1,lx2,lx3
   integer :: idleft,idright,idup,iddown
   integer :: i2,i3
+  integer :: ierr
 
   ! type(MPI_REQUEST) :: requests(4)  !< MPI-3
   ! type(MPI_STATUS) :: statuses(4)  !< MPI-3
@@ -129,19 +130,39 @@ module procedure halo_23
   if (.not. (x3begin .and. x3end)) then
     !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
     buffer31=param(-1:lx1+2,1:lx2,1:lhalo)     !x1 ghost cells to be included
-    call mpi_isend(buffer31,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD, requests(1))
+    call mpi_isend(buffer31,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD, requests(1), ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_isend ierr=", ierr
+      error stop
+    endif
 
     buffer32=param(-1:lx1+2,1:lx2,lx3+1-lhalo:lx3)
     call mpi_isend(buffer32,(lx1+4)*(lx2)*lhalo,mpi_realprec, &
-                      idright,tag,MPI_COMM_WORLD, requests(2))
+                      idright,tag,MPI_COMM_WORLD, requests(2), ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_isend ierr=", ierr
+      error stop
+    endif
 
     call mpi_irecv(buffer33,(lx1+4)*(lx2)*lhalo,mpi_realprec,idright, &
-                      tag,MPI_COMM_WORLD, requests(3))
+                      tag,MPI_COMM_WORLD, requests(3), ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
 
     call mpi_irecv(buffer34,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft, &
-                            tag,MPI_COMM_WORLD, requests(4))
+                            tag,MPI_COMM_WORLD, requests(4), ierr)
+    if(ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
 
-    call mpi_waitall(4,requests,statuses)
+    call mpi_waitall(4,requests,statuses, ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_waitall ierr=", ierr
+      error stop
+    endif
 
     if (idright/=MPI_PROC_NULL)  then    !only overwrite the cells if we didn't do a null receive
       param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=buffer33    !can't copy out buffers until we know the messages have been received
@@ -159,19 +180,39 @@ module procedure halo_23
   !EXCHANGE MESSAGES IN THE X2 DIRECTION OF THE PROCESS GRID
   if (.not. (x2begin .and. x2end)) then
     buffer21=param(-1:lx1+2,1:lhalo,1:lx3)
-    call mpi_isend(buffer21,(lx1+4)*(lx3)*lhalo,mpi_realprec,iddown,tag,MPI_COMM_WORLD, requests(1))
+    call mpi_isend(buffer21,(lx1+4)*(lx3)*lhalo,mpi_realprec,iddown,tag,MPI_COMM_WORLD, requests(1), ierr)
+    if(ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_isend ierr=", ierr
+      error stop
+    endif
 
     buffer22=param(-1:lx1+2,lx2+1-lhalo:lx2,1:lx3)
     call mpi_isend(buffer22,(lx1+4)*(lx3)*lhalo,mpi_realprec, &
-                      idup,tag,MPI_COMM_WORLD, requests(2))
+                      idup,tag,MPI_COMM_WORLD, requests(2), ierr)
+    if(ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_isend ierr=", ierr
+      error stop
+    endif
 
     call mpi_irecv(buffer23,(lx1+4)*(lx3)*lhalo,mpi_realprec,idup,&
-                      tag,MPI_COMM_WORLD, requests(3))
+                      tag,MPI_COMM_WORLD, requests(3), ierr)
+    if(ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
 
     call mpi_irecv(buffer24,(lx1+4)*(lx3)*lhalo,mpi_realprec,iddown, &
-                            tag,MPI_COMM_WORLD, requests(4))
+                            tag,MPI_COMM_WORLD, requests(4), ierr)
+    if(ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
 
-    call mpi_waitall(4,requests,statuses)
+    call mpi_waitall(4,requests,statuses, ierr)
+    if (ierr /= 0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_23:mpi_waitall ierr=", ierr
+      error stop
+    endif
 
     if (idup/=MPI_PROC_NULL) then
       param(-1:lx1+2,lx2+1:lx2+lhalo,1:lx3)=buffer23    !clear to copy out buffers
@@ -218,6 +259,7 @@ module procedure halo_end_23
   integer :: lx1,lx2,lx3
   integer :: idleft,idright,iddown,idup,iddownleft,idupright
   integer :: i2,i3
+  integer :: ierr
 
   ! type(MPI_REQUEST) :: requests(4)  !< MPI-3
   ! type(MPI_STATUS) :: statuses(4)  !< MPI-3
@@ -325,12 +367,26 @@ module procedure halo_end_23
     !> force contiguous in memory
     allocate(buffer(lx1,lx2))
     buffer=param(:,:,1)
-    call mpi_isend(buffer,lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD, requests(1))
+    call mpi_isend(buffer,lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD, requests(1), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_isend ierr=", ierr
+      error stop
+    endif
 
-    call mpi_irecv(buffer,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD, requests(2))
+    call mpi_irecv(buffer,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD, requests(2), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
+
     paramend = buffer
 
-    call mpi_waitall(2,requests,statuses)
+    call mpi_waitall(2,requests,statuses, ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_waitall ierr=", ierr
+      error stop
+    endif
+
     deallocate(buffer)
   end if
 
@@ -341,12 +397,28 @@ module procedure halo_end_23
     !> force contiguous in memory
     allocate(buffer(lx1,lx3))
     buffer = param(:,1,:)
-    call mpi_isend(buffer,lx1*lx3,mpi_realprec,iddown,tag,MPI_COMM_WORLD, requests(1))
 
-    call mpi_irecv(buffer,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD, requests(2))
+    call mpi_isend(buffer,lx1*lx3,mpi_realprec,iddown,tag,MPI_COMM_WORLD, requests(1), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_isend ierr=", ierr
+      error stop
+    endif
+
+    call mpi_irecv(buffer,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD, requests(2), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
+
     paramtop = buffer
 
-    call mpi_waitall(2,requests,statuses)
+    call mpi_waitall(2,requests,statuses, ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_waitall ierr=", ierr
+      error stop
+    endif
+
+
     deallocate(buffer)
   end if
 
@@ -357,12 +429,27 @@ module procedure halo_end_23
     !> force data into a contiguous buffer
     allocate(buf_corner(lx1))
     buf_corner=param(:,1,1)
-    call mpi_isend(buf_corner,lx1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD, requests(1))
 
-    call mpi_irecv(buf_corner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD, requests(2))
+    call mpi_isend(buf_corner,lx1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD, requests(1), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_isend ierr=", ierr
+      error stop
+    endif
+
+    call mpi_irecv(buf_corner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD, requests(2), ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_irecv ierr=", ierr
+      error stop
+    endif
+
     paramcorner = buf_corner
 
-    call mpi_waitall(2,requests,statuses)
+    call mpi_waitall(2,requests,statuses, ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:gemini3d:halo_end_23:mpi_waitall ierr=", ierr
+      error stop
+    endif
+
     deallocate(buf_corner)
   end if
 

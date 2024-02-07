@@ -96,7 +96,7 @@ contains
 !      ynrange(1)=yitmp(ix1,lx2,ix3)
 !    else    !things are swapped around in NH, min L-shell is lowest latitude
 !            !  southern edge is dictated by high altitudes in NH; this is ix1=1 in dipole indices
-!      zitmpslice=zitmp(:,1,:)          
+!      zitmpslice=zitmp(:,1,:)
 !      if (any(zitmpslice - maxzn > 0)) then
 !        ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
 !        ix1=ixs13(1); ix3=ixs13(2);
@@ -248,12 +248,12 @@ contains
         ! default to lowest possible altitude
         if (flagSH) then
           ix1=1
-        else 
+        else
           ix1=lx1
         end if
       end if
-      xrange0(icorner)=xi(ix1,ix2,ix3) 
-      yrange0(icorner)=yi(ix1,ix2,ix3) 
+      xrange0(icorner)=xi(ix1,ix2,ix3)
+      yrange0(icorner)=yi(ix1,ix2,ix3)
     end do
   end subroutine find_corners
 
@@ -417,7 +417,7 @@ contains
 
   !> transfer single state parameter data from root to workers (viz. "broadcast")
   module procedure dneu_root2workers
-    integer :: iid
+    integer :: iid, ierr
     real(wp), dimension(:,:,:), allocatable :: parmtmp
     integer :: lzn
 
@@ -427,7 +427,12 @@ contains
       allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
 
       parmtmp=paramall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-      call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag,MPI_COMM_WORLD)
+
+      call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag,MPI_COMM_WORLD, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') "ERROR:Gemini3d:dneu_root2workers:MPI_Send returned error code ", ierr
+        error stop
+      endif
 
       deallocate(parmtmp)
     end do
@@ -437,9 +442,14 @@ contains
 
   !> get a chunk of neutral data from root
   module procedure dneu_workers_from_root
-    integer :: lzn,lxn,lyn
+    integer :: lzn,lxn,lyn, ierr
 
     lzn=size(param,1); lxn=size(param,2); lyn=size(param,3);
-    call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+
+    call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE, ierr)
+    if (ierr/=0) then
+      write(stderr, '(a,i0)') "ERROR:Gemini3d:dneu_workers_from_root:MPI_Recv returned error code ", ierr
+      error stop
+    endif
   end procedure dneu_workers_from_root
 end submodule neuslab_mpi
