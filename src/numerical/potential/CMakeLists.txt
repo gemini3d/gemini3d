@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS potential)
+set_property(DIRECTORY PROPERTY LABELS potential)
 
 # make mumps usage precision-agnostic
 # this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax
@@ -23,4 +23,3 @@ MPI::MPI_Fortran
 
 add_library(potential_nompi OBJECT potential_nompi.f90)
 target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid)
-

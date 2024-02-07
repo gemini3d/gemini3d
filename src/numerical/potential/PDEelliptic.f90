@@ -3,7 +3,7 @@ module PDEelliptic
 !! Various tools for solving elliptic partial differential equations - uses MUMPS, scalapack, lapack, openmpi, and blas
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
-use mumps_interface, only : mumps_struc, mumps_exec
+use mumps_interface, only : MUMPS_STRUC, mumps_exec
 use phys_consts, only: wp, debug
 
 ! use mpi_f08, only: MPI_COMM_WORLD
@@ -134,7 +134,10 @@ subroutine elliptic_workers()
   type(MUMPS_STRUC) :: mumps_par
 
   !FIRE UP MUMPS
-  mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+  ! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+  mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
   mumps_par%JOB = -1
   mumps_par%SYM = 0
   mumps_par%PAR = 1

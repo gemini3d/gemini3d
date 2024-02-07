@@ -173,7 +173,9 @@ if (debug) print *, 'Number of entries used:  ',ient-1
 
 !> INIT MUMPS
 
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
@@ -415,7 +417,10 @@ if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 !> INIT MUMPS
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1

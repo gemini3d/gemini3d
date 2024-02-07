@@ -86,8 +86,12 @@ if (ierr /= 0) then
   write(stderr, '(a,i0)') 'ERROR: abnormal MPI initialization code ', ierr
   error stop
 endif
-call mpi_comm_rank(MPI_COMM_WORLD,myid)
-call mpi_comm_size(MPI_COMM_WORLD,lid)
+call mpi_comm_rank(MPI_COMM_WORLD,myid, ierr)
+call mpi_comm_size(MPI_COMM_WORLD,lid, ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI comm rank/size code ', ierr
+  error stop
+endif
 
 
 !! Set things up to give debug output

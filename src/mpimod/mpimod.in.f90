@@ -440,9 +440,14 @@ module mpimod
   contains
     subroutine mpisetup()
       !! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.
+      integer :: ierr
 
-      call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid)
-      call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid)
+      call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid, ierr)
+      call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid, ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') 'ERROR:GEMINI:mpisetup(): abnormal MPI comm rank/size code ', ierr
+        error stop
+      endif
 
       if(mpi_cfg%myid==0) print *, mpi_cfg%lid, "MPI processes detected"
 

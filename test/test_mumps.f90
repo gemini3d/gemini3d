@@ -18,7 +18,10 @@ if (ierr /= 0) then
   error stop
 endif
 ! Define a communicator for the package.
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 !  Initialize an instance of the package
 !  for L U factorization (sym = 0, with working host)
 mumps_par%JOB = -1

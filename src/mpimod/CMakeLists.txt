@@ -1,5 +1,6 @@
 add_library(autogrid OBJECT autogrid.f90)
 
+# --- mpimod mpi_realprec
 if(realbits EQUAL 32)
   set(mpi_realprec mpi_real)
 else()
@@ -7,6 +8,7 @@ else()
 endif()
 
 configure_file(mpimod.in.f90 mpimod.f90 @ONLY)
+# --- end mpimod mpi_realprec
 
 add_library(mpimod OBJECT
 ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90

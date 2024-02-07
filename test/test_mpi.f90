@@ -22,8 +22,13 @@ if (ierr /= 0) then
   write(stderr, '(a,i0)') 'ERROR: abnormal MPI initialization code ', ierr
   error stop
 endif
-call MPI_COMM_RANK(MPI_COMM_WORLD, mrank)
-call MPI_COMM_SIZE(MPI_COMM_WORLD, msize)
+call MPI_COMM_RANK(MPI_COMM_WORLD, mrank, ierr)
+call MPI_COMM_SIZE(MPI_COMM_WORLD, msize, ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI comm rank/size code ', ierr
+  error stop
+endif
+
 call MPI_GET_LIBRARY_VERSION(version, vlen)
 
 call mpi_finalize(ierr)

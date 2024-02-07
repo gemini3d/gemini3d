@@ -42,7 +42,11 @@ if (ierr /= 0) then
   error stop
 endif
 
-call mpi_comm_rank(MPI_COMM_WORLD,myid)
+call mpi_comm_rank(MPI_COMM_WORLD, myid, ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI comm rank code ', ierr
+  error stop
+endif
 
 !------------------------------------------------------------
 !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
@@ -197,7 +201,9 @@ end if
 !------------------------------------------------------------
 
 ! Define a communicator for the package.
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
 
 
 !Initialize an instance of the package

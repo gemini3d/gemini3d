@@ -425,7 +425,10 @@ end do loopx3
 !if (myid == 0) then
 if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
 !end if
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
@@ -958,7 +961,10 @@ if (debug) print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solvin
 if (ient-1 /= lent) error stop 'Incorrect number of matrix entries filled in potential solve!!!'
 
 !end if
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
@@ -1269,7 +1275,10 @@ if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 !FIRE UP MUMPS
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+
+! mumps_par%COMM = MPI_COMM_WORLD%mpi_val  !< MPI-3
+mumps_par%COMM = MPI_COMM_WORLD  !< MPI-2
+
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
