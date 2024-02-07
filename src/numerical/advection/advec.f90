@@ -166,23 +166,25 @@ contains
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
     
-    !COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
-    v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   !first the interior points
-    if (gridflag==0) then          !closed dipole grid
-      v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
-      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-    else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
-      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-      !! lowest alt on grid.
-      v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
-      !! highest alt; interesting that this is not vs1...
-    else                           !some type of non-inverted grid
-      v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
-    !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
-      v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
-      !! NOTE: interesting that this is not vs1...
-    end if
+    v1i(1:lx1+1,:,:)=0.5*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))   !assume everything interior for now
   
+!    !COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
+!    v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   !first the interior points
+!    if (gridflag==0) then          !closed dipole grid
+!      v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
+!      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+!    else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
+!      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+!      !! lowest alt on grid.
+!      v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
+!      !! highest alt; interesting that this is not vs1...
+!    else                           !some type of non-inverted grid
+!      v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
+!    !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
+!      v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
+!      !! NOTE: interesting that this is not vs1...
+!    end if
+!  
     ! THIS TYPE OF LIMITING MAY BE NEEDED FOR VERY HIGH-ALTITUDE SIMULATIONS...
     !    if (isp<lsp-1) then
     !      v1i(lx1+1,:,:)=max(vs1(lx1+1,:,:,isp),-1*vellim)    !limit inflow
