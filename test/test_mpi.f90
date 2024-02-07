@@ -15,12 +15,20 @@ call get_command_argument(1, argv, status=ierr)
 if(ierr /= 0) error stop "please specify number of MPI images (for checking)"
 read(argv,*) N
 
-call MPI_INIT()
+call mpi_init(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI initialization code ', ierr
+  error stop
+endif
 call MPI_COMM_RANK(MPI_COMM_WORLD, mrank)
 call MPI_COMM_SIZE(MPI_COMM_WORLD, msize)
 call MPI_GET_LIBRARY_VERSION(version, vlen)
 
-call MPI_FINALIZE()
+call mpi_finalize(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI finalize code ', ierr
+  error stop
+endif
 
 if (N /= msize) then
   write(stderr,*) "ERROR: MPI image count from mpiexec:", N, "doesn't match mpi_comm_size:",msize
@@ -38,4 +46,3 @@ if(mrank == 0) then
 endif
 
 end program
-

@@ -1,6 +1,6 @@
 # MPI for Gemini
 
-In general Gemini uses the MPI-3 standard, which is widely supported by currently maintained MPI libraries.
+Gemini3D uses MPI standard, which is widely supported by currently maintained MPI libraries.
 Here's how to get MPI for common computing platforms.
 
 ## MacOS Homebrew

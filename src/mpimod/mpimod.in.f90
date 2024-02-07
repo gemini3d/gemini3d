@@ -537,5 +537,9 @@ module mpimod
       !! SHUTS DOWN MPI
 
       call mpi_finalize(ierr)
+      if (ierr /= 0) then
+        write(stderr, '(a,i0)') 'ERROR:GEMINI: abnormal MPI finalize code ', ierr
+        error stop
+      endif
     end function mpibreakdown
   end module mpimod

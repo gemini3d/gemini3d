@@ -31,11 +31,11 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
                       sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
                       sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
-                      sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &              
+                      sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
                       rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, energy_diffusion_in, &
                       clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
                       source_loss_allparams_in, &
-                      source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &                     
+                      source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
                       dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
@@ -59,7 +59,11 @@ type(c_params) :: p
 integer :: myid
 
 !> initialize mpi
-call mpi_init()
+call mpi_init(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR:GEMINI: abnormal MPI initialization code ', ierr
+  error stop
+endif
 p%fortran_cli = .true.
 p%fortran_nml = .true.
 p%out_dir(1) = c_null_char
@@ -71,9 +75,8 @@ call gemini_main(p, lid2in, lid3in)
 
 !> shut down mpi
 call mpi_finalize(ierr)
-
 if (ierr /= 0) then
-  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr, 'Process #', myid
+  write(stderr, '(a,i0,a,i0)') 'GEMINI: abnormal MPI shutdown code ', ierr, '  Process # ', myid
   error stop
 endif
 
@@ -246,7 +249,7 @@ contains
 
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
-      call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)         
+      call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
       call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,(it==1),lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
@@ -394,12 +397,12 @@ contains
                                         UTsec,f107a,f107,first,gavg,Tninf)
     call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
 
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!    
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> solve all source/loss processes
     !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)    
+    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 

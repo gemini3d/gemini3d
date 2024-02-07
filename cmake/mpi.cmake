@@ -5,8 +5,6 @@ if(NOT DEFINED MPI_ROOT AND DEFINED ENV{MPI_ROOT})
 endif()
 if(MPI_ROOT)
   message(STATUS "Using MPI_ROOT=${MPI_ROOT}")
-else()
-  message(STATUS "MPI_ROOT not set, using default MPI search paths")
 endif()
 
 set(MPI_DETERMINE_LIBRARY_VERSION true)
@@ -29,20 +27,17 @@ set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_Fortran)
 # sometimes factory FindMPI.cmake doesn't define this
 message(CHECK_START "Checking for Fortran MPI-3 binding")
 check_source_compiles(Fortran
-[=[
-program test
+"program test
 use mpi_f08, only : mpi_comm_rank, mpi_real, mpi_comm_world, mpi_init, mpi_finalize
 implicit none
 call mpi_init
 call mpi_finalize
-end program
-]=]
+end program"
 MPI_Fortran_HAVE_F08_MODULE
 )
 
 if(MPI_Fortran_HAVE_F08_MODULE)
   message(CHECK_PASS "yes")
 else()
-  message(CHECK_FAIL "no")
-  message(WARNING "MPI-3 Fortran module mpi_f08 not found, builds may fail.")
+  message(CHECK_FAIL "no -- fallback to MPI-2 interface")
 endif()

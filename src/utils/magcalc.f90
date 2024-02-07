@@ -21,6 +21,8 @@ use mpi_f08, only: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce,mpi_sum, mpi_c
 
 implicit none (type, external)
 
+integer :: ierr
+
 !> VARIABLES READ IN FROM CONFIG FILE
 
 real(wp) :: UTsec
@@ -91,7 +93,11 @@ real(wp) :: h1avg,h2avg,h3avg
 real(wp), dimension(:,:,:), allocatable :: Rmag
 
 !! --- MAIN PROGRAM
-call mpi_init()
+call mpi_init(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR:MAGCALC: abnormal MPI initialization code ', ierr
+  error stop
+endif
 
 !> get command line parameters and simulation config
 call cli(cfg,lid2in,lid3in,debug,ymdstart,UTsecstart,ymdend,UTsecend)

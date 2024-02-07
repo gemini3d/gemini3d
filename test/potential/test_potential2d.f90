@@ -1,6 +1,8 @@
 program test_potential2d
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+
 use mpi_f08, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
@@ -77,7 +79,11 @@ allocate(srcterm(lx2,lx3), srcterm2(lx2,1,lx3))
 srcterm=0
 srcterm2=0
 
-call mpi_init()
+call mpi_init(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI initialization code ', ierr
+  error stop
+endif
 call mpi_comm_rank(MPI_COMM_WORLD,myid)
 call mpi_comm_size(MPI_COMM_WORLD,lid)
 
@@ -166,7 +172,11 @@ if (myid==0) then
   if (maxval(abs(errorMUMPS2))>0.05_wp) error stop '2:  Numerical error too large; check setup/output!!!'
 end if
 
-call mpi_finalize()
+call mpi_finalize(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI finalize code ', ierr
+  error stop
+endif
 
 end program
 

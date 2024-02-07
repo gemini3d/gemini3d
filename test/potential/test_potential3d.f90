@@ -1,6 +1,6 @@
 program test_potential3D
 
-use, intrinsic :: iso_fortran_env, only: real64
+use, intrinsic :: iso_fortran_env, only: real64, stderr=>error_unit
 
 use mpi_f08, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD,mpi_finalize
 use mumps_interface, only : mumps_struc, mumps_exec
@@ -34,7 +34,11 @@ real(real64) :: tstart,tfin
 
 character(4096) :: argv
 
-call MPI_INIT()
+call mpi_init(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR:GEMINI: abnormal MPI initialization code ', ierr
+  error stop
+endif
 
 call mpi_comm_rank(MPI_COMM_WORLD,myid)
 
@@ -250,6 +254,10 @@ deallocate(ir,ic,M,b)
 mumps_par%JOB = -2
 call mumps_exec(mumps_par)
 
-call MPI_FINALIZE()
+call mpi_finalize(ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI finalize code ', ierr
+  error stop
+endif
 
 end program
