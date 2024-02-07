@@ -15,6 +15,11 @@ $<$<COMPILE_LANGUAGE:Fortran>:-Wno-uninitialized>
 $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<VERSION_LESS:$<Fortran_COMPILER_VERSION>,10>>:-Wno-conversion>
 )
 
+set(${PROJECT_NAME}_mpi2_workaround_flags)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU" AND CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+  set(${PROJECT_NAME}_mpi2_workaround_flags -fallow-argument-mismatch)
+endif()
+
 if(dev)
   add_compile_options(-Wextra)
   # -Wpedantic makes too many false positives
