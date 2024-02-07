@@ -6,7 +6,7 @@ module debug_dump
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use h5fortran, only : hdf5_file, h5write
 use phys_consts, only : wp
-implicit none (type, external)
+implicit none
 
 private
 public :: h5dump

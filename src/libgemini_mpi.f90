@@ -24,7 +24,7 @@ use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in
 
-implicit none (type, external)
+implicit none
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
@@ -119,7 +119,7 @@ contains
 !
 !      ! FIXME: instead keep tdur and just adjust the start time of the simulation to be closer to endtime
 !      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-!      ! FIXME: need to feed in the t variable and overwrite it if we are restarting.  
+!      ! FIXME: need to feed in the t variable and overwrite it if we are restarting.
 !
 !      if (mpi_cfg%myid==0) then
 !        print*, 'Treating the following file as initial conditions:  ',filetmp

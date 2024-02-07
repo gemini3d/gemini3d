@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, c
 use mpi_f08, only : mpi_init, mpi_comm_world,mpi_finalize
 use mumps_interface, only: mumps_struc, mumps_exec
 
-implicit none (type, external)
+implicit none
 
 type(mumps_struc) :: mumps_par
 integer :: ierr

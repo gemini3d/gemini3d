@@ -1,6 +1,6 @@
 module mumps_rl
 
-implicit none (type, external)
+implicit none
 private
 public :: @arith@mumps, @arith@mumps_struc
 

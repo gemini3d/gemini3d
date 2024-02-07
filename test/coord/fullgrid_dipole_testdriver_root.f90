@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : int64
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
-implicit none (type, external)
+implicit none
 
 integer, parameter :: lq = 44 + 4, lp = 32 + 4, lphi = 28 + 4
 real(wp), dimension(lq) :: q

@@ -1,6 +1,6 @@
 submodule (gemini3d_mpi) libgem_mpi_par
 
-implicit none (type, external)
+implicit none
 
 contains
   !> establish gemini process grid

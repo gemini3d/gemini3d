@@ -3,7 +3,7 @@ program test_dump_read
 use iso_c_binding, only : c_null_char
 use h5fortran, only : hdf5_file
 
-implicit none (type, external)
+implicit none
 
 type(hdf5_file) :: h
 

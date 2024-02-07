@@ -2,7 +2,7 @@ submodule (reader) reader_hdf5
 
 use h5fortran, only: hdf5_file, hsize_t
 
-implicit none (type, external)
+implicit none
 
 contains
 

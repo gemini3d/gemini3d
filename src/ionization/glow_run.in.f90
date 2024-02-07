@@ -13,7 +13,7 @@ use cglow,only: cglow_init, &
   photoi,photod,phono,aglw,ecalc,zxden,zeta,zceta,eheat,vcb, &
   data_dir
 
-implicit none (type, external)
+implicit none
 
 logical :: first_call = .true.
 

@@ -11,7 +11,7 @@ use gemini3d_config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_precip
 use timeutils, only: dateinc,date_filename
 
-implicit none (type, external)
+implicit none
 private
 public :: precipdata
 

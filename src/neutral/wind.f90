@@ -3,7 +3,7 @@ submodule (neutral) wind
 use hwm_interface, only : hwm_14, dwm_07
 use timeutils, only : ymd2doy
 
-implicit none (type, external)
+implicit none
 
 contains
 !>  This procedure makes the call to HWM for horizontal winds.  It loads those winds into the neutral module background

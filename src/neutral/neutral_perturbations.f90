@@ -18,7 +18,7 @@ use neutraldata2Daxisymmobj, only: neutraldata2Daxisymm
 use neutraldata2Dcartobj, only: neutraldata2Dcart
 use neutral, only: neutral_info
 
-implicit none (type, external)
+implicit none
 
 ! flag to check whether to apply neutral perturbations
 logical :: flagneuperturb=.false.

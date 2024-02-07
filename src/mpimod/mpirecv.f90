@@ -2,7 +2,7 @@ submodule (mpimod) mpirecv
 
 use mpi_f08, only: mpi_recv, MPI_STATUS_IGNORE
 
-implicit none (type, external)
+implicit none
 
 contains
 

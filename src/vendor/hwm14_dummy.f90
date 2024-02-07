@@ -3,7 +3,7 @@ module hwm_interface
 
 use, intrinsic :: iso_fortran_env, only : real32, real64
 
-implicit none (type, external)
+implicit none
 
 interface hwm_14
   procedure :: hwm_14_r64, hwm_14_r32

@@ -5,7 +5,7 @@ use interpolation, only : interp2
 use h5fortran, only : hdf5_file
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-implicit none (type, external)
+implicit none
 
 character(:), allocatable :: infn, outfn
 character(1024) :: argv

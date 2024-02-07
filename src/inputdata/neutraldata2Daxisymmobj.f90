@@ -9,7 +9,7 @@ use neutraldataobj, only: neutraldata
 use neutraldata2Dobj, only: neutraldata2D
 use reader, only: get_simsize3
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata2Daxisymm
 

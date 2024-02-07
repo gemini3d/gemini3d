@@ -6,7 +6,7 @@ use, intrinsic:: iso_fortran_env, only: real32, real64
 use phys_consts, only: wp
 use timeutils, only: dateinc, utsec2filestem
 
-implicit none (type, external)
+implicit none
 
 character(:), allocatable :: fn
 character (25) :: tmp

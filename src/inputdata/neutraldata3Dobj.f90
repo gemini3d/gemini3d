@@ -10,7 +10,7 @@ use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use timeutils, only: dateinc,date_filename
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata3D
 
@@ -36,7 +36,7 @@ type, abstract, extends(neutraldata) :: neutraldata3D
   contains
     ! unique to this class
     procedure :: rotate_winds
-    
+
     ! overriding procedures
     procedure :: init_storage
 

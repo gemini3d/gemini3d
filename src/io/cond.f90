@@ -6,7 +6,7 @@ use mpimod, only : gather_send
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
-implicit none (type, external)
+implicit none
 
 interface !< cond_*.f90
 module subroutine output_cond_root_hdf5(filename, sig0, sigP, sigH)

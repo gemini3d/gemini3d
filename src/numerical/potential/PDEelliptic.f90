@@ -8,7 +8,7 @@ use phys_consts, only: wp, debug
 
 use mpi_f08, only: MPI_COMM_WORLD
 
-implicit none (type, external)
+implicit none
 private
 public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,&
   elliptic_workers, check_mumps_status, quiet_mumps, elliptic3D_cart_periodic, &

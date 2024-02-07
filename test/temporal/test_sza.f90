@@ -3,7 +3,7 @@ program test_sza
 use phys_consts, only: wp
 use timeutils, only: sza
 
-implicit none (type, external)
+implicit none
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
 

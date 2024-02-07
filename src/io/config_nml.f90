@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
 use filesystem, only : make_absolute
 
-implicit none (type, external)
+implicit none
 
 contains
 

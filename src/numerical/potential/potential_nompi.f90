@@ -6,13 +6,13 @@ use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use calculus, only: grad3d2, grad3d3
 
-implicit none (type, external)
+implicit none
 private
 public :: velocities_nompi,set_fields_test
 
 contains
   !> This is a subroutine to compute velocities assuming that the primary state variables n,v,T have
-  !    already been haloed.  
+  !    already been haloed.
   subroutine velocities_nompi(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiamagnetic,vs2,vs3)
     !> compute steady state drifts resulting from a range of forces.  Can be used
     !   by both root and worker processes

@@ -8,7 +8,7 @@ use meshobj, only: curvmesh
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 
-implicit none (type, external)
+implicit none
 private
 public :: cartmesh
 
@@ -113,7 +113,7 @@ subroutine make_cartmesh(self)
 
   ! now assign structure elements and deallocate unneeded temp variables
 !  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
-  self%r=r(-1:lz+2,-1:lx+2,-1:ly+2); self%theta=theta(-1:lz+2,-1:lx+2,-1:ly+2); 
+  self%r=r(-1:lz+2,-1:lx+2,-1:ly+2); self%theta=theta(-1:lz+2,-1:lx+2,-1:ly+2);
   self%phi=phispher(-1:lz+2,-1:lx+2,-1:ly+2)
   deallocate(r,theta,phispher)
 

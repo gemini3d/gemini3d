@@ -33,7 +33,7 @@ use meshobj, only: curvmesh
 use interpolation, only: interp1
 use PDEelliptic, only: elliptic3D_cart, elliptic3D_cart_periodic
 
-implicit none (type, external)
+implicit none
 private
 public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, &
             potential2D_fieldresolved, potential3D_fieldresolved, potential3D_fieldresolved_truncate, &

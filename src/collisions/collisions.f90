@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 use gemini3d_config, only: gemini_cfg
 
-implicit none (type, external)
+implicit none
 private
 public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
 

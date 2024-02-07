@@ -9,7 +9,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use h5fortran, only : hdf5_file
 use phys_consts, only : wp
 
-implicit none (type, external)
+implicit none
 
 interface error_stop
   !! polymorphic error handling

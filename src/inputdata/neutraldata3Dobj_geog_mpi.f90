@@ -11,7 +11,7 @@ use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 
 use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata3D_geog
 

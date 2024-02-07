@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only: sp => real32, stderr=>error_unit
 use timeutils, only : ymd2doy
 use msis_interface, only : msis_gtd7, msis_gtd8
 
-implicit none (type, external)
+implicit none
 
 contains
 !>  This procedure makes the call to MSIS for density/temperature.  It loads those data into the neutral module background

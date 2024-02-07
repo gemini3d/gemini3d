@@ -1,6 +1,6 @@
 submodule (gemini3d) libgem_utils
 
-implicit none (type, external)
+implicit none
 
 contains
   !> read command line args, config file, and size of grid
@@ -12,27 +12,27 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-    !> command line interface    
+    !> command line interface
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
     else
       buf = "" !< ensure buf has no garbage characters
-  
+
       do i = 1, len(buf)
         if (p%out_dir(i) == c_null_char) exit
         buf(i:i) = p%out_dir(i)
       enddo
       cfg%outdir = expanduser(buf)
-  
+
       cfg%dryrun = p%dryrun
       debug = p%debug
     endif
 
-    !> read the config input file 
+    !> read the config input file
     call find_config(cfg)
     call read_configfile(cfg, verbose=.false.)
     call check_input_files(cfg)
-    
+
     !> read the size out of the grid file, store in module variables
     call grid_size(cfg%indatsize)
   end procedure cli_config_gridsize
@@ -62,7 +62,7 @@ contains
     if (cfg%flagglow /= 0) then
       allocate(iver(lx2,lx3,lwave))
       iver = 0
-    end if 
+    end if
   end procedure gemini_alloc
 
 
@@ -85,6 +85,6 @@ contains
      !> space for integrated volume emission rates
     if (cfg%flagglow /= 0) then
       deallocate(iver)
-    end if 
+    end if
   end procedure gemini_dealloc
 end submodule libgem_utils

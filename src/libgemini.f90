@@ -54,7 +54,7 @@ use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 
-implicit none (type, external)
+implicit none
 private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
             set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_in, &
@@ -63,7 +63,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
-            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                 
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, &
             source_loss_allparams_in, &
@@ -104,7 +104,7 @@ type gemini_work
   type(neutral_info), pointer :: atmos=>null()
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
+  type(precipdata), pointer :: eprecip=>null()          ! input precipitation information
   type(efielddata), pointer :: efield=>null()           ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
 end type gemini_work
@@ -273,7 +273,7 @@ contains
     allocate(intvars%W0(1:lx2,1:lx3,1:intvars%lprec))
     allocate(intvars%PhiWmWm2,mold=intvars%W0)
 
-    ! First check that our module-scope arrays are allocated before going on to calculations.  
+    ! First check that our module-scope arrays are allocated before going on to calculations.
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
     allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
     intvars%Prprecip(:,:,:,:)=0.0
@@ -838,7 +838,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)  
+    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
     call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -900,7 +900,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)   
+    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
     call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -1151,7 +1151,7 @@ contains
 
   !> Ionization and heating rates must be re-accumulated each time so initialize to zero.  The precip arrays
   !    are not cleared here because these need to persist between time steps, e.g. glow only runs every N steps as
-  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of 
+  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of
   !    intvars%Prprecip and intvars%Qeprecip
   subroutine clear_ionization_arrays(intvars)
     type(gemini_work), intent(inout) :: intvars
@@ -1162,7 +1162,7 @@ contains
 
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
-  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
+  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,first,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg

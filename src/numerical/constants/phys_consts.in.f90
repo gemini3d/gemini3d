@@ -2,7 +2,7 @@ module phys_consts
 
 use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
 
-implicit none (type, external)
+implicit none
 public
 
 integer, parameter :: comp_lvl = 3

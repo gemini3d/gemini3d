@@ -9,7 +9,7 @@ module mpimod
   use mpi_f08, only: mpi_realprec=>@mpi_realprec@
   use mpi_f08, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 
-  implicit none (type, external)
+  implicit none
   private
   public :: gemini_mpi, gemini_mpi_config, mpi_cfg, &
     mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, id2grid, grid2id, slabinds, &

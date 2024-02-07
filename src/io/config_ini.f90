@@ -2,7 +2,7 @@ submodule (gemini3d_config) config_ini
 
 use filesystem, only : expanduser
 
-implicit none (type, external)
+implicit none
 
 contains
 

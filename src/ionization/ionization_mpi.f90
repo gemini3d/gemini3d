@@ -7,7 +7,7 @@ use neutral, only: neutral_info
 
 use mpi_f08, only : MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send,mpi_recv
 
-implicit none (type, external)
+implicit none
 
 private
 public :: get_gavg_Tinf

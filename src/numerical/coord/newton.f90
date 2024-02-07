@@ -4,7 +4,7 @@ module newton
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only: wp
 
-implicit none (type, external)
+implicit none
 private
 public :: newtopts, newton_exact, objfun, objfun_deriv
 

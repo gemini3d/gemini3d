@@ -49,7 +49,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in
 
-implicit none (type, external)
+implicit none
 
 integer(c_int) :: lid2in, lid3in
 character(8) :: date

@@ -14,7 +14,7 @@ use precipdataobj, only: precipdata
 
 use mpi_f08, only : mpi_integer, mpi_comm_world, mpi_status_ignore
 
-implicit none (type, external)
+implicit none
 private
 public :: precipBCs_fileinput, precipBCs, init_precipinput
 

@@ -9,7 +9,7 @@ use h5fortran, only : hdf5_file
 use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r,rotgg2gm
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
-implicit none (type, external)
+implicit none
 private
 public :: curvmesh
 
@@ -639,14 +639,14 @@ contains
     class(curvmesh), intent(inout) :: self
     real(wp), dimension(:,:,:), allocatable :: ri,thetai,phispheri
 
-    if (.not. self%geogi_set_status) then 
+    if (.not. self%geogi_set_status) then
       allocate(self%alti(1:self%lx1+1,1:self%lx2+1,1:self%lx3+1))
-      allocate(self%gloni,self%glati, mold=self%alti) 
+      allocate(self%gloni,self%glati, mold=self%alti)
 
       allocate(ri,thetai,phispheri, mold=self%alti)
 
       call self%native2ECEFspher(self%glonctr,self%glatctr,self%x1i,self%x2i,self%x3i,ri,thetai,phispheri)
-      !call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
+      !call geomag2geog(phispheri,thetai,self%gloni,self%glati)
       !self%alti=r2alt(ri)
 
       self%alti(:,:,:)=ri(:,:,:)*cos(thetai(:,:,:))    ! z

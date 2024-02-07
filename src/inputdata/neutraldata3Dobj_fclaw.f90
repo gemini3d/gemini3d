@@ -13,7 +13,7 @@ use timeutils, only: dateinc,date_filename
 use grid, only: gridflag
 use geomagnetic, only: ECEFspher2ENU
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata3D_fclaw
 
@@ -185,7 +185,7 @@ contains
     self%dTninow=0
 
     ! We don't really even have to keep up with datasets times since controlling app is going to give us whatever data
-    !   we need and we dont' have to make decisions about when to load new data.  
+    !   we need and we dont' have to make decisions about when to load new data.
     ! set to start time of simulation - not needed since assigned by update on first call.  FIXME: a bit messy
     self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
     self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
@@ -335,7 +335,7 @@ contains
     real(wp), dimension(:,:,:), allocatable :: paramall
     character(:), allocatable :: fn
 
-    ! this should not be a no-op, i.e. no automatic updating because we expect external controlling app to do this  
+    ! this should not be a no-op, i.e. no automatic updating because we expect external controlling app to do this
 
 !    lhorzn=self%lyn
 !    ymdtmp = self%ymdref(:,2)
@@ -458,7 +458,7 @@ contains
 
 
   !> Find and return a list of interpolation sites that are in bounds for the external neutral model grid.  This
-  !    procedure needs to allocate space to store the (unknown upon entry) number of locations needed.  
+  !    procedure needs to allocate space to store the (unknown upon entry) number of locations needed.
   subroutine get_locationsi(self,flagallpts,zlims,xlims,ylims,zvals,xvals,yvals,datavals)
     class(neutraldata3D_fclaw), intent(inout) :: self
     logical, intent(in) :: flagallpts    ! return all points
@@ -530,7 +530,7 @@ contains
 
   !> Return a pointer to direct-feed the input data to the user
   function get_datainow_ptr(self) result(datavals)
-    class(neutraldata3D_fclaw), intent(inout) :: self   
+    class(neutraldata3D_fclaw), intent(inout) :: self
     real(wp), dimension(:,:), pointer :: datavals
 
     if (.not. associated(self%dataxyzinow)) then
@@ -544,7 +544,7 @@ contains
   ! Populate object arrays with information from an external model corresponding to locations defined by a call to
   !   get_locationsi.  The presumption is that the get_locationsi will provide a memory space for the data to be
   !   placed.  In a sense a call to this procedure merely informs the object that data have been placed in its
-  !   holding buffer and needs to be copied out into the user-exposed arrays.  
+  !   holding buffer and needs to be copied out into the user-exposed arrays.
   subroutine set_datainow(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
     integer :: lpts,ipts,ix1,ix2,ix3
@@ -597,7 +597,7 @@ contains
 !              isnan(self%dataxyzinow(ipts,3)) ) then
 !        print*, 'Bad mapping data x:  ',self%dataxyzinow(ipts,1),self%xlocsi(ipts)
 !        print*, 'Bad mapping data y:  ',self%dataxyzinow(ipts,2),self%ylocsi(ipts)
-!        print*, 'Bad mapping data z:  ',self%dataxyzinow(ipts,3),self%zlocsi(ipts)        
+!        print*, 'Bad mapping data z:  ',self%dataxyzinow(ipts,3),self%zlocsi(ipts)
 !        error stop
 !      end if
 
@@ -678,7 +678,7 @@ contains
 !    deallocate(self%data1Dax1inow, self%data1Dax2inow, self%data1Dax3inow)
 !    deallocate(self%data2Dax23inow, self%data2Dax12inow, self%data2Dax13inow)
 !    deallocate(self%data3Dinow)
-!    deallocate(self%coord1i,self%coord2i,self%coord3i)   
+!    deallocate(self%coord1i,self%coord2i,self%coord3i)
 !
 !    ! now deallocate arrays specific to this extension
 !    deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
@@ -687,7 +687,7 @@ contains
 !    deallocate(self%ximat,self%yimat,self%zimat)
 !
 !    ! FIXME: axisymmetric
-!    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)   
+!    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)
 !
 !    ! root has some extra data
 !!    if (mpi_cfg%myid==0) then

@@ -3,7 +3,7 @@ module neutraldataobj
 use phys_consts, only: wp
 use inputdataobj, only: inputdata
 
-implicit none (type,external)
+implicit none
 private
 public :: neutraldata
 

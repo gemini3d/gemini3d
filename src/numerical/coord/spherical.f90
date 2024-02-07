@@ -2,7 +2,7 @@ module spherical
 
 !> utility routines to compute various quantities relevant to spherical coordiante systems
 use phys_consts, only: wp
-implicit none (type, external)
+implicit none
 
 private
 public :: er_spherical,etheta_spherical,ephi_spherical

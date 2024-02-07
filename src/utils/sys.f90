@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 
 use filesystem, only : expanduser
 
-implicit none (type, external)
+implicit none
 
 private
 public :: get_compiler_vendor, expand_envvar

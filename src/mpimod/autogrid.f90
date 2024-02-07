@@ -1,7 +1,7 @@
 module autogrid
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-implicit none (type, external)
+implicit none
 
 private
 public :: grid_auto, test_process_number, max_mpi

@@ -6,7 +6,7 @@ use mpi_f08, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD,mpi_finalize
 use mumps_interface, only : mumps_struc, mumps_exec
 use h5fortran, only : hdf5_file
 
-implicit none (type, external)
+implicit none
 
 type(mumps_struc) :: mumps_par
 

@@ -2,7 +2,7 @@ program test_scalapack
 ! minimal Scalapack demo
 use, intrinsic :: iso_fortran_env, only: wp => real64
 
-implicit none (type, external)
+implicit none
 
 integer :: ictxt, myid, nprocs, mycol, myrow, npcol, nprow
 real(wp) :: eps

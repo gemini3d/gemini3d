@@ -2,7 +2,7 @@ submodule (compare_h5) compare_in_h5
 
 use filesystem, only : parent
 
-implicit none (type, external)
+implicit none
 
 contains
 

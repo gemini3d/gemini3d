@@ -2,7 +2,7 @@ module temporal
 
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 
-implicit none (type, external)
+implicit none
 
 private
 public :: cflcalc
@@ -23,7 +23,7 @@ contains
     lx1=size(Ts,1)-4
     lx2=size(Ts,2)-4
     lx3=size(Ts,3)-4
-    
+
     !EVALUATE TIME STEP AGAINST LOCAL SOUND SPEED AND ADVECTION
     maxcfl=0._wp
     do isp=1,lsp
@@ -35,7 +35,7 @@ contains
             else
               vsnd=0._wp
             end if
-    
+
             cfltmp=dt*(vsnd+abs(vs1(ix1,ix2,ix3,isp)))/dl1i(ix1,ix2,ix3)
             if (cfltmp>maxcfl) maxcfl=cfltmp
             cfltmp=dt*abs(vs2(ix1,ix2,ix3,isp))/dl2i(ix1,ix2,ix3)

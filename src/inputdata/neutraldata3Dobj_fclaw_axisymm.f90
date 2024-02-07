@@ -14,7 +14,7 @@ use timeutils, only: dateinc,date_filename
 use grid, only: gridflag
 use geomagnetic, only: ECEFspher2ENU
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata3D_fclaw_axisymm
 
@@ -98,7 +98,7 @@ contains
     allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
-    !allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))   
+    !allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
     allocate(self%ximat(lc1i,lc2i,lc3i),self%yimat(lc1i,lc2i,lc3i),self%zimat(lc1i,lc2i,lc3i))
     allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
     allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
@@ -278,7 +278,7 @@ contains
     deallocate(self%data1Dax1inow, self%data1Dax2inow, self%data1Dax3inow)
     deallocate(self%data2Dax23inow, self%data2Dax12inow, self%data2Dax13inow)
     deallocate(self%data3Dinow)
-    deallocate(self%coord1i,self%coord2i,self%coord3i)   
+    deallocate(self%coord1i,self%coord2i,self%coord3i)
 
     ! now deallocate arrays specific to this extension
     deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
@@ -287,7 +287,7 @@ contains
     deallocate(self%ximat,self%yimat,self%zimat)
 
     ! FIXME: axisymmetric
-    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)   
+    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)
 
     ! root has some extra data
 !    if (mpi_cfg%myid==0) then

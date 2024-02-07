@@ -38,10 +38,10 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
-            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                  
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, source_loss_allparams_in, &
-            source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &           
+            source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
             clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
@@ -50,8 +50,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in
-            
-implicit none (type, external)
+
+implicit none
 
 public
 
@@ -120,14 +120,14 @@ contains
   subroutine gemini_cfg_alloc_C(cfgC) bind(C, name='gemini_cfg_alloc_C')
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
-    
+
     cfg=>gemini_cfg_alloc()
     cfgC=c_loc(cfg)
   end subroutine gemini_cfg_alloc_C
 
 
   !> deallocate fortran struct connected to cfgC pointer
-  subroutine gemini_cfg_dealloc_C(cfgC) bind(C, name='gemini_cfg_dealloc_C') 
+  subroutine gemini_cfg_dealloc_C(cfgC) bind(C, name='gemini_cfg_dealloc_C')
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
@@ -493,16 +493,16 @@ contains
     type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
     type(C_PTR), intent(inout) :: intvarsC
     integer, intent(in) :: lsp
-  
+
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
     type(gemini_work), pointer :: intvars
-  
+
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC,intvars)
-  
+
     call set_global_boundaries_allspec_in(x, fluidvars, fluidauxvars, intvars, lsp)
   end subroutine set_global_boundaries_allspec_C
 
@@ -543,7 +543,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC, intvars)
-    x=>set_gridpointer_dyntype(xtype, xC)   
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allspec_mass_C
   subroutine sweep3_allspec_momentum_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep3_allspec_momentum_C")
@@ -562,7 +562,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC, intvars)
-    x=>set_gridpointer_dyntype(xtype, xC)   
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allspec_momentum_C
   subroutine sweep3_allspec_energy_C(fluidvarsC,fluidauxvarsC,intvarsC,xtype,xC,dt) bind(C, name="sweep3_allspec_energy_C")
@@ -581,7 +581,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
     call c_f_pointer(intvarsC, intvars)
-    x=>set_gridpointer_dyntype(xtype, xC)   
+    x=>set_gridpointer_dyntype(xtype, xC)
     call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
   end subroutine sweep3_allspec_energy_C
 
@@ -949,7 +949,7 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(intvarsC,intvars)
-    call clear_ionization_arrays(intvars)          
+    call clear_ionization_arrays(intvars)
   end subroutine clear_ionization_arrays_C
 
 
@@ -968,7 +968,7 @@ contains
     logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
-    type(gemini_cfg), pointer :: cfg    
+    type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
@@ -995,7 +995,7 @@ contains
     real(wp), intent(in) :: UTsec,f107,f107a
     real(wp), intent(in) :: gavg,Tninf
 
-    type(gemini_cfg), pointer :: cfg    
+    type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
@@ -1062,7 +1062,7 @@ contains
 
     call c_f_pointer(cfgC,cfg)
     interptype=cfg%interptype
-  end subroutine get_neutralperturb_interptype 
+  end subroutine get_neutralperturb_interptype
 
 
   subroutine precip_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='precip_perturb_C')

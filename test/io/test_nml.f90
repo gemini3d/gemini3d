@@ -1,7 +1,7 @@
 program test_nml
 !! test reference config.nml to see if it's a problem with file or Gemini
 
-implicit none (type, external)
+implicit none
 
 call print_nml()
 print *, "OK: read basic namelist file"

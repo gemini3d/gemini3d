@@ -18,7 +18,7 @@ use gemini3d_config, only: gemini_cfg
 
 use mpi_f08, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send, mpi_recv
 
-implicit none (type, external)
+implicit none
 
 private
 public :: dt_comm

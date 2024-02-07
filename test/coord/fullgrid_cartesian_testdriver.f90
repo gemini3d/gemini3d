@@ -4,7 +4,7 @@ use filesystem, only : mkdir
 use phys_consts, only: wp
 use meshobj_cart, only : cartmesh
 
-implicit none (type, external)
+implicit none
 
 integer, parameter :: lz = 44 + 4, lx = 32 + 4, ly = 28 + 4
 !! +4 for ghost cells

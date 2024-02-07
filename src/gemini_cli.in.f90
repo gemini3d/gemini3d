@@ -6,7 +6,7 @@ use filesystem, only : expanduser
 use mpimod, only : mpibreakdown, mpi_cfg
 use exe_frontend, only : help_gemini_bin
 
-implicit none (type, external)
+implicit none
 private
 public :: cli
 

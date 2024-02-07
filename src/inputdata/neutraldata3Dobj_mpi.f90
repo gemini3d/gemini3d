@@ -16,7 +16,7 @@ use grid, only: gridflag
 
 use mpi_f08, only : mpi_send,mpi_recv,mpi_integer,mpi_comm_world,mpi_status_ignore
 
-implicit none (type, external)
+implicit none
 private
 public :: neutraldata3D_mpi
 
@@ -38,7 +38,7 @@ type, abstract, extends(neutraldata3D) :: neutraldata3D_mpi
     procedure :: init=>init_neu3D
     procedure :: load_data=>load_data_neu3D
     procedure :: load_grid=>load_grid_neu3D    ! stub, does nothing since the grid information is handled differently for different
-                                               ! extensions, viz. some will set this data/information in an different manner than the 
+                                               ! extensions, viz. some will set this data/information in an different manner than the
                                                ! usual inputdata objects
     procedure :: load_size=>load_size_neu3D    ! stub, child must override if used or keep no-op
 end type neutraldata3D_mpi

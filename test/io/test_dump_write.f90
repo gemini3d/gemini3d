@@ -4,7 +4,7 @@ program test_error_write
 use errors, only : error_stop
 use phys_consts, only : wp
 
-implicit none (type, external)
+implicit none
 
 character(1000) :: buf
 character(:), allocatable :: mode, filename

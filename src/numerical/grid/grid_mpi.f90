@@ -12,7 +12,7 @@ use mpimod, only: mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
 
 use mpi_f08, only: mpi_integer, mpi_comm_world, mpi_status_ignore,mpi_recv, mpi_send
 
-implicit none (type, external)
+implicit none
 
 interface ! read.f90
   module subroutine read_grid_cartdip(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)

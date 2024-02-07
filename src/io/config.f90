@@ -3,7 +3,7 @@ module gemini3d_config
 use filesystem, only : suffix
 use phys_consts, only : wp
 
-implicit none (type, external)
+implicit none
 private
 public :: read_configfile, gemini_cfg
 

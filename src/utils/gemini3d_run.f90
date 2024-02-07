@@ -6,7 +6,7 @@ use exe_frontend, only : cli_parser, get_Ncpu, clean_output
 use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 
-implicit none (type, external)
+implicit none
 
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu
 character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra

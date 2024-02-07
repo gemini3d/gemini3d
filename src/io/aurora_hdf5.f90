@@ -3,7 +3,7 @@ submodule(io:io_aurora) io_aurora_hdf5
 use h5fortran, only: hdf5_file
 use mpimod, only : gather_recv
 
-implicit none (type, external)
+implicit none
 
 contains
 

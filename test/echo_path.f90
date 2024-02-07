@@ -2,7 +2,7 @@ program echo_path
 !! tell environment variable.
 !! can help establish if run frameworks like CTest are passing along variables properly.
 
-implicit none (type, external)
+implicit none
 
 character(:), allocatable :: var
 character(4096) :: buf

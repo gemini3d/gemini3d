@@ -1,7 +1,7 @@
 !> io related subroutines for the gemini3d_mpi library
 submodule (gemini3d_mpi) libgem_mpi_io
 
-implicit none (type, external)
+implicit none
 
 contains
   !> Create output directories and allocate root-only variables

@@ -4,7 +4,7 @@ use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
 use mpimod, only : bcast_send3D_ghost, bcast_send
 
-implicit none (type, external)
+implicit none
 
 contains
 

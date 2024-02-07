@@ -10,7 +10,7 @@ use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_
 use filesystem, only : expanduser, same_file
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-implicit none (type, external)
+implicit none
 
 integer :: i,j, argc
 character(1000) :: buf

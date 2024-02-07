@@ -30,7 +30,7 @@ use timeutils, only : sza
 use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
 
-implicit none (type, external)
+implicit none
 private
 public ::   sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
@@ -60,7 +60,7 @@ subroutine sweep3_allspec_momentum(dt,x,vs3i,rhovs1)
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
-  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)        
+  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
 end subroutine sweep3_allspec_momentum
 subroutine sweep3_allspec_energy(dt,x,vs3i,rhoes)
   real(wp), intent(in) :: dt
@@ -694,11 +694,11 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
   real(wp), dimension(:,:,:), intent(in) :: Tn
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end,ix2beg
   integer :: ibuf
-  integer, parameter :: lbuf=3     
+  integer, parameter :: lbuf=3
   !^ controls how far from null cells we want to forcibly replace data after a refine.  What is effectively being done here
   !    is that we are copying data from some specified location into the buffer region.  This is likely acceptable because
   !    the regions where we do this are very close to equilibrium so they will "snap" back to that state rather than generating
-  !    some weird transient from the forcibly replacement.  
+  !    some weird transient from the forcibly replacement.
 
   select case (paramflag)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

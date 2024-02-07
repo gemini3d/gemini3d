@@ -12,7 +12,7 @@ use geomagnetic, only: ECEFspher2ENU
 
 use mpi_f08, only : mpi_send,mpi_recv, MPI_INTEGER, MPI_COMM_WORLD, MPI_STATUS_IGNORE
 
-implicit none (type,external)
+implicit none
 private
 public :: neutraldata3D_geom
 

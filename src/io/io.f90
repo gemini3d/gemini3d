@@ -7,7 +7,7 @@ use phys_consts, only : kB,ms,pi,lsp,wp,lwave, comp_lvl
 use mpimod, only: mpi_cfg, tag=>gemini_mpi
 use grid, only : gridflag,lx1,lx2,lx3,lx2all, lx3all
 
-implicit none (type, external)
+implicit none
 
 private
 public :: create_outdir, &

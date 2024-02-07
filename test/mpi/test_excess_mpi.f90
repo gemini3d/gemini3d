@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use autogrid, only : checker=>test_process_number, max_mpi
 
-implicit none (type, external)
+implicit none
 
 call check_autogrid()
 

@@ -8,7 +8,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use phys_consts, only : wp
 use errors, only : error_stop
 
-implicit none (type, external)
+implicit none
 private
 public :: check_finite_output, check_finite_plasma, check_finite_current, check_finite_mag, check_finite_pertub
 
@@ -147,7 +147,7 @@ if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
 if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 500000)) &
   call error_stop (dump_filename, 'input:plasma: too hot Ts', ns, vs1, Ts)
 
-! FIXME:  this can cause problems if a worker gets data from all lower altitudes.  
+! FIXME:  this can cause problems if a worker gets data from all lower altitudes.
 if (maxval(Ts(i1:k1, i2:k2, i3:k3, i4:k4)) < 100) &
   call error_stop (dump_filename, 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
 

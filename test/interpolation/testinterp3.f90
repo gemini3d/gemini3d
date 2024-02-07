@@ -4,7 +4,7 @@ use phys_consts, only: wp,pi
 use interpolation, only : interp3
 use h5fortran, only: hdf5_file
 
-implicit none (type, external)
+implicit none
 
 character(1024) :: argv
 type(hdf5_file) :: hout

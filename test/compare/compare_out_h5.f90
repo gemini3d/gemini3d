@@ -1,6 +1,6 @@
 submodule (compare_h5) compare_out_h5
 
-implicit none (type, external)
+implicit none
 
 contains
 

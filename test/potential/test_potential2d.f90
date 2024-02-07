@@ -8,7 +8,7 @@ use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file
 
-implicit none (type, external)
+implicit none
 
 type(hdf5_file) :: hout
 

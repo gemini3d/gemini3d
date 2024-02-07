@@ -1,6 +1,6 @@
 submodule (potential_comm) potential_root
 
-implicit none (type, external)
+implicit none
 
 
 contains

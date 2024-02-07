@@ -8,7 +8,7 @@ use assert, only : assert_isclose
 use phys_consts, only: wp
 use ionrate, only: ionization_fang2008, ionization_fang2010
 
-implicit none (type, external)
+implicit none
 
 integer :: i, argc
 real(wp) :: Q0_erg, f107, f107a, Ap, glat, glon, UTsec, altrange(3)

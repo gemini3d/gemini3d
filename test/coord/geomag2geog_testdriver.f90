@@ -3,7 +3,7 @@ program geomag2geog_testdriver
 use phys_consts, only: wp,Re,pi
 use geomagnetic, only : geomag2geog,geog2geomag,r2alt,alt2r
 
-implicit none (type, external)
+implicit none
 
 integer, parameter :: lr=128,ltheta=192,lphi=96
 integer :: ir,itheta,iphi

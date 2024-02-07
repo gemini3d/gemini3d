@@ -8,7 +8,7 @@ use gemini3d_sysinfo, only : get_compiler_vendor
 use filesystem, only : parent, assert_is_dir, expanduser, remove
 use timeutils, only : date_filename,dateinc
 
-implicit none (type, external)
+implicit none
 private
 public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
 

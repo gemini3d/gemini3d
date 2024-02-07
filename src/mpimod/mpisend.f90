@@ -2,7 +2,7 @@ submodule (mpimod) mpisend
 
 use mpi_f08, only : mpi_send
 
-implicit none (type, external)
+implicit none
 
 contains
 

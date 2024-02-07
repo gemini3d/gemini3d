@@ -14,7 +14,7 @@ use reader, only: get_simsize2,get_grid2,get_efield
 use timeutils, only: dateinc,date_filename
 use grid, only: lx1,lx2,lx2all,lx3,lx3all,gridflag
 
-implicit none (type, external)
+implicit none
 private
 public :: efielddata
 

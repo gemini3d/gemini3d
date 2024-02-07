@@ -2,7 +2,7 @@ program test_expand
 
 use gemini3d_sysinfo, only : expand_envvar
 
-implicit none (type, external)
+implicit none
 
 
 call test_expand_envvar()

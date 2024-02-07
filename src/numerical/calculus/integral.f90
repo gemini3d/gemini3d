@@ -1,6 +1,6 @@
 submodule (calculus) integral
 
-implicit none (type, external)
+implicit none
 
 contains
 

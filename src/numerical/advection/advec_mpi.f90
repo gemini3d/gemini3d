@@ -4,7 +4,7 @@ use phys_consts, only: wp
   !! do not import grid sizes in case we want do subgrid advection...
 use mpimod, only: mpi_cfg, halo, tag=>gemini_mpi
 
-implicit none (type, external)
+implicit none
 private
 public :: halo_interface_vels_allspec
 contains

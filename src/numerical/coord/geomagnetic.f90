@@ -3,7 +3,7 @@ module geomagnetic
 !> transformations and data relevant to converting geographic to geomagnetic coordinates
 
 use phys_consts, only: wp,Re,pi
-implicit none (type, external)
+implicit none
 
 
 ! magnetic pole location in geographic coordinates
@@ -22,23 +22,23 @@ contains
     real(wp) :: thetag
     real(wp) :: phig
     real(wp) :: argtmp,alpha
-  
+
     glonwrap=mod(glon,360._wp)
     thetag = pi/2 - glat*pi/180
     phig = glonwrap*pi/180
-  
+
     theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
     argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
     alpha = acos( max(min(argtmp,1._wp),-1._wp) )
-  
+
     if (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi) then
       phi=pi-alpha
     else
       phi=alpha+pi
     end if
   end subroutine geog2geomag
-  
-  
+
+
   !> convert geographic coordinates to geomagnetic; do not use at the magnetic pole!!!
   elemental subroutine geomag2geog(phi,theta,glon,glat)
     real(wp), intent(in) :: phi,theta
@@ -47,12 +47,12 @@ contains
     real(wp) :: beta
     real(wp) :: phig2,phiwrap
     real(wp) :: argtmp
-  
+
     phiwrap=mod(phi,2*pi)
     thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
     argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
     beta=acos( max(min(argtmp,1._wp),-1._wp) )
-  
+
     if (phiwrap>pi) then
       phig2=phin-beta
     else
@@ -60,35 +60,35 @@ contains
     end if
     phig2=mod(phig2,2*pi)
     thetag2=pi/2-thetag2p
-  
+
     glon=phig2*180._wp/pi
     glat=thetag2*180._wp/pi
   end subroutine geomag2geog
-  
-  
+
+
   !> convert geocentric distance into altitude (assume spherical Earth but could use other model)
   elemental function r2alt(r) result(alt)
     real(wp), intent(in) :: r
     real(wp) :: alt
-  
+
     alt=r-Re
   end function r2alt
-  
-  
+
+
   !> convert altitude to geocentric distance
   elemental function alt2r(alt) result(r)
     real(wp), intent(in) :: alt
     real(wp) :: r
-  
+
     r=alt+Re
   end function alt2r
-  
-  
+
+
   !> return elemental rotation matrix for rotations about z-axis
   function rotz(alpha) result(Rz)
     real(wp), intent(in) :: alpha     ! must be in radians
     real(wp), dimension(3,3) :: Rz
-  
+
     Rz(1:3,1:3)=0._wp
     Rz(1,1)=cos(alpha)
     Rz(1,2)=-sin(alpha)
@@ -96,13 +96,13 @@ contains
     Rz(2,2)=cos(alpha)
     Rz(3,3)=1._wp
   end function rotz
-  
-  
+
+
   !> return elemental rotation matrix for rotations about y-axis
   function roty(alpha) result(Ry)
     real(wp), intent(in) :: alpha     ! must be in radians
     real(wp), dimension(3,3) :: Ry
-  
+
     Ry(1:3,1:3)=0._wp
     Ry(1,1)=cos(alpha)
     Ry(1,3)=sin(alpha)
@@ -110,12 +110,12 @@ contains
     Ry(3,1)=-sin(alpha)
     Ry(3,3)=cos(alpha)
   end function roty
-  
-  
+
+
   !> a rotation matrix to go from geomagnetic ECEF to geographic ECEF
   function rotgm2gg() result(Rgm2gg)
     real(wp), dimension(3,3) :: Rgm2gg
-  
+
     Rgm2gg=matmul(rotz(phin),roty(thetan))
   end function rotgm2gg
 
@@ -147,13 +147,13 @@ contains
       do ix2=1,lx2
         do ix1=1,lx1
           theta2=theta(ix1,ix2,ix3)                    !field point zenith angle
-      
+
           if (size(alt,2)/=1) then
             phi2=phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
           end if
-      
+
           !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
           theta3=theta2
           phi3=phi1
@@ -164,7 +164,7 @@ contains
             gamma1 = -1
           end if
           gamma1=acos(gamma1)
-      
+
           gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
           if (gamma2 > 1) then     !handles weird precision issues in 2D
             gamma2= 1
@@ -174,7 +174,7 @@ contains
           gamma2=acos(gamma2)
           xp=Re*gamma1
           yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-      
+
           ! coordinates from distances
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
             yp=-yp            !do we want an abs here to be safe

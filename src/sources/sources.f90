@@ -5,7 +5,7 @@ use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use meshobj, only : curvmesh
 
-implicit none (type, external)
+implicit none
 private
 public :: srcsenergy, srcsmomentum, srcscontinuity
 

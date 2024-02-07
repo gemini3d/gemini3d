@@ -6,7 +6,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use phys_consts, only: wp, debug
 use filesystem, only : is_file
 
-implicit none (type, external)
+implicit none
 private
 public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3
 

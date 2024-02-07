@@ -13,7 +13,7 @@ use reader, only : get_grid2, get_simsize2, get_Efield
 use gemini3d_config, only: gemini_cfg
 use efielddataobj, only: efielddata
 
-implicit none (type, external)
+implicit none
 private
 public :: potentialbcs2D, potentialbcs2D_fileinput, init_Efieldinput, &
             compute_rootBGEfields

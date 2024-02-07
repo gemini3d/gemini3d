@@ -3,7 +3,7 @@ submodule(meshobj_dipole) dipole_fns
 !> This submodule contains the functions for which we need to find roots in order to transform
 !   dipole to spherical coordinates.
 
-implicit none (type, external)
+implicit none
 
 ! options structure for Newton iterations
 type(newtopts) :: newtparms

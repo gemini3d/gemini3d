@@ -1,6 +1,6 @@
 submodule (grid:grid_mpi) grid_checker_mpi
 
-implicit none (type, external)
+implicit none
 
 contains
 

@@ -8,7 +8,7 @@ use gemini3d_config, only: gemini_cfg
 
 ! also links MSIS from vendor/msis00/
 
-implicit none (type, external)
+implicit none
 private
 public :: neutral_atmos, init_neutralBG, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
   neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind

@@ -5,7 +5,7 @@ use sanity_check, only : check_finite_current, check_finite_plasma
 use grid, only : get_grid3_coords_hdf5
 use mpimod, only : bcast_recv3D_ghost, bcast_recv
 
-implicit none (type, external)
+implicit none
 
 interface ! plasma_input_*.f90
   module subroutine input_root_currents_hdf5(outdir,flagoutput,ymd,UTsec,J1,J2,J3)

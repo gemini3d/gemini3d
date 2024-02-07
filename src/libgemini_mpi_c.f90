@@ -34,7 +34,7 @@ use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  RK2_global_boundary_allspec_in, halo_fluidvars_in
 use gemini3d_C, only : set_gridpointer_dyntype
 
-implicit none (type, external)
+implicit none
 
 public
 

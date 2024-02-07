@@ -28,7 +28,7 @@ use gemini3d_config, only: gemini_cfg
 
 use mpi_f08, only: mpi_send, mpi_recv, mpi_integer, mpi_comm_world, mpi_status_ignore
 
-implicit none (type, external)
+implicit none
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &

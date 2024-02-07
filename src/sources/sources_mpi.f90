@@ -4,13 +4,13 @@ module sources_mpi
 use phys_consts, only: wp
 use mpimod, only: mpi_cfg, tag=>gemini_mpi, halo
 
-implicit none (type, external)
+implicit none
 private
 public :: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 
 contains
   !> This haloes a single ghost cell for just the three components of velocity so a divergence
-  !    can be calculated.  
+  !    can be calculated.
   subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
     integer, intent(in) :: isp
     logical, intent(in) :: isperiodic
@@ -21,7 +21,7 @@ contains
     !! ION PARAMETER ARGUMENTS SHOULD INCLUDE GHOST CELLS.
     !! DO WE NEED TO PASS V1,2 VARIABLES FOR DIV?
     real(wp), dimension(-1:size(vs1,1)-2,-1:size(vs1,2)-2,-1:size(vs1,3)-2) :: param
-            
+
     !-- Now halo the interior parts (must happen for every worker since even a worker with a
     !-- global boundary will still have one interior boundary to be haloed.
     !BY DEFAULT THE GLOBAL BOUNDARIES ARE ASSUMED TO BE PERIOIDIC
@@ -42,7 +42,7 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
     logical, intent(in) :: isperiodic
     integer isp,lsp
-  
+
     lsp=size(vs1,4)
     do isp=1,lsp
       call RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
@@ -107,6 +107,6 @@ contains
         vs2(:,:,lx3+1,isp)=vs2(:,:,lx3,isp)
         vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)
       end if
-    end if 
+    end if
   end subroutine RK2_global_boundary
 end module sources_mpi

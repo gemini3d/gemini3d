@@ -2,7 +2,7 @@ module interpolation
 
 use phys_consts, only: wp
 
-implicit none (type, external)
+implicit none
 private
 public :: interp1, interp2, interp3
 
@@ -34,10 +34,10 @@ contains
     integer :: lx1,lx1i,ix1,ix1i
     real(wp) :: slope
     integer :: ix10,ix1fin
-    
+
     lx1=size(x1,1)
     lx1i=size(x1i,1)
-    
+
     do ix1i=1,lx1i
     !      !find the 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
       ix10=1
@@ -60,7 +60,7 @@ contains
       else
         ix1=lx1
       end if
-    
+
       !execute interpolation for this point
       if (ix1>1 .and. ix1<=lx1) then   !interpolation
         slope=(f(ix1)-f(ix1-1))/(x1(ix1)-x1(ix1-1))
@@ -69,7 +69,7 @@ contains
         interp1(ix1i)=0
       end if
     end do
-    
+
     !THERE IS SOME ISSUE WITH POINTS OUTSIDE INTERPOLANT DOMAIN - THIS IS A
     !WORKAROUND UNTIL I CAN PIN DOWN THE EXACT PROBLEM
     do ix1i=1,lx1i
@@ -78,8 +78,8 @@ contains
       end if
     end do
   end function interp1
-  
-  
+
+
   pure real(wp) function interp3(x1,x2,x3,f,x1i,x2i,x3i)
     !------------------------------------------------------------
     !-------A 3D TRILINEAR INTERPOLATION FUNCTION.  THIS VERSION ASSUMES
@@ -94,12 +94,12 @@ contains
     real(wp) :: slope                     !temp value for slope for interpolations
     integer :: lx1,lx2,lx3,lxi,ix1,ix2,ix3,ixi
     integer :: ix10,ix1fin,ix20,ix2fin,ix30,ix3fin
-    
+
     lx1=size(x1,1)
     lx2=size(x2,1)
     lx3=size(x3,1)
     lxi=size(x1i,1)    !only one size since this a flat list of grid points
-    
+
     do ixi=1,lxi
       !find the x1 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
       ix10=1
@@ -144,7 +144,7 @@ contains
       else
         ix2=lx2
       end if
-    
+
       !find the x3 'bin' for this point; i.e. find ix3 s.t. x3i(ix3i) is between x3(ix3-1) and x3(ix3)
       ix30=1
       ix3 = max(lbound(x3, dim=1)+1, lx3/2)  !< avoid bounds error when lx3==2 in "do while(... x3(ix3-1) ...)"
@@ -164,36 +164,36 @@ contains
       else
         ix3=lx3
       end if
-    
+
       if (ix1>1 .and. ix1<=lx1 .and. ix2>1 .and. ix2<=lx2 .and. ix3>1 .and. ix3<=lx3) then   !interpolation
         !interpolate x1 for fixed values of x2,x3 (four separate interps)
         !first the "prev" x2 value, "prev" x2 value
         slope=(f(ix1,ix2-1,ix3-1)-f(ix1-1,ix2-1,ix3-1))/(x1(ix1)-x1(ix1-1))
         fx1ix2pix3p=f(ix1-1,ix2-1,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
-    
+
         !now the "next" x2 value, "prev" x3
         slope=(f(ix1,ix2,ix3-1)-f(ix1-1,ix2,ix3-1))/(x1(ix1)-x1(ix1-1))
         fx1ix2nix3p=f(ix1-1,ix2,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
-    
+
         !prev x2, next x3
         slope=(f(ix1,ix2-1,ix3)-f(ix1-1,ix2-1,ix3))/(x1(ix1)-x1(ix1-1))
         fx1ix2pix3n=f(ix1-1,ix2-1,ix3)+slope*(x1i(ixi)-x1(ix1-1))
-    
+
         !next x3, next x3
         slope=(f(ix1,ix2,ix3)-f(ix1-1,ix2,ix3))/(x1(ix1)-x1(ix1-1))
         fx1ix2nix3n=f(ix1-1,ix2,ix3)+slope*(x1i(ixi)-x1(ix1-1))
-    
-    
+
+
         !interpolate between each x2 value (two separate interps)
         !interp in x2 for the x3 prev points
         slope=(fx1ix2nix3p-fx1ix2pix3p)/(x2(ix2)-x2(ix2-1))
         fx2ix3p=fx1ix2pix3p+slope*(x2i(ixi)-x2(ix2-1))
-    
+
         !interp in 2 for the next x3 points
         slope=(fx1ix2nix3n-fx1ix2pix3n)/(x2(ix2)-x2(ix2-1))
         fx2ix3n=fx1ix2pix3n+slope*(x2i(ixi)-x2(ix2-1))
-    
-    
+
+
         !finally an interpolation in x2 to finish things off (single interp)
         slope=(fx2ix3n-fx2ix3p)/(x3(ix3)-x3(ix3-1))
         interp3(ixi)=fx2ix3p+slope*(x3i(ixi)-x3(ix3-1))
@@ -201,7 +201,7 @@ contains
         interp3(ixi)=0._wp
       end if
     end do
-    
+
     !THERE IS SOME ISSUE WITH POINTS OUTSIDE INTERPOLANT DOMAIN - THIS IS A WORKAROUND UNTIL I CAN PIN DOWN THE EXACT PROBLEM
     do ixi=1,lxi
       if(x1i(ixi)<x1(1) .or. x1i(ixi)>x1(lx1) .or. x2i(ixi)<x2(1) .or. x2i(ixi)>x2(lx2) .or. x3i(ixi)<x3(1) .or. &

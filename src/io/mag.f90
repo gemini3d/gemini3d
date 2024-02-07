@@ -3,7 +3,7 @@ submodule (io) mag
 use sanity_check, only : check_finite_mag
 use filesystem, only : mkdir
 
-implicit none (type, external)
+implicit none
 
 interface ! mag_*.f90
 

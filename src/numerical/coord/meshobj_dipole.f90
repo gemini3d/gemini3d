@@ -10,7 +10,7 @@ use meshobj, only: curvmesh
 use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
-implicit none (type, external)
+implicit none
 private
 public :: dipolemesh, qp2rtheta
 

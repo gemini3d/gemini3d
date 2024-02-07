@@ -9,7 +9,7 @@ use phys_consts, only : wp
 use timeutils, only : dateinc
 use exe_frontend, only : help_magcalc_bin
 
-implicit none (type, external)
+implicit none
 private
 public :: cli
 

@@ -2,7 +2,7 @@ module timeutils
 use phys_consts, only: wp
 use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 
-implicit none (type, external)
+implicit none
 private
 public :: ymd2doy, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate, find_time_elapsed
 

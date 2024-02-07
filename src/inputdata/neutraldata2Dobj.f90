@@ -12,7 +12,7 @@ use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use grid, only: gridflag
 
-implicit none (type,external)
+implicit none
 private
 public :: neutraldata2D
 

@@ -7,7 +7,7 @@ use grid, only: lx1,lx2,lx3
 use meshobj, only: curvmesh
 use timeutils, only: ymd2doy
 
-implicit none (type, external)
+implicit none
 private
 public :: ionrate_fang, ionrate_glow98, eheating, photoionization
 
@@ -164,10 +164,10 @@ nO2col=nn(:,:,:,3)*H*Chfn
 !PHOTON FLUX
 do il=1,ll
   ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
-  !   computing photon fluxes. 
+  !   computing photon fluxes.
   do ix3=1,x%lx3
     do ix2=1,x%lx2
-      do ix1=1,x%lx1 
+      do ix1=1,x%lx1
         if (flagmask) then
           ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))
           ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))

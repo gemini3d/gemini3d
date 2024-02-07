@@ -1,7 +1,7 @@
 !> drift-related calculations for libgemini_mpi
 submodule (gemini3d_mpi) libgem_mpi_drifts
 
-implicit none (type, external)
+implicit none
 
 contains
   !> add in background field, accounting for whether the user specified a lagrangian grid
@@ -50,7 +50,7 @@ contains
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
     integer :: lx1,lx2,lx3,lsp
-    
+
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3; lsp=size(ns,4);
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))

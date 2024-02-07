@@ -13,7 +13,7 @@ use filesystem, only : suffix, file_name, is_file
 use reader, only : get_simsize3, get_simsize2
 use assert, only : isclose
 
-implicit none (type, external)
+implicit none
 
 type params
 logical :: matlab = .false., python = .false., debug = .false.

@@ -7,7 +7,7 @@ use meshobj_dipole, only: dipolemesh
 use interpolation, only : interp1,interp2,interp3
 use timeutils, only : dateinc, date_filename, find_lastdate
 
-implicit none (type, external)
+implicit none
 private
 public :: inputdata
 
@@ -449,7 +449,7 @@ contains
   end subroutine update_simple
 
 
-  !> use data input arrays in order to 
+  !> use data input arrays in order to
   subroutine nospaceinterp(self)
     class(inputdata),intent(inout) :: self
     integer :: iparm
@@ -870,7 +870,7 @@ contains
 
   function get_datainow_ptr(self) result(datavals)
     class(inputdata), intent(inout) :: self
-    real(wp), dimension(:,:), pointer :: datavals 
+    real(wp), dimension(:,:), pointer :: datavals
 
     print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
     return
@@ -878,11 +878,11 @@ contains
 
 
   !> We assume that the get_locationsi will provide a memory space for the results which are stored in the object extension
-  !    so no additional inputs are needed to copy those data out into the proper object arrays.  
+  !    so no additional inputs are needed to copy those data out into the proper object arrays.
   subroutine set_datainow(self)
     class(inputdata), intent(inout) :: self
 
-    print*, 'WARNING:  triggered no-op set_datainow, use an extension with a full implementation'           
+    print*, 'WARNING:  triggered no-op set_datainow, use an extension with a full implementation'
     return
   end subroutine set_datainow
 
