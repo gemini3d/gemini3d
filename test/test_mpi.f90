@@ -29,7 +29,11 @@ if (ierr /= 0) then
   error stop
 endif
 
-call MPI_GET_LIBRARY_VERSION(version, vlen)
+call MPI_GET_LIBRARY_VERSION(version, vlen, ierr)
+if (ierr /= 0) then
+  write(stderr, '(a,i0)') 'ERROR: abnormal MPI get library version code ', ierr
+  error stop
+endif
 
 call mpi_finalize(ierr)
 if (ierr /= 0) then
