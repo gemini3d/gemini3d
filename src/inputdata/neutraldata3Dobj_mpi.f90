@@ -14,7 +14,8 @@ use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use grid, only: gridflag
 
-use mpi_f08, only : mpi_send,mpi_recv,mpi_integer,mpi_comm_world,mpi_status_ignore
+! use mpi_f08, only : mpi_send,mpi_recv,mpi_integer,mpi_comm_world,mpi_status_ignore
+use mpi
 
 implicit none
 private

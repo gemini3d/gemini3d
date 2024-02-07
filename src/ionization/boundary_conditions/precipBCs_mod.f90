@@ -12,7 +12,8 @@ use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
 
-use mpi_f08, only : mpi_integer, mpi_comm_world, mpi_status_ignore
+! use mpi_f08, only : mpi_integer, mpi_comm_world, mpi_status_ignore
+use mpi
 
 implicit none
 private

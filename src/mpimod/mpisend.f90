@@ -1,6 +1,7 @@
 submodule (mpimod) mpisend
 
-use mpi_f08, only : mpi_send
+! use mpi_f08, only : mpi_send
+use mpi
 
 implicit none
 

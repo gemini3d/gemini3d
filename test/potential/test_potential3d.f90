@@ -2,9 +2,11 @@ program test_potential3D
 
 use, intrinsic :: iso_fortran_env, only: real64, stderr=>error_unit
 
-use mpi_f08, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD,mpi_finalize
 use mumps_interface, only : mumps_struc, mumps_exec
 use h5fortran, only : hdf5_file
+
+! use mpi_f08, only : mpi_init, mpi_comm_rank, MPI_COMM_WORLD,mpi_finalize
+use mpi
 
 implicit none
 

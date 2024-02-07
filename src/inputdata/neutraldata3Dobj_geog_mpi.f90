@@ -9,7 +9,8 @@ use gemini3d_config, only: gemini_cfg
 use geomagnetic, only: geomag2geog, ECEFspher2ENU
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 
-use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
+! use mpi_f08, only: mpi_send,mpi_recv,mpi_integer,mpi_comm_world
+use mpi
 
 implicit none
 private

@@ -6,8 +6,10 @@ module mpimod
   use phys_consts, only : lsp, wp
   use autogrid, only : grid_auto
 
-  use mpi_f08, only: mpi_realprec=>@mpi_realprec@
-  use mpi_f08, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
+  use mpi, only: mpi_realprec=>@mpi_realprec@
+  use mpi
+  ! use mpi_f08, only: mpi_realprec=>@mpi_realprec@
+  ! use mpi_f08, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_finalize
 
   implicit none
   private

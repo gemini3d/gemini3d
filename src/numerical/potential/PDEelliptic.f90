@@ -6,7 +6,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use mumps_interface, only : mumps_struc, mumps_exec
 use phys_consts, only: wp, debug
 
-use mpi_f08, only: MPI_COMM_WORLD
+! use mpi_f08, only: MPI_COMM_WORLD
+use mpi
 
 implicit none
 private

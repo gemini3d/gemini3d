@@ -17,7 +17,8 @@ mpi_cfg, mpi_realprec, tag=>gemini_mpi
 use h5fortran, only : hdf5_file
 use filesystem, only : suffix
 
-use mpi_f08, only: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce,mpi_sum, mpi_comm_world
+! use mpi_f08, only: mpi_init,mpi_finalize,mpi_comm_rank,mpi_reduce,mpi_sum, mpi_comm_world
+use mpi
 
 implicit none
 

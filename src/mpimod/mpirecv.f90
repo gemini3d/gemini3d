@@ -1,6 +1,7 @@
 submodule (mpimod) mpirecv
 
-use mpi_f08, only: mpi_recv, MPI_STATUS_IGNORE
+! use mpi_f08, only: mpi_recv, MPI_STATUS_IGNORE
+use mpi
 
 implicit none
 

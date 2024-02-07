@@ -10,7 +10,8 @@ use mpimod, only: mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
   gather_send,gather_recv,ID2grid,grid2ID
 
-use mpi_f08, only: mpi_integer, mpi_comm_world, mpi_status_ignore,mpi_recv, mpi_send
+! use mpi_f08, only: mpi_integer, mpi_comm_world, mpi_status_ignore,mpi_recv, mpi_send
+use mpi
 
 implicit none
 

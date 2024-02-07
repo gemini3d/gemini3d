@@ -5,10 +5,10 @@ use grid, only: lx1,lx2,lx3
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi
 use neutral, only: neutral_info
 
-use mpi_f08, only : MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send,mpi_recv
+! use mpi_f08, only : MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send,mpi_recv
+use mpi
 
 implicit none
-
 private
 public :: get_gavg_Tinf
 

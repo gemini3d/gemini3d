@@ -1,7 +1,9 @@
 program test_mpi
 
-use mpi_f08
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
+
+! use mpi_f08
+use mpi
 
 implicit none
 

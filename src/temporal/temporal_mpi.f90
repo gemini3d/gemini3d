@@ -16,7 +16,8 @@ use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg
 use meshobj, only:  curvmesh
 use gemini3d_config, only: gemini_cfg
 
-use mpi_f08, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send, mpi_recv
+! use mpi_f08, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send, mpi_recv
+use mpi
 
 implicit none
 
