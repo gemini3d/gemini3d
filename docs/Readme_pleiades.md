@@ -1,5 +1,12 @@
 # Running GEMINI on the NASA Pleiades system
 
+Logging in to Pleiades:  
+
+```
+ssh <username>@sfe6.nas.nasa.gov
+ssh pfe
+```
+
 
 ## 1) Set up compilers, wrappers, and environment variables
 ```
@@ -47,6 +54,6 @@ qdel <PID>
 ## 5) copy data to Pleiades
 
 ```
-scp -oProxyCommand='ssh nas_username@sfeX.nas.nasa.gov ssh-proxy %h' file1 nas_username@lou.nas.nasa.gov:file2
+scp -oProxyCommand='ssh <nas_username>@sfe6.nas.nasa.gov ssh-proxy %h' <file1> <nas_username>@pfe.nas.nasa.gov:<file2>
 ```
 
