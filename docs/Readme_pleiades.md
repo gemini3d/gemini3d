@@ -57,3 +57,9 @@ qdel <PID>
 scp -oProxyCommand='ssh <nas_username>@sfe6.nas.nasa.gov ssh-proxy %h' <file1> <nas_username>@pfe.nas.nasa.gov:<file2>
 ```
 
+## 6) copy data to long term storage
+
+```
+cp -rv <file> /u/<username>/
+```
+
