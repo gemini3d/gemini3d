@@ -476,17 +476,21 @@ contains
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_C(fluidvarsC,intvarsC,lsp) bind(C, name='interface_vels_allspec_C')
+  subroutine interface_vels_allspec_C(xtype,xC,fluidvarsC,intvarsC,lsp) bind(C, name='interface_vels_allspec_C')
+    integer(C_INT), intent(in) :: xtype
+    type(C_PTR), intent(in) :: xC
     type(c_ptr), intent(in) :: fluidvarsC
     type(c_ptr), intent(inout) :: intvarsC
     integer(C_INT), intent(in) :: lsp
 
+    class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
     type(gemini_work), pointer :: intvars
 
+    x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
-    call interface_vels_allspec_in(fluidvars,intvars,lsp)
+    call interface_vels_allspec_in(x,fluidvars,intvars,lsp)
   end subroutine interface_vels_allspec_C
 
 
