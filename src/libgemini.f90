@@ -730,14 +730,15 @@ contains
 
 
   !> compute interface velocities once haloing has been done
-  subroutine interface_vels_allspec_in(fluidvars,intvars,lsp)
+  subroutine interface_vels_allspec_in(x,fluidvars,intvars,lsp)
+    class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     integer, intent(in) :: lsp
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call interface_vels_allspec(vs1,vs2,vs3,intvars%vs1i,intvars%vs2i,intvars%vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
+    call interface_vels_allspec(x,vs1,vs2,vs3,intvars%vs1i,intvars%vs2i,intvars%vs3i,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
   end subroutine interface_vels_allspec_in
 
 

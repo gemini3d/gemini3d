@@ -152,8 +152,9 @@ contains
   !> do averaging to compute cell interface velocities; requires pre-haloing in order for cells
   !    to have updated boundary info from ghost cells.  Single species only, "isp"; does not require
   !    any knowledge about the mpi image configuration(s).
-  subroutine interface_vels(isp,vs1,vs2,vs3,v1i,v2i,v3i)
+  subroutine interface_vels(isp,x,vs1,vs2,vs3,v1i,v2i,v3i)
     integer, intent(in) :: isp
+    class(curvmesh), intent(in) :: x
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
     real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(inout) :: v1i
     !! intent(out)
@@ -165,26 +166,35 @@ contains
     lx1=size(vs1,1)-4
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
-    
-    v1i(1:lx1+1,:,:)=0.5*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))   !assume everything interior for now
-  
-!    !COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
-!    v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   !first the interior points
-!    if (gridflag==0) then          !closed dipole grid
-!      v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
-!      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-!    else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
-!      v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-!      !! lowest alt on grid.
-!      v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
-!      !! highest alt; interesting that this is not vs1...
-!    else                           !some type of non-inverted grid
-!      v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
-!    !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
-!      v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
-!      !! NOTE: interesting that this is not vs1...
-!    end if
-!  
+
+    !> x1-interface vels complicated by possible global boundary presence
+    v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   ! interior points always treated the same
+    if (isglobalx1min(x)) then   ! exterior on the x1min side
+      if (gridflag==0) then          !closed dipole grid
+        v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
+      else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
+        v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+        !! lowest alt on grid.
+      else                           !some type of non-inverted grid
+        v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
+      end if
+    else                         ! interior on the x1min side
+      v1i(1,:,:)=0.5*(vs1(0,1:lx2,1:lx3,isp)+vs1(1,1:lx2,1:lx3,isp))
+    end if
+    if (isglobalx1max(x)) then   ! exterior on the x1max side
+      if (gridflag==0) then          !closed dipole grid
+        v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+      else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
+        v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
+        !! highest alt; interesting that this is not vs1...
+      else                           !some type of non-inverted grid
+        v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
+        !! NOTE: interesting that this is not vs1...
+      end if
+    else                         ! interior on the x1max side
+      v1i(lx1+1,:,:)=0.5*(vs1(lx1,1:lx2,1:lx3,isp)+vs1(lx1+1,1:lx2,1:lx3,isp))
+    end if
+
     ! THIS TYPE OF LIMITING MAY BE NEEDED FOR VERY HIGH-ALTITUDE SIMULATIONS...
     !    if (isp<lsp-1) then
     !      v1i(lx1+1,:,:)=max(vs1(lx1+1,:,:,isp),-1*vellim)    !limit inflow
@@ -203,7 +213,8 @@ contains
   
   
   !> compute cell interface velocities for all species being simulated
-  subroutine interface_vels_allspec(vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)
+  subroutine interface_vels_allspec(x,vs1,vs2,vs3,vs1i,vs2i,vs3i,lsp)
+    class(curvmesh), intent(in) :: x
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
     real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4,1:size(vs1,4)), intent(inout) :: vs1i
     real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4,1:size(vs2,4)), intent(inout) :: vs2i
@@ -213,7 +224,7 @@ contains
   
     if (lsp>size(vs1,4)) error stop 'number of interface vels must be less than or equal to total species number'
     do isp=1,lsp
-      call interface_vels(isp,vs1,vs2,vs3,vs1i(:,:,:,isp),vs2i(:,:,:,isp),vs3i(:,:,:,isp))
+      call interface_vels(isp,x,vs1,vs2,vs3,vs1i(:,:,:,isp),vs2i(:,:,:,isp),vs3i(:,:,:,isp))
     end do
   end subroutine interface_vels_allspec
 

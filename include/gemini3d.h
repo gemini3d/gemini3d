@@ -63,7 +63,7 @@ extern void check_finite_output_C(void**, double**, double**, double*);
 extern void get_solar_indices_C(void**, double*, double*);
 extern void v12rhov1_C(double**, double**);
 extern void T2rhoe_C(double**, double**);
-extern void interface_vels_allspec_C(double**, void**, int*);
+extern void interface_vels_allspec_C(int*, void**, double**, void**, int*);
 extern void sweep3_allparams_C(double**, double**, void**, int*, void**, double*);
 extern void sweep3_allspec_mass_C(double**, double**, void**, int*, void**, double*);
 extern void sweep3_allspec_momentum_C(double**, double**, void**, int*, void**, double*);
