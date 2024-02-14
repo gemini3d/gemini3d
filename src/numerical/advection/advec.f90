@@ -173,8 +173,8 @@ contains
       if (gridflag==0) then          !closed dipole grid
         v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
       else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
-        v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-        !! lowest alt on grid.
+        v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
+        !! highest alt; interesting that this is not vs1...
       else                           !some type of non-inverted grid
         v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
       end if
@@ -185,8 +185,8 @@ contains
       if (gridflag==0) then          !closed dipole grid
         v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
       else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
-        v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
-        !! highest alt; interesting that this is not vs1...
+        v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+        !! lowest alt on grid.
       else                           !some type of non-inverted grid
         v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
         !! NOTE: interesting that this is not vs1...
