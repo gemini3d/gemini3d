@@ -19,10 +19,20 @@ export CXX=g++
 export FC=gfortran
 ```
 
+## 1.1) Pull and build external
+
+```
+git clone https://github.com/gemini3d/external/
+cd external
+cmake -B build
+cmake --build build -j
+```
+
 ## 2) Pull the repository, configure, and build
 
 ```
 git clone https://github.com/gemini3d/gemini3d/
+cd gemini3d
 git submodule init
 git submodule update
 cmake -B build
