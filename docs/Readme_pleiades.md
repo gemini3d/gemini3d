@@ -69,7 +69,10 @@ scp -oProxyCommand='ssh <nas_username>@sfe6.nas.nasa.gov ssh-proxy %h' <file1> <
 
 ## 6) copy data to long term storage
 
+From the sfe:  
+
 ```
-cp -rv <file> /u/<username>/
+ssh lou
+cp -rv <file> /nobackup/<username>/
 ```
 
