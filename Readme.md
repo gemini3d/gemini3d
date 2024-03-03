@@ -66,7 +66,7 @@ Install Gemini3D prerequisite libraries. This is a one-time process used by any 
 ```sh
 git clone https://github.com/gemini3d/external.git
 
-cmake -P external/build-online.cmake
+cmake -Dmumps_only=yes -P external/build.cmake
 # installs under ~/libgem_gnu by default
 ```
 

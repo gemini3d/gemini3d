@@ -80,7 +80,7 @@ jobs:
 
     - name: Install numeric libraries
       timeout-minutes: 15
-      run: cmake -Dmumps_only:BOOL=yes -P build-online.cmake
+      run: cmake -Dmumps_only:BOOL=yes -P build.cmake
       working-directory: gemext
 
     - name: CMake Configure

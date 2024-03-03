@@ -70,7 +70,7 @@ jobs:
 
     - name: Install model libraries
       timeout-minutes: 15
-      run: cmake -Dprefix=${{ runner.temp }} -Dmumps_only:BOOL=on -P build-online.cmake
+      run: cmake -Dprefix=${{ runner.temp }} -Dmumps_only:BOOL=on -P build.cmake
       working-directory: gemext
 
     - uses: actions/checkout@v4

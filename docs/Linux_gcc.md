@@ -19,7 +19,7 @@ git clone https://github.com/gemini3d/external
 cmake -P external/scripts/requirements.cmake
 # gives command to install compiler and system libraries
 
-cmake -P external/build-online.cmake
+cmake -P external/build.cmake
 ```
 
 that installs Gemini3d external libraries under ~/libgem_gcc.
