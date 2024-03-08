@@ -26,10 +26,10 @@ See [Readme_mpi](./Readme_mpi.md) for more info.
 
 ## Python
 
-Python &ge; 3.7 is required for a number of GEMINI operations.
-We recommend installing either [anaconda](https://www.anaconda.com) or [miniconda](https://docs.conda.io/en/latest/miniconda.html).
+Python is required for a number of GEMINI operations.
+We recommend installing [miniconda](https://docs.conda.io/en/latest/miniconda.html).
 Open source distributions are available for download at these websites.
-Otherwise, [build Python from scratch](https://github.com/gemini3d/cmake-python-build).
+As a last resort, [build Python from scratch](https://github.com/gemini3d/cmake-python-build).
 
 ## MATLAB
 
