@@ -9,7 +9,8 @@ find_package(Git)
 set(_max_len 80) # arbitrary limit, so as not to exceed maximum 132 character Fortran line length.
 set(git_branch)
 set(git_rev)
-set(git_porcelain false)
+set(git_porcelain)
+set(git_remote)
 
 if(NOT GIT_FOUND)
   return()
@@ -54,18 +55,27 @@ else()
 endif()
 string(APPEND git_rev " ${PROJECT_VERSION}")
 
-set(git_porcelain true)
 execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 OUTPUT_VARIABLE _porcelain
 OUTPUT_STRIP_TRAILING_WHITESPACE
 RESULT_VARIABLE _err
 )
-if(_porcelain)
-  set(git_porcelain false)
-endif(_porcelain)
-if(NOT _err EQUAL 0)
-  set(git_porcelain false)
+string(LENGTH "${_porcelain}" _L)
+if(_L EQUAL 0 AND _err EQUAL 0)
+  set(git_porcelain "clean")
+else()
+  set(git_porcelain "dirty")
 endif()
 
-message(STATUS "${PROJECT_NAME}  git revision: ${git_rev}  git_branch: ${git_branch}  git_porcelain: ${git_porcelain}")
+set(git_origin "origin")
+# Git default remote name
+
+execute_process(COMMAND ${GIT_EXECUTABLE} remote get-url ${git_origin}
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+OUTPUT_VARIABLE git_remote
+OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+# allow error message on stdout to propagate to CMake output
+
+message(STATUS "${PROJECT_NAME} ${git_remote} ${git_rev} ${git_branch} ${git_porcelain}")

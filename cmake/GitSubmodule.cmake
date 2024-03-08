@@ -53,6 +53,11 @@ function(report_submodule submod_dir)
     return()
   endif()
 
+  if(r MATCHES "@")
+    # remove token from remote URL
+    string(REGEX REPLACE "://[^@]+@" "://" r "${r}")
+  endif()
+
   execute_process(COMMAND ${GIT_EXECUTABLE} -C ${submod_dir} status --porcelain
   OUTPUT_VARIABLE p
   OUTPUT_STRIP_TRAILING_WHITESPACE
