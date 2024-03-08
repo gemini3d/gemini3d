@@ -36,9 +36,7 @@ int main(int argc, char **argv) {
   }
 
   // simulation directory
-  char odir[FS_MAX_PATH];
-  fs_expanduser(argv[1], odir, FS_MAX_PATH);
-  fs::path out_dir(odir);
+  fs::path out_dir(Ffs::expanduser(argv[1]));
 
   if(! fs::is_directory(out_dir))
     throw std::runtime_error("Gemini3D simulation output directory does not exist: " + out_dir.string());
