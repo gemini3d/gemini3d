@@ -26,3 +26,64 @@ if(NOT err EQUAL 0)
 endif()
 
 endfunction()
+
+
+function(report_submodule submod_dir)
+  # get the following information for the Git submodule
+  # git remote -v
+  # git status --porcelain
+  # git commit hash
+
+  if(NOT EXISTS ${submod_dir}/.git)
+    message(VERBOSE "${submod_dir} is not a Git submodule, skipping}")
+    return()
+  endif()
+
+  set(git_remote "origin")
+  # Git default remote name
+
+  execute_process(COMMAND ${GIT_EXECUTABLE} -C ${submod_dir} remote get-url ${git_remote}
+  OUTPUT_VARIABLE r
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE ret
+  )
+
+  if(NOT ret EQUAL 0)
+    message(STATUS "Git remote failed for ${submod_dir}")
+    return()
+  endif()
+
+  execute_process(COMMAND ${GIT_EXECUTABLE} -C ${submod_dir} status --porcelain
+  OUTPUT_VARIABLE p
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE ret
+  )
+
+  if(NOT ret EQUAL 0)
+    message(STATUS "Git status failed for ${submod_dir}")
+    return()
+  endif()
+
+  string(LENGTH "${p}" p_len)
+  if(p_len EQUAL 0)
+    set(porcelain "clean")
+  else()
+    set(porcelain "dirty")
+  endif()
+
+  execute_process(COMMAND ${GIT_EXECUTABLE} -C ${submod_dir} rev-parse --short HEAD
+  OUTPUT_VARIABLE h
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE ret
+  )
+
+  if(NOT ret EQUAL 0)
+    message(STATUS "Git rev-parse failed for ${submod_dir}")
+    return()
+  endif()
+
+  get_filename_component(name ${submod_dir} NAME)
+
+  message(STATUS "${name} remote: ${r} ${porcelain} ${h}")
+
+endfunction()

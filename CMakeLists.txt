@@ -34,6 +34,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Fortran filesystem library "ffilesystem"
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
+report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 add_subdirectory(ffilesystem)
 
 # find python before excluding Anaconda
@@ -56,6 +57,7 @@ include(cmake/mpi.cmake)
 # --- end MPI
 
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
+report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
 add_subdirectory(h5fortran)
 message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
 # this also implicitly finds HDF5.
@@ -86,11 +88,13 @@ endif()
 # --- climate models
 if(glow)
   git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
+  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
   add_subdirectory(glow)
 endif()
 
 if(hwm14)
   git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
+  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
   add_subdirectory(hwm14)
 endif()
 
@@ -99,6 +103,7 @@ set(msis2 on)
 set(msis_BUILD_UITLS on)
 set(msis_BUILD_TESTING on) # so we know MSIS is working as it's fundamental to Gemini3D
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
+report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
 add_subdirectory(msis)
 
 # --- Gemini3D library
