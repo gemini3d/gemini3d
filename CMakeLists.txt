@@ -100,7 +100,7 @@ endif()
 
 # --- MSISE00 / MSIS 2.x
 set(msis2 on)
-set(msis_BUILD_UITLS on)
+set(msis_BUILD_UTILS on)
 set(msis_BUILD_TESTING on) # so we know MSIS is working as it's fundamental to Gemini3D
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
