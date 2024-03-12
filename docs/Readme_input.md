@@ -15,7 +15,7 @@ Gemini uses Fortran 95 standard NAMELIST files for the input configuration files
 Gemini will search the input directory location for files will be named like `inputs/config.nml` or `config.nml`.
 
 Each simulation needs an input file that specifies location of initial conditions and other pertinent information for the simulation.
-Example config.nml are under the [tests/](./tests/) directory once you've built Gemini and run the self-tests.
+Example config.nml are under the "${PROJECT_BINARY_DIR}/test_data/compare" directory once you've built Gemini and run the self-tests.
 Each subdirectory is a separate example usage of GEMINI for a particular problem.
 
 A large number of examples (in addition to those included in the main repo) are included in the
