@@ -52,23 +52,9 @@ if(PROJECT_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 # --- CMAKE_PREFIX_PATH auto-detection
-if(NOT DEFINED CMAKE_PREFIX_PATH AND DEFINED ENV{CMAKE_PREFIX_PATH})
-  message(STATUS "CMAKE_PREFIX_PATH environment variable used $ENV{CMAKE_PREFIX_PATH}")
-  set(CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
-endif()
+# don't attempt to expand/detect etc. because it may be a ;-list or may be :-path
 
-if(DEFINED CMAKE_PREFIX_PATH)
-  list(LENGTH CMAKE_PREFIX_PATH N)
-  if(N EQUAL 1)
-    get_filename_component(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" ABSOLUTE)
-    if(NOT IS_DIRECTORY "${CMAKE_PREFIX_PATH}")
-      message(STATUS "did not find CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
-      set(CMAKE_PREFIX_PATH "")  # to override bad CMAKE_PREFIX_PATH cache or environment variable
-    endif()
-  endif()
-endif()
-
-if(NOT CMAKE_PREFIX_PATH)
+if(NOT DEFINED CMAKE_PREFIX_PATH AND NOT DEFINED ENV{CMAKE_PREFIX_PATH})
   get_filename_component(home "~" ABSOLUTE)
   string(TOLOWER ${CMAKE_Fortran_COMPILER_ID} fid)
 
@@ -80,6 +66,8 @@ endif()
 
 # check that gemini3d/external libraries are installed
 set(need_gemext "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}
+ENV{CMAKE_PREFIX_PATH}: $ENV{CMAKE_PREFIX_PATH}
+
 Gemini3D requires several external libraries that are one-time installed via this procedure.
 '~/libgem' directory is an arbitrary location.
 
