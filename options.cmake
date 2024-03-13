@@ -79,7 +79,7 @@ if(NOT CMAKE_PREFIX_PATH)
 endif()
 
 # check that gemini3d/external libraries are installed
-set(need_gemext "
+set(need_gemext "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}
 Gemini3D requires several external libraries that are one-time installed via this procedure.
 '~/libgem' directory is an arbitrary location.
 
