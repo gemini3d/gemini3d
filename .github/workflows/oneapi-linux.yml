@@ -39,7 +39,6 @@ jobs:
     timeout-minutes: 30
 
     env:
-      CMAKE_PREFIX_PATH: ${RUNNER_TEMP}/libgem
       CMAKE_INSTALL_PREFIX: ${RUNNER_TEMP}/libgem
 
     # strategy:
@@ -88,8 +87,9 @@ jobs:
       working-directory: gemext
 
     - name: CMake Configure
-      run: cmake --preset default -DCMAKE_PREFIX_PATH=${{ env.CMAKE_PREFIX_PATH }}
-      # use CMAKE_PREFIX_PATH this way to expand ${RUNNER_TEMP}
+      run: cmake --preset default -DCMAKE_PREFIX_PATH=${{ env.CMAKE_INSTALL_PREFIX }}
+      # setvars.sh modifies CMAKE_PREFIX_PATH and this step won't expand ${RUNNER_TEMP} properly
+      # this is a GitHub Actions specific workaround; haven't needed this on real systems.
 
     - name: print config log
       if: ${{ failure() }}
