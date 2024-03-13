@@ -38,6 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    env:
+      CMAKE_PREFIX_PATH: ${RUNNER_TEMP}/libgem
+      CMAKE_INSTALL_PREFIX: ${RUNNER_TEMP}/libgem
+
     # strategy:
     #   matrix:
     #     hwm14: [true, false]
@@ -80,11 +84,12 @@ jobs:
 
     - name: Install numeric libraries
       timeout-minutes: 15
-      run: cmake -Dmumps_only:BOOL=yes -P build.cmake
+      run: cmake -Dmumps_only:BOOL=yes -Dprefix=${{ env.CMAKE_INSTALL_PREFIX }} -P build.cmake
       working-directory: gemext
 
     - name: CMake Configure
-      run: cmake --preset default
+      run: cmake --preset default -DCMAKE_PREFIX_PATH=${{ env.CMAKE_PREFIX_PATH }}
+      # use CMAKE_PREFIX_PATH this way to expand ${RUNNER_TEMP}
 
     - name: print config log
       if: ${{ failure() }}

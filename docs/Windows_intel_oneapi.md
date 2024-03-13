@@ -45,9 +45,7 @@ Add to environment variable `PATH` the directory containing `ninja.exe`.
 Then you can build and install the external libraries:
 
 ```sh
-cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/lib_intel
-
-cmake --build external/build
+cmake -P external/build.cmake
 ```
 
 that installs Gemini3d external libraries under ~/lib_intel (c:/users/username/lib_intel).
@@ -58,7 +56,7 @@ This path is arbitrary but should be distinct between compilers.
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -G Ninja -DCMAKE_PREFIX_PATH=~/lib_intel
+cmake -S gemini3d -B build/gemini3d -G Ninja
 
 cmake --build gemini3d/build
 

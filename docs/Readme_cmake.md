@@ -22,10 +22,7 @@ git clone https://github.com/gemini3d/external
 cmake -P external/scripts/requirements.cmake
 # gives command to install compiler and system libraries
 
-cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
-# ~/libgem is an arbitrary location--pick whatever name you like.
-
-cmake --build external/build
+cmake -P external/build.cmake
 ```
 
 that installs Gemini3d external libraries under ~/libgem.
@@ -36,8 +33,7 @@ Many Gemini3D users don't need any custom options to get started.
 In that case, build Gemini3D from the gemini3d/ directory by:
 
 ```sh
-cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
-# ~/libgem is the arbitrary location you installed Gemini3D/external libraries to.
+cmake -B build
 
 cmake --build build
 ```
@@ -76,7 +72,7 @@ These errors may arise due to certain ABI incompatibilities between Clang and GC
 Tell CMake (or other build systems) you want to use just GCC by:
 
 ```sh
-export FC=gfortran-11 CC=gcc-11 CXX=g++-11
+export FC=gfortran-13 CC=gcc-13 CXX=g++-13
 ```
 
 To default to GCC / Gfortran, add the line above in ~/.zprofile.
