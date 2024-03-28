@@ -51,7 +51,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
-            precip_perturb_in, interp3_in, interp2_in
+            precip_perturb_in, interp3_in, interp2_in, check_finite_output_in
 
 implicit none (type, external)
 
@@ -1154,4 +1154,20 @@ contains
 
     call dateinc_in(dt,ymd,UTsec)
   end subroutine dateinc_C
+
+
+  subroutine check_finite_output_C(cfgC, fluidvarsC, electrovarsC, t) bind(C, name='check_finite_output_C')
+    type(C_PTR), intent(in) :: cfgC
+    type(C_PTR), intent(in) :: fluidvarsC, electrovarsC
+    real(wp), intent(in) :: t
+
+    type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars, electrovars
+
+    call c_f_pointer(cfgC, cfg)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+
+    call check_finite_output_in(cfg, fluidvars, electrovars, t)
+  end subroutine check_finite_output_C
 end module gemini3d_C

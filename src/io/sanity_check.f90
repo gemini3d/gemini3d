@@ -10,7 +10,7 @@ use errors, only : error_stop
 
 implicit none (type, external)
 private
-public :: check_finite_output, check_finite_plasma, check_finite_current, check_finite_mag, check_finite_pertub
+public :: check_finite_output, check_finite_plasma, check_finite_current, check_finite_mag, check_finite_perturb
 
 contains
   pure subroutine ghost_bound(A, j1, k1, j2, k2, j3, k3, j4, k4)
@@ -144,7 +144,7 @@ contains
   end subroutine check_finite_plasma
   
   
-  subroutine check_finite_pertub(out_dir, t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+  subroutine check_finite_perturb(out_dir, t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
     character(*), intent(in) :: out_dir
     real(wp), intent(in) :: t_elapsed
     integer, intent(in) :: worker_id
@@ -170,7 +170,7 @@ contains
     
     if (.not.all(ieee_is_finite(vn3))) &
       call error_stop(dump_filename, 'perturb: non-finite vn3', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
-  end subroutine check_finite_pertub
+  end subroutine check_finite_perturb
   
   
   subroutine check_finite_mag(out_dir, Br, Btheta, Bphi)

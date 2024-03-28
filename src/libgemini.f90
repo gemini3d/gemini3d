@@ -53,6 +53,7 @@ use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
+use sanity_check, only : check_finite_output
 
 implicit none (type, external)
 private
@@ -75,7 +76,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
-            get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in
+            get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
+            check_finite_output_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -1312,4 +1314,22 @@ contains
 
     !print*, 'Date updated to:  ',ymd,UTsec
   end subroutine dateinc_in
+
+
+  !> check main state variables for finiteness
+  subroutine check_finite_output_in(cfg,fluidvars,electrovars,t)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    real(wp), intent(in) :: t
+
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    ! bind pointers
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call check_finite_output(cfg%outdir,t,-1,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  end subroutine check_finite_output_in
 end module gemini3d

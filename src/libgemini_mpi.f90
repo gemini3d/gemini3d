@@ -15,7 +15,6 @@ use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal_mpi, only : dt_comm
-use sanity_check, only : check_finite_pertub, check_finite_output
 use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
@@ -23,13 +22,14 @@ use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in
+use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
             get_initial_drifts, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
-            neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in, check_finite_output_in, &
+            neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
             RK2_global_boundary_allspec_in, halo_fluidvars_in
@@ -491,7 +491,7 @@ contains
     real(wp), intent(in) :: UTsec
 
     call neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
-    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
+    call check_finite_perturb(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
                                intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
   end subroutine neutral_perturb_in
 
@@ -525,23 +525,6 @@ contains
                            intvars%Phiall,ymd,UTsec)
   end subroutine electrodynamics_in
 
-
-  !> check main state variables for finiteness
-  subroutine check_finite_output_in(cfg,fluidvars,electrovars,t)
-    type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
-    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
-    real(wp), intent(in) :: t
-
-    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(:,:,:),pointer :: E1,E2,E3,J1,J2,J3,Phi
-
-    ! bind pointers
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
-
-    call check_finite_output(cfg%outdir,t,mpi_cfg%myid,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-  end subroutine check_finite_output_in
 
   ! FIXME:  deprecated; is easier/better just to halo all params prior to advection and interface vels
   !           calculation...
