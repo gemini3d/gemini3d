@@ -1330,6 +1330,6 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call check_finite_output(cfg%outdir,t,-1,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+    call check_finite_output(cfg%outdir,t,999,vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
   end subroutine check_finite_output_in
 end module gemini3d
