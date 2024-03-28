@@ -56,15 +56,15 @@ contains
     character(:), allocatable :: dump_filename
     character(8) :: wid
    
-    print*, worker_id
+    !print*, worker_id
  
     write(wid, '(I0)') worker_id
 
-    print*, wid
+    !print*, wid
     
     dump_filename = out_dir // "/dump_nonfinite_output_worker_" // trim(wid) // ".h5"
 
-    print*, dump_filename
+    !print*, dump_filename
     
     call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
     
