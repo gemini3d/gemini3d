@@ -19,7 +19,7 @@ message(STATUS "MPI include: ${MPI_Fortran_INCLUDE_DIRS}")
 message(STATUS "MPI compile flags: ${MPI_Fortran_COMPILER_FLAGS}")
 message(STATUS "MPI link flags: ${MPI_Fortran_LINK_FLAGS}")
 
-include(cmake/openmpi.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/openmpi.cmake)
 
 # --- MPI-3 detection
 if(MPI_Fortran_HAVE_F08_MODULE)

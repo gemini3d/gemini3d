@@ -18,16 +18,12 @@ MPI::MPI_Fortran
 msis::msis
 $<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
 )
-if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  set_property(TARGET gemini_projection PROPERTY LINKER_LANGUAGE Fortran)
-else()
-  set_property(TARGET gemini_projection PROPERTY LINKER_LANGUAGE CXX)
-endif()
+set_property(TARGET gemini_projection PROPERTY LINKER_LANGUAGE Fortran)
+# for oneAPI
 
-
-add_test(NAME gemini_projection COMMAND gemini_projection)
-set_tests_properties(gemini_projection PROPERTIES
+add_test(NAME GeminiProjection COMMAND gemini_projection)
+set_tests_properties(GeminiProjection PROPERTIES
 LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
-test_mpi_launcher(gemini_projection 2)
+test_mpi_launcher(gemini_projection GeminiProjection 2)

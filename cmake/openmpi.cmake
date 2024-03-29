@@ -1,7 +1,7 @@
 # https://github.com/open-mpi/ompi/issues/7393
 # https://github.com/gerlero/openfoam-app/pull/112
 # https://apple.stackexchange.com/a/287710
-# *** OpenMPI workaround
+
 message(VERBOSE "MPI_C_LIBRARY_VERSION_STRING: ${MPI_C_LIBRARY_VERSION_STRING}")
 
 if(UNIX AND MPI_C_LIBRARY_VERSION_STRING MATCHES "Open[ ]?MPI")
@@ -19,4 +19,3 @@ if(UNIX AND MPI_C_LIBRARY_VERSION_STRING MATCHES "Open[ ]?MPI")
     message(STATUS "${ret}: Created MPI working dir ${mpi_tmpdir}")
   endif()
 endif()
-# *** END OpenMPI workaround

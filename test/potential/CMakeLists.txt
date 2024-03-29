@@ -18,8 +18,8 @@ target_include_directories(gemini_potential2d PRIVATE ${MPI_Fortran_INCLUDE_DIRS
 # where mpi gets linked in the middle instead of at the end.
 # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
 
-add_test(NAME gemini_potential2d COMMAND gemini_potential2d ${_potential2d_testfile})
-test_mpi_launcher(gemini_potential2d ${Ncpu})
+add_test(NAME GeminiPotential2d COMMAND gemini_potential2d ${_potential2d_testfile})
+test_mpi_launcher(gemini_potential2d GeminiPotential2d ${Ncpu})
 
 add_test(NAME potential2d:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential2d_testfile}
@@ -42,10 +42,10 @@ target_link_libraries(gemini_potential3d PRIVATE const h5fortran::h5fortran MUMP
 target_include_directories(gemini_potential3d PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
 # this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
-add_test(NAME gemini_potential3d COMMAND gemini_potential3d ${_potential3d_testfile})
-test_mpi_launcher(gemini_potential3d ${Ncpu})
+add_test(NAME GeminiPotential3d COMMAND gemini_potential3d ${_potential3d_testfile})
+test_mpi_launcher(gemini_potential3d GeminiPotential3d ${Ncpu})
 
-set_tests_properties(gemini_potential2d gemini_potential3d PROPERTIES
+set_tests_properties(GeminiPotential2d GeminiPotential3d PROPERTIES
 FIXTURES_SETUP gemini_potential_fxt
 FIXTURES_REQUIRED mpi_fxt
 RESOURCE_LOCK cpu_mpi
