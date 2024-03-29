@@ -51,6 +51,15 @@ cmake -P external/build.cmake
 that installs Gemini3d external libraries under ~/lib_intel (c:/users/username/lib_intel).
 This path is arbitrary but should be distinct between compilers.
 
+## Trouble finding compiler
+
+If CMake doesn't find the oneAPI compilers, do in oneAPI command prompt:
+
+```sh
+set CC=%CMPLR_ROOT%/bin/icx.exe
+set FC=%CMPLR_ROOT%/bin/ifx.exe
+```
+
 ## Build and Test Gemini3D
 
 ```sh

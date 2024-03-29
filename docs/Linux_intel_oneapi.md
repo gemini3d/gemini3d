@@ -20,7 +20,7 @@ with these options:
 * Intel C++ compiler
 * Intel Fortran compiler
 
-We recommend making a little shell script named like "~/intel_oneapi.sh".
+We recommend making a little shell script named like "~/oneapi.sh".
 The contents of this script would be like:
 
 ```sh
@@ -29,15 +29,22 @@ source /opt/intel/oneapi/setvars.sh
 export FC=ifx CC=icx CXX=icpx
 ```
 
-Intel LLVM "icx", "icpx", "ifx" replace the legacy "icc", "icpc", "ifx" compilers.
+"icx", "icpx", "ifx" are the LLVM-based Intel compilers for C, C++, and Fortran, respectively.
 
 To enable oneAPI in this Terminal:
 
 ```sh
-source ~/intel_oneapi.sh
+source ~/oneapi.sh
+
+export CC=$CMPLR_ROOT/bin/icx
+export CXX=$CMPLR_ROOT/bin/icpx
+export FC=$CMPLR_ROOT/bin/ifx
 ```
 
-If there are problems with defaulting to old GCC, specify the GCC toolchain in "~/intel_oneapi.sh" like:
+GCC is used as a backend for oneAPI on Linux, and a too-old GCC won't work with C++ programs.
+Use GCC 10 or newer to work with Intel oneAPI on Linux.
+
+If there are problems with defaulting to old GCC, specify the GCC toolchain in "~/oneapi.sh" like:
 
 ```sh
 export CXXFLAGS=--gcc-toolchain=/opt/rh/gcc-toolset-11/root/usr/
@@ -54,17 +61,11 @@ scl enable gcc-toolset-11 "which g++"
 ```sh
 git clone https://github.com/gemini3d/external
 
-cmake -P external/build.cmake
+cmake -Dprefix=~/libgem_intel -P external/build.cmake
 ```
 
 that installs Gemini3d external libraries under ~/libgem_intel.
 This path is arbitrary but should be distinct between compilers.
-
-NOTE: If CMake is too old, install a new CMake:
-
-```sh
-cmake -P external/scripts/install_cmake.cmake
-```
 
 ## Build and Test Gemini3D
 

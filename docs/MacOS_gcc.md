@@ -1,6 +1,6 @@
 # Build Gemini3D with GCC on MacOS
 
-AppleClang LLVM compilers work fine with GCC/Gfortran in general on MacOS.
+GCC compilers are recommended for macOS as AppleClang conflicts with Gfortran for exception handling.
 
 Install libraries via [Homebrew](https://brew.sh) such as CMake:
 
@@ -27,7 +27,7 @@ This path is arbitrary but should be distinct between compilers.
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_gcc
+cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_gnu
 
 cmake --build gemini3d/build
 

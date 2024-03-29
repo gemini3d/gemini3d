@@ -3,7 +3,7 @@
 This method also works for
 [Windows WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-GCC 8 and newer works with Gemini3D.
+GCC 8 and newer works with Gemini3D, but newer GCC is recommended--we test with the latest GCC releases.
 
 ```sh
 apt install cmake
@@ -25,11 +25,7 @@ cmake -P external/build.cmake
 that installs Gemini3d external libraries under ~/libgem_gcc.
 This path is arbitrary but should be distinct between compilers.
 
-NOTE: If CMake is too old, install a new CMake:
-
-```sh
-cmake -P external/scripts/install_cmake.cmake
-```
+NOTE: If CMake is too old, install a [new CMake](./Readme_cmake_install.md).
 
 ## Build and Test Gemini3D
 
