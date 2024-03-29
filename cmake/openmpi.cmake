@@ -2,12 +2,15 @@
 # https://github.com/gerlero/openfoam-app/pull/112
 # https://apple.stackexchange.com/a/287710
 # *** OpenMPI workaround
+message(VERBOSE "MPI_C_LIBRARY_VERSION_STRING: ${MPI_C_LIBRARY_VERSION_STRING}")
+
 if(UNIX AND MPI_C_LIBRARY_VERSION_STRING MATCHES "Open[ ]?MPI")
   if(NOT DEFINED mpi_tmpdir)
     execute_process(COMMAND mktemp -d /tmp/mpi-XXXXXXXX
     RESULT_VARIABLE ret
     OUTPUT_VARIABLE mpi_tmpdir
     OUTPUT_STRIP_TRAILING_WHITESPACE
+    TIMEOUT 10
     )
     if(NOT ret EQUAL 0)
       message(FATAL_ERROR "could not create MPI working dir via mktemp -d: ${ret}")
