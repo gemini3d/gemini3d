@@ -58,8 +58,11 @@ jobs:
       if: runner.os == 'Linux'
       timeout-minutes: 15
       run: |
+        sudo apt update
         sudo $(cmake -P gemext/scripts/requirements.cmake)
         sudo apt install ninja-build
+# don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
+# is out of sync with the upstream Ubuntu package repos
 
     - name: Install packages (MacOS)
       if: runner.os == 'macOS'
