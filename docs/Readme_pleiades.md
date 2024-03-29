@@ -22,9 +22,8 @@ export CC=gcc CXX=g++ FC=gfortran
 
 ```
 git clone https://github.com/gemini3d/external/
-cd external
-cmake -B build -Dmumps_only=yes
-cmake --build build -j
+
+cmake -Dmumps_only=yes -P external/build.cmake
 ```
 
 3. Pull the repository, configure, and build
