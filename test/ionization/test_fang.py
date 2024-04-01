@@ -10,7 +10,6 @@ Fang 2008 and Fang 2010 papers.
 
 from __future__ import annotations
 import subprocess
-from pathlib import Path
 import shutil
 import sys
 import io
@@ -18,8 +17,6 @@ import argparse
 import typing
 
 import numpy as np
-
-Rb = Path(__file__).resolve().parents[2] / "build/src/ionization"
 
 
 def checker(exe: str, doplot: bool, params: dict | None = None):
