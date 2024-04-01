@@ -8,6 +8,7 @@ It can also be used by a human to plot ionization profiles to compare with the o
 Fang 2008 and Fang 2010 papers.
 """
 
+from __future__ import annotations
 import subprocess
 from pathlib import Path
 import shutil
