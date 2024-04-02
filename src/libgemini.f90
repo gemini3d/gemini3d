@@ -1077,7 +1077,7 @@ contains
 
 
   !> update the precipitation inputdata if present
-  subroutine precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
+  subroutine precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     real(wp), intent(in) :: t,dt
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd

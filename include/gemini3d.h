@@ -126,6 +126,7 @@ extern void get_initial_drifts_C(void**, int*, void**, double**, double**, doubl
 extern void neutral_atmos_wind_update_C(void**);
 extern void neutral_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void efield_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
+extern void inputdata_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void electrodynamics_C(void**, double**, double**, double**, void**, int*, void**, int*, double*, double*, int*, double*);
 extern void get_gavg_Tinf_C(void**, double*, double*);
 extern void clear_dneu_C(void**);

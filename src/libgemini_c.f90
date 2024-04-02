@@ -1090,7 +1090,8 @@ contains
     call c_f_pointer(intvarsC,intvars)
     x=>set_gridpointer_dyntype(xtype, xC)
 
-    call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
+    call precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
   end subroutine precip_perturb_C
 
 

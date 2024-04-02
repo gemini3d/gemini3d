@@ -47,7 +47,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
                           clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
-                          RK2_global_boundary_allspec_in, efield_perturb_in
+                          RK2_global_boundary_allspec_in, efield_perturb_in, inputdata_perturb_in
 
 implicit none (type, external)
 
@@ -214,6 +214,9 @@ contains
     main : do while (t < tdur)
       call dt_select(cfg,x,fluidvars,fluidauxvars,it,t,tout,tglowout,dt)
 
+      !> update inputdata
+      call inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+
       !> get neutral background
       if ( it/=1 .and. flagneuBG .and. t>tneuBG) then              !we dont' throttle for tneuBG so we have to do things this way to not skip over...
         call cpu_time(tstart)
@@ -229,7 +232,7 @@ contains
       !> get neutral perturbations
       if (flagdneu==1) then
         call cpu_time(tstart)
-        call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+        !call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
         if (myid==0 .and. debug) then
           call cpu_time(tfin)
           print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
@@ -238,7 +241,7 @@ contains
 
       !> compute potential solution
       call cpu_time(tstart)
-      call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+      !call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
       call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
@@ -247,7 +250,7 @@ contains
 
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
-      call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
+      !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
       call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,(it==1),lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)

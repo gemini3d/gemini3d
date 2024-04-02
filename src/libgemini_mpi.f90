@@ -21,7 +21,7 @@ use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
-                      v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in
+                      v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in
 use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
@@ -32,7 +32,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
-            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in
+            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in
 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
@@ -385,6 +385,7 @@ contains
     call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
+    !> add other inputdata streams here...
   end subroutine init_inputdata_in
 
 
@@ -481,6 +482,22 @@ contains
   end subroutine neutral_atmos_wind_update
 
 
+  !> update all perturbed inputdata quantities
+  subroutine inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(inout) :: x     ! unit vectors could be deallocated in this procedure
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    call precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)    ! old ordering
+  end subroutine inputdata_perturb_in
+
+
   !> compute neutral perturbations and apply to main code variables
   subroutine neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
@@ -490,9 +507,11 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
-    call check_finite_perturb(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
-                               intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
+    if (cfg%flagdneu==1) then
+      call neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+      call check_finite_perturb(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
+                                 intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
+    end if
   end subroutine neutral_perturb_in
 
 

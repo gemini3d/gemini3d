@@ -109,6 +109,9 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
       std::cout << " ...Selected time step (seconds) " << dt << std::endl;
     }
 
+    // input data updates
+    inputdata_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
+
     // neutral data
     if (it!=1 && flagneuBG && t>tneuBG){
       neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
@@ -119,7 +122,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
       }
     }
     if (flagdneu==1){
-      neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
+      //neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
       if (myid==0){
         std::cout << " Computed neutral perturbations..." << std::endl;
       }
@@ -127,13 +130,13 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // call electrodynamics solution
     //std::cout << " Start electro solution..." << std::endl;
-    efield_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
+    //efield_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&it,&t,&dt,&ymd[0],&UTsec);
     //std::cout << " Computed electrodynamics solutions..." << std::endl;
 
     // advance the fluid state variables
     first=it==1;
-    precip_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
+    //precip_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC, intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 
