@@ -107,7 +107,9 @@ end interface
 
 contains
   subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,efield, &
-                           E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+                           E1,E2,E3,J1,J2,J3,Phiall,flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                           Vminx1slab,Vmaxx1slab,E01,E02,E03, &
+                           ymd,UTsec)
     !! THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !! PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
     !! CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO
@@ -130,6 +132,12 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
+    integer :: flagdirich
+    real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+    real(wp), dimension(:,:) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:) :: E01,E02,E03
+    real(wp), dimension(:,:) :: Vminx1slab,Vmaxx1slab
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -139,14 +147,9 @@ contains
     real(wp) :: tstart,tfin
     real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
     ! background variables and boundary conditions, full grid sized variables
-    real(wp), dimension(1:x%lx2all,1:x%lx3all), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
-    real(wp), dimension(1:x%lx1,1:x%lx3all) :: Vminx2,Vmaxx2
-    real(wp), dimension(1:x%lx1,1:x%lx2all) :: Vminx3,Vmaxx3
-    ! slab-sized background variables
-    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E01,E02,E03,E02src,E03src
-    integer :: flagdirich
-    real(wp), dimension(1:lx2,1:lx3) :: Vminx1slab,Vmaxx1slab
 
+    ! slab-sized background variables
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E02src,E03src
 
     !> update conductivities and mobilities
     call cpu_time(tstart)

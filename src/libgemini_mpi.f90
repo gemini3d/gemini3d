@@ -522,7 +522,11 @@ contains
     ! E&M solves
     call electrodynamics(it,t,dt,intvars%atmos%nn,intvars%atmos%vn2,intvars%atmos%vn3,intvars%atmos%Tn, &
                            cfg,ns,Ts,vs1,B1,vs2,vs3,x,intvars%efield,E1,E2,E3,J1,J2,J3, &
-                           intvars%Phiall,ymd,UTsec)
+                           intvars%Phiall,intvars%flagdirich, &
+                           intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2, &
+                           intvars%Vminx3,intvars%Vmaxx3,intvars%Vminx1slab,intvars%Vmaxx1slab, &
+                           intvars%E01,intvars%E02,intvars%E03, &
+                           ymd,UTsec)
   end subroutine electrodynamics_in
 
 
