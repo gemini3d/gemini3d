@@ -31,7 +31,7 @@ use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
  electrodynamics_in,  halo_interface_vels_allspec_in, &
  halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_dneu_in, calc_subgrid_size_in, &
- RK2_global_boundary_allspec_in, halo_fluidvars_in
+ RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in
 use gemini3d_C, only : set_gridpointer_dyntype
 
 implicit none (type, external)
@@ -338,6 +338,27 @@ contains
 
     call neutral_perturb_in(cfg, intvars, x, dt, t, ymd, UTsec)
   end subroutine neutral_perturb_C
+
+
+  subroutine efield_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='efield_perturb_C')
+    type(C_PTR), intent(in) :: cfgC
+    type(C_PTR), intent(inout) :: intvarsC
+    integer(C_INT), intent(in) :: xtype
+    type(C_PTR), intent(in) :: xC
+    real(wp), intent(in) :: dt,t
+    integer(C_INT), dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    type(gemini_cfg), pointer :: cfg
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    call c_f_pointer(intvarsC,intvars)
+    x=>set_gridpointer_dyntype(xtype, xC)
+
+    call efield_perturb_in(cfg, intvars, x, dt, t, ymd, UTsec)
+  end subroutine efield_perturb_C
 
 
   subroutine electrodynamics_C(cfgC, fluidvarsC,fluidauxvarsC,electrovarsC, intvarsC, xtype,xC, &

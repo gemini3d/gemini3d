@@ -47,7 +47,7 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
                           clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
-                          RK2_global_boundary_allspec_in
+                          RK2_global_boundary_allspec_in, efield_perturb_in
 
 implicit none (type, external)
 
@@ -238,6 +238,7 @@ contains
 
       !> compute potential solution
       call cpu_time(tstart)
+      call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
       call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)

@@ -12,7 +12,7 @@ use potential_comm, only: get_BGEfields,velocities
 use grid, only: lx1,lx2,lx3, grid_drift, read_grid, calc_subgrid_size
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
-use potential_comm,only : pot2perpfield, electrodynamics
+use potential_comm,only : pot2perpfield, electrodynamics, BGfields_boundaries_root, BGfields_boundaries_worker
 use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
 use temporal_mpi, only : dt_comm
 use advec_mpi, only: halo_interface_vels_allspec
@@ -32,7 +32,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
-            RK2_global_boundary_allspec_in, halo_fluidvars_in
+            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in
 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
@@ -494,6 +494,28 @@ contains
     call check_finite_perturb(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
                                intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
   end subroutine neutral_perturb_in
+
+
+  !> compute boundary conditions for electric field solutions
+  subroutine efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(inout) :: x     ! unit vectors could be deallocated in this procedure
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    !> assign values to the background fields, etc., irrespective of whether or not we do a potential solve
+    if (mpi_cfg%myid/=0) then
+      call BGfields_boundaries_worker(intvars%flagdirich,intvars%E01,intvars%E02,intvars%E03, &
+              intvars%Vminx1slab,intvars%Vmaxx1slab)
+    else
+      call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x,intvars%efield, &
+                                       intvars%flagdirich,intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2,&
+                                       intvars%Vminx3,intvars%Vmaxx3,intvars%E01,intvars%E02,intvars%E03, &
+                                       intvars%Vminx1slab,intvars%Vmaxx1slab)
+    end if    
+  end subroutine efield_perturb_in
 
 
   !> call electrodynamics solution

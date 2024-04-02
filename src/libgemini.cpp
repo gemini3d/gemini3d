@@ -127,6 +127,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
     // call electrodynamics solution
     //std::cout << " Start electro solution..." << std::endl;
+    efield_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&it,&t,&dt,&ymd[0],&UTsec);
     //std::cout << " Computed electrodynamics solutions..." << std::endl;
 

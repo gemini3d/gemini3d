@@ -178,15 +178,6 @@ contains
       incap=0d0
     end if
 
-    !> assign values to the background fields, etc., irrespective of whether or not we do a potential solve
-    if (mpi_cfg%myid/=0) then
-      call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
-    else
-      call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x,efield, &
-                                       flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                                       E01,E02,E03,Vminx1slab,Vmaxx1slab)
-    end if
-
     !> must set these variables regardless of whether the solve is done because they are added to the field later
     if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms, note this means that the winds have also been tweaked so that currents/potential source terms will still be correctly computed
       E02src=0._wp; E03src=0._wp
