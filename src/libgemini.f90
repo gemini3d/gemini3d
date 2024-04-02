@@ -102,6 +102,14 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
 
+  !> Use to pass information about electromagnetic boundary condtions between procedures
+  integer :: flagdirich
+  real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1
+  real(wp), dimension(:,:), pointer :: Vminx2,Vmaxx2
+  real(wp), dimension(:,:), pointer :: Vminx3,Vmaxx3
+  real(wp), dimension(:,:,:), pointer :: E01,E02,E03
+  real(wp), dimension(:,:), pointer :: Vminx1slab,Vmaxx1slab
+
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
 
@@ -289,6 +297,17 @@ contains
     allocate(intvars%Pr(1:lx1,1:lx2,1:lx3,1:lsp))
     allocate(intvars%Lo,mold=intvars%Pr)
 
+    allocate(intvars%Vminx1(1:lx2all,1:lx3all))
+    allocate(intvars%Vmaxx1,mold=intvars%Vminx1)
+    allocate(intvars%Vminx2(1:lx1,1:lx3all))
+    allocate(intvars%Vmaxx2,mold=intvars%Vminx2)
+    allocate(intvars%Vminx3(1:lx1,1:lx2all))
+    allocate(intvars%Vmaxx3,mold=intvars%Vminx3)
+    allocate(intvars%E01(1:lx1,1:lx2,1:lx3))
+    allocate(intvars%E02,intvars%E03,mold=intvars%E01)
+    allocate(intvars%Vminx1slab(1:lx2,1:lx3))
+    allocate(intvars%Vmaxx1slab,mold=intvars%Vminx1slab)
+
     allocate(intvars%eprecip)
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
@@ -330,6 +349,12 @@ contains
     if(associated(intvars%iver)) deallocate(intvars%iver)
 
     deallocate(intvars%Pr,intvars%Lo)
+
+    deallocate(intvars%Vminx1,intvars%Vmaxx1)
+    deallocate(intvars%Vminx2,intvars%Vmaxx2)
+    deallocate(intvars%Vminx3,intvars%Vmaxx3)
+    deallocate(intvars%E01,intvars%E02,intvars%E03)
+    deallocate(intvars%Vminx1slab,intvars%Vmaxx1slab)
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
