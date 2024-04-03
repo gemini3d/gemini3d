@@ -137,6 +137,28 @@ else()
   set_target_properties(gemini.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 
+# --- Gemini.bin main Fortran program for solving density and potential only
+add_executable(gemini.denspot.bin ${PROJECT_SOURCE_DIR}/app/main.denspot.f90)
+set_target_properties(gemini.denspot.bin PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+RELWITHDEBINFO_POSTFIX .debug
+DEBUG_POSTFIX .debug
+)
+target_link_libraries(gemini.denspot.bin PRIVATE
+gemini3d_mpi
+gemini3d
+h5fortran::h5fortran
+MUMPS::MUMPS
+$<$<BOOL:${glow}>:glow::glow>
+$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+ffilesystem::filesystem
+)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  set_target_properties(gemini.denspot.bin PROPERTIES LINKER_LANGUAGE Fortran)
+else()
+  set_target_properties(gemini.denspot.bin PROPERTIES LINKER_LANGUAGE CXX)
+endif()
+
 if(hwm14)
   # HWM14 data files
   # due to legacy coding style, HWM14 files need to be in binary directory
