@@ -8,6 +8,11 @@ target_link_libraries(precipdata PRIVATE const gemini3d_config meshobj interp ti
 MPI::MPI_Fortran
 )
 
+add_library(solfluxdata OBJECT solfluxdataobj.f90)
+target_link_libraries(solfluxdata PRIVATE const gemini3d_config meshobj interp timeutils inputdata  
+MPI::MPI_Fortran
+)
+
 add_library(efielddata OBJECT efielddataobj.f90
 $<TARGET_OBJECTS:grid>
 )
