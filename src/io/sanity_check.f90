@@ -3,7 +3,7 @@ module sanity_check
 !! at least that they're finite (not NaN or infinite)
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+use, intrinsic :: ieee_arithmetic, only : ieee_is_finite,ieee_is_nan
 
 use phys_consts, only : wp
 use errors, only : error_stop
@@ -67,41 +67,57 @@ contains
     !print*, dump_filename
     
     call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
-    
-    if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+    if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ieee_is_nan(ns(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ns(i1:k1, i2:k2, i3:k3, i4:k4)/=ns(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
        call error_stop(dump_filename, 'output: non-finite Ns', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+    end if
     
-    call ghost_bound(vs1, i1,k1, i2,k2, i3,k3, i4,k4)
-    
-    if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+    !call ghost_bound(vs1, i1,k1, i2,k2, i3,k3, i4,k4)
+    if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ieee_is_nan(vs1(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(vs1(i1:k1, i2:k2, i3:k3, i4:k4)/=vs1(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
       call error_stop(dump_filename, 'output: non-finite vs1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    call ghost_bound(vs2, i1,k1, i2,k2, i3,k3, i4,k4)
-    
-    if (.not.all(ieee_is_finite(vs2(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+    end if
+    !call ghost_bound(vs2, i1,k1, i2,k2, i3,k3, i4,k4)
+    if (.not.all(ieee_is_finite(vs2(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ieee_is_nan(vs2(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(vs2(i1:k1, i2:k2, i3:k3, i4:k4)/=vs2(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
       call error_stop(dump_filename, 'output: non-finite vs2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    call ghost_bound(vs3, i1,k1, i2,k2, i3,k3, i4,k4)
-    
-    if (.not.all(ieee_is_finite(vs3(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+    end if
+    !call ghost_bound(vs3, i1,k1, i2,k2, i3,k3, i4,k4)
+    if (.not.all(ieee_is_finite(vs3(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ieee_is_nan(vs3(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(vs3(i1:k1, i2:k2, i3:k3, i4:k4)/=vs3(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
       call error_stop(dump_filename, 'output: non-finite vs3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+    end if
+    if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(ieee_is_nan(Ts(i1:k1, i2:k2, i3:k3, i4:k4))) .or. &
+            any(Ts(i1:k1, i2:k2, i3:k3, i4:k4)/=Ts(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
       call error_stop(dump_filename, 'output: non-finite Ts', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
+    end if
+
     call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
-    
-    if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3)))) &
+    if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3))) .or.  &
+            any(ieee_is_nan(J1(i1:k1, i2:k2, i3:k3))) .or. &
+           any(J1(i1:k1, i2:k2, i3:k3)/=J1(i1:k1, i2:k2, i3:k3)) ) then
       call error_stop(dump_filename, 'output: non-finite J1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    if (.not.all(ieee_is_finite(J2(i1:k1, i2:k2, i3:k3)))) &
+    end if
+    if (.not.all(ieee_is_finite(J2(i1:k1, i2:k2, i3:k3))) .or. &
+            any(ieee_is_nan(J2(i1:k1, i2:k2, i3:k3))) .or. &
+           any(J2(i1:k1, i2:k2, i3:k3)/=J2(i1:k1, i2:k2, i3:k3)) ) then
       call error_stop(dump_filename, 'output: non-finite J2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    if (.not.all(ieee_is_finite(J3(i1:k1, i2:k2, i3:k3)))) &
+    end if
+    if (.not.all(ieee_is_finite(J3(i1:k1, i2:k2, i3:k3))) .or. &
+            any(ieee_is_nan(J3(i1:k1, i2:k2, i3:k3))) .or. &
+            any(J3(i1:k1, i2:k2, i3:k3)/=J3(i1:k1, i2:k2, i3:k3)) ) then
       call error_stop(dump_filename, 'output: non-finite J3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
-    
-    if (.not.all(ieee_is_finite(Phi(i1:k1, i2:k2, i3:k3)))) &
+    end if
+    if (.not.all(ieee_is_finite(Phi(i1:k1, i2:k2, i3:k3))) .or. &
+            any(ieee_is_nan(Phi(i1:k1, i2:k2, i3:k3))) .or. &
+            any(Phi(i1:k1, i2:k2, i3:k3)/=Phi(i1:k1, i2:k2, i3:k3)) ) then
       call error_stop(dump_filename, 'output: non-finite Phi', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+    end if
   end subroutine check_finite_output
   
   
