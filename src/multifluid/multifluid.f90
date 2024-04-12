@@ -759,14 +759,14 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
 
               if (ix1beg /= lx1) then    !only do this if we actually have null grid points
                 do ibuf=1,lbuf
-                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
-                  param(ix1beg+ibuf-1,ix2,ix3,isp)=0._wp
+                  param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=0._wp
                 end do
               end if
               if (ix1end /= lx1) then
                 do ibuf=1,lbuf
-                  !param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
-                  param(ix1end+ibuf-1,ix2,ix3,isp)=0._wp
+                  param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+                  !param(ix1end+ibuf-1,ix2,ix3,isp)=0._wp
                 end do
               end if
             end do
@@ -793,7 +793,7 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
     ! Temperature
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     case (3)
-      param=max(param,100._wp)     !temperature floor
+      param(1:lx1,1:lx2,1:lx3,1:lsp)=max(param(1:lx1,1:lx2,1:lx3,1:lsp),100._wp)     !temperature floor
 
       do isp=1,lsp       !set null cells to some value
         do iinull=1,x%lnull
@@ -806,52 +806,52 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
       end do
 
 
-      !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
-      if (x%gridflag==0) then      ! closed dipole
-        do isp=1,lsp
-          do ix3=1,lx3
-            do ix2=1,lx2
-              ix1beg=1
-              do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
-                ix1beg=ix1beg+1
-              end do
-
-              ix1end=ix1beg
-              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
-                ix1end=ix1end+1
-              end do
-
-              if (ix1beg /= lx1) then    !only do this if we actually have null grid points
-                do ibuf=1,lbuf
-                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
-                  param(ix1beg+ibuf-1,ix2,ix3,isp)=Tn(ix1beg+ibuf-1,ix2,ix3)
-                end do
-              end if
-              if (ix1end /= lx1) then
-                do ibuf=1,lbuf
-                  !param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
-                  param(ix1end+ibuf-1,ix2,ix3,isp)=Tn(ix1end+ibuf-1,ix2,ix3)
-                end do
-              end if
-            end do
-          end do
-        end do
-      elseif (x%gridflag==1) then     ! open dipole grid, inverted
-        do isp=1,lsp
-          do ix3=1,lx3
-            do ix2=1,lx2
-              ix1end=1
-              do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
-                ix1end=ix1end+1
-              end do
-
-              if (ix1end /= lx1) then
-                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
-              end if
-            end do
-          end do
-        end do
-      end if
+!      !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
+!      if (x%gridflag==0) then      ! closed dipole
+!        do isp=1,lsp
+!          do ix3=1,lx3
+!            do ix2=1,lx2
+!              ix1beg=1
+!              do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+!                ix1beg=ix1beg+1
+!              end do
+!
+!              ix1end=ix1beg
+!              do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the last non-null index for this field line
+!                ix1end=ix1end+1
+!              end do
+!
+!              if (ix1beg /= lx1) then    !only do this if we actually have null grid points
+!                do ibuf=1,lbuf
+!                  !param(ix1beg+ibuf-1,ix2,ix3,isp)=param(ix1beg+lbuf,ix2,ix3,isp)
+!                  param(ix1beg+ibuf-1,ix2,ix3,isp)=Tn(ix1beg+ibuf-1,ix2,ix3)
+!                end do
+!              end if
+!              if (ix1end /= lx1) then
+!                do ibuf=1,lbuf
+!                  !param(ix1end+ibuf-1,ix2,ix3,isp)=param(ix1end-lbuf,ix2,ix3,isp)
+!                  param(ix1end+ibuf-1,ix2,ix3,isp)=Tn(ix1end+ibuf-1,ix2,ix3)
+!                end do
+!              end if
+!            end do
+!          end do
+!        end do
+!      elseif (x%gridflag==1) then     ! open dipole grid, inverted
+!        do isp=1,lsp
+!          do ix3=1,lx3
+!            do ix2=1,lx2
+!              ix1end=1
+!              do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
+!                ix1end=ix1end+1
+!              end do
+!
+!              if (ix1end /= lx1) then
+!                param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+!              end if
+!            end do
+!          end do
+!        end do
+!      end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Error
