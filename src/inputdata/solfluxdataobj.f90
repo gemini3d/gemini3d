@@ -20,7 +20,7 @@ type, extends(inputdata) :: solfluxdata
   real(wp), dimension(:), pointer :: glonp,glatp
   integer, pointer :: llon,llat,lalt
   real(wp), dimension(:,:,:), pointer :: Iinfp
-  real(wp), dimension(:,:,:), pointer :: Iinfiprev,Iinfinext,Iinfinow
+  real(wp), dimension(:,:,:,:), pointer :: Iinfiprev,Iinfinext,Iinfinow
 
   ! work and target coordinates
   real(wp), dimension(:,:,:), allocatable :: glonimat,glatimat
@@ -78,13 +78,13 @@ contains
 
     ! Set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
     !   We're treating solar flux as 2D for purposes of interpolation sources; however, convenient here to alias as a 3D array 
-    !   with the 3rd axis being wavelength.  The target grid for interpolation is effective glon,glat but treated
+    !   with the 3rd axis being wavelength.  The target grid for interpolation is effectively glon,glat but treated
     !   as a 3D grid since we need a value of Iinf for every possible glon,glat on the grid and these are not plaid
     !   and cannot be mapped from a 2D array of glon,glat easily.  
     self%Iinfp=>self%data3D(1,:,:,:)
-    self%Iinfiprev=>self%data3Di(1,:,:,:,1)
-    self%Iinfinext=>self%data3Di(1,:,:,:,2)
-    self%Iinfinow=>self%data3Dinow(1,:,:,:)
+    self%Iinfiprev=>self%data3Di(:,:,:,:,1)
+    self%Iinfinext=>self%data3Di(:,:,:,:,2)
+    self%Iinfinow=>self%data3Dinow(:,:,:,:)
 
     ! must initialize prev state or else the first set of data will not be interpolated correctly
     self%Iinfiprev=0.0
@@ -150,7 +150,7 @@ contains
     self%gloni=>self%coord2i
     self%glati=>self%coord3i
 
-    allocate(self%glonimat(1:x%lx1,1:x%lx2,1:x%lx3))     ! why not local variables?
+    allocate(self%glonimat(1:x%lx1,1:x%lx2,1:x%lx3))     ! why not local variables?  FIXME
     allocate(self%glatimat,mold=self%glonimat)
 
     ! Target coordinates are 3D in this case...

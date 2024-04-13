@@ -73,7 +73,7 @@ const
 collision
 diffusion fang interp
 ionization
-inputdata precipdata efielddata
+inputdata precipdata efielddata solfluxdata
 gemini3d_sysinfo
 neutral
 neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
@@ -82,7 +82,7 @@ neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 PDEparabolic gbsv
-precipBCs reader sanity_check errors sources temporal timeutils
+precipBCs solfluxBCs reader sanity_check errors sources temporal timeutils
 exe_frontend
 grid io
 mpimod
@@ -100,7 +100,7 @@ collision
 diffusion fang interp
 ionization
 ionization_mpi
-inputdata precipdata efielddata
+inputdata precipdata efielddata solfluxdata
 gemini3d_sysinfo
 neutral
 neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
@@ -111,7 +111,7 @@ multifluid
 multifluid_mpi
 neutral_perturbations
 PDEparabolic gbsv
-precipBCs reader sanity_check errors sources sources_mpi temporal_mpi timeutils
+precipBCs solfluxBCs reader sanity_check errors sources sources_mpi temporal_mpi timeutils
 exe_frontend
 grid io
 PDEelliptic potential mumps_interface

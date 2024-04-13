@@ -43,3 +43,12 @@ target_link_libraries(precipBCs PRIVATE reader const meshobj interp timeutils ge
 inputdata precipdata
 MPI::MPI_Fortran
 )
+
+add_library(solfluxBCs OBJECT boundary_conditions/solfluxBCs_mod.f90
+$<TARGET_OBJECTS:grid>
+)
+target_link_libraries(solfluxBCs PRIVATE reader const meshobj interp timeutils gemini3d_config
+inputdata solfluxdata
+MPI::MPI_Fortran
+)
+

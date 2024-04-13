@@ -28,6 +28,7 @@ use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use neutraldata3Dobj, only: neutraldata3D
 use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
+use solfluxdataobj, only: solfluxdata
 use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
 use filesystem, only : expanduser
@@ -36,7 +37,8 @@ use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_
                   grid_internaldata_ungenerate, meshobj_alloc, meshobj_dealloc, grid_internaldata_alloc, &
                   grid_internaldata_generate, get_fullgrid_lims
 use gemini3d_config, only : gemini_cfg,read_configfile
-use precipBCs_mod, only: init_precipinput
+use precipBCs_mod, only: init_precipinput, precipBCs_fileinput, precipBCs
+use solfluxBCs_mod, only: init_solfluxinput, solfluxBCs_fileinput, solfluxBCs
 use msis_interface, only : msisinit
 use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
@@ -52,7 +54,6 @@ use potential_nompi, only: set_fields_test,velocities_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
-use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sanity_check, only : check_finite_output
 
 implicit none (type, external)
@@ -77,7 +78,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
-            check_finite_output_in
+            check_finite_output_in, solflux_perturb_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -110,6 +111,9 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: E01,E02,E03
   real(wp), dimension(:,:), pointer :: Vminx1slab,Vmaxx1slab
 
+  !> Used to pass solar flux data between routine
+  real(wp), dimension(:,:,:,:), pointer :: Iinf
+
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
 
@@ -117,6 +121,7 @@ type gemini_work
   type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
   type(efielddata), pointer :: efield=>null()           ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
+  type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 end type gemini_work
 
 
@@ -310,6 +315,8 @@ contains
     allocate(intvars%Vminx1slab(1:lx2,1:lx3))
     allocate(intvars%Vmaxx1slab,mold=intvars%Vminx1slab)
 
+    allocate(intvars%Iinf(1:lx1,1:lx2,1:lx3,22))   ! fix hardcoded number of wavelength bins
+
     allocate(intvars%eprecip)
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
@@ -357,6 +364,8 @@ contains
     deallocate(intvars%Vminx3,intvars%Vmaxx3)
     deallocate(intvars%E01,intvars%E02,intvars%E03)
     deallocate(intvars%Vminx1slab,intvars%Vmaxx1slab)
+
+    deallocate(intvars%Iinf)
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
@@ -1095,6 +1104,25 @@ contains
     end if
   end subroutine precip_perturb_in
 
+
+  !> update the solar flux inputdata if present
+  subroutine solflux_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    real(wp), intent(in) :: t,dt
+    type(gemini_cfg), intent(in) :: cfg
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(in) :: x
+    type(gemini_work), intent(inout) :: intvars
+
+    if (cfg%flagsolfluxfile==1) then
+      call solfluxBCs_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%Iinf,intvars%solflux)
+    else
+      !! no file input specified, so just call 'regular' function
+      call solfluxBCs(cfg,x,ymd,UTsec,intvars%Iinf)
+    end if
+  end subroutine solflux_perturb_in
+
+
   !> source/loss numerical solutions for all state variables; calls source/loss solutions for individual state
   !    variables, which alternatively could be called from the main program instead of this routine if one needed
   !    finer-grained control over solutions.
@@ -1230,7 +1258,7 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call solar_ionization(t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
-            intvars%atmos%nn,intvars%atmos%Tn,gavg,Tninf)     ! solar ionization source
+            intvars%atmos%nn,intvars%atmos%Tn,gavg,Tninf,intvars%Iinf)     ! solar and impact ionization sources
   end subroutine solar_ionization_in
 
 
