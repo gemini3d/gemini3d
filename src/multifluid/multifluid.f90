@@ -416,7 +416,7 @@ end subroutine impact_ionization
 !> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want solely solar sources :)
 !  Upon entry:  we assume any photoinization has already been computed and placed in results arrays
 !  Upson exit:  intvars%Prionize and intvars%Qeionize include added solar sources
-subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf)
+subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf,Iinf)
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
   integer, dimension(3), intent(in) :: ymd
@@ -428,6 +428,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
   real(wp), intent(in) :: gavg,Tninf
+  real(wp), dimension(:,:,:,:), intent(in) :: Iinf
   real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3),1:size(Prprecip,4)) :: Prpreciptmp
   real(wp), dimension(1:size(Qeprecip,1),1:size(Qeprecip,2),1:size(Qeprecip,3)) :: Qepreciptmp
   real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3)) :: chi
@@ -441,7 +442,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   end if
 
   ! solar fluxes and resulting ionization rates
-  Prpreciptmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf)
+  Prpreciptmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
   !if (mpi_cfg%myid==0 .and. debug) then
   if (debug) then
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &

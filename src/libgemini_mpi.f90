@@ -21,7 +21,8 @@ use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
-                      v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in
+                      v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
+                      solflux_perturb_in
 use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
@@ -494,7 +495,7 @@ contains
     call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
-    !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)    ! old ordering
+    call solflux_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
   end subroutine inputdata_perturb_in
 
 
