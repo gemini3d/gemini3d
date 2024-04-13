@@ -173,7 +173,7 @@ contains
     self%l2Dax23=l2Dax23; self%l2Dax12=l2Dax12; self%l2Dax13=l2Dax13;
     self%l3D=l3D
 
-    ! coordinate axis sizes for interpolation sites
+    ! coordinate axis sizes for interpolation sites -- by default these are based on mesh size
     self%lc1i=x%lx1; self%lc2i=x%lx2; self%lc3i=x%lx3;
 
     ! check that the user is trying something sensible

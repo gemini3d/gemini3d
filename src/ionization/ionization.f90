@@ -26,11 +26,10 @@ interface
 end interface
 
 contains
-  function photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf)
+  function photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
     !------------------------------------------------------------
     !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
     !------------------------------------------------------------
-    
     real(wp), intent(in) :: t
     integer, intent(in), dimension(3) :: ymd
     real(wp), intent(in) :: UTsec
@@ -40,25 +39,17 @@ contains
     real(wp), dimension(:,:,:), intent(in) :: chi
     real(wp), intent(in) :: f107,f107a
     real(wp), intent(in) :: gavg,Tninf
+    real(wp), dimension(:,:,:,:), intent(in) :: Iinf
     integer, parameter :: ll=22     !number of wavelength bins
-    integer :: il,isp
-    real(wp), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
+    integer :: il,isp,ix1,ix2,ix3
+    real(wp), dimension(ll) :: lambda1,lambda2,sigmaO,sigmaN2,sigmaO2
     real(wp), dimension(ll) :: brN2i,brN2di,brO2i,brO2di,pepiO,pepiN2i,pepiN2di,pepiO2i,pepiO2di
-    real(wp), dimension(ll) :: Iinf
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: bigX,y,Chfn
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
     real(wp) :: H
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
-    !> 2D mask below
-    !real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
-    real(wp), dimension(2), parameter :: ecglat=[49.0,-5.0], ecglon=[213,331], ectime=[56700.0,69183.33]
-    real(wp), parameter :: ecwidth=5.0, ecdtime=1800.0, maskmax=0.9
-    real(wp) :: ecglatnow,ecglonnow
-    logical, parameter :: flagmask=.false.
-    integer :: ix1,ix2,ix3
-    real(wp) :: maskval
     
     
     !WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
@@ -66,15 +57,6 @@ contains
         79.8, 79.8, 79.8, 91.3, 91.3, 91.3, 97.5, 98.7, 102.7]*1e-9
     lambda2=[0.4, 0.8, 1.8, 3.2, 7.0, 15.5, 22.4, 29.0, 32.0, 54.0, 65.0, 79.8, 79.8, &
          91.3, 91.3, 91.3, 97.5, 97.5, 97.5, 98.7, 102.7, 105.0]*1e-9
-    
-    
-    !EUVAC FLUX VALUES
-    fref=[5.01e1, 1e4, 2e6, 2.85e7, 5.326e8, 1.27e9, 5.612e9, 4.342e9, 8.380e9, &
-        2.861e9, 4.83e9, 1.459e9, 1.142e9, 2.364e9, 3.655e9, 8.448e8, 3.818e8, &
-        1.028e9, 7.156e8, 4.482e9, 4.419e9, 4.235e9]*1e4        !convert to m^-2 s^-1
-    Aeuv=[6.24e-1, 3.71e-1, 2e-1, 6.247e-2, 1.343e-2, 9.182e-3, 1.433e-2, 2.575e-2, &
-        7.059e-3, 1.458e-2, 5.857e-3, 5.719e-3, 3.680e-3, 5.310e-3, 5.261e-3, 5.437e-3, &
-        4.915e-3, 4.995e-3, 4.422e-3, 3.950e-3, 5.021e-3, 4.825e-3]
     
     
     !TOTAL ABSORPTION CROSS SECTIONS
@@ -111,10 +93,6 @@ contains
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.001, &
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
-    
-    !IRRADIANCE ACCORDING TO [RICHARDS, 1994]
-    Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
     
     
     !O COLUMN DENSITY
@@ -155,40 +133,21 @@ contains
       Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
     end where
     nO2col=nn(:,:,:,3)*H*Chfn
+     
     
-    
-    !PHOTON FLUX
+    !Solar flux at each point on the grid, i.e. the attenuated vacuum flux
     do il=1,ll
-      ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
-      !   computing photon fluxes. 
       do ix3=1,x%lx3
         do ix2=1,x%lx2
           do ix1=1,x%lx1 
-            if (flagmask) then
-              ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))
-              ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
-    !> 2D mask
-    !          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
-    !                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
-    !                    exp(-(UTsec-ectime)**2/2/ecdtime**2)
-    
-              if (UTsec>ectime(1) .and. UTsec<ectime(2)) then
-                maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglatnow)**2/2/ecwidth**2)* &
-                          exp(-(x%glon(ix1,ix2,ix3)-ecglonnow)**2/2/ecwidth**2)
-              else
-                maskval=0.0
-              end if
-            else
-              maskval=0.0
-            end if
-            Iflux(ix1,ix2,ix3,il)=(1.0-maskval)*Iinf(il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
+          Iflux(ix1,ix2,ix3,il)=Iinf(ix1,ix2,ix3,il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
                     sigmaO2(il)*nO2col(ix1,ix2,ix3)))
           end do
         end do
       end do
-    end do
-    
-    
+    end do   
+
+
     !PRIMARY AND SECONDARY IONIZATION RATES
     photoionization=0
     

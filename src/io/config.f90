@@ -42,6 +42,9 @@ type :: gemini_cfg
   character(:), allocatable :: E0dir            ! location of electric field input data
   real(wp) :: dtE0 = 0                            ! time step between electric field inputs
 
+  !> solar flux inputs (not implemented yet)
+  integer :: flagsolfluxfile=0
+
   !> GLOW parameters
   integer :: flagglow              ! whether or not to use glow to compute impact ionization
   real(wp) :: dtglow, dtglowout    ! time step between GLOW updates and outputs for GLOW emissions
