@@ -204,16 +204,16 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   lx3=size(Ts,3)-4
   
   if (isp<lsp) then
-    Tstmp=Ts(1:lx1,1:lx2,1:lx3)
+    ! Tstmp=Ts(1:lx1,1:lx2,1:lx3)
 
-    where (Ts(1:lx1,1:lx2,1:lx3) > 6000.0)
-      Tstmp=6000.0
-    end where
+    ! where (Ts(1:lx1,1:lx2,1:lx3) > 6000.0)
+    !   Tstmp=6000.0
+    ! end where
 
   !! ion species
   !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
     !! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
-    lambda=thermal_coeff(isp)*Tstmp**(5.0_wp/2)
+    lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
     beta=0.0
   else                  !electrons
     Tstmp=Ts(1:lx1,1:lx2,1:lx3)
