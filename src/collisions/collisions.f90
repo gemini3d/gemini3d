@@ -237,7 +237,7 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
           (nn(:,:,:,1)*1.1e-16_wp*(1+5.7e-4_wp*Ts(1:lx1,1:lx2,1:lx3)) + &
           nn(:,:,:,2)*2.82e-17_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))*(1-1.21e-4_wp*Tstmp1) + &
           nn(:,:,:,3)*2.2e-16_wp*(1+3.6e-2_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))) + &
-          nn(:,:,:,4)*5.47e-15_wo*(1-1.35e-4*Tstmp2)))
+          nn(:,:,:,4)*5.47e-15_wp*(1-1.35e-4*Tstmp2)))
     beta=5.0_wp/2 * kB/elchrg * J1(1:lx1,1:lx2,1:lx3)
   end if
 end subroutine thermal_conduct
