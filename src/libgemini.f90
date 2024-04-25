@@ -282,6 +282,8 @@ contains
 
     allocate(intvars%W0(1:lx2,1:lx3,1:intvars%lprec))
     allocate(intvars%PhiWmWm2,mold=intvars%W0)
+    intvars%W0=1e3
+    intvars%PhiWmWm2=1e-5
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
