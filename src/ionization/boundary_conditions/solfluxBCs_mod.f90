@@ -33,7 +33,7 @@ contains
   end subroutine init_solfluxinput
 
 
-  !> get latest file input precipitation information
+  !> get latest file input solar flux information, including effects of masking, etc.
   subroutine solfluxBCs_fileinput(dtmodel,t,cfg,ymd,UTsec,x,Iinf,solflux)
     real(wp), intent(in) :: dtmodel
     real(wp), intent(in) :: t
