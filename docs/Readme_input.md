@@ -110,6 +110,12 @@ dtE0 = 1.0                         ! time step between electric field file input
 E0_dir = 'test_data/test3d_glow/inputs/Efield_inputs/'
 /
 
+! solar flux file input information (optional)
+&solflux
+dtsolflux=900.0
+solfluxdir = 'test_data/test3d_glow/inputs/solflux_inputs/'
+/
+
 ! (optional - default off) Use glow to compute impact ionization, Cartesian grids only
 &glow
 flagglow = 1                ! use glow?  0 - no; 1 - yes
