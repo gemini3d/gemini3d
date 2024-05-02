@@ -157,7 +157,6 @@ contains
 
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
-      print*, 'debug:  ',debug
     else
       buf = "" !< ensure buf has no garbage characters
 
