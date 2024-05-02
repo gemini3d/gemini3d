@@ -22,7 +22,7 @@ use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
-                      solflux_perturb_in
+                      solflux_perturb_in, init_solfluxinput_in
 use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
@@ -33,8 +33,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
-            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in
-
+            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
 contains
@@ -386,6 +385,7 @@ contains
     call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
+    call init_solfluxinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     !> add other inputdata streams here...
   end subroutine init_inputdata_in
 

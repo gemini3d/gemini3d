@@ -78,7 +78,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
-            check_finite_output_in, solflux_perturb_in
+            check_finite_output_in, solflux_perturb_in, init_solfluxinput_in
 
 
 real(wp), protected :: v2grid,v3grid
@@ -322,6 +322,7 @@ contains
     allocate(intvars%eprecip)
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
+    allocate(intvars%solflux)
   end function gemini_work_alloc
 
 
@@ -653,6 +654,20 @@ contains
 
     call init_precipinput(dt,cfg,ymd,UTsec,x,intvars%eprecip)
   end subroutine init_precipinput_in
+
+
+  !> Wrapper for initialization of electron precipitation data
+  subroutine init_solfluxinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    type(gemini_work), intent(inout) :: intvars
+
+    call init_solfluxinput(dt,cfg,ymd,UTsec,x,intvars%Iinf,intvars%solflux)
+  end subroutine init_solfluxinput_in
 
 
   !> initialization procedure needed for MSIS 2.0
