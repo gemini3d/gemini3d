@@ -78,6 +78,15 @@ if (mpi_cfg%myid==0) then
     print *, "no Efield specified"
   end if
 
+  if(cfg%flagsolfluxfile==1) then
+    call assert_is_dir(cfg%solfluxdir)
+    print *, 'Solar flux file input cadence (s):  ',cfg%dtsolflux
+    print *, 'Solar flux file input source directory:  ' // cfg%solfluxdir
+  else
+    print *, "no solar flux specified"
+  end if
+
+
   if (cfg%flagglow==1) then
     print *, 'GLOW enabled for auroral emission calculations.'
     print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow

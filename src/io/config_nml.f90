@@ -156,7 +156,7 @@ contains
     if (namelist_exists(u, "solflux", verbose)) then
       cfg%flagsolfluxfile = 1
       rewind(u)
-      read(u, nml=efield, iostat=i)
+      read(u, nml=solflux, iostat=i)
       call check_nml_io(i, cfg%infile, "solflux")
       cfg%solfluxdir = make_absolute(expand_envvar(solfluxdir), cfg%outdir)
       cfg%dtsolflux = dtsolflux
