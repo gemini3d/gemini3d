@@ -186,4 +186,17 @@ contains
     
     call hf%close()
   end procedure get_neutral3_hdf5
+
+
+  module procedure get_solflux_hdf5
+    type(hdf5_file) :: hf
+    
+    if (debug) print *, 'READ neutral 3D data from file: ',path
+    
+    call hf%open(path, action='r')
+
+    call hf%read('/Iinf', Iinf)
+    
+    call hf%close()
+  end procedure get_solflux_hdf5
 end submodule reader_hdf5

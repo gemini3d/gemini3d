@@ -8,7 +8,7 @@ use phys_consts, only: wp,debug,pi
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
-use reader, only: get_simsize2,get_grid2!,get_solflux
+use reader, only: get_simsize2,get_grid2,get_solflux
 use timeutils, only: dateinc,date_filename
 
 implicit none (type, external)
@@ -191,7 +191,7 @@ contains
     !print*, '  date and time:  ',ymdtmp,UTsectmp
     !print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     ! read in the data for the "next" frame from file
-    !call get_solflux(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", self%Qp, self%E0p)
+    call get_solflux(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", self%Iinfp)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !print*, ' precip data succesfully input...'
