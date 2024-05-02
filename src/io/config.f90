@@ -44,6 +44,8 @@ type :: gemini_cfg
 
   !> solar flux inputs (not implemented yet)
   integer :: flagsolfluxfile=0
+  character(:), allocatable :: solfluxdir
+  real(wp) :: dtsolflux=0
 
   !> GLOW parameters
   integer :: flagglow              ! whether or not to use glow to compute impact ionization
