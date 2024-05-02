@@ -28,7 +28,7 @@ contains
     type(solfluxdata), intent(inout) :: solflux
 
     if (cfg%flagsolfluxfile==1) then    !all workers must have this info
-      call solflux%init(cfg,cfg%precdir,x,dt,cfg%dtprec,ymd,UTsec)
+      call solflux%init(cfg,cfg%solfluxdir,x,dt,cfg%dtprec,ymd,UTsec)
     end if
   end subroutine init_solfluxinput
 
