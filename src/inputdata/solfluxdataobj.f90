@@ -132,7 +132,7 @@ contains
     ! read grid data
     call get_grid2(self%sourcedir // "/simgrid.h5", self%glonp, self%glatp)
 
-    print '(A,4F9.3)', 'Precipitation glon,glat extent:  ',minval(self%glonp(:)),maxval(self%glonp(:)), &
+    print '(A,4F9.3)', 'Solar flux glon,glat extent:  ',minval(self%glonp(:)),maxval(self%glonp(:)), &
                                                            minval(self%glatp(:)),maxval(self%glatp(:))
     if(.not. all(ieee_is_finite(self%glonp))) error stop 'solfluxBCs_fileinput: glon must be finite'
     if(.not. all(ieee_is_finite(self%glatp))) error stop 'solfluxBCs_fileinput: glat must be finite'
@@ -188,8 +188,8 @@ contains
 
     !!!!!!  read in solar flux data from file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! this read must be done repeatedly through simulation so have only root do file io
-    !print*, '  date and time:  ',ymdtmp,UTsectmp
-    !print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+    print*, '  date and time:  ',ymdtmp,UTsectmp
+    print*, '  solflux filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     ! read in the data for the "next" frame from file
     call get_solflux(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", self%Iinfp)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

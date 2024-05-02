@@ -157,6 +157,7 @@ contains
 
     if(p%fortran_cli) then
       call cli(cfg, lid2in, lid3in, debug)
+      print*, 'debug:  ',debug
     else
       buf = "" !< ensure buf has no garbage characters
 
@@ -181,6 +182,7 @@ contains
     if(p%fortran_nml) then
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
+      call check_input_files(cfg)
     endif
 
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
