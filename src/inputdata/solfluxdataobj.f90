@@ -136,6 +136,9 @@ contains
     !                                                       minval(self%glatp(:)),maxval(self%glatp(:))
     if(.not. all(ieee_is_finite(self%glonp))) error stop 'solfluxBCs_fileinput: glon must be finite'
     if(.not. all(ieee_is_finite(self%glatp))) error stop 'solfluxBCs_fileinput: glat must be finite'
+
+    !print*, 'min/max glonp:  ',minval(self%glonp),maxval(self%glonp)
+    !print*, 'min/max glatp:  ',minval(self%glatp),maxval(self%glatp)
   end subroutine load_grid_solflux
 
 
@@ -168,6 +171,9 @@ contains
 
     deallocate(self%glonimat,self%glatimat)
     self%flagcoordsi=.true.
+
+    !print*, 'min/max gloni:  ',minval(self%gloni),maxval(self%gloni)
+    !print*, 'min/max glati:  ',minval(self%glati),maxval(self%glati)
   end subroutine set_coordsi_solflux
 
 

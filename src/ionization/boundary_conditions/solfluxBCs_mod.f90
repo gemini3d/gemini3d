@@ -28,7 +28,7 @@ contains
     type(solfluxdata), intent(inout) :: solflux
 
     if (cfg%flagsolfluxfile==1) then    !all workers must have this info
-      call solflux%init(cfg,cfg%solfluxdir,x,dt,cfg%dtprec,ymd,UTsec)
+      call solflux%init(cfg,cfg%solfluxdir,x,dt,cfg%dtsolflux,ymd,UTsec)
     end if
   end subroutine init_solfluxinput
 
@@ -54,6 +54,12 @@ contains
     ! set output arrays; note that this is making a copy of the data stored the precipdata object.  We
     !   will assume for now that this doesn't incur too much memory overhead
     Iinf(:,:,:,:)=solflux%Iinfinow(:,:,:,:)
+
+    !print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)
+    !print*, 'min/max Iinfiprev:  ',minval(solflux%Iinfiprev),maxval(solflux%Iinfiprev)
+    !print*, 'min/max Iinfinext:  ',minval(solflux%Iinfinext),maxval(solflux%Iinfinext)   
+    !print*, 'min/max Iinfp:  ',minval(solflux%Iinfp),maxval(solflux%Iinfp)
+
   end subroutine solfluxBCs_fileinput
 
 
@@ -121,5 +127,7 @@ contains
         end do
       end do
     end do   
+
+    print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)    
   end subroutine solfluxBCs
 end module solfluxBCs_mod
