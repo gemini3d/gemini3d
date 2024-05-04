@@ -58,7 +58,7 @@ contains
     call self%set_source(sourcedir)
     strname='solar flux'
     call self%set_name(strname)
-    !self%flagdoinput=cfg%flagsolfluxfile/=0
+    self%flagdoinput=cfg%flagsolfluxfile/=0
 
     ! read the simulation size from the source directory and allocate arrays
     allocate(self%lc1,self%lc2,self%lc3)      ! these are pointers
@@ -107,11 +107,11 @@ contains
     if (.not. self%flagsource) error stop 'solfluxdata:load_size_solflux() - must define a source directory first'
 
     ! read sizes
-    print '(/,A,/,A)', 'solflux input:','--------------------'
-    print '(A)', 'READ solflux size from: ' // self%sourcedir
+    !print '(/,A,/,A)', 'solflux input:','--------------------'
+    !print '(A)', 'READ solflux size from: ' // self%sourcedir
     call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
-    print '(A,2I6)', 'soflux size: llon,llat:  ',self%llon,self%llat
+    !print '(A,2I6)', 'soflux size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
      print*, '  solflux grid size must be strictly positive: ' //  self%sourcedir
      error stop

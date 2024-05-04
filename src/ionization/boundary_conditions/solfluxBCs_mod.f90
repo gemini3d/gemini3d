@@ -29,6 +29,7 @@ contains
 
     if (cfg%flagsolfluxfile==1) then    !all workers must have this info
       call solflux%init(cfg,cfg%solfluxdir,x,dt,cfg%dtsolflux,ymd,UTsec)
+!      print*, 'Solflux initialized', ymd, UTsec, cfg%dtsolflux
     end if
   end subroutine init_solfluxinput
 
@@ -59,7 +60,6 @@ contains
     !print*, 'min/max Iinfiprev:  ',minval(solflux%Iinfiprev),maxval(solflux%Iinfiprev)
     !print*, 'min/max Iinfinext:  ',minval(solflux%Iinfinext),maxval(solflux%Iinfinext)   
     !print*, 'min/max Iinfp:  ',minval(solflux%Iinfp),maxval(solflux%Iinfp)
-
   end subroutine solfluxBCs_fileinput
 
 
