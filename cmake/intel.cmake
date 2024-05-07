@@ -6,6 +6,10 @@ $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 )
 
+# this flag needs to be applied EVERYWHERE incl. submodule projects
+# or link-time errors with unresolved procedures that actually exist.
+add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-standard-semantics>)
+
 add_compile_options(
 $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
 )
