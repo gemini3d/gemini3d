@@ -7,8 +7,11 @@ $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 )
 
 # this flag needs to be applied EVERYWHERE incl. submodule projects
-# or link-time errors with unresolved procedures that actually exist.
-add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-standard-semantics>)
+# or runtime error / weird behavior with non-standard C_BOOL values.
+# -standard-semantics is no good because it breaks linkage within oneAPI itself e.g. oneMPI library!
+if(NOT WIN32)
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-fpscomp;logicals>")
+endif()
 
 add_compile_options(
 $<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
