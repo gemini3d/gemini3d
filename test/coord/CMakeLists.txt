@@ -55,9 +55,3 @@ set_property(TEST ${test_names} PROPERTY LABELS unit)
 if(host_ramGB LESS 8)
   set_property(TEST ${test_names} PROPERTY RESOURCE_LOCK cpu_ram)
 endif()
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()

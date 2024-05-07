@@ -4,6 +4,9 @@ if(matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
 endif(matlab)
 
+add_compile_options(${gemini3d_flags})
+# scope is this directory on down
+
 # Libraries such as MPI, HDF5, Scalapack, MUMPS, are so important
 # we test each standalone to mitigate confusing build or runtime errors
 # if a particular library isn't working.
@@ -112,9 +115,3 @@ add_subdirectory(mpi)
 add_subdirectory(neutral)
 add_subdirectory(potential)
 add_subdirectory(temporal)
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()

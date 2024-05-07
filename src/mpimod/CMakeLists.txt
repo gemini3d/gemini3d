@@ -18,9 +18,3 @@ target_include_directories(mpimod PUBLIC ${MPI_Fortran_INCLUDE_DIRS})
 target_link_libraries(mpimod PRIVATE const
 MPI::MPI_Fortran
 )
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()

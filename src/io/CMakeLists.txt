@@ -48,9 +48,3 @@ target_link_libraries(reader PRIVATE const
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()

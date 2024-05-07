@@ -1,3 +1,6 @@
+add_compile_options(${gemini3d_flags})
+# scope is this directory on down
+
 # --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
@@ -261,9 +264,3 @@ gemini3d
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()

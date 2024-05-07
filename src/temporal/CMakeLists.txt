@@ -10,10 +10,3 @@ MPI::MPI_Fortran
 
 add_library(temporal OBJECT temporal.f90)
 target_link_libraries(temporal PRIVATE const)
-
-
-# apply compiler options
-get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
-foreach(t IN LISTS tgts)
-  target_compile_options(${t} PRIVATE ${gemini3d_flags})
-endforeach()
