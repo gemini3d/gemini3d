@@ -37,7 +37,7 @@ ffilesystem::filesystem
 
 # --- io_nompi
 add_library(io_nompi OBJECT io_nompi.f90)
-target_link_libraries(io_nompi PRIVATE grid interp const timeutils reader 
+target_link_libraries(io_nompi PRIVATE grid interp const timeutils reader
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
@@ -48,3 +48,9 @@ target_link_libraries(reader PRIVATE const
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
+
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()

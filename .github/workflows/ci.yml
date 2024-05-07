@@ -56,7 +56,7 @@ jobs:
       timeout-minutes: 15
       run: |
         sudo apt update
-        sudo apt install libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
 
     - name: Install GCC-8 (Ubuntu 20.04)
       if: matrix.os == 'ubuntu-20.04'

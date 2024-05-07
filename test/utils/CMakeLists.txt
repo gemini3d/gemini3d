@@ -17,3 +17,9 @@ target_link_libraries(test_expand_envvar PRIVATE gemini3d_config ffilesystem::fi
 
 add_test(NAME ExpandEnvvar COMMAND test_expand_envvar)
 set_property(TEST ExpandEnvvar PROPERTY ENVIRONMENT test__gem=hello)
+
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()

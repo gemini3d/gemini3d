@@ -17,6 +17,12 @@ set_property(TARGET gemini3d.compare PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT
 set_property(TARGET gemini3d.compare PROPERTY DEBUG_POSTFIX .debug)
 set_property(TARGET gemini3d.compare PROPERTY RELWITHDEBINFO_POSTFIX .debug)
 
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()
+
 # --- Install
 
 install(TARGETS gemini3d.compare

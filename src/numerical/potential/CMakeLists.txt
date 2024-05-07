@@ -24,3 +24,8 @@ MPI::MPI_Fortran
 add_library(potential_nompi OBJECT potential_nompi.f90)
 target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid)
 
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()

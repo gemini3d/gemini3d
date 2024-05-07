@@ -79,3 +79,9 @@ set_property(TARGET gemini3d.run magcalc.bin magcalc.run PROPERTY RELWITHDEBINFO
 install(TARGETS magcalc.bin gemini3d.run magcalc.run
 EXPORT ${PROJECT_NAME}-targets
 )
+
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()

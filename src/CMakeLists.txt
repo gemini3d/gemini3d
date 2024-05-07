@@ -21,6 +21,7 @@ add_subdirectory(sources)
 
 add_library(multifluid_mpi OBJECT multifluid/multifluid_mpi.f90)
 target_link_libraries(multifluid_mpi PRIVATE const mpimod advec_mpi)
+
 add_library(multifluid OBJECT multifluid/multifluid.f90
 $<TARGET_OBJECTS:grid>
 )
@@ -260,3 +261,9 @@ gemini3d
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)
+
+# apply compiler options
+get_property(tgts DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+foreach(t IN LISTS tgts)
+  target_compile_options(${t} PRIVATE ${gemini3d_flags})
+endforeach()
