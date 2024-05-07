@@ -38,7 +38,9 @@ jobs:
         # include:
         # - os: macos-latest
         #   gcc: 13
-        #   hwm14: false
+        include:
+        - os: ubuntu-20.04
+          gcc: 8
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -55,6 +57,11 @@ jobs:
       run: |
         sudo apt update
         sudo apt install libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+
+    - name: Install GCC-8 (Ubuntu 20.04)
+      if: matrix.os == 'ubuntu-20.04'
+      timeout-minutes: 15
+      run: sudo apt install gcc-8 g++-8 gfortran-8
 # don't install libscalapack-openmpi-dev, it is broken CMake package
 # don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
 # is out of sync with the upstream Ubuntu package repos
