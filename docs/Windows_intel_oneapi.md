@@ -42,15 +42,6 @@ cmake -P external/scripts/install_ninja.cmake
 Set environment variable `CMAKE_GENERATOR` to `Ninja`.
 Add to environment variable `PATH` the directory containing `ninja.exe`.
 
-Then you can build and install the external libraries:
-
-```sh
-cmake -P external/build.cmake
-```
-
-that installs Gemini3d external libraries under ~/lib_intel (c:/users/username/lib_intel).
-This path is arbitrary but should be distinct between compilers.
-
 ## Trouble finding compiler
 
 If CMake doesn't find the oneAPI compilers, do in oneAPI command prompt:

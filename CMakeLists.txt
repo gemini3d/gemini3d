@@ -30,8 +30,6 @@ include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 # Fortran filesystem library "ffilesystem"
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
@@ -66,7 +64,7 @@ message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
 # HDF5 bug #3663 for HDF5 1.14.2, 1.14.3, ...?
 # https://github.com/HDFGroup/hdf5/issues/3663
 if(WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-if(HDF5_VERSION MATCHES "1.14.[2-3]")
+if(HDF5_VERSION MATCHES "1.14.[2-4]")
   message(VERBOSE "HDF5: applying workaround for HDF5 bug #3663 with Intel oneAPI on Windows")
   set(oneapi_hdf5_bug3663 shlwapi)
 endif()
@@ -75,15 +73,16 @@ endif()
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-if(NOT DEFINED ENV{MKLROOT})
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+if(DEFINED ENV{MKLROOT})
+  find_package(SCALAPACK REQUIRED)
+else()
   find_package(LAPACK REQUIRED)
 endif()
-find_package(SCALAPACK REQUIRED)
 
-find_package(MUMPS CONFIG)
-if(NOT MUMPS_FOUND)
-  message(FATAL_ERROR ${need_gemext})
-endif()
+git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
+report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
+add_subdirectory(mumps)
 
 # --- climate models
 if(glow)

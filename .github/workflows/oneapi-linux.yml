@@ -38,9 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    env:
-      CMAKE_INSTALL_PREFIX: ${RUNNER_TEMP}/libgem
-
     # strategy:
     #   matrix:
     #     hwm14: [true, false]
@@ -74,17 +71,6 @@ jobs:
     # - name: install Ninja
     #   run: sudo apt install ninja-build
 # install ninja needs to be own step as not cached by design
-
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v4
-      with:
-        repository: gemini3d/external
-        path: gemext
-
-    - name: Install numeric libraries
-      timeout-minutes: 15
-      run: cmake -Dmumps_only:BOOL=yes -Dprefix=${{ env.CMAKE_INSTALL_PREFIX }} -P build.cmake
-      working-directory: gemext
 
     - name: CMake Configure
       run: cmake --preset default -DCMAKE_PREFIX_PATH=${{ env.CMAKE_INSTALL_PREFIX }}

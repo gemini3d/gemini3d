@@ -14,19 +14,6 @@ When using a meta-build system like CMake, building a program takes two steps.
 If a user makes changes to source code, they need only rerun the `cmake --build build` command.
 If a user wishes to change a CMake option, run both commands again.
 
-## One-time Gemini3D external library setup
-
-```sh
-git clone https://github.com/gemini3d/external
-
-cmake -P external/scripts/requirements.cmake
-# gives command to install compiler and system libraries
-
-cmake -P external/build.cmake
-```
-
-that installs Gemini3d external libraries under ~/libgem.
-
 ## Gemini3D build
 
 Many Gemini3D users don't need any custom options to get started.

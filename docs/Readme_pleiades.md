@@ -18,15 +18,7 @@ export MPI_ROOT=/nasa/openmpi/4.1.6-gnu/bin
 export CC=gcc CXX=g++ FC=gfortran
 ```
 
-2. Pull and build external
-
-```
-git clone https://github.com/gemini3d/external/
-
-cmake -Dmumps_only=yes -P external/build.cmake
-```
-
-3. Pull the repository, configure, and build
+2. Pull the repository, configure, and build
 
 ```
 git clone https://github.com/gemini3d/gemini3d/
@@ -36,7 +28,7 @@ cmake -B build
 cmake --build build -j
 ```
 
-4. example PBS script
+3. example PBS script
 
 ```
 #PBS -lselect=40:ncpus=28:mpiprocs=28:model=bro
@@ -50,7 +42,7 @@ cd $PBS_O_WORKDIR
 mpiexec -np 1120 ./gemini.bin ./GDIround/ > log.out
 ```
 
-5. submit the job
+4. submit the job
 
 ```
 qsub pbs_script
@@ -58,13 +50,13 @@ qstat -u <username>
 qdel <PID>
 ```
 
-6. copy data to Pleiades
+5. copy data to Pleiades
 
 ```
 scp -oProxyCommand='ssh <nas_username>@sfe6.nas.nasa.gov ssh-proxy %h' <file1> <nas_username>@pfe.nas.nasa.gov:<file2>
 ```
 
-7. copy data to long term storage
+6. copy data to long term storage
 
 From the sfe:
 

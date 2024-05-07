@@ -61,26 +61,6 @@ Requirements:
 
 ### Gemini3D setup
 
-Install Gemini3D prerequisite libraries. This is a one-time process used by any Gemini3D builds you do (or other programs). If your Python is too old, it will also install a local Python interpreter.
-
-```sh
-git clone https://github.com/gemini3d/external.git
-
-cmake -Dmumps_only=yes -P external/build.cmake
-# installs under ~/libgem_gnu by default
-```
-
----
-
-Set environment variables `CMAKE_PREFIX_PATH` and edit PATH environment variable as follows.
-On **Linux** add to ~/.bashrc, or on **MacOS** add to ~/.zshrc:
-
-```sh
-export CMAKE_PREFIX_PATH=~/libgem_gnu
-```
-
----
-
 Build the Gemini3D code
 
     ```sh
@@ -88,7 +68,7 @@ Build the Gemini3D code
 
     cd gemini3d
 
-    cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
+    cmake -B build
 
     cmake --build build --parallel
     ```

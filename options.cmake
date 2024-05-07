@@ -47,38 +47,16 @@ file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
-if(PROJECT_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")
-endif()
-
-# --- CMAKE_PREFIX_PATH auto-detection
-# don't attempt to expand/detect etc. because it may be a ;-list or may be :-path
-
-if(NOT DEFINED CMAKE_PREFIX_PATH AND NOT DEFINED ENV{CMAKE_PREFIX_PATH})
-  get_filename_component(home "~" ABSOLUTE)
-  string(TOLOWER ${CMAKE_Fortran_COMPILER_ID} fid)
-
-  if(IS_DIRECTORY ${home}/libgem_${fid})
-    set(CMAKE_PREFIX_PATH ${home}/libgem_${fid} CACHE PATH "prefix path for gemini3d/external libs")
-    message(STATUS "Auto-selecting CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+# this is needed to locally install submodules
+if(CMAKE_VERSION VERSION_LESS 3.21)
+  get_property(_not_top DIRECTORY PROPERTY PARENT_DIRECTORY)
+  if(NOT _not_top)
+    set(PROJECT_IS_TOP_LEVEL true)
   endif()
 endif()
 
-# check that gemini3d/external libraries are installed
-set(need_gemext "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}
-ENV{CMAKE_PREFIX_PATH}: $ENV{CMAKE_PREFIX_PATH}
-
-Gemini3D requires several external libraries that are one-time installed via this procedure.
-'~/libgem' directory is an arbitrary location.
-
-  git clone https://github.com/gemini3d/external
-  cmake -S external -B external/build -DCMAKE_INSTALL_PREFIX=~/libgem
-  cmake --build external/build
-
-Now, configure and build Gemini3D (from gemini3d/ directory) like this:
-
-  cmake -B build -DCMAKE_PREFIX_PATH=~/libgem
-  cmake --build build --parallel
-")
+if(PROJECT_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")
+endif()
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")

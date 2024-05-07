@@ -7,27 +7,12 @@ Install libraries via [Homebrew](https://brew.sh) such as CMake:
 ```sh
 brew install cmake
 ```
-
-## One-time Gemini3D external library setup
-
-```sh
-git clone https://github.com/gemini3d/external
-
-cmake -P external/scripts/requirements.cmake
-# gives command to install compiler and system libraries
-
-cmake -P external/build.cmake
-```
-
-that installs Gemini3d external libraries under ~/libgem_gcc.
-This path is arbitrary but should be distinct between compilers.
-
 ## Build and Test Gemini3D
 
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_gnu
+cmake -S gemini3d -B build/gemini3d
 
 cmake --build gemini3d/build
 

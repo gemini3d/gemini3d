@@ -56,25 +56,14 @@ which can be determined like:
 scl enable gcc-toolset-11 "which g++"
 ```
 
-## One-time Gemini3D external library setup
-
-```sh
-git clone https://github.com/gemini3d/external
-
-cmake -Dprefix=~/libgem_intel -P external/build.cmake
-```
-
-that installs Gemini3d external libraries under ~/libgem_intel.
-This path is arbitrary but should be distinct between compilers.
-
 ## Build and Test Gemini3D
 
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -DCMAKE_PREFIX_PATH=~/libgem_intel
+cmake -S gemini3d -B build/gemini3d
 
-cmake --build gemini3d/build
+cmake --build gemini3d/build --parallel
 
 ctest --test-dir gemini3d/build
 ```

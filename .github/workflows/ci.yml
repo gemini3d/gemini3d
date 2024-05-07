@@ -48,41 +48,25 @@ jobs:
 
     steps:
 
-    - name: Checkout Gemini3D-External
-      uses: actions/checkout@v4
-      with:
-        repository: gemini3d/external
-        path: gemext
-
     - name: Install packages (Linux)
       if: runner.os == 'Linux'
       timeout-minutes: 15
       run: |
         sudo apt update
-        sudo $(cmake -P gemext/scripts/requirements.cmake)
-        sudo apt install ninja-build
+        sudo apt install libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+# don't install libscalapack-openmpi-dev, it is broken CMake package
 # don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
 # is out of sync with the upstream Ubuntu package repos
 
     - name: Install packages (MacOS)
       if: runner.os == 'macOS'
       timeout-minutes: 15
-      run: |
-        $(cmake -P gemext/scripts/requirements.cmake)
-        brew install ninja
-
-    - name: Install model libraries
-      timeout-minutes: 15
-      run: cmake -Dprefix=${{ runner.temp }} -Dmumps_only:BOOL=on -P build.cmake
-      working-directory: gemext
+      run: brew install ninja open-mpi hdf5 scalapack
 
     - uses: actions/checkout@v4
 
     - name: Configure multi
-      run: >-
-        cmake --preset multi
-        -DCMAKE_PREFIX_PATH:PATH=${{ runner.temp }}
-        -Dhwm14:BOOL=${{ matrix.hwm14 }}
+      run: cmake --preset multi -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
     - name: print config log
       if: ${{ failure() }}
