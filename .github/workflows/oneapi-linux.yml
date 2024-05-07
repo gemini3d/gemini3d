@@ -68,14 +68,13 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    # - name: install Ninja
-    #   run: sudo apt install ninja-build
+    - name: install Ninja
+      run: sudo apt install ninja-build
 # install ninja needs to be own step as not cached by design
+# we use ninja to help debu build failures as it prints the failing command by default
 
     - name: CMake Configure
-      run: cmake --preset default -DCMAKE_PREFIX_PATH=${{ env.CMAKE_INSTALL_PREFIX }}
-      # setvars.sh modifies CMAKE_PREFIX_PATH and this step won't expand ${RUNNER_TEMP} properly
-      # this is a GitHub Actions specific workaround; haven't needed this on real systems.
+      run: cmake --preset default -G Ninja
 
     - name: print config log
       if: ${{ failure() }}
@@ -83,6 +82,10 @@ jobs:
 
     - name: build
       run: cmake --build --preset default
+
+    - name: build failed
+      if: ${{ failure() }}
+      run: cmake --build --preset default -j1 -v
 
     - name: unit test
       run: ctest --preset default -L unit
