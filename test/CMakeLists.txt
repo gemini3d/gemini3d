@@ -30,17 +30,6 @@ FIXTURES_SETUP mpi_fxt
 RESOURCE_LOCK cpu_mpi
 )
 
-# --- SCALAPACK
-
-add_executable(test_scalapack_gemini test_scalapack.f90)
-target_link_libraries(test_scalapack_gemini PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-
-add_test(NAME SCALAPACK_standalone COMMAND test_scalapack_gemini)
-set_tests_properties(SCALAPACK_standalone PROPERTIES
-FIXTURES_REQUIRED mpi_fxt
-FIXTURES_SETUP scalapack_fxt
-)
-
 # --- MUMPS
 add_executable(gemini_mumps_standalone test_mumps.f90)
 target_link_libraries(gemini_mumps_standalone PRIVATE mumps_interface
@@ -55,7 +44,7 @@ add_test(NAME GeminiMUMPSstandalone COMMAND gemini_mumps_standalone)
 set_tests_properties(GeminiMUMPSstandalone PROPERTIES
 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 REQUIRED_FILES ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml
-FIXTURES_REQUIRED scalapack_fxt
+FIXTURES_REQUIRED mpi_fxt
 FIXTURES_SETUP mumps_fxt
 RESOURCE_LOCK cpu_mpi
 )
