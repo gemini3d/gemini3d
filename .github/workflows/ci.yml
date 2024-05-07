@@ -34,10 +34,11 @@ jobs:
         hwm14: [false]
         os: [ubuntu-latest]
         gcc: [9,10,11,12,13]
-        include:
-        - os: macos-latest
-          gcc: 13
-          hwm14: false
+# glitch with ffilesystem GA macOS not detecting HAVE_CXX_FILESYSTEM never seen on real computers
+        # include:
+        # - os: macos-latest
+        #   gcc: 13
+        #   hwm14: false
 
     env:
       CC: gcc-${{ matrix.gcc }}
