@@ -3,8 +3,7 @@ set_property(DIRECTORY PROPERTY LABELS diffusion)
 set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
 add_executable(test_diffusion1d test_diffusion1D.f90)
-target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const
-LAPACK::LAPACK
+target_link_libraries(test_diffusion1d PRIVATE PDEparabolic const
 h5fortran::h5fortran
 MPI::MPI_Fortran
 )

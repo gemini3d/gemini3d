@@ -74,12 +74,12 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-if(DEFINED ENV{MKLROOT})
-  find_package(SCALAPACK REQUIRED)
-else()
-  find_package(LAPACK REQUIRED)
-endif()
+find_package(LAPACK REQUIRED)
 
+set(BUILD_SINGLE off)
+set(BUILD_DOUBLE on)
+set(BUILD_COMPLEX off)
+set(BUILD_COMPLEX16 off)
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
 add_subdirectory(mumps)

@@ -16,4 +16,5 @@ endfunction(patch_lapack95)
 
 patch_lapack95()
 
-add_library(gbsv OBJECT ${CMAKE_CURRENT_BINARY_DIR}/gbsv.f90)
+add_library(gbsv ${CMAKE_CURRENT_BINARY_DIR}/gbsv.f90)
+target_link_libraries(gbsv PRIVATE LAPACK::LAPACK)
