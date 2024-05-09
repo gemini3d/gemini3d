@@ -49,10 +49,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 if(CMAKE_VERSION VERSION_LESS 3.21)
   get_property(_not_top DIRECTORY PROPERTY PARENT_DIRECTORY)
   if(NOT _not_top)
-    set(PROJECT_IS_TOP_LEVEL true)
+    set(${PROJECT_NAME}_IS_TOP_LEVEL true)
   endif()
 endif()
 
-option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${PROJECT_IS_TOP_LEVEL})
+option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${${PROJECT_NAME}_IS_TOP_LEVEL})
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")
