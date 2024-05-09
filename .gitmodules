@@ -2,8 +2,8 @@
 	path = ffilesystem
 	url = https://github.com/ECLAIRWaveS/fortran-filesystem
 [submodule "h5fortran"]
-	path = h5fortran
-	url = https://github.com/ECLAIRWaveS/h5fortran
+    path = h5fortran
+    url = https://github.com/ECLAIRWaveS/h5fortran
 [submodule "msis"]
 	path = msis
 	url = https://github.com/gemini3d/msis
