@@ -25,23 +25,6 @@ with these options:
 * Intel C++ compiler
 * Intel Fortran compiler
 
-## One-time Gemini3D external library setup
-
-From the oneAPI Command prompt Window:
-
-```sh
-git clone https://github.com/gemini3d/external
-```
-
-It's necessary to use Ninja backend:
-
-```sh
-cmake -P external/scripts/install_ninja.cmake
-```
-
-Set environment variable `CMAKE_GENERATOR` to `Ninja`.
-Add to environment variable `PATH` the directory containing `ninja.exe`.
-
 ## Trouble finding compiler
 
 If CMake doesn't find the oneAPI compilers, do in oneAPI command prompt:
