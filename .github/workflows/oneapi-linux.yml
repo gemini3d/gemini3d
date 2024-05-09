@@ -14,6 +14,8 @@ env:
   CMAKE_BUILD_TYPE: Release
   CTEST_PARALLEL_LEVEL: 0
   # oneAPI Debug triggers asan errors on Linux in general on any project
+  CMAKE_INSTALL_PREFIX: ~/libs
+  CMAKE_PREFIX_PATH: ~/libs
 
 on:
   push:
