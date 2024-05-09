@@ -8,9 +8,15 @@ use filesystem, only : is_file
 
 implicit none (type, external)
 private
-public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3, get_solflux
+public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3, get_solflux, &
+        get_simsize1, get_grid1
 
 interface !< reader_{raw,hdf5,nc4}.f90
+  module subroutine get_simsize1_hdf5(path, lalt)
+    character(*), intent(in) :: path
+    integer, intent(out) :: lalt
+  end subroutine
+
   module subroutine get_simsize2_hdf5(path, llon, llat)
     character(*), intent(in) :: path
     integer, intent(out) :: llon, llat
@@ -21,7 +27,13 @@ interface !< reader_{raw,hdf5,nc4}.f90
     integer, intent(out) :: lx1, lx2all
     integer, intent(out), optional :: lx3all
   end subroutine
-  
+
+  module subroutine get_grid1_hdf5(path, altp)
+    character(*), intent(in) :: path
+    real(wp), dimension(:), intent(inout) :: altp
+    !! intent(out)
+  end subroutine
+
   module subroutine get_grid2_hdf5(path, mlonp, mlatp)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(inout) :: mlonp, mlatp
@@ -62,6 +74,14 @@ interface !< reader_{raw,hdf5,nc4}.f90
 end interface
 
 contains
+  subroutine get_simsize1(path, lalt)
+    character(*), intent(in) :: path
+    integer, intent(out) :: lalt
+    
+    call get_simsize1_hdf5(path, lalt)
+  end subroutine get_simsize1
+
+
   subroutine get_simsize2(path, llon, llat)
     character(*), intent(in) :: path
     integer, intent(out) :: llon, llat
@@ -77,7 +97,16 @@ contains
     
     call get_simsize3_hdf5(path, lx1, lx2all, lx3all)
   end subroutine get_simsize3
-  
+
+
+  subroutine get_grid1(path, altp)
+    character(*), intent(in) :: path
+    real(wp), dimension(:), intent(inout) :: altp
+    !! intent(out)
+    
+    call get_grid1_hdf5(path, altp)
+  end subroutine get_grid1
+
   
   subroutine get_grid2(path, mlonp, mlatp)
     character(*), intent(in) :: path

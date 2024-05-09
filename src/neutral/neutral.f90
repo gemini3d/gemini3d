@@ -57,7 +57,6 @@ contains
   !    1)  establishing initial background for density, temperature, and winds
   !! Arguably this should be called for init and for neutral updates, except for the allocation part...
   subroutine init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
-
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
