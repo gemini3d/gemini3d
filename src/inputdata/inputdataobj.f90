@@ -181,8 +181,8 @@ contains
             .or. self%lc3==1 .and. self%lc3i/=1) then
       if (self%flagforcenative) then
         print*, '  Warning:  native array rank forced for interpolations...'
-      else if (self%flagallow2D3D) then
-        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
+!      else if (self%flagallow2D3D) then
+!        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
       else
         print*, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
         error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
@@ -757,6 +757,13 @@ contains
         allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp2(coord2,coord3,self%data3D(1,:,:,iparm),coord2i,coord3i)
+          self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
+        end do
+        deallocate(tempdata)
+      else if (lc1>1 .and. lc2==1 .and. lc3==1) then    ! may need to add other 1D interpolations, coord2,3 sources
+        allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
+        do iparm=1,self%l3D
+          tempdata(:)=interp1(coord1,self%data3D(:,1,1,iparm),coord1i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
         end do
         deallocate(tempdata)

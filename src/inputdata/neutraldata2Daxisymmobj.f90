@@ -38,7 +38,7 @@ contains
     character(:), allocatable :: strname
 
     ! need to allow interpolation from 2D to 3D
-    self%flagallow2D3D=.true.
+    self%flagallow2D3D=.true.     ! FIXME: not used?
 
     ! basic init for any 2D neutral input
     call self%init_neu2D_simple(cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)

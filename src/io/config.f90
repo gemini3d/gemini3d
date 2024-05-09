@@ -47,6 +47,11 @@ type :: gemini_cfg
   character(:), allocatable :: solfluxdir
   real(wp) :: dtsolflux=0
 
+  !> solar flux inputs (not implemented yet)
+  integer :: flagneutralBGfile=0
+  character(:), allocatable :: neutralBGdir
+  real(wp) :: dtneutralBG=0
+
   !> GLOW parameters
   integer :: flagglow              ! whether or not to use glow to compute impact ionization
   real(wp) :: dtglow, dtglowout    ! time step between GLOW updates and outputs for GLOW emissions
