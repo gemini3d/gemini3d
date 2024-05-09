@@ -61,7 +61,7 @@ message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
 
-# HDF5 bug #3663 for HDF5 1.14.2, 1.14.3, ...?
+# HDF5 bug #3663 for HDF5 1.14.2, ...?
 # https://github.com/HDFGroup/hdf5/issues/3663
 if(WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 if(HDF5_VERSION MATCHES "1.14.[2-4]")
@@ -98,9 +98,7 @@ if(hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
-set(msis2 on)
 set(msis_BUILD_UTILS on)
-set(msis_BUILD_TESTING on) # so we know MSIS is working as it's fundamental to Gemini3D
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
 add_subdirectory(msis)
