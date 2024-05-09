@@ -29,14 +29,16 @@ contains
     real(wp) :: dtneu
     real(wp) :: dxn=0.0,drhon=0.0,dzn=0.0
     real(wp) :: dtprec=0
-    character(1000) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir, solfluxdir
+    character(1000) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir, solfluxdir, neutralBGdir
     character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
     real(wp) :: dtE0=0
     real(wp) :: dtglow=0, dtglowout=0
     logical :: flagEIA
     real(wp) :: v0equator
     real(wp) :: dtsolflux
-    
+    real(wp) :: dtneutralBGfile
+
+    ! for "default backgroud"
     logical :: flagneuBG=.false.
     real(wp) :: dtneuBG
     integer :: msis_version
@@ -71,6 +73,7 @@ contains
     namelist /diamagnetic/ flagdiamagnetic
     namelist /nodivJ0/ flagnodivJ0
     namelist /solflux/ dtsolflux,solfluxdir
+    namelist /neutralBG_file/ dtneutralBGfile, neutralBGdir
     
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -163,6 +166,18 @@ contains
     else
       cfg%flagsolfluxfile = 0
       cfg%solfluxdir = ""
+    endif
+
+    if (namelist_exists(u, "neutralBG_file", verbose)) then
+      cfg%flagneutralBGfile = 1
+      rewind(u)
+      read(u, nml=solflux, iostat=i)
+      call check_nml_io(i, cfg%infile, "neutralBG_file")
+      cfg%neutralBGdir = make_absolute(expand_envvar(neutralBGdir), cfg%outdir)
+      cfg%dtneutralBG = dtneutralBGfile
+    else
+      cfg%flagneutralBGfile = 0
+      cfg%neutralBGdir = ""
     endif
     
     if (namelist_exists(u, "fang", verbose)) then

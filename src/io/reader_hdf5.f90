@@ -5,6 +5,29 @@ use h5fortran, only: hdf5_file, hsize_t
 implicit none (type, external)
 
 contains
+  module procedure get_simsize1_hdf5
+    !! get x2 and x3 dimension sizes
+    type(hdf5_file) :: hf
+    
+    if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', path
+    
+    call hf%open(path, action='r')
+    
+    !> scripts can use variety of variable names
+    if(hf%exist('/lalt')) then
+      call hf%read('/lalt', lalt)
+    elseif(hf%exist('/Nalt')) then
+      call hf%read('/Nalt', lalt)
+    elseif(hf%exist('/lx1')) then
+      call hf%read('/lx1', lalt)
+    else
+      error stop 'ERROR:gemini3d:reader_hdf5:get_simsize2: lalt / lx2'
+    endif
+    
+    call hf%close()
+  end procedure get_simsize1_hdf5
+
+
   module procedure get_simsize2_hdf5
     !! get x2 and x3 dimension sizes
     type(hdf5_file) :: hf
@@ -68,7 +91,18 @@ contains
     call hf%close()
   end procedure get_simsize3_hdf5
   
-  
+
+  module procedure get_grid1_hdf5
+    type(hdf5_file) :: hf
+    
+    if (debug) print '(A,/,A)', 'READ 1D (altitude) grid:', path
+    
+    call hf%open(path, action='r')
+    call hf%read('/alt', altp)
+    call hf%close()
+  end procedure get_grid1_hdf5
+
+
   module procedure get_grid2_hdf5
     type(hdf5_file) :: hf
     
@@ -79,10 +113,10 @@ contains
     call hf%read('/mlat', mlatp)
     call hf%close()
     
-    end procedure get_grid2_hdf5
+  end procedure get_grid2_hdf5
     
     
-    module procedure get_Efield_hdf5
+  module procedure get_Efield_hdf5
     type(hdf5_file) :: hf
     
     if (debug) print *, 'READ electric field data from file:  ',path
