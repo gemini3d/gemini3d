@@ -32,8 +32,6 @@ option(python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab-based self-checks")
 
-option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${PROJECT_IS_TOP_LEVEL})
-
 option(CMAKE_TLS_VERIFY "verify TLS certificates when downloading data" on)
 
 # append .debug to debug libraries, because the computation speed penalty is so great
@@ -47,7 +45,7 @@ file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
-# this is needed to locally install submodules
+# CMake < 3.21 will error on configure without this
 if(CMAKE_VERSION VERSION_LESS 3.21)
   get_property(_not_top DIRECTORY PROPERTY PARENT_DIRECTORY)
   if(NOT _not_top)
@@ -55,8 +53,6 @@ if(CMAKE_VERSION VERSION_LESS 3.21)
   endif()
 endif()
 
-if(PROJECT_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")
-endif()
+option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${PROJECT_IS_TOP_LEVEL})
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")
