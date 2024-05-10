@@ -24,8 +24,8 @@ use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 
 !> main gemini libraries
-use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msisinit_in, &
-                      set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_in, &
+use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
+                      set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_input_in, &
                       set_update_cadence, neutral_atmos_winds, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, &
                       sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
@@ -39,7 +39,8 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in,msi
                       dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
-                      gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, check_finite_output_in
+                      gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, check_finite_output_in, &
+                      init_neutralBG_input_in
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
@@ -185,7 +186,6 @@ contains
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
     call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
-!--    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
 
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
@@ -196,13 +196,11 @@ contains
 
     !> Precipitation input setup
     if(myid==0) print*, 'Priming precipitation input'
-!--    call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
-    call msisinit_in(cfg)
-    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
-!--    call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
+    !call msisinit_in(cfg)
+    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
     call get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)

@@ -56,7 +56,7 @@ extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
 extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*,int*);
 extern void msisinit_C(void**);
-extern void init_neutralBG_C(void**, int*, void**, double*, double*, int*, double*, void**);
+extern void init_neutralBG_input_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void set_update_cadence_C(int*);
 extern void neutral_atmos_winds_C(void**, int*, void**, int*, double*, void**);
 extern void check_finite_output_C(void**, double**, double**, double*);

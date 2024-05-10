@@ -39,8 +39,7 @@ use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput, precipBCs_fileinput, precipBCs
 use solfluxBCs_mod, only: init_solfluxinput, solfluxBCs_fileinput, solfluxBCs
-use msis_interface, only : msisinit
-use neutral, only: neutral_info,init_neutralBG,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
+use neutral, only: neutral_info,init_neutralBG_input,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
 use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
@@ -58,8 +57,8 @@ use sanity_check, only : check_finite_output
 
 implicit none (type, external)
 private
-public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, msisinit_in, &
-            set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_in, &
+public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
+            set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_input_in, &
             set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
@@ -669,49 +668,18 @@ contains
   end subroutine init_solfluxinput_in
 
 
-  !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_in(cfg)
+  !> initialize the neutral background information from either MSIS
+  subroutine init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
-    logical :: exists
-
-    character(len=11) :: msis2_param_file
-
-    select case (cfg%msis_version)
-    case(0)
-      !! MSISE00
-      return
-    case(20)
-      msis2_param_file = "msis20.parm"
-    case(21)
-      msis2_param_file = "msis21.parm"
-    case default
-      !! new or unknown version of MSIS, default MSIS 2.x parameter file
-      msis2_param_file = ""
-    end select
-
-    if(len_trim(msis2_param_file) > 0) then
-      inquire(file=msis2_param_file, exist=exists)
-      if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
-        ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
-        'This limitation comes from how MSIS 2.x is coded internally.'
-      call msisinit(parmfile=msis2_param_file)
-    else
-      call msisinit()
-    end if
-  end subroutine msisinit_in
-
-
-  !> call to initialize the neutral background information
-  subroutine init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
-    type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(inout) :: x    ! so neutral module can deallocate unit vectors once used...
-    real(wp), intent(in) :: dt,t
+    class(curvmesh), intent(inout) :: x
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
-  end subroutine init_neutralBG_in
+    call init_neutralBG_input(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+  end subroutine init_neutralBG_input_in
 
 
   !> set update cadence for printing out diagnostic information during simulation

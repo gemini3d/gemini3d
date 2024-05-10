@@ -5,12 +5,13 @@ use grid, only: lx1, lx2, lx3
 use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
 use gemini3d_config, only: gemini_cfg
+use msis_interface, only : msisinit
 
 ! also links MSIS from vendor/msis00/
 
 implicit none (type, external)
 private
-public :: neutral_atmos, init_neutralBG, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
+public :: neutral_atmos, init_neutralBG_input, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
   neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind
 
 
@@ -53,8 +54,59 @@ interface !< wind.f90
 end interface
 
 contains
+  !> Determine whether we are using MSIS/HWM or file-based background atmospheric information
+  subroutine init_neutralBG_input(dt,cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
+    real(wp), intent(in) :: dt
+    type(gemini_cfg), intent(in) :: cfg
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(inout) :: x
+    real(wp), intent(in) :: v2grid,v3grid
+    type(neutral_info), intent(inout) :: atmos
+
+    if (cfg%flagneutralBGfile==1) then
+      print*, 'Empty stub for file-based neutral background input'
+    else
+      call msisinit_in(cfg)
+      call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
+    end if
+  end subroutine init_neutralBG_input
+
+
+  !> initialization procedure needed for MSIS 2.0
+  subroutine msisinit_in(cfg)
+    type(gemini_cfg), intent(in) :: cfg
+    logical :: exists
+
+    character(len=11) :: msis2_param_file
+
+    select case (cfg%msis_version)
+    case(0)
+      !! MSISE00
+      return
+    case(20)
+      msis2_param_file = "msis20.parm"
+    case(21)
+      msis2_param_file = "msis21.parm"
+    case default
+      !! new or unknown version of MSIS, default MSIS 2.x parameter file
+      msis2_param_file = ""
+    end select
+
+    if(len_trim(msis2_param_file) > 0) then
+      inquire(file=msis2_param_file, exist=exists)
+      if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
+        ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
+        'This limitation comes from how MSIS 2.x is coded internally.'
+      call msisinit(parmfile=msis2_param_file)
+    else
+      call msisinit()
+    end if
+  end subroutine msisinit_in
+
+
   !> initializes neutral atmosphere by:
-  !    1)  establishing initial background for density, temperature, and winds
+  !    1)  establishing initial background for density, temperature, and winds from MSIS and HWM
   !! Arguably this should be called for init and for neutral updates, except for the allocation part...
   subroutine init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
     type(gemini_cfg), intent(in) :: cfg
@@ -93,8 +145,10 @@ contains
   end subroutine init_neutralBG
 
 
-  !>  Sets the neutral density and temperature variables to background values (usually from MSIS).  Do not use this procedure
-  !     when using neutral perturbations; there is a sister procedure in that module for doing updates in that case.
+  !>  Sets the neutral density and temperature variables to background values 
+  !     (usually from MSIS).  Do not use this procedure
+  !     when using neutral perturbations unless for initialization; 
+  !     there is a sister procedure in that module for doing updates in that case.
   subroutine neutralBG_denstemp(atmos)
     type(neutral_info), intent(inout) :: atmos
 
