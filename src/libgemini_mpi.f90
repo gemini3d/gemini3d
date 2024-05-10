@@ -22,7 +22,8 @@ use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
-                      solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in
+                      solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in, &
+                      neutral_atmos_winds
 use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
@@ -438,12 +439,12 @@ contains
 
 
   !> select time step and throttle if changing too rapidly
-  subroutine dt_select(cfg,x,fluidvars,fluidauxvars,it,t,tout,tglowout,dt)
+  subroutine dt_select(cfg,x,fluidvars,fluidauxvars,intvars,t,tout,tglowout,dt)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
-    integer, intent(in) :: it
+    type(gemini_work), intent(in) :: intvars
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
 
@@ -463,7 +464,7 @@ contains
     call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
 
     !> do not allow the time step to change too rapidly
-    if (it>1) then
+    if (intvars%it>1) then
       if(dt/dtprev > dtscale) then
         !! throttle how quickly we allow dt to increase
         dt=dtscale*dtprev
@@ -493,11 +494,40 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
+    call neutralBG_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call solflux_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
   end subroutine inputdata_perturb_in
+
+
+  !> update the solar flux inputdata if present
+  subroutine neutralBG_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    real(wp), intent(in) :: t,dt
+    type(gemini_cfg), intent(in) :: cfg
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(in) :: x
+    type(gemini_work), intent(inout) :: intvars
+
+    if (cfg%flagneutralBGfile==1) then
+      print*, 'Empty stub for file-based neutral background perturb'
+    else
+      !> get neutral background
+      if ( intvars%it/=1 .and. cfg%flagneuBG .and. t>intvars%tneuBG) then     
+        !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
+        !call cpu_time(tstart)
+        call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
+        call neutral_atmos_wind_update(intvars)                    ! apply to variables in this program unit
+        intvars%tneuBG=intvars%tneuBG+cfg%dtneuBG
+        !if (myid==0) then
+        !  call cpu_time(tfin)
+        !  print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
+        !end if
+      end if      
+    end if
+  end subroutine neutralBG_perturb_in
 
 
   !> compute neutral perturbations and apply to main code variables
@@ -540,14 +570,13 @@ contains
 
 
   !> call electrodynamics solution
-  subroutine electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
+  subroutine electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
-    integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -563,7 +592,8 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
     ! E&M solves
-    call electrodynamics(it,t,dt,intvars%atmos%nn,intvars%atmos%vn2,intvars%atmos%vn3,intvars%atmos%Tn, &
+    call electrodynamics(intvars%it,t,dt,intvars%atmos%nn,intvars%atmos%vn2, &
+                           intvars%atmos%vn3,intvars%atmos%Tn, &
                            cfg,ns,Ts,vs1,B1,vs2,vs3,x,intvars%efield,E1,E2,E3,J1,J2,J3, &
                            intvars%Phiall,intvars%flagdirich, &
                            intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2, &

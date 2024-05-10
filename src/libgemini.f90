@@ -77,7 +77,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
-            check_finite_output_in, solflux_perturb_in, init_solfluxinput_in
+            check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc
 
 
 real(wp), protected :: v2grid,v3grid
@@ -86,6 +86,11 @@ real(wp), protected :: v2grid,v3grid
 !    in a gemini instance that is needed to advance the solution that must be passed into numerical procedures BUt
 !    doesn't conform to simple array shapes or needs to be stored on a per-instance basis rather than globally.
 type gemini_work
+  !> variable internal time variables
+  integer :: it=1
+  real(wp) :: tneuBG=0.0    ! time of last call for background neutral atmosphere; modified only internally to libgemini
+
+  !> Potential and volume emission rates
   real(wp), dimension(:,:,:), pointer :: Phiall=>null()    ! full-grid potential solution.  To store previous time step value
   real(wp), dimension(:,:,:), pointer :: iver=>null()      ! integrated volume emission rate of aurora calculated by GLOW
 
@@ -555,13 +560,13 @@ contains
 
 
   !> assign initial values on some auxiliary time variables
-  subroutine set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
-    integer, intent(inout) :: it
-    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
+  subroutine set_start_values_auxtimevars(t,tout,tglowout,intvars)
+    real(wp), intent(inout) :: t,tout,tglowout
+    type(gemini_work), intent(inout) :: intvars
 
     !> Initialize some variables need for time stepping and output
 !    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
-    it = 1; tout = t; tglowout = t; tneuBG=t
+    intvars%it = 1; tout = t; tglowout = t; intvars%tneuBG=t
   end subroutine set_start_values_auxtimevars
 
 
@@ -1204,7 +1209,7 @@ contains
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+                                        UTsec,f107a,f107,gavg,Tninf)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1214,12 +1219,11 @@ contains
     real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: f107a,f107
     real(wp), intent(in) :: gavg,Tninf
-    logical, intent(in) :: first
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,intvars%Prprecip,intvars%Qeprecip, &
-            intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,first)   ! precipiting electrons
+            intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,(intvars%it==1))   ! precipiting electrons
     intvars%Prionize=intvars%Prionize+intvars%Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
     intvars%Qeionize=intvars%Qeionize+intvars%Qeprecip
   end subroutine impact_ionization_in
@@ -1351,6 +1355,21 @@ contains
 
     !print*, 'Date updated to:  ',ymd,UTsec
   end subroutine dateinc_in
+
+
+  ! getter and incrementer for it variable (number of time steps taken since this start or restart.  It seems
+  !   unavoidable to need almost trivial procedures for this because this must be controlled from top level 
+  !   program which could be C and will need fortran procedures to modify intvar fields.  
+  integer function get_it(intvars)
+    type(gemini_work), intent(in) :: intvars
+
+    get_it=intvars%it
+  end function get_it
+  subroutine itinc(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    intvars%it=intvars%it+1
+  end subroutine itinc
 
 
   !> check main state variables for finiteness
