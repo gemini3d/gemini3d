@@ -40,7 +40,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
                       gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, check_finite_output_in, &
-                      init_neutralBG_input_in
+                      init_neutralBG_input_in, get_it, itinc
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
@@ -181,7 +181,7 @@ contains
     call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t,tmilestone)
 
     !> initialize time stepping and some aux variables
-    call set_start_values_auxtimevars(t,tout,tglowout,intvars)
+    call set_start_values_auxtimevars(t,tout,tglowout)
     call set_start_values_auxvars(x,fluidauxvars)
 
     !> Electric field input setup
@@ -211,7 +211,7 @@ contains
 
     !> Main time loop
     main : do while (t < tdur)
-      call dt_select(cfg,x,fluidvars,fluidauxvars,intvars,t,tout,tglowout,dt)
+      call dt_select(cfg,x,fluidvars,fluidauxvars,t,tout,tglowout,dt)
 
       !> update inputdata
       call inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
@@ -261,11 +261,11 @@ contains
       call check_finite_output_in(cfg,fluidvars,electrovars,t)
 
       !> update time variables
-      intvars%it = intvars%it + 1
+      call itinc()
       t = t + dt
       if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
       call dateinc_in(dt,ymd,UTsec)
-      if (myid==0 .and. (modulo(intvars%it, iupdate) == 0 .or. debug)) then
+      if (myid==0 .and. (modulo(get_it(), iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
       endif
