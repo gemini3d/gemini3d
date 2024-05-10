@@ -128,6 +128,6 @@ contains
       end do
     end do   
 
-    print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)    
+    !print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)    
   end subroutine solfluxBCs
 end module solfluxBCs_mod

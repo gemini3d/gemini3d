@@ -286,26 +286,28 @@ contains
   end subroutine init_neutralperturb_C
 
 
-  subroutine dt_select_C(cfgC, xtype,xC, fluidvarsC,fluidauxvarsC, it,t,tout,tglowout,dt) bind(C, name='dt_select_C')
+  subroutine dt_select_C(cfgC, xtype,xC, fluidvarsC,fluidauxvarsC, intvarsC,t,tout,tglowout,dt) bind(C, name='dt_select_C')
     type(C_PTR), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC
     type(C_PTR), intent(in) :: fluidvarsC, fluidauxvarsC
-    integer(C_INT), intent(in) :: it
+    type(C_PTR), intent(in) :: intvarsC
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
 
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
+    type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(intvarsC,intvars)
 
-    call dt_select(cfg, x, fluidvars, fluidauxvars, it, t, tout, tglowout, dt)
+    call dt_select(cfg, x, fluidvars, fluidauxvars, intvars, t, tout, tglowout, dt)
   end subroutine dt_select_C
 
 
@@ -383,7 +385,7 @@ contains
 
 
   subroutine electrodynamics_C(cfgC, fluidvarsC,fluidauxvarsC,electrovarsC, intvarsC, xtype,xC, &
-      it,t,dt,ymd,UTsec) bind(C, name='electrodynamics_C')
+      t,dt,ymd,UTsec) bind(C, name='electrodynamics_C')
     type(C_PTR), intent(in) :: cfgC
     type(C_PTR), intent(inout) :: fluidvarsC
     type(C_PTR), intent(in) :: fluidauxvarsC, electrovarsC
@@ -392,7 +394,6 @@ contains
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC
 
-    integer(C_INT), intent(in) :: it
     real(wp), intent(in) :: t,dt
     integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -409,7 +410,7 @@ contains
     call c_f_pointer(intvarsC,intvars)
     x=>set_gridpointer_dyntype(xtype, xC)
 
-    call electrodynamics_in(cfg, fluidvars, fluidauxvars, electrovars, intvars, x, it, t, dt, ymd, UTsec)
+    call electrodynamics_in(cfg, fluidvars, fluidauxvars, electrovars, intvars, x, t, dt, ymd, UTsec)
   end subroutine electrodynamics_C
 
 

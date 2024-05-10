@@ -3,7 +3,7 @@
 
 #include "gemini3d.h"
 
-void fluid_adv(double*, double*, int*, double*, bool*, int*, int*, double*, double*, double*, int*, void*, void*, void*);
+void fluid_adv(double*, double*, int*, double*, int*, int*, double*, double*, double*, int*, void*, void*, void*);
 
 // top-level module calls for gemini simulation
 int gemini_main(struct params* ps, int* plid2in, int* plid3in){
@@ -18,9 +18,9 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   double* electrovars;    // pointers modifiable by fortran
   double t=0.0, dt=1e-4;
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
-  int it, iupdate;
+  int iupdate;
   int flagoutput;
-  bool first,flagneuBG;
+  bool flagneuBG;
   int flagdneu;
   double dtneu,dtneuBG;
   int myid,lid;
@@ -83,7 +83,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* initialize state variables from input file */
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur,&t,&tmilestone);
-  set_start_values_auxtimevars_C(&it,&t,&tout,&tglowout,&tneuBG);
+  set_start_values_auxtimevars_C(&t,&tout,&tglowout,&intvars);
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
@@ -94,7 +94,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars);
 //  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
 //  msisinit_C(&cfgC);
-  init_neutralBG_input_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+//  init_neutralBG_input_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
 //  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
@@ -104,7 +104,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_update_cadence_C(&iupdate);
 
   while(t<tdur){
-    dt_select_C(&cfgC,&xtype,&xC,&fluidvars,&fluidauxvars,&it,&t,&tout,&tglowout,&dt);
+    dt_select_C(&cfgC,&xtype,&xC,&fluidvars,&fluidauxvars,&intvars,&t,&tout,&tglowout,&dt);
     if (myid ==0){
       std::cout << " ...Selected time step (seconds) " << dt << std::endl;
     }
@@ -113,38 +113,40 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     inputdata_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
 
     // neutral data
-    if (it!=1 && flagneuBG && t>tneuBG){
-      neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
-      neutral_atmos_wind_update_C(&intvars);
-      tneuBG+=dtneuBG;
-      if (myid==0){
-        std::cout << " Computed neutral background..." << std::endl;
-      }
-    }
-    if (flagdneu==1){
+    //if (it!=1 && flagneuBG && t>tneuBG){
+    //  neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
+    //  neutral_atmos_wind_update_C(&intvars);
+    //  tneuBG+=dtneuBG;
+    //  if (myid==0){
+    //    std::cout << " Computed neutral background..." << std::endl;
+    //  }
+    // }
+    // if (flagdneu==1){
       //neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
-      if (myid==0){
-        std::cout << " Computed neutral perturbations..." << std::endl;
-      }
-    }
+    //  if (myid==0){
+    //    std::cout << " Computed neutral perturbations..." << std::endl;
+    //  }
+    // }
 
     // call electrodynamics solution
     //std::cout << " Start electro solution..." << std::endl;
     //efield_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
-    electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&it,&t,&dt,&ymd[0],&UTsec);
+    electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&t,&dt,&ymd[0],&UTsec);
     //std::cout << " Computed electrodynamics solutions..." << std::endl;
 
     // advance the fluid state variables
-    first=it==1;
     //precip_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
-    fluid_adv(&t,&dt,&ymd[0],&UTsec,&first,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC, intvars);
+    fluid_adv(&t,&dt,&ymd[0],&UTsec,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC,intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 
     check_finite_output_C(&cfgC,&fluidvars,&electrovars,&t);
-    it+=1; t+=dt;
+    itinc_C(&intvars);
+    t+=dt;
     dateinc_C(&dt,&ymd[0],&UTsec);
     check_dryrun_C(&cfgC);
     check_fileoutput_C(&cfgC,&fluidvars,&electrovars,&intvars,&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
+    int it;
+    get_it_C(&intvars,&it);
     if (myid==0){
       std::cout << " Time step " << it << " finished: " << ymd[0] << " " << ymd[1] << " " << ymd[2] << " " << UTsec << " " << t << std::endl;
       //std::cout << " Output cadence variables:  " << tout << " " << tglowout << " " << tmilestone << std::endl;
@@ -161,7 +163,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
 
 /* note that none of the pointer locations will be modified, e.g. with malloc, etc. so these pointers can be passed by value */
-void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst, int* plsp, int* pmyid,
+void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, int* pmyid,
   double* fluidvars, double* fluidauxvars, double* electrovars,
   int* pxtype,
   void* cfgC, void* xC, void* intvars)
@@ -236,7 +238,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, bool* pfirst,
   /* Compute sources of ionization and heating */
   clear_ionization_arrays_C(&intvars);
   impact_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pdt,pt,pymd,
-                                        pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);
+                                        pUTsec,&f107a,&f107,&gavg,&Tninf);
   solar_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pt,pymd,pUTsec,&f107a,&f107,&gavg,&Tninf);
 
   /* Sources substep and finalize solution for this time step */
