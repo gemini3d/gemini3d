@@ -286,28 +286,25 @@ contains
   end subroutine init_neutralperturb_C
 
 
-  subroutine dt_select_C(cfgC, xtype,xC, fluidvarsC,fluidauxvarsC, intvarsC,t,tout,tglowout,dt) bind(C, name='dt_select_C')
+  subroutine dt_select_C(cfgC, xtype,xC, fluidvarsC,fluidauxvarsC,t,tout,tglowout,dt) bind(C, name='dt_select_C')
     type(C_PTR), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(C_PTR), intent(in) :: xC
     type(C_PTR), intent(in) :: fluidvarsC, fluidauxvarsC
-    type(C_PTR), intent(in) :: intvarsC
     real(wp), intent(in) :: t,tout,tglowout
     real(wp), intent(inout) :: dt
 
     type(gemini_cfg), pointer :: cfg
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
-    type(gemini_work), pointer :: intvars
 
     call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(intvarsC,intvars)
 
-    call dt_select(cfg, x, fluidvars, fluidauxvars, intvars, t, tout, tglowout, dt)
+    call dt_select(cfg, x, fluidvars, fluidauxvars, t, tout, tglowout, dt)
   end subroutine dt_select_C
 
 

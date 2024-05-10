@@ -83,7 +83,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   /* initialize state variables from input file */
   get_initial_state_C(&cfgC,&fluidvars,&electrovars,&intvars,&xtype,&xC,&UTsec,&ymd[0],&tdur,&t,&tmilestone);
-  set_start_values_auxtimevars_C(&t,&tout,&tglowout,&intvars);
+  set_start_values_auxtimevars_C(&t,&tout,&tglowout);
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
   /* initialize other file input data */
@@ -104,7 +104,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_update_cadence_C(&iupdate);
 
   while(t<tdur){
-    dt_select_C(&cfgC,&xtype,&xC,&fluidvars,&fluidauxvars,&intvars,&t,&tout,&tglowout,&dt);
+    dt_select_C(&cfgC,&xtype,&xC,&fluidvars,&fluidauxvars,&t,&tout,&tglowout,&dt);
     if (myid ==0){
       std::cout << " ...Selected time step (seconds) " << dt << std::endl;
     }
@@ -140,13 +140,13 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     //std::cout << " Computed fluid update..." << std::endl;
 
     check_finite_output_C(&cfgC,&fluidvars,&electrovars,&t);
-    itinc_C(&intvars);
+    itinc_C();
     t+=dt;
     dateinc_C(&dt,&ymd[0],&UTsec);
     check_dryrun_C(&cfgC);
     check_fileoutput_C(&cfgC,&fluidvars,&electrovars,&intvars,&t,&tout,&tglowout,&tmilestone,&flagoutput,&ymd[0],&UTsec);
     int it;
-    get_it_C(&intvars,&it);
+    get_it_C(&it);
     if (myid==0){
       std::cout << " Time step " << it << " finished: " << ymd[0] << " " << ymd[1] << " " << ymd[2] << " " << UTsec << " " << t << std::endl;
       //std::cout << " Output cadence variables:  " << tout << " " << tglowout << " " << tmilestone << std::endl;

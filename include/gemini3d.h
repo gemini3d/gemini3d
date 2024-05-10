@@ -51,7 +51,7 @@ extern void get_fullgrid_lims_C(double*, double*, double*, double*, double*, dou
 extern void gemini_work_alloc_C(void**,void**);
 extern void gemini_work_dealloc_C(void**, void**);
 //extern void memblock_from_C(double**, double**, double**);
-extern void set_start_values_auxtimevars_C(double*, double*, double*, void**);
+extern void set_start_values_auxtimevars_C(double*, double*, double*);
 extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
 extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*,int*);
@@ -106,8 +106,8 @@ extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double*
 		double*,double*,double*,double**,double**);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,
 		double**);
-extern void get_it_C(void**,int*);
-extern void itinc_C(void**);
+extern void get_it_C(int*);
+extern void itinc_C();
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
@@ -137,7 +137,7 @@ extern void halo_allparams_C(int*, void**, double**, double**);
 extern void halo_fluidvars_C(int*, void**, double**, double**);
 extern void RK2_prep_mpi_allspec_C(int*, void**, double**);
 extern void RK2_global_boundary_allspec_C(int*, void**, double**);
-extern void dt_select_C(void**, int*, void**, double**, double**, void**, double*, double*, double*, double*);
+extern void dt_select_C(void**, int*, void**, double**, double**, double*, double*, double*, double*);
 extern void check_fileoutput_C(void**, double**, double**, void**, double*, double*, double*, double*, int*, int*, double*);
 
 #ifdef __cplusplus

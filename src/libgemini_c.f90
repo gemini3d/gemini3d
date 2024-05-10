@@ -312,14 +312,11 @@ contains
 
 
   !> initialize some auxiliary time variables used internally in gemini
-  subroutine set_start_values_auxtimevars_C(t,tout,tglowout,intvarsC)  &
+  subroutine set_start_values_auxtimevars_C(t,tout,tglowout)  &
                         bind(C, name='set_start_values_auxtimevars_C')
     real(wp), intent(inout) :: t,tout,tglowout
-    type(c_ptr), intent(inout) :: intvarsC
-    type(gemini_work), pointer :: intvars
 
-    call c_f_pointer(intvarsC,intvars)
-    call set_start_values_auxtimevars(t,tout,tglowout,intvars)
+    call set_start_values_auxtimevars(t,tout,tglowout)
   end subroutine set_start_values_auxtimevars_C
 
 
@@ -1154,21 +1151,13 @@ contains
 
 
   !> getter and incrementer for it variable (number of steps since start/restart)
-  subroutine get_it_C(intvarsC,it) bind(C, name="get_it_C")   ! possibly not needed?
-    type(c_ptr), intent(in) :: intvarsC
+  subroutine get_it_C(it) bind(C, name="get_it_C")   ! possibly not needed?
     integer(c_int), intent(inout) :: it
-    type(gemini_work), pointer :: intvars
 
-    call c_f_pointer(intvarsC,intvars)
-    it=intvars%it
+    it=get_it()
   end subroutine get_it_C
-  subroutine itinc_C(intvarsC) bind(C, name="itinc_C")
-    type(c_ptr), intent(in) :: intvarsC
-    type(gemini_work), pointer :: intvars
-
-    call c_f_pointer(intvarsC,intvars)
-    call itinc(intvars)
-    print*, intvars%it
+  subroutine itinc_C() bind(C, name="itinc_C")
+    call itinc()
   end subroutine itinc_C
 
 
