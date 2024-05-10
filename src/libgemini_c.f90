@@ -51,7 +51,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
-            precip_perturb_in, interp3_in, interp2_in, check_finite_output_in
+            precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc
 
 implicit none (type, external)
 
@@ -312,17 +312,14 @@ contains
 
 
   !> initialize some auxiliary time variables used internally in gemini
-  subroutine set_start_values_auxtimevars_C(it,t,tout,tglowout,tneuBG,xtype,xC,fluidauxvarsC)  &
+  subroutine set_start_values_auxtimevars_C(t,tout,tglowout,intvarsC)  &
                         bind(C, name='set_start_values_auxtimevars_C')
-    integer(C_INT), intent(inout) :: it
-    real(wp), intent(inout) :: t,tout,tglowout,tneuBG
-    type(c_ptr), intent(inout) :: xC
-    type(c_ptr), intent(inout) :: fluidauxvarsC
-    integer(C_INT), intent(in) :: xtype
-    class(curvmesh), pointer :: x
-    real(wp), dimension(:,:,:,:), pointer :: fluidauxvars
+    real(wp), intent(inout) :: t,tout,tglowout
+    type(c_ptr), intent(inout) :: intvarsC
+    type(gemini_work), pointer :: intvars
 
-    call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
+    call c_f_pointer(intvarsC,intvars)
+    call set_start_values_auxtimevars(t,tout,tglowout,intvars)
   end subroutine set_start_values_auxtimevars_C
 
 
@@ -962,7 +959,7 @@ contains
 
 
   subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec,f107a,f107,first,gavg,Tninf) &
+                  UTsec,f107a,f107,gavg,Tninf) &
                   bind(C, name="impact_ionization_C")
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
@@ -973,7 +970,6 @@ contains
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec,f107,f107a
-    logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
@@ -986,7 +982,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+                                        UTsec,f107a,f107,gavg,Tninf)
   end subroutine impact_ionization_C
 
 
@@ -1155,6 +1151,25 @@ contains
 
     call dateinc_in(dt,ymd,UTsec)
   end subroutine dateinc_C
+
+
+  !> getter and incrementer for it variable (number of steps since start/restart)
+  subroutine get_it_C(intvarsC,it) bind(C, name="get_it_C")   ! possibly not needed?
+    type(c_ptr), intent(in) :: intvarsC
+    integer(c_int), intent(inout) :: it
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)
+    it=intvars%it
+  end subroutine get_it_C
+  subroutine itinc_C(intvarsC) bind(C, name="itinc_C")
+    type(c_ptr), intent(in) :: intvarsC
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)
+    call itinc(intvars)
+    print*, intvars%it
+  end subroutine itinc_C
 
 
   subroutine check_finite_output_C(cfgC, fluidvarsC, electrovarsC, t) bind(C, name='check_finite_output_C')

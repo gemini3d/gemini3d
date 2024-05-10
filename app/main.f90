@@ -26,7 +26,7 @@ use gemini3d_config, only: gemini_cfg
 !> main gemini libraries
 use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_input_in, &
-                      set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+                      set_update_cadence, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, &
                       sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
                       sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
@@ -101,9 +101,10 @@ contains
     !! time for next output and time between outputs
     real(wp) :: tstart,tfin
     !! temp. vars. for measuring performance of code blocks
-    integer :: it,iupdate
+    !!integer :: it
+    integer :: iupdate
     !! time and species loop indices
-    real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
+    !real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
 
     !> WORK ARRAYS
     real(wp) :: tglowout,tdur
@@ -180,7 +181,7 @@ contains
     call get_initial_state(cfg,fluidvars,electrovars,intvars,x,UTsec,ymd,tdur,t,tmilestone)
 
     !> initialize time stepping and some aux variables
-    call set_start_values_auxtimevars(it,t,tout,tglowout,tneuBG)
+    call set_start_values_auxtimevars(t,tout,tglowout,intvars)
     call set_start_values_auxvars(x,fluidauxvars)
 
     !> Electric field input setup
@@ -210,37 +211,37 @@ contains
 
     !> Main time loop
     main : do while (t < tdur)
-      call dt_select(cfg,x,fluidvars,fluidauxvars,it,t,tout,tglowout,dt)
+      call dt_select(cfg,x,fluidvars,fluidauxvars,intvars,t,tout,tglowout,dt)
 
       !> update inputdata
       call inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
 
       !> get neutral background
-      if ( it/=1 .and. flagneuBG .and. t>tneuBG) then              !we dont' throttle for tneuBG so we have to do things this way to not skip over...
-        call cpu_time(tstart)
-        call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
-        call neutral_atmos_wind_update(intvars)      ! apply to variables in this program unit
-        tneuBG=tneuBG+dtneuBG
-        if (myid==0) then
-          call cpu_time(tfin)
-          print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
-        end if
-      end if
+      !if ( it/=1 .and. flagneuBG .and. t>tneuBG) then              !we dont' throttle for tneuBG so we have to do things this way to not skip over...
+      !  call cpu_time(tstart)
+      !  call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
+      !  call neutral_atmos_wind_update(intvars)      ! apply to variables in this program unit
+      !  tneuBG=tneuBG+dtneuBG
+      !  if (myid==0) then
+      !    call cpu_time(tfin)
+      !    print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
+      !  end if
+      !end if
 
       !> get neutral perturbations
-      if (flagdneu==1) then
-        call cpu_time(tstart)
+      !if (flagdneu==1) then
+      !  call cpu_time(tstart)
         !call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
-        if (myid==0 .and. debug) then
-          call cpu_time(tfin)
-          print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
-        endif
-      end if
+      !  if (myid==0 .and. debug) then
+      !    call cpu_time(tfin)
+      !    print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
+      !  endif
+      !end if
 
       !> compute potential solution
       call cpu_time(tstart)
       !call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
-      call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,it,t,dt,ymd,UTsec)
+      call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -249,7 +250,7 @@ contains
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
       !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
-      call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,(it==1),lsp,myid)
+      call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -260,11 +261,11 @@ contains
       call check_finite_output_in(cfg,fluidvars,electrovars,t)
 
       !> update time variables
-      it = it + 1
+      intvars%it = intvars%it + 1
       t = t + dt
       if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
       call dateinc_in(dt,ymd,UTsec)
-      if (myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
+      if (myid==0 .and. (modulo(intvars%it, iupdate) == 0 .or. debug)) then
         !! print every 10th time step to avoid extreme amounts of console printing
         print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
       endif
@@ -286,7 +287,7 @@ contains
 
 
   !> this advances the fluid soluation by time interval dt
-  subroutine fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,first,lsp,myid)
+  subroutine fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,lsp,myid)
     !! J1 needed for heat conduction; E1 for momentum equation
     !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
     type(gemini_cfg), intent(in) :: cfg
@@ -298,7 +299,6 @@ contains
     real(wp), intent(in) :: t,dt
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    logical, intent(in) :: first  !< first time step
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
@@ -393,7 +393,7 @@ contains
     !> Compute ionization sources for the present time step
     call clear_ionization_arrays(intvars)
     call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,first,gavg,Tninf)
+                                        UTsec,f107a,f107,gavg,Tninf)
     call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

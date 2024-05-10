@@ -51,7 +51,7 @@ extern void get_fullgrid_lims_C(double*, double*, double*, double*, double*, dou
 extern void gemini_work_alloc_C(void**,void**);
 extern void gemini_work_dealloc_C(void**, void**);
 //extern void memblock_from_C(double**, double**, double**);
-extern void set_start_values_auxtimevars_C(int*, double*, double*, double*, double*);
+extern void set_start_values_auxtimevars_C(double*, double*, double*, void**);
 extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
 extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*,int*);
@@ -88,7 +88,7 @@ extern void source_loss_mass_C(double**,double**,double**,void**,int*,void**,dou
 extern void source_loss_momentum_C(double**,double**,double**,void**,int*,void**,double*);
 extern void source_loss_energy_C(double**,double**,double**,void**,int*,void**,double*);
 extern void clear_ionization_arrays_C(void**);
-extern void impact_ionization_C(void**,double**,void**,int*,void**,double*,double*,int*,double*,double*,double*,bool*,double*,double*);
+extern void impact_ionization_C(void**,double**,void**,int*,void**,double*,double*,int*,double*,double*,double*,double*,double*);
 extern void solar_ionization_C(void**,double**,void**,int*,void**,double*,int*,double*,double*,double*,double*,double*);
 extern void check_dryrun_C(void**);
 extern void maxcfl_C(double**, int*, void**, double*, double*);
@@ -106,6 +106,8 @@ extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double*
 		double*,double*,double*,double**,double**);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,
 		double**);
+extern void get_it_C(void**,int*);
+extern void itinc_C(void**);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
@@ -127,7 +129,7 @@ extern void neutral_atmos_wind_update_C(void**);
 extern void neutral_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void efield_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void inputdata_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
-extern void electrodynamics_C(void**, double**, double**, double**, void**, int*, void**, int*, double*, double*, int*, double*);
+extern void electrodynamics_C(void**, double**, double**, double**, void**, int*, void**, double*, double*, int*, double*);
 extern void get_gavg_Tinf_C(void**, double*, double*);
 extern void clear_dneu_C(void**);
 extern void halo_interface_vels_allspec_C(int*, void**, double**, int*);
@@ -135,7 +137,7 @@ extern void halo_allparams_C(int*, void**, double**, double**);
 extern void halo_fluidvars_C(int*, void**, double**, double**);
 extern void RK2_prep_mpi_allspec_C(int*, void**, double**);
 extern void RK2_global_boundary_allspec_C(int*, void**, double**);
-extern void dt_select_C(void**, int*, void**, double**, double**, int*, double*, double*, double*, double*);
+extern void dt_select_C(void**, int*, void**, double**, double**, void**, double*, double*, double*, double*);
 extern void check_fileoutput_C(void**, double**, double**, void**, double*, double*, double*, double*, int*, int*, double*);
 
 #ifdef __cplusplus
