@@ -1,10 +1,11 @@
 {
-  "version": 6,
+  "version": 2,
 
 "configurePresets": [
 {
   "name": "default",
   "binaryDir": "${sourceDir}/build",
+  "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_COMPILE_WARNING_AS_ERROR": false
@@ -78,58 +79,5 @@
   "configuration": "Debug",
   "displayName": "Debug test with bounds checking"
 }
-],
-"workflowPresets": [
-  {
-    "name": "default",
-    "steps": [
-      {
-        "type": "configure",
-        "name": "default"
-      },
-      {
-        "type": "build",
-        "name": "default"
-      },
-      {
-        "type": "test",
-        "name": "default"
-      }
-    ]
-  },
-  {
-    "name": "debug",
-    "steps": [
-      {
-        "type": "configure",
-        "name": "multi"
-      },
-      {
-        "type": "build",
-        "name": "debug"
-      },
-      {
-        "type": "test",
-        "name": "debug"
-      }
-    ]
-  },
-  {
-    "name": "release",
-    "steps": [
-      {
-        "type": "configure",
-        "name": "multi"
-      },
-      {
-        "type": "build",
-        "name": "release"
-      },
-      {
-        "type": "test",
-        "name": "release"
-      }
-    ]
-  }
 ]
 }

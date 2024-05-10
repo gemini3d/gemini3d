@@ -28,6 +28,31 @@ on:
 
 jobs:
 
+  cmake-320:
+    timeout-minutes: 30
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Install CMake 3.20
+      run: |
+        curl -LO "https://github.com/Kitware/CMake/releases/download/v3.20.6/cmake-3.20.6-linux-x86_64.tar.gz"
+        tar -xf cmake-3.20.6-linux-x86_64.tar.gz
+
+    - name: CMake path
+      run: |
+        echo "CMAKE=$GITHUB_WORKSPACE/cmake-3.20.6-linux-x86_64/bin/cmake" >> $GITHUB_ENV
+        echo "CTEST=$GITHUB_WORKSPACE/cmake-3.20.6-linux-x86_64/bin/ctest" >> $GITHUB_ENV
+
+    - name: echo CMake version
+      run: $CMAKE --version
+
+    - uses: ./.github/workflows/composite-linux
+
+
   core:
     timeout-minutes: 30
 
@@ -48,17 +73,14 @@ jobs:
       CC: gcc-${{ matrix.gcc }}
       CXX: g++-${{ matrix.gcc }}
       FC: gfortran-${{ matrix.gcc }}
+      CMAKE: cmake
+      CTEST: ctest
 
     runs-on: ${{ matrix.os }}
 
     steps:
 
-    - name: Install packages (Linux)
-      if: runner.os == 'Linux'
-      timeout-minutes: 15
-      run: |
-        sudo apt update
-        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+    - uses: actions/checkout@v4
 
     - name: Install GCC-8 (Ubuntu 20.04)
       if: matrix.os == 'ubuntu-20.04'
@@ -68,35 +90,4 @@ jobs:
 # don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
 # is out of sync with the upstream Ubuntu package repos
 
-    - name: Install packages (MacOS)
-      if: runner.os == 'macOS'
-      timeout-minutes: 15
-      run: brew install ninja open-mpi hdf5 scalapack
-
-    - uses: actions/checkout@v4
-
-    - name: Configure multi
-      run: cmake --preset multi -Dhwm14:BOOL=${{ matrix.hwm14 }}
-
-    - name: print config log
-      if: ${{ failure() }}
-      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
-
-    - name: Debug build
-      run: cmake --build --preset debug
-
-    - name: Debug unit test
-      run: ctest --preset debug -L unit
-
-    # - name: Debug core test
-    #   run: ctest --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
-
-
-    - name: Release build
-      run: cmake --build --preset release
-
-    - name: Release unit test
-      run: ctest --preset release -L unit
-
-    # # - name: Release core test
-    # #   run: ctest --preset release -LE unit -E 3d
+    - uses: ./.github/workflows/composite-linux
