@@ -22,13 +22,13 @@ use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_dneu
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
-                      solflux_perturb_in, init_solfluxinput_in
+                      solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in
 use sanity_check, only : check_finite_perturb
 
 implicit none (type, external)
 private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
-            BGfield_Lagrangian, check_dryrun, check_fileoutput,  &
+            BGfield_Lagrangian, check_dryrun, check_fileoutput, &
             get_initial_drifts, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
             neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
             halo_interface_vels_allspec_in, halo_allparams_in, &
@@ -375,13 +375,14 @@ contains
   !> initialize all inputdata classes (internals will check whether present in config file)
   subroutine init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(in) :: x
+    class(curvmesh), intent(inout) :: x
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
+    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)

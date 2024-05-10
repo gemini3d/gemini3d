@@ -205,7 +205,7 @@ contains
     !> Neutral atmosphere setup
     if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
 !    call msisinit_in(cfg)
-    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
+!    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
 !--    call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
