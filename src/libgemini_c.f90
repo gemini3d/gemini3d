@@ -33,9 +33,9 @@ use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
-use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
+use gemini3d, only: c_params, init_precipinput_in, &
             set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
-            init_neutralBG_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            init_neutralBG_input_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
@@ -377,17 +377,17 @@ contains
 
 
   !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
-    type(c_ptr), intent(in) :: cfgC
-    type(gemini_cfg), pointer :: cfg
-
-    call c_f_pointer(cfgC,cfg)
-    call msisinit_in(cfg)
-  end subroutine msisinit_C
+!  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
+!    type(c_ptr), intent(in) :: cfgC
+!    type(gemini_cfg), pointer :: cfg
+!
+!    call c_f_pointer(cfgC,cfg)
+!    call msisinit_in(cfg)
+!  end subroutine msisinit_C
 
 
   !> call to initialize the neutral background information
-  subroutine init_neutralBG_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_neutralBG_C')
+  subroutine init_neutralBG_input_C(cfgC,xtype,xC,dt,t,ymd,UTsec,intvarsC) bind(C, name='init_neutralBG_input_C')
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -403,8 +403,8 @@ contains
     call c_f_pointer(cfgC,cfg)
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
-    call init_neutralBG_in(cfg,x,dt,t,ymd,UTsec,intvars)
-  end subroutine init_neutralBG_C
+    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
+  end subroutine init_neutralBG_input_C
 
 
   !> set update cadence for printing out diagnostic information during simulation

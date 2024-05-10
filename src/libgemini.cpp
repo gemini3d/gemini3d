@@ -93,8 +93,8 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
 
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars);
 //  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-  msisinit_C(&cfgC);
-  init_neutralBG_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+//  msisinit_C(&cfgC);
+  init_neutralBG_input_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
 //  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
