@@ -31,26 +31,31 @@ jobs:
   cmake-320:
     timeout-minutes: 30
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        cmake_version: ["3.20.6"]
+        gcc: [8]
+
+    env:
+      CC: gcc-${{ matrix.gcc }}
+      CXX: g++-${{ matrix.gcc }}
+      FC: gfortran-${{ matrix.gcc }}
 
     steps:
 
     - uses: actions/checkout@v4
 
-    - name: Install CMake 3.20
-      run: |
-        curl -LO "https://github.com/Kitware/CMake/releases/download/v3.20.6/cmake-3.20.6-linux-x86_64.tar.gz"
-        tar -xf cmake-3.20.6-linux-x86_64.tar.gz
+    - uses: ./.github/workflows/composite-pkg
 
-    - name: CMake path
-      run: |
-        echo "CMAKE=$GITHUB_WORKSPACE/cmake-3.20.6-linux-x86_64/bin/cmake" >> $GITHUB_ENV
-        echo "CTEST=$GITHUB_WORKSPACE/cmake-3.20.6-linux-x86_64/bin/ctest" >> $GITHUB_ENV
+    - name: Install GCC-${{ matrix.gcc }}
+      timeout-minutes: 15
+      run: sudo apt install gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
-    - name: echo CMake version
-      run: $CMAKE --version
-
+    - uses: ./.github/workflows/composite-cmake
     - uses: ./.github/workflows/composite-linux
+
 
 
   core:
@@ -65,9 +70,6 @@ jobs:
         # include:
         # - os: macos-latest
         #   gcc: 13
-        include:
-        - os: ubuntu-20.04
-          gcc: 8
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -79,15 +81,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-
     - uses: actions/checkout@v4
-
-    - name: Install GCC-8 (Ubuntu 20.04)
-      if: matrix.os == 'ubuntu-20.04'
-      timeout-minutes: 15
-      run: sudo apt install gcc-8 g++-8 gfortran-8
-# don't install libscalapack-openmpi-dev, it is broken CMake package
-# don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
-# is out of sync with the upstream Ubuntu package repos
-
+    - uses: ./.github/workflows/composite-pkg
     - uses: ./.github/workflows/composite-linux

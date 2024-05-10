@@ -1,0 +1,21 @@
+runs:
+
+  using: 'composite'
+
+  steps:
+
+# don't install libscalapack-openmpi-dev, it is broken CMake package
+
+# don't remove sudo apt update or every once in a while all the jobs will fail when the GA runner
+# is out of sync with the upstream Ubuntu package repos
+  - name: Install packages (Linux)
+    shell: bash
+    if: runner.os == 'Linux'
+    run: |
+      sudo apt update
+      sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build
+
+  - name: Install packages (MacOS)
+    shell: bash
+    if: runner.os == 'macOS'
+    run: brew install ninja open-mpi hdf5 scalapack
