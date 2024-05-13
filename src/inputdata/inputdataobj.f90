@@ -181,8 +181,8 @@ contains
             .or. self%lc3==1 .and. self%lc3i/=1) then
       if (self%flagforcenative) then
         print*, '  Warning:  native array rank forced for interpolations...'
-!      else if (self%flagallow2D3D) then
-!        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
+      else if (self%flagallow2D3D) then
+        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
       else
         print*, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
         error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
