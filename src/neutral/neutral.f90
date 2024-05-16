@@ -12,7 +12,7 @@ use msis_interface, only : msisinit
 implicit none (type, external)
 private
 public :: neutral_atmos, init_neutralBG_input, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
-  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind
+  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, init_neutralBG
 
 
 !> type encapsulating information needed by neutral module; FIXME: arguably this should be a class with type-bound procedures.

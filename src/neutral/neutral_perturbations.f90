@@ -153,6 +153,7 @@ contains
     end if
 
     !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
+    print*, '<><><><><><><><><> subtracting off:  ',v2grid,v3grid
     atmos%vn2=atmos%vn2-v2grid
     atmos%vn3=atmos%vn3-v3grid
   end subroutine neutral_wind_update
