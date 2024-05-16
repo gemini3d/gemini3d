@@ -302,6 +302,7 @@ contains
       call setv2v3(v2gridtmp,v3gridtmp)
 
       ! must recompute wind data since we've adjust grid drift
+      print*, associated(intvars%atmos),associated(intvars%atmosperturb)
       call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)   
       
       if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid

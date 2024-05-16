@@ -80,7 +80,7 @@ contains
     !! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
     real(wp), intent(in) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), intent(inout) :: atmosperturb
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
 
     ! advance object state
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
@@ -96,7 +96,7 @@ contains
     !!  these are module-scope parameters so not needed as input
     real(wp) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), intent(inout) :: atmosperturb
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
 
     call neutral_denstemp_update(atmos,atmosperturb)
     call neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
@@ -138,7 +138,7 @@ contains
   subroutine neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
     real(wp), intent(in) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), intent(inout) :: atmosperturb
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
 
     !> background neutral parameters
     atmos%vn1=atmos%vn1base
@@ -153,7 +153,7 @@ contains
     end if
 
     !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
-    print*, '<><><><><><><><><> subtracting off:  ',v2grid,v3grid
+    !print*, '<><><><><><><><><> subtracting off:  ',v2grid,v3grid
     atmos%vn2=atmos%vn2-v2grid
     atmos%vn3=atmos%vn3-v3grid
   end subroutine neutral_wind_update
