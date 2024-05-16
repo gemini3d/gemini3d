@@ -184,24 +184,16 @@ contains
     call set_start_values_auxtimevars(t,tout,tglowout)
     call set_start_values_auxvars(x,fluidauxvars)
 
-    !> Electric field input setup
-    if(myid==0) print*, 'Priming electric field input'
-    call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
-
     !> Recompute electrodynamic quantities needed for restarting
     !> these do not include background
     call pot2perpfield_in(x,electrovars)
 
+    !>  All inputdata set; needs to occur after grid check for lagrangian or winds will be wrong
+    if(myid==0) print*, 'Priming inputdata'
+    call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
+
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(cfg,x,electrovars,intvars)
-
-    !> Precipitation input setup
-    if(myid==0) print*, 'Priming precipitation input'
-
-    !> Neutral atmosphere setup
-    if(myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
-    !call msisinit_in(cfg)
-    !call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
     !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
     call get_initial_drifts(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
@@ -216,31 +208,8 @@ contains
       !> update inputdata
       call inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
 
-      !> get neutral background
-      !if ( it/=1 .and. flagneuBG .and. t>tneuBG) then              !we dont' throttle for tneuBG so we have to do things this way to not skip over...
-      !  call cpu_time(tstart)
-      !  call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
-      !  call neutral_atmos_wind_update(intvars)      ! apply to variables in this program unit
-      !  tneuBG=tneuBG+dtneuBG
-      !  if (myid==0) then
-      !    call cpu_time(tfin)
-      !    print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
-      !  end if
-      !end if
-
-      !> get neutral perturbations
-      !if (flagdneu==1) then
-      !  call cpu_time(tstart)
-        !call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
-      !  if (myid==0 .and. debug) then
-      !    call cpu_time(tfin)
-      !    print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
-      !  endif
-      !end if
-
       !> compute potential solution
       call cpu_time(tstart)
-      !call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
       call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
@@ -249,7 +218,6 @@ contains
 
       !> update fluid variables
       if (myid==0 .and. debug) call cpu_time(tstart)
-      !call precip_perturb_in(dt,t,cfg,ymd,UTsec,x,intvars)
       call fluid_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
