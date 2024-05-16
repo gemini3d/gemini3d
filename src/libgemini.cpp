@@ -86,16 +86,12 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   set_start_values_auxtimevars_C(&t,&tout,&tglowout);
   set_start_values_auxvars_C(&xtype,&xC,&fluidauxvars);
 
-  /* initialize other file input data */
-  init_inputdata_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-//  init_Efieldinput_C(&cfgC,&xtype,&xC,&dt,&t,&intvars,&ymd[0],&UTsec);
   pot2perpfield_C(&xtype,&xC,&electrovars);
 
+  /* initialize other file input data */
+  init_inputdata_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
+
   BGfield_Lagrangian_C(&cfgC, &xtype, &xC, &electrovars, &intvars);
-//  init_precipinput_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-//  msisinit_C(&cfgC);
-//  init_neutralBG_input_C(&cfgC,&xtype,&xC,&dt,&t,&ymd[0],&UTsec,&intvars);
-//  init_neutralperturb_C(&dt,&cfgC,&xtype,&xC,&intvars,&ymd[0],&UTsec);
 
   /* Compute initial drift velocity */
   get_initial_drifts_C(&cfgC, &xtype, &xC, &fluidvars, &fluidauxvars, &electrovars, &intvars);
@@ -112,30 +108,11 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
     // input data updates
     inputdata_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
 
-    // neutral data
-    //if (it!=1 && flagneuBG && t>tneuBG){
-    //  neutral_atmos_winds_C(&cfgC,&xtype,&xC,&ymd[0],&UTsec,&intvars);
-    //  neutral_atmos_wind_update_C(&intvars);
-    //  tneuBG+=dtneuBG;
-    //  if (myid==0){
-    //    std::cout << " Computed neutral background..." << std::endl;
-    //  }
-    // }
-    // if (flagdneu==1){
-      //neutral_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
-    //  if (myid==0){
-    //    std::cout << " Computed neutral perturbations..." << std::endl;
-    //  }
-    // }
-
     // call electrodynamics solution
-    //std::cout << " Start electro solution..." << std::endl;
-    //efield_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     electrodynamics_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,&xtype,&xC,&t,&dt,&ymd[0],&UTsec);
     //std::cout << " Computed electrodynamics solutions..." << std::endl;
 
     // advance the fluid state variables
-    //precip_perturb_C(&cfgC,&intvars,&xtype,&xC,&dt,&t,&ymd[0],&UTsec);
     fluid_adv(&t,&dt,&ymd[0],&UTsec,&lsp,&myid,fluidvars,fluidauxvars,electrovars,&xtype,cfgC,xC,intvars);
     //std::cout << " Computed fluid update..." << std::endl;
 

@@ -19,7 +19,7 @@ use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
-use neutral_perturbations, only: clear_dneu
+use neutral_perturbations, only: clear_dneu, neutral_wind_update
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
                       solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in, &
@@ -300,12 +300,19 @@ contains
     if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
       call grid_drift(x,E02,E03,v2gridtmp,v3gridtmp)
       call setv2v3(v2gridtmp,v3gridtmp)
+
+      ! must recompute wind data since we've adjust grid drift
+      call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)   
+      
       if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
     else                            ! stationary grid
       v2gridtmp=0._wp
       v3gridtmp=0._wp
       call setv2v3(v2gridtmp,v3gridtmp)
-      E1(1:lx1,1:lx2,1:lx3) = E1(1:lx1,1:lx2,1:lx3) + E01    ! FIXME: this is before dist fields are computed???
+
+      ! no neutral adjustment needed if grid isn't moving
+
+      E1(1:lx1,1:lx2,1:lx3) = E1(1:lx1,1:lx2,1:lx3) + E01
       E2(1:lx1,1:lx2,1:lx3) = E2(1:lx1,1:lx2,1:lx3) + E02
       E3(1:lx1,1:lx2,1:lx3) = E3(1:lx1,1:lx2,1:lx3) + E03
     end if
