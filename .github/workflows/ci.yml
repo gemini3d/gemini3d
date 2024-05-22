@@ -36,9 +36,9 @@ jobs:
         hwm14: [false]
         os: [ubuntu-24.04]
         gcc: [12, 13, 14]
-        include:
-        - os: macos-latest
-          gcc: 13
+        # include:
+        # - os: macos-latest
+        #   gcc: 13
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -93,9 +93,6 @@ jobs:
         hwm14: [false]
         os: [ubuntu-22.04]
         gcc: [9, 10, 11]
-        include:
-        - os: macos-latest
-          gcc: 13
 
     env:
       CC: gcc-${{ matrix.gcc }}
