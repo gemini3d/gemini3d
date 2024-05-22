@@ -28,6 +28,33 @@ on:
 
 jobs:
 
+  gcc-new:
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        hwm14: [false]
+        os: [ubuntu-24.04]
+        gcc: [12, 13, 14]
+        include:
+        - os: macos-latest
+          gcc: 13
+
+    env:
+      CC: gcc-${{ matrix.gcc }}
+      CXX: g++-${{ matrix.gcc }}
+      FC: gfortran-${{ matrix.gcc }}
+      CMAKE: cmake
+      CTEST: ctest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/composite-pkg
+    - uses: ./.github/workflows/composite-linux
+
+
   cmake-320:
     timeout-minutes: 30
 
@@ -58,18 +85,17 @@ jobs:
 
 
 
-  core:
+  gcc-old:
     timeout-minutes: 30
 
     strategy:
       matrix:
         hwm14: [false]
-        os: [ubuntu-latest]
-        gcc: [9,10,11,12,13]
-# glitch with ffilesystem GA macOS not detecting HAVE_CXX_FILESYSTEM never seen on real computers
-        # include:
-        # - os: macos-latest
-        #   gcc: 13
+        os: [ubuntu-22.04]
+        gcc: [9, 10, 11]
+        include:
+        - os: macos-latest
+          gcc: 13
 
     env:
       CC: gcc-${{ matrix.gcc }}
