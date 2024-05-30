@@ -24,6 +24,12 @@ on:
 # paths ignore starting with "!"
       - "!docs/**"
       - "!**/cray.cmake"
+      - "mumps/"
+      - "ffilesystem/"
+      - "msis/"
+      - "glow/"
+      - "h5fortran/"
+      - "hwm14/"
 
 
 jobs:
