@@ -109,7 +109,7 @@ For various numerical solutions Gemini relies on:
 For file input/output we also use:
 
 * hdf5
-* h5fortran
+* [h5fortran](https://github.com/geospace-code/h5fortran) funded in part by NASA [NNH19ZDA001N-HDEE grant 80NSSC20K0176](https://hdrl.gsfc.nasa.gov/HDEE19_Abstracts.pdf)
 * zlib
 
 ## Running GEMINI from a Shell Environment
@@ -126,7 +126,9 @@ for example:
 mpiexec -np 4 build/gemini.bin ~/mysim3d/arecibo
 ```
 
-GEMINI can also be run via scripting frontends, e.g. `python -m gemini3d.run -np` options.
+GEMINI can also be run via scripting frontend of PyGemini `python -m gemini3d.run -np`, or the executable `gemini3d.run`.
+Development of `gemini3d.run` was funded by NASA
+[NNH19ZDA001N-HDEE grant 80NSSC20K0176](https://hdrl.gsfc.nasa.gov/HDEE19_Abstracts.pdf).
 
 ### Advanced Command Line Options
 
