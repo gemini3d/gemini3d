@@ -20,16 +20,15 @@ on:
       - "CMakePresets.json"
       - "cmake/libraries.json"
       - "!cmake/intel.cmake"
-      - ".github/workflows/ci.yml"
-# paths ignore starting with "!"
+      - ".github/workflows/**"
       - "!docs/**"
       - "!**/cray.cmake"
-      - "mumps/"
-      - "ffilesystem/"
-      - "msis/"
-      - "glow/"
-      - "h5fortran/"
-      - "hwm14/"
+      - "mumps/**"
+      - "ffilesystem/**"
+      - "msis/**"
+      - "glow/**"
+      - "h5fortran/**"
+      - "hwm14/**"
 
 
 jobs:
