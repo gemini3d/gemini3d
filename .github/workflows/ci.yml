@@ -42,9 +42,9 @@ jobs:
         hwm14: [false]
         os: [ubuntu-24.04]
         gcc: [12, 13, 14]
-        include:
-        - os: macos-latest
-          gcc: 13
+        # include:
+        # - os: macos-latest
+        #   gcc: 13
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -57,13 +57,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - uses: ./.github/workflows/composite-pkg
-
-    - run: sudo xcode-select --switch /Applications/Xcode_15.1.app
-      if: ${{ matrix.gcc == 13 && runner.os == 'macOS' }}
-      # https://docs.brew.sh/Xcode
-      # https://github.com/Homebrew/brew/blob/HEAD/Library/Homebrew/os/mac/xcode.rb#L20
-
     - uses: ./.github/workflows/composite-linux
 
 
