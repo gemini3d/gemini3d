@@ -37,6 +37,7 @@ jobs:
     timeout-minutes: 30
 
     strategy:
+      fail-fast: false
       matrix:
         hwm14: [false]
         os: [ubuntu-24.04]
