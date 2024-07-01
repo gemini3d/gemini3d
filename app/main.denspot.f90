@@ -187,14 +187,14 @@ contains
     call set_start_values_auxtimevars(t,tout,tglowout)
     call set_start_values_auxvars(x,fluidauxvars)
 
+    !> Recompute electrodynamic quantities needed for restarting
+    !> these do not include background
+    call pot2perpfield_in(x,electrovars)
+
     !> Electric field input setup
     if(myid==0) print*, 'Priming electric field input'
     call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
 !--    call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
-
-    !> Recompute electrodynamic quantities needed for restarting
-    !> these do not include background
-    call pot2perpfield_in(x,electrovars)
 
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(cfg,x,electrovars,intvars)
