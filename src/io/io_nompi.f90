@@ -3,7 +3,7 @@
 module io_nompi
 
 use phys_consts, only : lsp,wp,comp_lvl,mindens
-use interpolation, only : interp3
+use interpolation, only : interp3, interp2
 use grid, only : gridflag,lx1,lx2,lx3,get_grid3_coords_hdf5
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
@@ -48,7 +48,6 @@ contains
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
 
     ! read in the ICs size and allocate data
-    !print*, 'indatsize;  ',indatsize
     call get_simsize3(indatsize,lx1in,lx2in,lx3in)
     allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
     allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -77,41 +76,60 @@ contains
     deallocate(x1imat,x2imat,x3imat)    ! nuke these as soon as we are done with them
 
     ! get the input grid coordinates
-    !print*, 'indatgrid:  ',indatgrid
     call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
 
-    !print*, x1in(1:lx1in)
-    !print*, '====================================================================================='
-    !print*, x1(1:lx1)
-
-    ! we must make sure that the target coordinates do not range outside the input file coordinates
-    !print*, 'check grid extents'
+    ! We must make sure that the target coordinates do not range outside the input file coordinates.
+    ! Moreoever, we do currently allow for the x3 size to be 1, in which case we just assume we
+    !   are doing a 2D interpolation.  
+    !print*, 'target grid size:  ',lx1,lx2,lx3
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
       error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
     end if
     if(x2(1)<x2in(1) .or. x2(lx2)>x2in(lx2in)) then
       error stop 'interp_file2grid: x2 target coordinates beyond input grid coords'
     end if
-    if(x3(1)<x3in(1) .or. x3(lx3)>x3in(lx3in)) then
-      error stop 'interp_file2grid: x3 target coordinates beyond input grid coords'
+    if (lx3>1) then
+      if(x3(1)<x3in(1) .or. x3(lx3)>x3in(lx3in)) then
+        error stop 'interp_file2grid: x3 target coordinates beyond input grid coords'
+      end if
+    !else
+    !  print*, 'WARNING:  using 2D file2subgrid interpolation...'
     end if
 
     ! read in the input initial conditions, only hdf5 files are support for this functionality
-    !print*, 'read file'
     call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
-
-    !print*, 'interp_file2subgrid:  error checking complete...'
 
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+      if (lx3>1) then
+        parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+      else
+        ix3=lx3/2     ! reference location for doing the interpolation
+        parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),nsall(1:lx1in,1:lx2in,ix3,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))        
+      end if
       ns(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),vs1all(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+
+      if (lx3>1) then
+        parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),vs1all(1:lx1in,1:lx2in,1:lx3in,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+      else
+        ix3=lx3/2
+        parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),vs1all(1:lx1in,1:lx2in,ix3,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+      end if
       vs1(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
-      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
-                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+
+      if (lx3>1) then
+        parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+      else
+        ix3=lx3/2
+        parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),Tsall(1:lx1in,1:lx2in,ix3,isp), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+      end if
+
       Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
     end do
     parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
