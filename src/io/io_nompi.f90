@@ -105,7 +105,7 @@ contains
         parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),nsall(1:lx1in,1:lx2in,1:lx3in,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       else
-        ix3=lx3/2     ! reference location for doing the interpolation
+        ix3=lx3in/2     ! reference location for doing the interpolation
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),nsall(1:lx1in,1:lx2in,ix3,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))        
       end if
@@ -115,7 +115,7 @@ contains
         parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),vs1all(1:lx1in,1:lx2in,1:lx3in,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       else
-        ix3=lx3/2
+        ix3=lx3in/2
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),vs1all(1:lx1in,1:lx2in,ix3,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
       end if
@@ -125,7 +125,7 @@ contains
         parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Tsall(1:lx1in,1:lx2in,1:lx3in,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
       else
-        ix3=lx3/2
+        ix3=lx3in/2
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),Tsall(1:lx1in,1:lx2in,ix3,isp), &
                            x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
       end if
