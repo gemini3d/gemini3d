@@ -73,7 +73,7 @@ contains
     x1i=pack(x1imat,.true.)
     x2i=pack(x2imat,.true.)
     x3i=pack(x3imat,.true.)
-    deallocate(x1imat,x2imat,x3imat)    ! nuke these as soon as we are done with them
+    deallocate(x1imat,x2imat,x3imat)    ! get rid of these as soon as we are done with them
 
     ! get the input grid coordinates
     call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
@@ -107,7 +107,7 @@ contains
       else
         ix3=lx3in/2     ! reference location for doing the interpolation
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),nsall(1:lx1in,1:lx2in,ix3,isp), &
-                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))        
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))
       end if
       ns(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
 
@@ -132,10 +132,16 @@ contains
 
       Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
     end do
-    parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
-                       x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+
+    if (lx3>1) then
+      parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
+                         x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
+    else
+      ix3=lx3in/2           
+      parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),Phiall(1:lx1in,1:lx2in,ix3), &
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+    end if
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
-    !print*, 'interp_file2subgrid:  interpolations complete...'
 
     ! at this point to be totally safe we should set the ghost cells, use a zero-order hold as a total guess
     call forceinputZOH(ns)
@@ -145,6 +151,9 @@ contains
     ! get rid of local vars
     deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)
+
+    !print*, 'Ne:  ',minval(x1),maxval(x1),minval(x2),maxval(x2),minval(ns(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(ns(1:lx1,1:lx2,1:lx3,1:lsp))
+    !print*, ns(1:lx1,1:lx2,1,7)
   end subroutine interp_file2subgrid
 
 
