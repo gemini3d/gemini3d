@@ -32,8 +32,6 @@ option(python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab-based self-checks")
 
-option(CMAKE_TLS_VERIFY "verify TLS certificates when downloading data" on)
-
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)
 

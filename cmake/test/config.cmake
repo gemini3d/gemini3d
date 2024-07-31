@@ -12,7 +12,6 @@ COMMAND ${CMAKE_COMMAND}
   -Doutdir:PATH=${out_dir}
   -Drefroot:PATH=${ref_root}
   -Darc_json_file:FILEPATH=${arc_json_file}
-  -DCMAKE_TLS_VERIFY:BOOL=${CMAKE_TLS_VERIFY}
   -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
