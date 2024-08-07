@@ -52,6 +52,7 @@ contains
     logical :: flaglagrangian
     logical :: flagdiamagnetic
     logical :: flagnodivJ0
+    integer :: diff_num_flux
     real(wp) :: kappa, bimax_frac, W0_char
     
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
