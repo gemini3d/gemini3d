@@ -15,8 +15,9 @@ sanity_check errors gemini3d_config timeutils const gemini3d_sysinfo
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
-# avoid double-linking out of order, link failure
-target_link_libraries(magcalc.bin PRIVATE $<$<NOT:$<BOOL:${HDF5_HAVE_PARALLEL}>>:MPI::MPI_Fortran>)
+# using TARGET_OBJECTS to avoid transitive double-linking out of order, link failure
+target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
+# need to always have MPI::MPI_Fortran linked here due to mpimod
 
 # --- gemini3d.run Fortran front end
 
