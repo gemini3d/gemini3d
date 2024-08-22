@@ -1,5 +1,9 @@
 function(setup_gemini_test name)
 
+if(name MATCHES "_cpp$" AND NOT TARGET gemini_c.bin)
+  return()
+endif()
+
 # --- setup test
 set(out_dir ${PROJECT_BINARY_DIR}/${name})
 set(ref_root ${PROJECT_BINARY_DIR}/test_data/compare)

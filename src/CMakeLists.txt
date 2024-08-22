@@ -243,6 +243,8 @@ $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
 install(TARGETS gemini3d_cpp EXPORT ${PROJECT_NAME}-targets)
 
 # C++ Gemini3D executable
+if(HAVE_CXX_FILESYSTEM)
+
 add_executable(gemini_c.bin ${PROJECT_SOURCE_DIR}/app/main.cpp)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -264,3 +266,5 @@ gemini3d
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)
+
+endif()
