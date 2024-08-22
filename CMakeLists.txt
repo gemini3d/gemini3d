@@ -34,6 +34,8 @@ include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
 # Fortran filesystem library "ffilesystem"
+set(ffilesystem_fallback on)
+# need fallback for old compilers like GCC-7
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 add_subdirectory(ffilesystem)
