@@ -96,9 +96,13 @@ if (mpi_cfg%myid==0) then
   end if
 
   if (cfg%msis_version > 0) then
-    print '(A,f3.1,A)', 'MSIS ', real(cfg%msis_version)/10, 'enabled for neutral atmosphere calculations.'
+    print '(A,f3.1,A)', 'MSIS ', real(cfg%msis_version)/10, ' enabled for neutral atmosphere calculations.'
   else
     print '(A)', "MSISE00 enabled for neutral atmosphere calculations."
+  end if
+
+  if (cfg%flagneuBG) then
+    print*, 'Neutral background updated at:  ',cfg%dtneuBG
   end if
 
   if (cfg%flagEIA) then
