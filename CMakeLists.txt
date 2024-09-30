@@ -8,9 +8,6 @@ if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
 endif()
 
-# --- auto toolchain for Cray
-include(cmake/toolchain.cmake)
-
 # --- main Gemini3D build
 
 project(gemini3d
