@@ -489,6 +489,10 @@ deallocate( mumps_par%A   )
 deallocate( mumps_par%RHS )
 !end if
 
+if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
+  deallocate(mumps_par%PERM_IN)
+end if
+
 mumps_par%JOB = -2
 
 call MUMPS_exec(mumps_par)
@@ -1023,6 +1027,10 @@ deallocate( mumps_par%A   )
 deallocate( mumps_par%RHS )
 !end if
 
+if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
+  deallocate(mumps_par%PERM_IN)
+end if
+
 mumps_par%JOB = -2
 
 call MUMPS_exec(mumps_par)
@@ -1341,6 +1349,10 @@ deallocate( mumps_par%JCN )
 deallocate( mumps_par%A   )
 deallocate( mumps_par%RHS )
 !end if
+
+if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
+  deallocate(mumps_par%PERM_IN)
+end if
 
 mumps_par%JOB = -2
 
