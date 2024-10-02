@@ -148,7 +148,7 @@ contains
         do ix1=1,lx1
           theta2=theta(ix1,ix2,ix3)                    !field point zenith angle
       
-          if (size(alt,2)/=1) then
+          if (size(alt,2)/=1 .and. size(alt,3)/=1) then
             phi2=phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
