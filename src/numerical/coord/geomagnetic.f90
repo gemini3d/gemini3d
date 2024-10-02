@@ -136,11 +136,14 @@ contains
     real(wp) :: xp,yp
     real(wp) :: theta2,theta3,gamma1,gamma2,phi2,phi3
     integer :: lx1,lx2,lx3,ix1,ix2,ix3    ! local copies
+    logical :: flag3D=.false.
 
     lx1=size(alt,1)
     lx2=size(alt,2)
     lx3=size(alt,3)
     if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
+
+    if (size(alt,2)/=1 .and. size(alt,3)/=1) flag3D=.true.
 
     z(:,:,:)=alt(:,:,:)
     do ix3=1,lx3
@@ -148,7 +151,7 @@ contains
         do ix1=1,lx1
           theta2=theta(ix1,ix2,ix3)                    !field point zenith angle
       
-          if (size(alt,2)/=1 .and. size(alt,3)/=1) then
+          if (flag3D) then
             phi2=phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
