@@ -384,11 +384,12 @@ contains
   end subroutine velocities
 
 
-  subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
-                                   flaggravdrift,flagdiamagnetic,flagnodivJ0,srcterm)
+  subroutine potential_sourceterms(incap,sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+!                                   flaggravdrift,flagdiamagnetic,flagnodivJ0,srcterm)
+                                   cfg,vs2,vs3,srcterm)
     !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
     !   should be able to use this routine
-    real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:), intent(in) :: incap,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
     !! ghost cells
@@ -396,9 +397,11 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     !! ghost cells
     class(curvmesh), intent(in) :: x
-    logical, intent(in) :: flaggravdrift
-    logical, intent(in) :: flagdiamagnetic
-    logical, intent(in) :: flagnodivJ0
+    ! logical, intent(in) :: flaggravdrift
+    ! logical, intent(in) :: flagdiamagnetic
+    ! logical, intent(in) :: flagnodivJ0
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(in), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp) :: vs2,vs3
     real(wp), dimension(:,:,:), intent(inout) :: srcterm
     !! intent(out)
     real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: J1,J2,J3    ! why are these local?!
@@ -413,20 +416,21 @@ contains
     J2 = 0
     J3 = 0
     !! zero everything out to initialize since *accumulating* sources
-    if (.not. flagnodivJ0) then
+    if (.not. cfg%flagnodivJ0) then
       call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
     end if
     call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
     if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
-    if (flagdiamagnetic) then
+    if (cfg%flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed pressure currents...'
     end if
-    if (flaggravdrift) then
+    if (cfg%flaggravdrift) then
       call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
+    !call acc_perpBGpolarizationcurrents(cfg,x,incap,vs2,vs3,E02,E03,J2,J3)
 
     call halo_pot(J1,tag%J1,x%flagper,.false.)
     call halo_pot(J2,tag%J2,x%flagper,.false.)
@@ -453,6 +457,31 @@ contains
     J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+sigP*E2(1:lx1,1:lx2,1:lx3)-sigH*E3(1:lx1,1:lx2,1:lx3)
     J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+sigH*E2(1:lx1,1:lx2,1:lx3)+sigP*E3(1:lx1,1:lx2,1:lx3)
   end subroutine acc_perpBGconductioncurrents
+
+
+  subroutine acc_perpBGpolarizationcurrents(cfg,x,incap,vs2,vs3,E02,E03,J2,J3)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:), intent(in) :: incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3
+    real(wp), dimension(1:,1:,1:), intent(in) :: E02,E03
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J2, J3
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3    ! temporary variables
+    real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: E02ghost,E03ghost
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: J1pol,J2pol,J3pol
+
+
+    v2=vs2(1:lx1,1:lx2,1:lx3,1) 
+    v3=vs3(1:lx1,1:lx2,1:lx3,1)
+    E02ghost(1:lx1,1:lx2,1:lx3)=E02
+    E03ghost(1:lx1,1:lx2,1:lx3)=E03
+
+    call polarization_currents(cfg,x,1._wp,incap,E02ghost,E03ghost, &
+            E02ghost(1:lx1,1:lx2,1:lx3),E03ghost(1:lx1,1:lx2,1:lx3), &
+            v2,v3,J1pol,J2pol,J3pol)    ! E2,3prev do not have ghost cells, aghhh!!!!!
+!    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+J2pol
+!    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+J3pol
+  end subroutine acc_perpBGpolarizationcurrents
 
 
   subroutine acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)

@@ -39,9 +39,10 @@ module procedure potential_root_mpi_curv
   !> store a cached ordering for later use (improves performance substantially)
   perflag=.true.
 
-  call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
-                             cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
-
+!  call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+!                             cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
+  call potential_sourceterms(incap,sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+                             cfg,vs2,vs3,srcterm)
 
   !!!!!!!!
   !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
