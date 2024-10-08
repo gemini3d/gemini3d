@@ -138,7 +138,7 @@ contains
           end if
         end if
       else
-        ! Neumann in x1:  sides are grounded...
+        ! Neumann in x1:  sides are grounded or zero current depending on how the user has specified flags in input files
         if (lx2all==1) then
           Vminx3 = 0
           Vmaxx3 = 0

@@ -207,7 +207,8 @@ module procedure potential_root_mpi_curv
     !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
     ! Note that it is a little inefficient to have root do this calculation, but if we are in 2D it probably doesn't matter anyway...
     !print*, 'set field aligned current'
-    if (flagdirich==0) then
+    if (flagdirich/=1) then  ! we have multiple Neumann configuration ==1 is the only way to detect Dirichlet, so /=1 is some type
+      ! type of Neumann
       if (gridflag==1) then    !inverted
         Vminx1slab=-x%h1(1,1:lx2,1:lx3)*Vminx1slab/sig0(1,:,:)
         call gather_recv(Vminx1slab,tag%Vminx1,Vminx1)
