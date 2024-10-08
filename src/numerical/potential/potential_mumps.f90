@@ -35,12 +35,27 @@ use PDEelliptic, only: elliptic3D_cart, elliptic3D_cart_periodic
 
 implicit none (type, external)
 private
-public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, &
-            potential2D_fieldresolved, potential3D_fieldresolved, potential3D_fieldresolved_truncate, &
+public :: potential3D_fieldresolved_decimate, potential2D_static, &
+            potential2D_polarization, potential2D_polarization_periodic, &
+            potential2D_fieldresolved, potential3D_fieldresolved, &
+            potential3D_fieldresolved_truncate, &
             mumps_perm
 integer, dimension(:), pointer, protected :: mumps_perm
 
 interface ! potential2d.f90
+  module function potential2D_static(srcterm,SigP2,SigP3,SigH,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,flagdirich,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH
+    !! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_static
+  end function potential2D_static
+
   module function potential2D_polarization(srcterm,SigP2,SigP3,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
     real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3
     !! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
