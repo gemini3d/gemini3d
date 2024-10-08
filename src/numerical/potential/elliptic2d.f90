@@ -1040,326 +1040,315 @@ end procedure elliptic2D_polarization_periodic
 
 ! FIXME:  x3 below really refers to whatever the second non-singleton dimension is...
 module procedure elliptic2D_cart
-!! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS.
-!!
-!! ASSUME THAT:
-!! * WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD LINE
-!! * POTENTIAL VARIES IN X1 AND X3. X2 IS NOMINALLY JUST ONE ELEMENT.
-!! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNDARY CONDITIONS
-!! * TOP (ALTITUDE) CAN BE NEUMANN OR DIRICHLET.
-!! * BOTTOM (ALTITUDE) IS ALWAYS Neumann zero current
-!!
-!! This subroutine solves equations of the form:
-!!
-!!    d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
-!!
-!! The boundary conditions arrays provided to this procedure are assumed to be
-!! in units of Volts (dirichlet) or V/m (Neumann), meaning any currents need
-!! to be converted into potential normal derivatives prior to calling this.
+  !! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS.
+  !!
+  !! ASSUME THAT:
+  !! * WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD LINE
+  !! * POTENTIAL VARIES IN X1 AND X3. X2 IS NOMINALLY JUST ONE ELEMENT.
+  !! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNDARY CONDITIONS
+  !! * TOP (ALTITUDE) CAN BE NEUMANN OR DIRICHLET.
+  !! * BOTTOM (ALTITUDE) IS ALWAYS Neumann zero current
+  !!
+  !! This subroutine solves equations of the form:
+  !!
+  !!    d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
+  !!
+  !! The boundary conditions arrays provided to this procedure are assumed to be
+  !! in units of Volts (dirichlet) or V/m (Neumann), meaning any currents need
+  !! to be converted into potential normal derivatives prior to calling this.
+  
+  real(wp), dimension(:,:), allocatable :: sig0h1
+  real(wp), dimension(:,:), allocatable :: sigPh3
+  integer :: ix1,ix3,lx1,lx3
+  integer :: lx2,l2nddim
+  integer :: lPhi,lent
+  integer :: iPhi,ient
+  integer, dimension(:), allocatable :: ir,ic
+  real(wp), dimension(:), allocatable :: M
+  real(wp), dimension(:), allocatable :: b
+  integer :: ibnd,ldirichx1,lneux1,ldirichx3,lneux3
+  logical :: flag2
+  type(MUMPS_STRUC) :: mumps_par
+  
+  
+  ! system size
+  lx1=size(sig0,1)
+  lx2=size(sig0,2)
+  lx3=size(sig0,3)
+  
+  if (lx2==1) then
+    flag2=.false.
+    l2nddim=lx3
+  else if (lx3==1) then
+    flag2=.true.
+    l2nddim=lx2
+  else
+    error stop ' elliptic2d_cart -> could not determine which dimensions of arrays to use!!!'
+  end if
+  
+  !number of neumann boundaries (x1 and x3) used in this solve
+  lneux1=0
+  do ibnd=1,2
+    if (flagsdirich(ibnd)==0) lneux1=lneux1+1
+  end do
+  ldirichx1=2-lneux1
+  lneux3=0
+  do ibnd=3,4
+    if (flagsdirich(ibnd)==0) lneux3=lneux3+1
+  end do
+  ldirichx3=2-lneux3
+  
+  ! count the number of matrix entries we need to fill (will depend on type of boundary conditions chosen
+  lPhi=lx1*l2nddim
+  !if (flagsdirich==0) then
+  !  lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+2*lx3    !first +1 for Neumann bottom, second for Neumann top
+  !else
+  !  !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
+  !  lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
+  !end if
+  
+  ! count matrix entries as follows:  interior points (5 entries each) + # dirich x1 * size + # neumann x1 * size + # dirich x3 * size sans corners + # neumann * size sans corners
+  lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*2*l2nddim + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
+  
+  
+  ! allocate space for our problem
+  allocate(ir(lent),ic(lent),M(lent),b(lPhi))
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,l2nddim
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print*, 'Number of Neumann boundaries:  ', lneux1,lneux3
+  if (debug) print*, 'Number of Dirichlet boundaries:  ', ldirichx1,ldirichx3
+  
+  
+  ! conductivities need to be averaged to the cell interfaces for the FDE we use
+  allocate(sig0h1(lx1,l2nddim),sigPh3(lx1,l2nddim))
+  sig0h1(1,:)=0
+  sigPh3(:,1)=0
+  if (flag2) then
+    sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1:l2nddim-1,1)+sigP(:,2:l2nddim,1))
+    sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,:,1)+sig0(2:lx1,:,1))
+  else
+    sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1,1:l2nddim-1)+sigP(:,1,2:l2nddim))
+    sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
+  end if
 
-
-real(wp), dimension(:,:), allocatable :: sig0h1
-real(wp), dimension(:,:), allocatable :: sigPh3
-
-integer :: ix1,ix3,lx1,lx3
-integer :: lx2,l2nddim
-integer :: lPhi,lent
-integer :: iPhi,ient
-integer, dimension(:), allocatable :: ir,ic
-real(wp), dimension(:), allocatable :: M
-real(wp), dimension(:), allocatable :: b
-
-integer :: ibnd,ldirichx1,lneux1,ldirichx3,lneux3
-logical :: flag2
-type(MUMPS_STRUC) :: mumps_par
-
-
-!ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
-!if (myid==0) then
-
-
-! system size
-lx1=size(sig0,1)
-lx2=size(sig0,2)
-lx3=size(sig0,3)
-
-if (lx2==1) then
-  flag2=.false.
-  l2nddim=lx3
-else if (lx3==1) then
-  flag2=.true.
-  l2nddim=lx2
-else
-  error stop ' elliptic2d_cart -> could not determine which dimensions of arrays to use!!!'
-end if
-
-!number of neumann boundaries (x1 and x3) used in this solve
-lneux1=0
-do ibnd=1,2
-  if (flagsdirich(ibnd)==0) lneux1=lneux1+1
-end do
-ldirichx1=2-lneux1
-lneux3=0
-do ibnd=3,4
-  if (flagsdirich(ibnd)==0) lneux3=lneux3+1
-end do
-ldirichx3=2-lneux3
-
-! count the number of matrix entries we need to fill (will depend on type of boundary conditions chosen
-lPhi=lx1*l2nddim
-!if (flagsdirich==0) then
-!  lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+2*lx3    !first +1 for Neumann bottom, second for Neumann top
-!else
-!  !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
-!  lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
-!end if
-
-! count matrix entries as follows:  interior points (5 entries each) + # dirich x1 * size + # neumann x1 * size + # dirich x3 * size sans corners + # neumann * size sans corners
-lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*2*l2nddim + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
-
-
-! allocate space for our problem
-allocate(ir(lent),ic(lent),M(lent),b(lPhi))
-if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,l2nddim
-if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
-if (debug) print*, 'Number of Neumann boundaries:  ', lneux1,lneux3
-if (debug) print*, 'Number of Dirichlet boundaries:  ', ldirichx1,ldirichx3
-
-
-! conductivities need to be averaged to the cell interfaces for the FDE we use
-allocate(sig0h1(lx1,l2nddim),sigPh3(lx1,l2nddim))
-sig0h1(1,:)=0
-sigPh3(:,1)=0
-if (flag2) then
-  sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1:l2nddim-1,1)+sigP(:,2:l2nddim,1))
-  sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,:,1)+sig0(2:lx1,:,1))
-else
-  sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1,1:l2nddim-1)+sigP(:,1,2:l2nddim))
-  sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
-end if
-
-! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
-! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
-! math procedure with no specific knowledgeo of the ionospheric problem.
-M(:)=0
-b=pack(srcterm,.true.)           !boundaries overwritten later
-ient=1
-do ix3=1,l2nddim
-  do ix1=1,lx1
-    iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
-
-    if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS
-      if (flagsdirich(1)/=0) then
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=1
-        if (flag2) then
-          b(iPhi)=Vminx1(ix3,1)  ! new routines always map min/max as specified in input files
+  ! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
+  ! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
+  ! math procedure with no specific knowledgeo of the ionospheric problem.
+  M(:)=0
+  b=pack(srcterm,.true.)           !boundaries overwritten later
+  ient=1
+  do ix3=1,l2nddim
+    do ix1=1,lx1
+      iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
+  
+      if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS
+        if (flagsdirich(1)/=0) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1
+          if (flag2) then
+            b(iPhi)=Vminx1(ix3,1)  ! new routines always map min/max as specified in input files
+          else
+            b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
+          end if
+          ient=ient+1
         else
-          b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=-1/dx1(2)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi+1
+          M(ient)=1/dx1(2)
+          if (flag2) then
+            b(iPhi)=Vminx1(ix3,1)
+          else
+            b(iPhi)=Vminx1(1,ix3)
+          end if
+          ient=ient+1
         end if
-        ient=ient+1
-      else
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=-1/dx1(2)
-        ient=ient+1
-        ir(ient)=iPhi
-        ic(ient)=iPhi+1
-        M(ient)=1/dx1(2)
-        if (flag2) then
-          b(iPhi)=Vminx1(ix3,1)
+      elseif (ix1==lx1) then    !(LOGICAL) TOP GRID POINTS + CORNER
+        if (flagsdirich(2)/=0) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1
+          if (flag2) then
+            b(iPhi)=Vmaxx1(ix3,1)
+          else
+            b(iPhi)=Vmaxx1(1,ix3)
+          end if
+          ient=ient+1
         else
-          b(iPhi)=Vminx1(1,ix3)
+          ir(ient)=iPhi
+          ic(ient)=iPhi-1
+          M(ient)=-1/dx1(lx1)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1/dx1(lx1)
+          if (flag2) then
+            b(iPhi)=Vmaxx1(ix3,1)
+          else
+            b(iPhi)=Vmaxx1(1,ix3)
+          end if
+          ient=ient+1
         end if
-        ient=ient+1
-      end if
-    elseif (ix1==lx1) then    !(LOGICAL) TOP GRID POINTS + CORNER
-      if (flagsdirich(2)/=0) then
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=1
-        if (flag2) then
-          b(iPhi)=Vmaxx1(ix3,1)
+      elseif (ix3==1) then      !LEFT BOUNDARY
+        if (flagsdirich(3)/=0) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1.0
+          b(iPhi)=Vminx3(ix1,1)
+          ient=ient+1
         else
-          b(iPhi)=Vmaxx1(1,ix3)
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=-1/dx3all(2)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi+lx1
+          M(ient)=1/dx3all(2)
+          b(iPhi)=Vminx3(ix1,1)
+          ient=ient+1
         end if
-        ient=ient+1
-      else
-        ir(ient)=iPhi
-        ic(ient)=iPhi-1
-        M(ient)=-1/dx1(lx1)
-        ient=ient+1
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=1/dx1(lx1)
-        if (flag2) then
-          b(iPhi)=Vmaxx1(ix3,1)
+      elseif (ix3==l2nddim) then    !RIGHT BOUNDARY
+        if (flagsdirich(4)/=0) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1.0
+          b(iPhi)=Vmaxx3(ix1,1)
+          ient=ient+1
         else
-          b(iPhi)=Vmaxx1(1,ix3)
+          ir(ient)=iPhi
+          ic(ient)=iPhi-lx1
+          M(ient)=-1/dx3all(l2nddim)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1/dx3all(l2nddim)
+          b(iPhi)=Vmaxx3(ix1,1)
+          ient=ient+1
         end if
-        ient=ient+1
-      end if
-    elseif (ix3==1) then      !LEFT BOUNDARY
-      if (flagsdirich(3)/=0) then
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=1.0
-        b(iPhi)=Vminx3(ix1,1)
-        ient=ient+1
-      else
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=-1/dx3all(2)
-        ient=ient+1
-        ir(ient)=iPhi
-        ic(ient)=iPhi+lx1
-        M(ient)=1/dx3all(2)
-        b(iPhi)=Vminx3(ix1,1)
-        ient=ient+1
-      end if
-    elseif (ix3==l2nddim) then    !RIGHT BOUNDARY
-      if (flagsdirich(4)/=0) then
-        ir(ient)=iPhi
-        ic(ient)=iPhi
-        M(ient)=1.0
-        b(iPhi)=Vmaxx3(ix1,1)
-        ient=ient+1
-      else
+      else                      !INTERIOR
+        !ix1,ix3-1 grid point in ix1,ix3 equation
         ir(ient)=iPhi
         ic(ient)=iPhi-lx1
-        M(ient)=-1/dx3all(l2nddim)
+        M(ient)=sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
         ient=ient+1
+  
+        !ix1-1,ix3 grid point
+        ir(ient)=iPhi
+        ic(ient)=iPhi-1
+        M(ient)=sig0h1(ix1,ix3)/(dx1i(ix1)*dx1(ix1))
+        ient=ient+1
+  
+        !ix1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=1/dx3all(l2nddim)
-        b(iPhi)=Vmaxx3(ix1,1)
+        M(ient)=-sig0h1(ix1+1,ix3)/(dx1i(ix1)*dx1(ix1+1)) &
+        -sig0h1(ix1,ix3)/(dx1i(ix1)*dx1(ix1)) &
+        -sigPh3(ix1,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
+        -sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
+        ient=ient+1
+  
+        !ix1+1,ix3 grid point
+        ir(ient)=iPhi
+        ic(ient)=iPhi+1
+        M(ient)=sig0h1(ix1+1,ix3)/(dx1i(ix1)*dx1(ix1+1))
+        ient=ient+1
+  
+        !ix1,ix3+1 grid point
+        ir(ient)=iPhi
+        ic(ient)=iPhi+lx1
+        M(ient)=sigPh3(ix1,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1))
         ient=ient+1
       end if
-    else                      !INTERIOR
-      !ix1,ix3-1 grid point in ix1,ix3 equation
-      ir(ient)=iPhi
-      ic(ient)=iPhi-lx1
-      M(ient)=sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
-      ient=ient+1
-
-      !ix1-1,ix3 grid point
-      ir(ient)=iPhi
-      ic(ient)=iPhi-1
-      M(ient)=sig0h1(ix1,ix3)/(dx1i(ix1)*dx1(ix1))
-      ient=ient+1
-
-      !ix1,ix3 grid point
-      ir(ient)=iPhi
-      ic(ient)=iPhi
-      M(ient)=-sig0h1(ix1+1,ix3)/(dx1i(ix1)*dx1(ix1+1)) &
-      -sig0h1(ix1,ix3)/(dx1i(ix1)*dx1(ix1)) &
-      -sigPh3(ix1,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
-      -sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
-      ient=ient+1
-
-      !ix1+1,ix3 grid point
-      ir(ient)=iPhi
-      ic(ient)=iPhi+1
-      M(ient)=sig0h1(ix1+1,ix3)/(dx1i(ix1)*dx1(ix1+1))
-      ient=ient+1
-
-      !ix1,ix3+1 grid point
-      ir(ient)=iPhi
-      ic(ient)=iPhi+lx1
-      M(ient)=sigPh3(ix1,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1))
-      ient=ient+1
-    end if
+    end do
   end do
-end do
-!end if
-if (debug) print *, 'Number of entries used:  ',ient-1
-
-
-!FIRE UP MUMPS
-mumps_par%COMM = MPI_COMM_WORLD%mpi_val
-mumps_par%JOB = -1
-mumps_par%SYM = 0
-mumps_par%PAR = 1
-
-call MUMPS_exec(mumps_par)
-
-call quiet_mumps(mumps_par)
-
-
-!LOAD OUR PROBLEM
-!if ( myid==0 ) then
-mumps_par%N=lPhi
-mumps_par%NZ=lent
-allocate( mumps_par%IRN ( mumps_par%NZ ) )
-allocate( mumps_par%JCN ( mumps_par%NZ ) )
-allocate( mumps_par%A( mumps_par%NZ ) )
-allocate( mumps_par%RHS ( mumps_par%N  ) )
-mumps_par%IRN=ir
-mumps_par%JCN=ic
-mumps_par%A=M
-mumps_par%RHS=b
-deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-
-if (perflag .and. it/=1) then       !used cached permutation
-  if (debug) print *, 'Using a previously stored permutation'
-  allocate(mumps_par%PERM_IN(mumps_par%N))
-  mumps_par%PERM_IN = mumps_perm
-  mumps_par%ICNTL(7) = 1
-end if
-
-!may solve some memory allocation issues, uncomment if MUMPS throws errors
-!about not having enough memory
-! e.g. INFO(1) = -9
-! however this error may also mean there is a deeper problem with the code.
-!,mumps_par%ICNTL(14) = 50
-!end if
-
-
-!> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
-mumps_par%JOB = 6
-
-call MUMPS_exec(mumps_par)
-
-call check_mumps_status(mumps_par, 'elliptic2D_cart')
-
-!STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
-!(can save ~25% execution time and improves scaling with openmpi
-! ~25% more going from 1-2 processors).  WOW - this halves execution
-! time on some big 2048*2048 solves!!!
-!if ( myid==0 ) then
-if (debug) print *, 'Now organizing results...'
-
-if (perflag .and. it==1) then
-  if (debug) print *, 'Storing ordering for future time step use...'
-  allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
-  mumps_perm=mumps_par%SYM_PERM
-end if
-
-if (flag2) then
-  elliptic2D_cart=reshape(mumps_par%RHS,[lx1,l2nddim,1])
-else
-  elliptic2D_cart=reshape(mumps_par%RHS,[lx1,1,l2nddim])
-end if
-
-if (debug) print *, 'Now attempting deallocations...'
-
-deallocate( mumps_par%IRN )
-deallocate( mumps_par%JCN )
-deallocate( mumps_par%A   )
-deallocate( mumps_par%RHS )
-!end if
-
-if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
-  deallocate(mumps_par%PERM_IN)
-end if
-
-mumps_par%JOB = -2
-
-call MUMPS_exec(mumps_par)
-
-deallocate(sig0h1,sigPh3)
-
+  if (debug) print *, 'Number of entries used:  ',ient-1
+  
+  
+  !FIRE UP MUMPS
+  mumps_par%COMM = MPI_COMM_WORLD%mpi_val
+  mumps_par%JOB = -1
+  mumps_par%SYM = 0
+  mumps_par%PAR = 1
+  
+  call MUMPS_exec(mumps_par)
+  
+  call quiet_mumps(mumps_par)
+  
+  
+  !LOAD OUR PROBLEM
+  mumps_par%N=lPhi
+  mumps_par%NZ=lent
+  allocate( mumps_par%IRN ( mumps_par%NZ ) )
+  allocate( mumps_par%JCN ( mumps_par%NZ ) )
+  allocate( mumps_par%A( mumps_par%NZ ) )
+  allocate( mumps_par%RHS ( mumps_par%N  ) )
+  mumps_par%IRN=ir
+  mumps_par%JCN=ic
+  mumps_par%A=M
+  mumps_par%RHS=b
+  deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
+  
+  if (perflag .and. it/=1) then       !used cached permutation
+    if (debug) print *, 'Using a previously stored permutation'
+    allocate(mumps_par%PERM_IN(mumps_par%N))
+    mumps_par%PERM_IN = mumps_perm
+    mumps_par%ICNTL(7) = 1
+  end if
+  
+  !may solve some memory allocation issues, uncomment if MUMPS throws errors
+  !about not having enough memory
+  ! e.g. INFO(1) = -9
+  ! however this error may also mean there is a deeper problem with the code.
+  !,mumps_par%ICNTL(14) = 50
+  !end if
+  
+  
+  !> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
+  mumps_par%JOB = 6
+  
+  call MUMPS_exec(mumps_par)
+  
+  call check_mumps_status(mumps_par, 'elliptic2D_cart')
+  
+  !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
+  !(can save ~25% execution time and improves scaling with openmpi
+  ! ~25% more going from 1-2 processors).  WOW - this halves execution
+  ! time on some big 2048*2048 solves!!!
+  !if ( myid==0 ) then
+  if (debug) print *, 'Now organizing results...'
+  
+  if (perflag .and. it==1) then
+    if (debug) print *, 'Storing ordering for future time step use...'
+    allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
+    mumps_perm=mumps_par%SYM_PERM
+  end if
+  
+  if (flag2) then
+    elliptic2D_cart=reshape(mumps_par%RHS,[lx1,l2nddim,1])
+  else
+    elliptic2D_cart=reshape(mumps_par%RHS,[lx1,1,l2nddim])
+  end if
+  
+  if (debug) print *, 'Now attempting deallocations...'
+  
+  deallocate( mumps_par%IRN )
+  deallocate( mumps_par%JCN )
+  deallocate( mumps_par%A   )
+  deallocate( mumps_par%RHS )
+  
+  if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
+    deallocate(mumps_par%PERM_IN)
+  end if
+  
+  mumps_par%JOB = -2
+  
+  call MUMPS_exec(mumps_par)
+  
+  deallocate(sig0h1,sigPh3)
 end procedure elliptic2D_cart
 
 

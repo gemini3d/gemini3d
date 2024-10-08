@@ -430,6 +430,7 @@ contains
       call acc_perpgravcurrents(sigPgrav,sigHgrav,x%g2,x%g3,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed gravitational currents...'
     end if
+    ! FIXME: for now do not include polarization currents
     !call acc_perpBGpolarizationcurrents(cfg,x,incap,vs2,vs3,E02,E03,J2,J3)
 
     call halo_pot(J1,tag%J1,x%flagper,.false.)
@@ -479,8 +480,8 @@ contains
     call polarization_currents(cfg,x,1._wp,incap,E02ghost,E03ghost, &
             E02ghost(1:lx1,1:lx2,1:lx3),E03ghost(1:lx1,1:lx2,1:lx3), &
             v2,v3,J1pol,J2pol,J3pol)    ! E2,3prev do not have ghost cells, aghhh!!!!!
-!    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+J2pol
-!    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+J3pol
+    J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)+J2pol
+    J3(1:lx1,1:lx2,1:lx3)=J3(1:lx1,1:lx2,1:lx3)+J3pol
   end subroutine acc_perpBGpolarizationcurrents
 
 
