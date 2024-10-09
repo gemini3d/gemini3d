@@ -105,13 +105,13 @@ contains
           !R------ EXECUTE THE MUMPS SOLVE FOR FIELD-INT
           call cpu_time(tstart)
           !! First check whether any capacitance is specified, then whether periodic mesh or no
-          if (all(incapintall<=0)) then    ! static solve
-            !! FIXME: add optional for static periodic solve here.
-            if (debug) print *, '!!!GEMINI detects static potential solve...'
-            Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
-                                     SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
-                                     dt,x,flagdirich,perflag,it)
-          else                             ! solve with leading order polarization term
+!          if (all(incapintall<=0)) then    ! static solve
+!            !! FIXME: add optional for static periodic solve here.
+!            if (debug) print *, '!!!GEMINI detects static potential solve...'
+!            Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
+!                                     SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+!                                     dt,x,flagdirich,perflag,it)
+!          else                             ! solve with leading order polarization term
             if (.not. x%flagper) then     !nonperiodic mesh
               if (debug) print *, '!!!User selected aperiodic solve...'
               Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all, &
@@ -127,7 +127,7 @@ contains
                                          dt,x,Phislab0,perflag,it)
               !! !note that either sigPint2 or 3 will work since this must be cartesian...
             end if
-          end if
+!          end if
           call cpu_time(tfin)
           if (debug) print *, 'Root received results from MUMPS which took time:  ',tfin-tstart
           !R-------
