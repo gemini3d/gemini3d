@@ -73,7 +73,7 @@ contains
         iPhi=lx2*(ix3-1)+ix2           !linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
     
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
-            if (flagsdirich(1)==0) then
+          if (flagsdirich(1)==1) then
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=1
@@ -92,7 +92,7 @@ contains
           end if
           cycle
         elseif (ix2==lx2) then    ! TOP GRID POINTS + CORNER
-          if (flagsdirich(2)==0) then
+          if (flagsdirich(2)==1) then
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=1
@@ -111,7 +111,7 @@ contains
           end if
           cycle
         elseif (ix3==1) then      ! LEFT BOUNDARY
-          if(flagsdirich(3)==0) then
+          if(flagsdirich(3)==1) then
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=1
@@ -130,7 +130,7 @@ contains
           end if
           cycle
         elseif (ix3==lx3) then    ! RIGHT BOUNDARY
-          if(flagsdirich(4)==0) then
+          if(flagsdirich(4)==1) then
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=1
@@ -166,7 +166,6 @@ contains
         !!!ix2,ix3 grid point (main diagonal)
         ir(ient)=iPhi
         ic(ient)=iPhi
-    
         M(ient)=-SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1)) &
           -SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2)) &
           -SigPh3(ix2,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
