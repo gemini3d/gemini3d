@@ -74,10 +74,12 @@ endif()
 
 include(cmake/compilers.cmake)
 
-# --- linear algebra libraries
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(LAPACK REQUIRED)
+# This is REQUIRED for Intel oneMKL (oneAPI). It requires CMake >= 3.24 to take effect.
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
+# --- linear algebra libraries
+# Note: For oneMKL (Intel oneAPI), MUST find MUMPS first before LAPACK,
+# otherwise Scalapack isn't found, and the build fails
 set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
 set(BUILD_COMPLEX off)
@@ -85,6 +87,11 @@ set(BUILD_COMPLEX16 off)
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
 add_subdirectory(mumps)
+
+# For MKL, we need to find LAPACK before MUMPS
+# it is intentionally bypassed by CMAKE_FIND_PACKAGE_TARGETS_GLOBAL=true
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(LAPACK REQUIRED)
 
 # --- climate models
 if(glow)
