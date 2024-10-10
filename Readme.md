@@ -74,6 +74,7 @@ Build the Gemini3D code
     ```
 
 Non-default [build options](./docs/Readme_cmake.md) may be used.
+Gemini3d [developer options](./docs/Readme_debug.md) allow things like array bounds checking.
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
 To verify your GEMINI build, run the self-tests.

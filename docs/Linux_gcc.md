@@ -3,8 +3,6 @@
 This method also works for
 [Windows WSL](https://docs.microsoft.com/en-us/windows/wsl/install).
 
-GCC 8 and newer works with Gemini3D, but newer GCC is recommended--we test with the latest GCC releases.
-
 ```sh
 apt install cmake
 # or

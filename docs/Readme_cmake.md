@@ -44,25 +44,17 @@ cmake --build build
 Those adding or modifying Gemini3D code itself may be interested in
 [Debug builds](./Readme_debug.md).
 
-### MacOS
+### macOS
 
-MacOS users usually use:
+macOS can use the default AppleClang compilers with Gfortran.
+The GCC / Gfortran compilers are available from Homebrew, Macports, etc.
 
-* Homebrew GCC
-* Macports GCC
-* Intel oneAPI
-
-When trying to use GCC, be aware MacOS itself provides a "fake" `gcc` that is linked to Clang.
-You may desire to use GCC instead of Clang if you get compiler errors.
-These errors may arise due to certain ABI incompatibilities between Clang and GCC.
-
-Tell CMake (or other build systems) you want to use just GCC by:
+When specifying GCC, macOS itself provides a "fake" `gcc` that is linked to Clang.
+In general, to specify the actual GNU GCC, set environment variables like:
 
 ```sh
-export FC=gfortran-13 CC=gcc-13 CXX=g++-13
+export FC=gfortran-14 CC=gcc-14 CXX=g++-14
 ```
-
-To default to GCC / Gfortran, add the line above in ~/.zprofile.
 
 ### GLOW
 

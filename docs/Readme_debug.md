@@ -1,34 +1,24 @@
 # Developer debug build
 
-Those adding or modifying features inside Gemini3D code may desire to use the debugging features such as array bound checking that are disabled by default.
-These debugging features make Gemini3D runs take significantly longer, but may help Gemini3D developers uncover problems with modified or added code.
+Array bounds checking is disabled by default due to the runtime slowdown (performance impacts).
+Array bounds checking can help find bugs that cause memory corruption and intermittent crashes.
 
-If one wishes to frequently switch between Release and Debug builds, we suggest the "Multi config" section below.
-Otherwise, switching from Debug to Release or vice versa requires reconfiguring the CMake project each time, which can be tedious if done frequently--and you may forget which mode you're in.
-
-Note: the "--preset" option is using
+"--preset" using
 [CMake presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
-to manipulate several CMake flags via CMakePresets.json file, including
+is an optional way to manipulate several CMake flags via CMakePresets.json file, including
 [CMAKE_BUILD_TYPE](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html).
 
-## Single config (must reconfigure manually to switch)
+## Single configurations
 
 By default, Gemini3D builds with full optimizations in Release mode.
-NOTE: In general one should not use `-Ofast` style options that break floating-point guarantees, as Gemini3D may fail to run correctly as its internal sanity checks are broken by those flags.
+Gemini3D runs much slower (like 10x or more slower) without Release optimizations.
+Avoid `-Ofast` style options that break floating-point guarantees, as Gemini3D may fail to run correctly as its internal sanity checks are broken by those flags.
 Changing the build mode in a CMake project (unless using Multi config) requires reconfiguring and rebuilding each time.
 
 Debug mode:
 
 ```sh
-cmake -B build --preset debug
-
-cmake --build build
-```
-
-Release mode:
-
-```sh
-cmake -B build --preset release
+cmake --preset debug -Bbuild
 
 cmake --build build
 ```
@@ -43,7 +33,7 @@ Ninja is installed simply by "pip install ninja", or "brew install ninja", or by
 Ninja speeds up the build, and allows switching rapidly between "debug" and "release" modes, where "release" is highly optimized for fastest run.
 
 ```sh
-cmake -B --preset multi
+cmake --preset multi
 ```
 
 sets up CMake using

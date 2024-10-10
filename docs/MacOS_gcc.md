@@ -5,7 +5,7 @@ GCC compilers are recommended for macOS as AppleClang conflicts with Gfortran fo
 Install libraries via [Homebrew](https://brew.sh) such as CMake:
 
 ```sh
-brew install cmake
+brew install cmake gcc
 ```
 ## Build and Test Gemini3D
 

@@ -7,11 +7,9 @@ stdlib.
 
 These compilers are known to work with GEMINI3D on Linux, MacOS, and Windows:
 
-* Gfortran (GCC): 9.3, 9.5, 10.3, 11.1, 11.2, 11.3, 12.1, 12.2
+* Gfortran (GCC): 8.5, 9.3, 9.5, 10.3, 11.1, 11.2, 11.3, 12.1, 12.2, 13, 14
 * Intel oneAPI &ge; 2022.2, 2023.0 core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
-* Cray with GCC or Intel backend
-
-Intel Parallel Studio XE is obsolete and replaced by no-cost Intel oneAPI.
+* Cray (by itself, or with GCC or Intel backend)
 
 Some older point releases of GCC are known to be broken (example: GCC 9.2 is broken in general).
 
@@ -24,7 +22,7 @@ is an easy choice for Linux users.
 [Intel oneAPI](./Linux_intel_oneapi.md)
 is another choice that may yield better runtime speed with Intel CPUs.
 
-## MacOS
+## macOS
 
 The GCC C, C++, and Fortran compilers work fine.
 Although the Clang, Clang++ compilers also work with Gfortran, if you experience segmentation faults on the self-tests, try GCC, G++ instead.

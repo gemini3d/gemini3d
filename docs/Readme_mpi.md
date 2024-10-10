@@ -25,7 +25,7 @@ Note: in general, any libraries that use MPI should be compiled with the same MP
 HPC users can often switch to a recent GCC version with matching MPI library.
 
 Alternatively, [Intel oneAPI](./Linux_intel_oneapi.md)
-provides Intel MPI and Scalapack on Linux.
+provides Intel MPI, Scalapack, and Lapack on Linux.
 
 ## Windows
 
@@ -33,5 +33,5 @@ We suggest using Windows Subsystem for Linux from [Microsoft Store](https://apps
 
 Alternatively,
 [Intel oneAPI](./Windows_intel_oneapi.md)
-provides Intel MPI and Scalapack on Windows.
+provides Intel MPI, Scalapack, and Lapack on Windows.
 Use the oneAPI Command Prompt on Windows.
