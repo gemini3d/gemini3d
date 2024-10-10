@@ -13,9 +13,7 @@ if(NOT WIN32)
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-fpscomp;logicals>")
 endif()
 
-add_compile_options(
-$<$<CONFIG:Debug>:-Rno-debug-disables-optimization>
-)
+# add_compile_options($<$<CONFIG:Debug>:-Rno-debug-disables-optimization>)
 # remark #5415: Feature not yet implemented: Some 'check' options temporarily disabled.
 # warning #10182: disabling optimization; runtime debug checks enabled
 # remark #7712: This variable has not been used.  (-Wunused-dummy-argument)
@@ -45,7 +43,6 @@ add_compile_options(
 "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-CB>"
 )
 # -CB is an alias for -check bounds.
-# separate $<CONFIG: lines for CMake < 3.19
 # --- IMPORTANT
 
 add_compile_options(
