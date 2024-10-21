@@ -9,6 +9,8 @@ use meshobj, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
 
 implicit none (type, external)
+real(wp), dimension(:,:), allocatable :: nsprof
+
 private
 public :: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec,set_global_boundaries_allspec
 
@@ -28,7 +30,6 @@ contains
     !    real(wp), parameter :: vellim=0.0
     real(wp) :: coeff
     integer :: ix2,ix3,lx1,lx2,lx3
-    integer :: idleft,idright,idup,iddown
     real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
     real(wp) :: tstart,tfini
     real(wp), dimension(-1:size(ns,2)-2,-1:size(ns,3)-2) :: Tbndry
@@ -37,6 +38,12 @@ contains
     lx1=size(vs1,1)-4
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
+
+    ! check if we need to store a reference profile
+    if (.not. allocated(nsprof)) then
+      allocate(nsprof(lx1,lsp))
+      nsprof(:,isp)=ns(:,1,1,isp)
+    end if
     
     !> x1-ghost cell density values (these need to be done last to avoid being overwritten by send/recv's!!!)
     if (isglobalx1min(x)) then
@@ -84,8 +91,12 @@ contains
       vs2(:,0,:,isp)=vs2(:,1,:,isp)
       vs2(:,-1,:,isp)=vs2(:,1,:,isp)    ! set both ghost cells just in case used for error checking
     
-      ns(:,0,:,isp)=ns(:,1,:,isp)
-      ns(:,-1,:,isp)=ns(:,1,:,isp)
+!      ns(:,0,:,isp)=ns(:,1,:,isp)
+!      ns(:,-1,:,isp)=ns(:,1,:,isp)
+      do ix3=1,lx3
+        ns(:,0,ix3,isp)=nsprof(:,isp)
+        ns(:,-1,ix3,isp)=nsprof(:,isp)
+      end do
       rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp)
       rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp)
       rhoes(:,0,:,isp)=rhoes(:,1,:,isp)
@@ -95,8 +106,13 @@ contains
       vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
       vs2(:,lx2+2,:,isp)=vs2(:,lx2,:,isp)
     
-      ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
-      ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+!      ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
+!      ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+      do ix3=1,lx3
+        ns(:,lx2+1,ix3,isp)=nsprof(:,isp)
+        ns(:,lx2+2,ix3,isp)=nsprof(:,isp)
+      end do
+
       rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp)
       rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp)
       rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp)
@@ -111,8 +127,13 @@ contains
         !! copy first cell to first ghost (vs3 not advected so only need only ghost)
         vs3(:,:,-1,isp)=vs3(:,:,1,isp)
     
-        ns(:,:,0,isp)=ns(:,:,1,isp)
-        ns(:,:,-1,isp)=ns(:,:,1,isp)
+!        ns(:,:,0,isp)=ns(:,:,1,isp)
+!        ns(:,:,-1,isp)=ns(:,:,1,isp)
+        do ix2=1,lx2
+          ns(:,ix2,0,isp)=nsprof(:,isp)
+          ns(:,ix2,-1,isp)=nsprof(:,isp)
+        end do
+
         rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp)
         rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp)
         rhoes(:,:,0,isp)=rhoes(:,:,1,isp)
@@ -122,8 +143,12 @@ contains
         vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
         vs3(:,:,lx3+2,isp)=vs3(:,:,lx3,isp)
     
-        ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
-        ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
+!        ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
+!        ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
+        do ix2=1,lx2
+          ns(:,ix2,lx3+1,isp)=nsprof(:,isp)
+          ns(:,ix2,lx3+2,isp)=nsprof(:,isp)
+        end do
         rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp)
         rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp)
         rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp)
