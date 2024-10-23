@@ -10,6 +10,8 @@ use meshobj, only: curvmesh
 
 implicit none (type, external)
 real(wp), dimension(:,:), allocatable :: nsprof
+logical, dimension(7) :: ispfirsttime=[.true., .true., .true., &
+        .true., .true., .true., .true.]
 
 private
 public :: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec,set_global_boundaries_allspec
@@ -41,10 +43,9 @@ contains
 
     ! check if we need to store a reference profile
     if (.not. allocated(nsprof)) then
-      allocate(nsprof(lx1,lsp))
-      nsprof(:,isp)=ns(:,1,1,isp)
+      allocate(nsprof(-1:lx1+2,lsp))
     end if
-    
+
     !> x1-ghost cell density values (these need to be done last to avoid being overwritten by send/recv's!!!)
     if (isglobalx1min(x)) then
       do ix3=1,lx3
@@ -84,6 +85,12 @@ contains
       rhoes(lx1+1,:,:,isp)=Tbndry*ns(lx1+1,:,:,isp)
       rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
     end if
+
+    ! once ghost cells are filled we can store reference profiles if needed
+    if (ispfirsttime(isp)) then
+      nsprof(:,isp)=ns(:,1,1,isp)
+      ispfirsttime(isp)=.false.
+    end if 
 
     !> SET THE GLOBAL X2 BOUNDARY CELLS
     !> THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
