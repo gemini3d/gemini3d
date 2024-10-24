@@ -41,7 +41,7 @@ contains
     lx2=size(vs1,2)-4
     lx3=size(vs1,3)-4
 
-    ! check if we need to store a reference profile
+    ! check if we need space to store a set of profiles or whether it is already allocated
     if (.not. allocated(nsprof)) then
       allocate(nsprof(-1:lx1+2,lsp))
     end if
@@ -90,6 +90,7 @@ contains
     if (ispfirsttime(isp)) then
       nsprof(:,isp)=ns(:,1,1,isp)
       ispfirsttime(isp)=.false.
+      !print*, "first time for species:  ",isp
     end if 
 
     !> SET THE GLOBAL X2 BOUNDARY CELLS
