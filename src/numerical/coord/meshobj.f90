@@ -588,7 +588,7 @@ contains
     self%nullpts=.false.
     allocate(alttmp(lx1,lx2,lx3))
     alttmp=self%alt(1:lx1,1:lx2,1:lx3)
-    where (alttmp < 80e3_wp)
+    where (alttmp < 50e3_wp)
       self%nullpts=.true.
     end where
     deallocate(alttmp)
