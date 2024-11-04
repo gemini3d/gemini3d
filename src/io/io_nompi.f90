@@ -9,30 +9,50 @@ use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
 use reader, only : get_simsize3
 
+! per-worker variables (i.e. input data), that patches use as a source for interpolation
+integer :: lx1in,lx2in,lx3in
+real(wp), dimension(:), allocatable :: x1in,x2in,x3in
+real(wp), dimension(:,:,:,:), allocatable :: nsall,vs1all,Tsall
+real(wp), dimension(:,:,:), allocatable :: Phiall
+
 private
-public :: interp_file2subgrid, plasma_output_nompi
+public :: load_ICs2mod, interp_file2subgrid, plasma_output_nompi
 
 contains
+  !> Load initial conditions into module-scope variables.  Interpolation needs to happen on a per-patch basis
+  subroutine load_ICs2mod(indatsize,indatfile,indatgrid)
+    character(*), intent(in) :: indatsize,indatfile,indatgrid
+    real(wp) :: glatctr=0._wp, glonctr=0._wp
+
+    ! read in the ICs size and allocate modele-scope variables to store full-grid data
+    call get_simsize3(indatsize,lx1in,lx2in,lx3in)
+    allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))   
+    allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
+              vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
+              Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
+              Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
+
+    call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
+    call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+
+    ! there isn't a corresponding call to deallocate module-scope input data arrays 
+  end subroutine load_ICs2mod
+
+
   !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
   !    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
   !    custom arrangement.  The entire input file will be read by each worker calling this procedure.
   !  Since this is only performing spatial interpolation it is easiest to just use the interpolation module
   !    directly rather than create a type extension for inputdata (which inherently wants to also do time interpolation)
   !    and then overriding the interp to space-only.
-  subroutine interp_file2subgrid(indatsize,indatfile,indatgrid,x1,x2,x3,ns,vs1,Ts,Phi)
-    character(*), intent(in) :: indatsize,indatfile,indatgrid
+  subroutine interp_file2subgrid(x1,x2,x3,ns,vs1,Ts,Phi)
     real(wp), dimension(-1:) :: x1
     real(wp), dimension(-1:) :: x2
     real(wp), dimension(-1:) :: x3
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: Phi
-    real(wp), dimension(:,:,:,:), allocatable :: nsall,vs1all,Tsall
-    real(wp), dimension(:,:,:), allocatable :: Phiall
     real(wp), dimension(:), allocatable :: parmflat
     integer :: lx1,lx2,lx3
-    integer :: lx1in,lx2in,lx3in
-    real(wp), dimension(:), allocatable :: x1in,x2in,x3in
-    real(wp) :: glatctr=0._wp, glonctr=0._wp
     integer :: isp
     real(wp), dimension(:,:,:), allocatable :: x1imat,x2imat,x3imat    ! variables for interpolation sites
     real(wp), dimension(:), allocatable :: x1i,x2i,x3i    ! variables for interpolation sites
@@ -48,12 +68,6 @@ contains
     lx1=size(x1)-4; lx2=size(x2)-4; lx3=size(x3)-4;
 
     ! read in the ICs size and allocate data
-    call get_simsize3(indatsize,lx1in,lx2in,lx3in)
-    allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
-    allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
-              Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
     allocate(parmflat(lx1*lx2*lx3))
 
     ! allocate space for the target coordinates
@@ -75,9 +89,6 @@ contains
     x3i=pack(x3imat,.true.)
     deallocate(x1imat,x2imat,x3imat)    ! get rid of these as soon as we are done with them
 
-    ! get the input grid coordinates
-    call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
-
     ! We must make sure that the target coordinates do not range outside the input file coordinates.
     ! Moreoever, we do currently allow for the x3 size to be 1, in which case we just assume we
     !   are doing a 2D interpolation.  
@@ -95,9 +106,6 @@ contains
     !else
     !  print*, 'WARNING:  using 2D file2subgrid interpolation...'
     end if
-
-    ! read in the input initial conditions, only hdf5 files are support for this functionality
-    call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
     ! interpolation input data to mesh sites; do not interpolate to ghost cells
     do isp=1,lsp
@@ -149,11 +157,7 @@ contains
     call forceinputZOH(Ts)
 
     ! get rid of local vars
-    deallocate(x1in,x2in,x3in,nsall,vs1all,Tsall,Phiall,parmflat)
     deallocate(x1i,x2i,x3i)
-
-    !print*, 'Ne:  ',minval(x1),maxval(x1),minval(x2),maxval(x2),minval(ns(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(ns(1:lx1,1:lx2,1:lx3,1:lsp))
-    !print*, ns(1:lx1,1:lx2,1,7)
   end subroutine interp_file2subgrid
 
 
