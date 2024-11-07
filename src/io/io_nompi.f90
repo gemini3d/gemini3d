@@ -17,7 +17,7 @@ real(wp), dimension(:,:,:), allocatable :: Phiall
 logical :: flagallocinput=.false.
 
 private
-public :: load_ICs2mod, interp_file2subgrid, plasma_output_nompi
+public :: load_ICs2mod, interp_file2subgrid, plasma_output_nompi, release_ICsmemory
 
 contains
   !> Load initial conditions into module-scope variables.  Interpolation needs to happen on a per-patch basis
