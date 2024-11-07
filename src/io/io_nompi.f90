@@ -39,6 +39,19 @@ contains
   end subroutine load_ICs2mod
 
 
+  !> User subroutine to release memory associated with input data prior to interpolation
+  subroutine release_ICsmemory()
+    if (allocated(x1in)) deallocate(x1in)
+    if (allocated(x2in)) deallocate(x2in)
+    if (allocated(x3in)) deallocate(x3in)
+
+    if (allocated(nsall)) deallocate(nsall)
+    if (allocated(vs1all)) deallocate(vs1all)
+    if (allocated(Tsall)) deallocate(Tsall)
+    if (allocated(Phiall)) deallocate(Phiall)
+  end subroutine
+
+
   !> Interpolate initial conditions onto "local" subgrid; we assume that the input data grid is specified
   !    by the input file, whereas the target grid *could* be different, e.g. due to refinement or some other
   !    custom arrangement.  The entire input file will be read by each worker calling this procedure.
