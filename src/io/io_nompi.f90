@@ -14,6 +14,7 @@ integer :: lx1in,lx2in,lx3in
 real(wp), dimension(:), allocatable :: x1in,x2in,x3in
 real(wp), dimension(:,:,:,:), allocatable :: nsall,vs1all,Tsall
 real(wp), dimension(:,:,:), allocatable :: Phiall
+logical :: flagallocinput=.false.
 
 private
 public :: load_ICs2mod, interp_file2subgrid, plasma_output_nompi
@@ -31,6 +32,7 @@ contains
               vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               Phiall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2))
+    flagallocinput=.true.
 
     call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
     call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
@@ -41,14 +43,17 @@ contains
 
   !> User subroutine to release memory associated with input data prior to interpolation
   subroutine release_ICsmemory()
-    if (allocated(x1in)) deallocate(x1in)
-    if (allocated(x2in)) deallocate(x2in)
-    if (allocated(x3in)) deallocate(x3in)
-
-    if (allocated(nsall)) deallocate(nsall)
-    if (allocated(vs1all)) deallocate(vs1all)
-    if (allocated(Tsall)) deallocate(Tsall)
-    if (allocated(Phiall)) deallocate(Phiall)
+    if (flagallocinput) then
+      if (allocated(x1in)) deallocate(x1in)
+      if (allocated(x2in)) deallocate(x2in)
+      if (allocated(x3in)) deallocate(x3in)
+  
+      if (allocated(nsall)) deallocate(nsall)
+      if (allocated(vs1all)) deallocate(vs1all)
+      if (allocated(Tsall)) deallocate(Tsall)
+      if (allocated(Phiall)) deallocate(Phiall)
+      flagallocinput=.false.
+    end if
   end subroutine
 
 
