@@ -10,12 +10,34 @@ use mpi_f08, only: MPI_COMM_WORLD
 
 implicit none (type, external)
 private
-public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_static, &
+public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_static,elliptic2D_static_J0, &
         elliptic2D_polarization,elliptic2D_polarization_periodic,&
         elliptic_workers, check_mumps_status, quiet_mumps, &
         elliptic3D_cart_periodic, mumps_perm
 
 interface ! elliptic2d.f90
+  module function elliptic2D_static_J0(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3, &
+                    SigPBC2,SigPBC3,SigHBC2,SigHBC3, &
+                    Vminx2,Vmaxx2, Vminx3,Vmaxx3,dt,dx1, &
+                    dx1i,dx2all,dx2iall,dx3all,dx3iall,flagsdirich,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3
+    !! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+    real(wp), dimension(:,:), intent(in) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    real(wp), dimension(0:), intent(in) :: dx1         !backward diffs start at index zero due to ghost cells
+    real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
+    real(wp), dimension(0:), intent(in) :: dx2all
+    real(wp), dimension(:), intent(in) :: dx2iall
+    real(wp), dimension(0:), intent(in) :: dx3all
+    real(wp), dimension(:), intent(in) :: dx3iall
+    integer, dimension(4), intent(in) :: flagsdirich
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_static_J0
+  end function elliptic2D_static_J0
+
   module function elliptic2D_static(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3,Vminx2,Vmaxx2, &
       Vminx3,Vmaxx3,dt,dx1, &
       dx1i,dx2all,dx2iall,dx3all,dx3iall,flagsdirich,perflag,it)

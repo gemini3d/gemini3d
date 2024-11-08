@@ -2,11 +2,42 @@ submodule (potential_mumps) potential2d
 
 use grid, only: gridflag
 use calculus, only : grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
-use PDEelliptic, only: elliptic2D_static,elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart
+use PDEelliptic, only: elliptic2D_static,elliptic2D_static_J0, &
+        elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart
 
 implicit none (type, external)
 
 contains
+  module procedure potential2D_static_J0
+    ! wrapper for static, field-integradted solution for ionospheric potential equation in 2D
+
+    integer, dimension(4) :: flagsdirich
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
+    integer :: lx2,lx3
+    
+    lx2=x%lx2all    !use full grid sizes
+    lx3=x%lx3all
+    
+    !gradSigH2=grad2D1(SigH,x,1,lx2)   !x2 is now 1st index and x3 is second...  This one appears to be the problem.  This issue here is that grad2D1 automatically uses x%dx1 as the differential element...
+    gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)
+    !! note the alt since we need to use dx2 as differential...  Tricky bug/feature
+    gradSigH3=grad2D3(SigH,x,1,lx3)
+    !! awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
+
+    ! Convert ionospheric top boundary conditions (top current or potential) into 4 sides for solver
+    if (flagdirich/=2) then   ! Dirichlet top boundary OR Neumann top boundary with dirichlet sides
+      flagsdirich=[1,1,1,1]
+    else                  ! flagdirich==2 taken to be the all-Neumann problem
+      flagsdirich=[0,0,0,0]
+    end if
+
+    potential2D_static_J0=elliptic2D_static_J0(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3, &
+                                      SigPBC2,SigPBC3,SigHBC2,SigHBC3, &                    
+                                      Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x%dx1,x%dx1i,x%dx2all,x%dx2iall, &
+                                      x%dx3all,x%dx3iall,flagsdirich,perflag,it)
+  end procedure potential2D_static_J0
+
+
   module procedure potential2D_static
     ! wrapper for static, field-integradted solution for ionospheric potential equation in 2D
 

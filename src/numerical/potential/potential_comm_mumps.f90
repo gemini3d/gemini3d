@@ -27,7 +27,7 @@ use mpimod, only: mpi_cfg, tag=>gemini_mpi, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo, bcast_send3D_ghost, bcast_recv3D_ghost
 use gemini3d_config, only: gemini_cfg
 
-use mpi_f08, only: mpi_send, mpi_recv, mpi_integer, mpi_comm_world, mpi_status_ignore
+use mpi_f08, only: mpi_send, mpi_recv, mpi_integer, mpi_comm_world, mpi_status_ignore, mpi_logical
 
 implicit none (type, external)
 private
