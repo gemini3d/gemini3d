@@ -32,6 +32,9 @@ contains
     integer :: iid
     integer :: ix1
     real(wp) :: tstart,tfin
+    logical :: flagstatic
+    real(wp), dimension(1:lx2,1:lx3) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3
+    real(wp), dimension(1:lx2all,1:lx3all) :: SigPBC2all,SigPBC3all,SigHBC2all,SigHBC3all
   
     !> store a cached ordering for later use (improves performance substantially)
     perflag=.true.
@@ -101,17 +104,46 @@ contains
           Phislab0=Phiall(lx1,1:lx2all,1:lx3all)    !root already possess the fullgrid potential from prior solves...
           if (debug) print *, 'Root is calling MUMPS...'
           !R-------
-  
+ 
+          flagstatic=all(incapintall<=0)
+          do iid=1,mpi_cfg%lid-1
+            call mpi_send(flagstatic,1,MPI_LOGICAL,iid,tag%flagstatic,MPI_COMM_WORLD)
+          end do
+
           !R------ EXECUTE THE MUMPS SOLVE FOR FIELD-INT
           call cpu_time(tstart)
           !! First check whether any capacitance is specified, then whether periodic mesh or no
-!          if (all(incapintall<=0)) then    ! static solve
-!            !! FIXME: add optional for static periodic solve here.
-!            if (debug) print *, '!!!GEMINI detects static potential solve...'
-!            Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
-!                                     SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
-!                                     dt,x,flagdirich,perflag,it)
-!          else                             ! solve with leading order polarization term
+          if (flagstatic) then    ! static solve
+            if (flagdirich==2) then    ! we want to force the code to use current boundary conditions which changes the structure of
+                                       !   the function call; in this case additional coefficients are needed for boundary specs
+              integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+              sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+              SigPBC2=sigintegral(lx1,:,:)
+
+              integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
+              sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+              SigPBC3=sigintegral(lx1,:,:)
+
+              integrand=sigH*x%h1(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
+              sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+              SigHBC2=sigintegral(lx1,:,:)
+
+              integrand=sigH*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+              sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+              SigHBC3=sigintegral(lx1,:,:)
+
+              call gather_recv(SigPBC2,tag%SigPBC2,SigPBC2all)
+              call gather_recv(SigPBC3,tag%SigPBC3,SigPBC3all)
+              call gather_recv(SigHBC2,tag%SigHBC2,SigHBC3all)
+              call gather_recv(SigHBC3,tag%SigHBC3,SigHBC3all)
+            else
+              !! FIXME: add optional for static periodic solve here.
+              if (debug) print *, '!!!GEMINI detects static potential solve...'
+              Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
+                                     SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+                                     dt,x,flagdirich,perflag,it)
+            end if
+          else                             ! solve with leading order polarization term
             if (.not. x%flagper) then     !nonperiodic mesh
               if (debug) print *, '!!!User selected aperiodic solve...'
               Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all, &
@@ -127,7 +159,7 @@ contains
                                          dt,x,Phislab0,perflag,it)
               !! !note that either sigPint2 or 3 will work since this must be cartesian...
             end if
-!          end if
+          end if
           call cpu_time(tfin)
           if (debug) print *, 'Root received results from MUMPS which took time:  ',tfin-tstart
           !R-------

@@ -22,6 +22,8 @@ module procedure potential_workers_mpi
   real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2,v3
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   integer :: flagsolve
+  logical :: flagstatic
+  real(wp), dimension(1:lx2,1:lx3) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3 
 
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
   perflag=.false.
@@ -78,6 +80,33 @@ module procedure potential_workers_mpi
   !          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);
         !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes);
         !! but this is only valid for Cartesian, so it's okay for the foreseeable future
+
+        call mpi_recv(flagstatic,1,MPI_LOGICAL,0,tag%flagstatic,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+
+        if (flagstatic) then
+          if (flagdirich==2) then
+            integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+            sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+            SigPBC2=sigintegral(lx1,:,:)
+
+            integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
+            sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+            SigPBC3=sigintegral(lx1,:,:)
+
+            integrand=sigH*x%h1(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
+            sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+            SigHBC2=sigintegral(lx1,:,:)
+
+            integrand=sigH*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+            sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
+            SigHBC3=sigintegral(lx1,:,:)
+
+            call gather_send(SigPBC2,tag%SigPBC2)
+            call gather_send(SigPBC3,tag%SigPBC3)
+            call gather_send(SigHBC2,tag%SigHBC2)
+            call gather_send(SigHBC3,tag%SigHBC3)            
+          end if
+        end if
 
         call elliptic_workers()    !workers do not need any specific info about the problem (that all resides with root who will redistribute)
       else

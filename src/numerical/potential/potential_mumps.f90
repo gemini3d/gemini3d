@@ -43,6 +43,20 @@ public :: potential3D_fieldresolved_decimate, potential2D_static, &
 integer, dimension(:), pointer, protected :: mumps_perm
 
 interface ! potential2d.f90
+  module function potential2D_static_J0(srcterm,SigP2,SigP3,SigH, &
+                  SigPBC2,SigPBC3,SigHBC2,SigHBC3, &
+                  Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,flagdirich,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,SigPBC2,SigPBC3,SigHBC2,SigHBC3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_static_J0
+  end function potential2D_static_J0
+
   module function potential2D_static(srcterm,SigP2,SigP3,SigH,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,flagdirich,perflag,it)
     real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH
     !! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
