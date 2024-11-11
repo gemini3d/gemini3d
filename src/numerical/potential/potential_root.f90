@@ -134,8 +134,13 @@ contains
 
               call gather_recv(SigPBC2,tag%SigPBC2,SigPBC2all)
               call gather_recv(SigPBC3,tag%SigPBC3,SigPBC3all)
-              call gather_recv(SigHBC2,tag%SigHBC2,SigHBC3all)
+              call gather_recv(SigHBC2,tag%SigHBC2,SigHBC2all)
               call gather_recv(SigHBC3,tag%SigHBC3,SigHBC3all)
+
+              Phislab=potential2D_static_J0(srctermintall,SigPint2all,SigPint3all,SigHintall, &
+                      SigPBC2all,SigPBC3all,SigHBC2all,SigHBC3all, &
+                      Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+                      dt,x,flagdirich,perflag,it)
             else
               !! FIXME: add optional for static periodic solve here.
               if (debug) print *, '!!!GEMINI detects static potential solve...'
