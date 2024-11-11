@@ -18,6 +18,7 @@ use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput, compute_
 use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_fieldresolved, &
                             potential2D_static, &
+                            potential2D_static_J0, &
                             potential2D_polarization, &
                             potential2D_polarization_periodic, &
                             potential3D_fieldresolved, &

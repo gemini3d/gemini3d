@@ -35,7 +35,7 @@ use PDEelliptic, only: elliptic3D_cart, elliptic3D_cart_periodic
 
 implicit none (type, external)
 private
-public :: potential3D_fieldresolved_decimate, potential2D_static, &
+public :: potential3D_fieldresolved_decimate, potential2D_static, potential2D_static_J0, &
             potential2D_polarization, potential2D_polarization_periodic, &
             potential2D_fieldresolved, potential3D_fieldresolved, &
             potential3D_fieldresolved_truncate, &

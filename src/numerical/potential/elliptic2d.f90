@@ -64,23 +64,24 @@ contains
     
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (ix3==1) then
-!            ir(ient)=iPhi
-!            ic(ient)=iPhi
-!            M(ient)=SigP(ix2,ix3)/dx2all(ix2+1) + SigH(ix2,ix3)/dx3all(ix3+1)
-!            ient=ient+1
-!
-!            ir(ient)=iPhi
-!            ic(ient)=iPhi+1
-!            M(ient)=-SigP(ix2,ix3)/dx2all(ix2+1)
-!            ient=ient+1
-!
-!            ir(ient)=iPhi
-!            ic(ient)=iPhi+lx2
-!            M(ient)=-SigH(ix2,ix3)/dx3all(ix3+1)
-!            ient=ient+1
-             ir(ient)=iPhi
-             ic(ient)=iPhi
-             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+            ir(ient)=iPhi
+            ic(ient)=iPhi
+            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi+1
+            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi+lx2
+            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            ient=ient+1
+!             ir(ient)=iPhi
+!             ic(ient)=iPhi
+!             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+!             ient=ient+1
           else if (ix3==lx3) then
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
@@ -96,6 +97,11 @@ contains
             ic(ient)=iPhi+1
             M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
+
+!             ir(ient)=iPhi
+!             ic(ient)=iPhi
+!             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+!             ient=ient+1
           else
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
@@ -122,19 +128,30 @@ contains
           cycle
         elseif (ix2==lx2) then    ! TOP GRID POINTS + CORNER
           if (ix3==1) then
-            ir(ient)=iPhi
-            ic(ient)=iPhi-1
-            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
-            ient=ient+1
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi-1
+!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigH(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+lx2
+!            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+
+!            print*, SigPBC2(ix2,ix3),SigHBC2(ix2,ix3)
+!            print*, SigPBC3(ix2,ix3),SigHBC3(ix2,ix3)
+!            print*, SigHBC2(:,ix3)
+!            print*, SigHBC3(:,ix3)
+!            error stop 'debug termination check'
 
             ir(ient)=iPhi
             ic(ient)=iPhi
-            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigH(ix2,ix3)/dx3all(ix3+1)
-            ient=ient+1
-
-            ir(ient)=iPhi
-            ic(ient)=iPhi+lx2
-            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
             ient=ient+1
           else if (ix3==lx3) then
             ir(ient)=iPhi
@@ -149,24 +166,29 @@ contains
 
             ir(ient)=iPhi
             ic(ient)=iPhi
-            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)-SigH(ix2,ix3)/dx3all(ix3)
+            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)-SigHBC2(ix2,ix3)/dx3all(ix3)
             ient=ient+1
+
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+!            ient=ient+1
           else
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))
             ient=ient+1
-  
+
             ir(ient)=iPhi
-            ic(ient)=iPhi
+            ic(ient)=iPhi-1
             M(ient)=SigPBC2(ix2,ix3)/(dx2all(ix2))
             ient=ient+1
-  
+
             ir(ient)=iPhi
-            ic(ient)=iPhi+1
+            ic(ient)=iPhi
             M(ient)=-SigPBC2(ix2,ix3)/(dx2all(ix2))
             ient=ient+1
-  
+   
             ir(ient)=iPhi
             ic(ient)=iPhi+lx2
             M(ient)=-SigHBC2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))
@@ -258,7 +280,7 @@ contains
         ient=ient+1
       end do loopx2
     end do loopx3
-    
+
     !FIRE UP MUMPS
     !if (myid == 0) then
     if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
