@@ -32,8 +32,8 @@ contains
     lx3=size(SigP2,2)
     lPhi=lx2*lx3
 
-!    lent = 5*(lx2-2)*(lx3-2) + 4*2*(lx2-2) + 4*2*(lx3-2) + 3*4
-    lent = 5*(lx2-2)*(lx3-2) + (4*2*(lx2-2) + 4*2*(lx3-2)) + (3*3 + 1)
+    lent = 5*(lx2-2)*(lx3-2) + 4*2*(lx2-2) + 4*2*(lx3-2) + 3*4
+!    lent = 5*(lx2-2)*(lx3-2) + (4*2*(lx2-2) + 4*2*(lx3-2)) + (3*3 + 1)
     !^ interior, x2 boundary, x3 boundary, corners
 
     allocate(ir(lent),ic(lent),M(lent),b(lPhi))
@@ -64,6 +64,7 @@ contains
     
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (ix3==1) then
+            ! Neumann BC:  x2 current
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
@@ -78,11 +79,14 @@ contains
             ic(ient)=iPhi+lx2
             M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
             ient=ient+1
+
+            ! Dirichlet BC: set potential
 !             ir(ient)=iPhi
 !             ic(ient)=iPhi
 !             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
 !             ient=ient+1
           else if (ix3==lx3) then
+            ! Neumann BC:  x2 current                 
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
@@ -98,6 +102,7 @@ contains
             M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
+            ! Dirichlet BC: set potential           
 !             ir(ient)=iPhi
 !             ic(ient)=iPhi
 !             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
@@ -128,32 +133,53 @@ contains
           cycle
         elseif (ix2==lx2) then    ! TOP GRID POINTS + CORNER
           if (ix3==1) then
+            ! Neumann BC:  x2 current                                  
+            ir(ient)=iPhi
+            ic(ient)=iPhi-1
+            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi
+            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi+lx2
+            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            ient=ient+1
+
+            ! Neumann BC:  x3 current
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi-1
-!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
+!            M(ient)=-SigHBC3(ix2,ix3)/dx2all(ix2)
 !            ient=ient+1
 !
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi
-!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigH(ix2,ix3)/dx3all(ix3+1)
+!            M(ient)=SigPBC3(ix2,ix3)/dx3all(ix3+1)+SigHBC3(ix2,ix3)/dx2all(ix2)
 !            ient=ient+1
 !
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi+lx2
-!            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            M(ient)=-SigPBC3(ix2,ix3)/dx3all(ix3+1)
 !            ient=ient+1
 
 !            print*, SigPBC2(ix2,ix3),SigHBC2(ix2,ix3)
 !            print*, SigPBC3(ix2,ix3),SigHBC3(ix2,ix3)
+!            print*, SigPBC2(:,ix3)
+!            print*, SigPBC3(:,ix3)
 !            print*, SigHBC2(:,ix3)
 !            print*, SigHBC3(:,ix3)
 !            error stop 'debug termination check'
 
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
-            ient=ient+1
+            ! Dirichlet BC: set potential
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+!            ient=ient+1
           else if (ix3==lx3) then
+            ! Neumann BC:  x2 current                            
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
@@ -169,6 +195,7 @@ contains
             M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)-SigHBC2(ix2,ix3)/dx3all(ix3)
             ient=ient+1
 
+            ! Dirichlet BC: set potential           
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi
 !            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
