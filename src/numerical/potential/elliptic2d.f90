@@ -65,26 +65,26 @@ contains
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (ix3==1) then
             ! Neumann BC:  x2 current
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
-            ient=ient+1
-
-            ir(ient)=iPhi
-            ic(ient)=iPhi+1
-            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
-            ient=ient+1
-
-            ir(ient)=iPhi
-            ic(ient)=iPhi+lx2
-            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
-            ient=ient+1
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+1
+!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+lx2
+!            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
 
             ! Dirichlet BC: set potential
-!             ir(ient)=iPhi
-!             ic(ient)=iPhi
-!             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
-!             ient=ient+1
+             ir(ient)=iPhi
+             ic(ient)=iPhi
+             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
+             ient=ient+1
           else if (ix3==lx3) then
             ! Neumann BC:  x2 current                 
             ir(ient)=iPhi
