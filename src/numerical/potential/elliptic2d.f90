@@ -65,19 +65,38 @@ contains
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (ix3==1) then
             ! Neumann BC:  x2 current
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+1
+!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+lx2
+!            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+
+            ! Neumann BC:  combined x2 and x3 current constraint
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1) + SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            M(ient)=M(ient)+ SigPBC3(ix2,ix3)/dx3all(ix3+1) - SigHBC3(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
             ir(ient)=iPhi
             ic(ient)=iPhi+1
             M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+            M(ient)=M(ient)+ SigHBC3(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
             ir(ient)=iPhi
             ic(ient)=iPhi+lx2
             M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            M(ient)=M(ient)- SigPBC3(ix2,ix3)/dx3all(ix3+1)
             ient=ient+1
 
             ! Dirichlet BC: set potential
@@ -87,19 +106,38 @@ contains
 !             ient=ient+1
           else if (ix3==lx3) then
             ! Neumann BC:  x2 current                 
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi-lx2
+!            M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1)-SigHBC2(ix2,ix3)/dx3all(ix3)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+1
+!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+!            ient=ient+1
+
+            ! Neumann BC:  combined x2,3 current constraint                
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
+            M(ient)=M(ient)+ SigPBC3(ix2,ix3)/dx3all(ix3)
             ient=ient+1
 
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2+1)-SigHBC2(ix2,ix3)/dx3all(ix3)
+            M(ient)=M(ient)- SigPBC3(ix2,ix3)/dx3all(ix3) - SigHBC3(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
             ir(ient)=iPhi
             ic(ient)=iPhi+1
             M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
+            M(ient)=M(ient)+ SigHBC3(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
             ! Dirichlet BC: set potential           
@@ -134,20 +172,20 @@ contains
         elseif (ix2==lx2) then    ! TOP GRID POINTS + CORNER
           if (ix3==1) then
             ! Neumann BC:  x2 current                                  
-            ir(ient)=iPhi
-            ic(ient)=iPhi-1
-            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
-            ient=ient+1
-
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigHBC2(ix2,ix3)/dx3all(ix3+1)
-            ient=ient+1
-
-            ir(ient)=iPhi
-            ic(ient)=iPhi+lx2
-            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
-            ient=ient+1
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi-1
+!            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi
+!            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
+!
+!            ir(ient)=iPhi
+!            ic(ient)=iPhi+lx2
+!            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+!            ient=ient+1
 
             ! Neumann BC:  x3 current
 !            ir(ient)=iPhi
@@ -164,6 +202,25 @@ contains
 !            ic(ient)=iPhi+lx2
 !            M(ient)=-SigPBC3(ix2,ix3)/dx3all(ix3+1)
 !            ient=ient+1
+
+            ! Neumann BC:  combined x2,x3 current                                  
+            ir(ient)=iPhi
+            ic(ient)=iPhi-1
+            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
+            M(ient)=M(ient)- SigHBC3(ix2,ix3)/dx2all(ix2)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi
+            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)+SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            M(ient)=M(ient)+ SigPBC3(ix2,ix3)/dx3all(ix3+1) + SigHBC3(ix2,ix3)/dx2all(ix2)
+            ient=ient+1
+
+            ir(ient)=iPhi
+            ic(ient)=iPhi+lx2
+            M(ient)=-SigHBC2(ix2,ix3)/dx3all(ix3+1)
+            M(ient)=M(ient)- SigPBC3(ix2,ix3)/dx3all(ix3+1)
+            ient=ient+1
 
             ! Dirichlet BC: set potential
 !            ir(ient)=iPhi
