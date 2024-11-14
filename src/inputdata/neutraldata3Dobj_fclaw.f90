@@ -35,6 +35,7 @@ type, extends(neutraldata3D), abstract :: neutraldata3D_fclaw
 
     ! overriding procedures
     procedure :: update
+    procedure :: setptrs_grid
 
     ! Defined in class extensions
     !procedure :: init_storage
@@ -78,7 +79,8 @@ contains
   end subroutine set_sizeflag
 
 
-  !> set pointer variables to locations for storage of interpolated data (3D always for neutral input)
+  !> set pointer variables to locations for storage of interpolated data (3D always for neutral input).  For extensions
+  !    of this type we do not need/have "previous" or "next" data
   subroutine setptrs_grid(self)
     class(neutraldata3D_fclaw), intent(inout) :: self
 
