@@ -3,7 +3,7 @@ submodule(gemini3d_config) config_nml
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
-use filesystem, only : make_absolute
+use filesystem, only : absolute
 
 implicit none (type, external)
 
@@ -13,9 +13,9 @@ contains
     !! Reads simulation configuration file in .nml
     !! Note that it is best to rewind the file before any read operation, otherwise if the file pointer is already
     !! past the group of interest it will (may?) miss that group and return junk.
-    
+
     integer :: u, i
-    
+
     integer :: ymd(3)
     real(wp) :: UTsec0
     real(wp) :: tdur
@@ -42,7 +42,7 @@ contains
     logical :: flagneuBG=.false.
     real(wp) :: dtneuBG
     integer :: msis_version
-    
+
     real(wp) :: PhiWBG,W0BG
     logical :: flagJpar
     real(wp) :: magcap
@@ -54,7 +54,7 @@ contains
     logical :: flagnodivJ0
     integer :: diff_num_flux
     real(wp) :: kappa, bimax_frac, W0_char
-    
+
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
     namelist /files/ file_format, indat_size, indat_grid, indat_file
     namelist /flags/ potsolve, flagperiodic, flagoutput
@@ -77,12 +77,12 @@ contains
     namelist /solflux/ dtsolflux,solfluxdir
     namelist /neutralBG_file/ dtneutralBGfile, neutralBGdir
     namelist /fang_pars/ diff_num_flux, kappa, bimax_frac, W0_char
-    
+
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
-    
+
     open(newunit=u, file=cfg%infile, status='old', action='read')
-    
+
     read(u, nml=base, iostat=i)
     call check_nml_io(i, cfg%infile, "base")
     cfg%ymd0 = ymd
@@ -92,18 +92,18 @@ contains
     cfg%activ = activ
     cfg%tcfl = tcfl
     cfg%Teinf = Teinf
-    
+
     rewind(u)
     read(u, nml=flags, iostat=i)
     call check_nml_io(i, cfg%infile, "flags")
     cfg%potsolve = potsolve
     cfg%flagperiodic = flagperiodic
     cfg%flagoutput = flagoutput
-    
+
     rewind(u)
     read(u, nml=files, iostat=i)
     call check_nml_io(i, cfg%infile, "files")
-    
+
     !> auto file_format if not specified
     if (len_trim(file_format) > 0) then
       cfg%out_format = trim(file_format)
@@ -111,18 +111,18 @@ contains
       file_format = suffix(indat_size)
       cfg%out_format = file_format(2:)
     endif
-    
+
     !> absolute paths or paths relative to cfg%outdir
-    cfg%indatsize = make_absolute(expand_envvar(indat_size), cfg%outdir)
-    cfg%indatgrid = make_absolute(expand_envvar(indat_grid), cfg%outdir)
-    cfg%indatfile = make_absolute(expand_envvar(indat_file), cfg%outdir)
-    
+    cfg%indatsize = absolute(expand_envvar(indat_size), cfg%outdir)
+    cfg%indatgrid = absolute(expand_envvar(indat_grid), cfg%outdir)
+    cfg%indatfile = absolute(expand_envvar(indat_file), cfg%outdir)
+
     if (namelist_exists(u, "neutral_perturb", verbose)) then
       cfg%flagdneu = 1
       rewind(u)
       read(u, nml=neutral_perturb, iostat=i)
       call check_nml_io(i, cfg%infile, "neutral_perturb")
-      cfg%sourcedir = make_absolute(expand_envvar(source_dir), cfg%outdir)
+      cfg%sourcedir = absolute(expand_envvar(source_dir), cfg%outdir)
       cfg%interptype = interptype
       cfg%sourcemlat = sourcemlat
       cfg%sourcemlon = sourcemlon
@@ -134,37 +134,37 @@ contains
       cfg%flagdneu = 0
       cfg%sourcedir = ""
     endif
-    
+
     if (namelist_exists(u, "precip", verbose)) then
       cfg%flagprecfile = 1
       rewind(u)
       read(u, nml=precip, iostat=i)
       call check_nml_io(i, cfg%infile, "precip")
-      cfg%precdir = make_absolute(expand_envvar(prec_dir), cfg%outdir)
+      cfg%precdir = absolute(expand_envvar(prec_dir), cfg%outdir)
       cfg%dtprec = dtprec
     else
       cfg%flagprecfile = 0
       cfg%precdir = ""
     endif
-    
+
     if (namelist_exists(u, "efield", verbose)) then
       cfg%flagE0file = 1
       rewind(u)
       read(u, nml=efield, iostat=i)
       call check_nml_io(i, cfg%infile, "efield")
-      cfg%E0dir = make_absolute(expand_envvar(E0_dir), cfg%outdir)
+      cfg%E0dir = absolute(expand_envvar(E0_dir), cfg%outdir)
       cfg%dtE0 = dtE0
     else
       cfg%flagE0file = 0
       cfg%E0dir = ""
     endif
-    
+
     if (namelist_exists(u, "solflux", verbose)) then
       cfg%flagsolfluxfile = 1
       rewind(u)
       read(u, nml=solflux, iostat=i)
       call check_nml_io(i, cfg%infile, "solflux")
-      cfg%solfluxdir = make_absolute(expand_envvar(solfluxdir), cfg%outdir)
+      cfg%solfluxdir = absolute(expand_envvar(solfluxdir), cfg%outdir)
       cfg%dtsolflux = dtsolflux
     else
       cfg%flagsolfluxfile = 0
@@ -176,13 +176,13 @@ contains
       rewind(u)
       read(u, nml=solflux, iostat=i)
       call check_nml_io(i, cfg%infile, "neutralBG_file")
-      cfg%neutralBGdir = make_absolute(expand_envvar(neutralBGdir), cfg%outdir)
+      cfg%neutralBGdir = absolute(expand_envvar(neutralBGdir), cfg%outdir)
       cfg%dtneutralBG = dtneutralBGfile
     else
       cfg%flagneutralBGfile = 0
       cfg%neutralBGdir = ""
     endif
-    
+
     if (namelist_exists(u, "fang", verbose)) then
       rewind(u)
       read(u, nml=fang, iostat=i)
@@ -207,7 +207,7 @@ contains
       cfg%bimax_frac = 1._wp ! Maxwellian
       cfg%W0_char = 3000._wp ! same as W0BG default
     endif
-    
+
     if (namelist_exists(u, "glow", verbose)) then
       cfg%flagglow = 1
       rewind(u)
@@ -218,7 +218,7 @@ contains
     else
       cfg%flagglow = 0
     endif
-    
+
     !> EIA (optional)
     if (namelist_exists(u,'EIA')) then
       rewind(u)
@@ -229,7 +229,7 @@ contains
     else
       cfg%flagEIA=.false.
     end if
-    
+
     !> neural background (optional)
     if (namelist_exists(u,'neutral_BG')) then
       rewind(u)
@@ -242,7 +242,7 @@ contains
       cfg%flagneuBG=.false.
       cfg%msis_version = 0
     end if
-    
+
     !> precip background (optional)
     if (namelist_exists(u,'precip_BG')) then
       rewind(u)
@@ -254,7 +254,7 @@ contains
       cfg%PhiWBG=1e-3_wp
       cfg%W0BG=3000
     end if
-    
+
     !> parallel current density (optional)
     if (namelist_exists(u,'Jpar')) then
       rewind(u)
@@ -264,7 +264,7 @@ contains
     else
       cfg%flagJpar=.true.
     end if
-    
+
     !> inertial capacitance (optional)
     if (namelist_exists(u,'capacitance')) then
       rewind(u)
@@ -275,7 +275,7 @@ contains
     else
       cfg%flagcap=0    !default to zero capacitance
     end if
-    
+
     !> diffusion solve type (optional). i.e. to switch between backward Euler and TRBDF2
     if (namelist_exists(u,'diffusion')) then
       rewind(u)
@@ -285,7 +285,7 @@ contains
     else
       cfg%diffsolvetype=2     !default to TRBDF2 - it almost always works
     end if
-    
+
     !> information about milestone outputs (optional)
     if (namelist_exists(u,'milestone')) then
       rewind(u)
@@ -295,7 +295,7 @@ contains
     else
       cfg%mcadence = -1     !default to no milestones (<0 is a sentinel value)
     end if
-    
+
     !> whether or not to include gravitational terms in drift and potential source equations
     if (namelist_exists(u,'gravdrift')) then
       rewind(u)
@@ -305,7 +305,7 @@ contains
     else
       cfg%flaggravdrift=.false.     !by default do not include grav currents and drifts
     end if
-    
+
     !> whether or not to allow the grid to drift at the ExB speed
     if (namelist_exists(u,'lagrangian')) then
       rewind(u)
@@ -315,7 +315,7 @@ contains
     else
       cfg%flaglagrangian=.false.
     end if
-    
+
     !> whether or not to use pressure terms in perp momentum
     if (namelist_exists(u,'diamagnetic')) then
       rewind(u)
@@ -325,7 +325,7 @@ contains
     else
       cfg%flagdiamagnetic=.false.
     end if
-    
+
     if (namelist_exists(u,'nodivJ0')) then
       rewind(u)
       read(u,nml=nodivJ0,iostat=i)
@@ -334,29 +334,29 @@ contains
     else
       cfg%flagnodivJ0=.false.
     end if
-    
+
     close(u)
   end procedure read_nml
-  
-  
+
+
   logical function namelist_exists(u, nml, verbose)
     !! determines if Namelist exists in file
-    
+
     character(*), intent(in) :: nml    ! FIXME:  is it bad to use a keyword as a variable name?
     integer, intent(in) :: u
     logical, intent(in), optional :: verbose
-    
+
     logical :: debug
     integer :: i
     character(256) :: line  !< arbitrary length
-    
+
     debug = .false.
     if(present(verbose)) debug = verbose
-    
+
     namelist_exists = .false.
-    
+
     rewind(u)
-    
+
     do
       read(u, '(A)', iostat=i) line
       if(i/=0) exit
@@ -367,28 +367,28 @@ contains
       end if
     end do
     rewind(u)
-    
+
     if (debug) print *, 'namelist ', nml, namelist_exists
   end function namelist_exists
-  
-  
+
+
   subroutine check_nml_io(i, filename, namelist)
     !! checks for EOF and gives helpful error
     !! this accommodates non-Fortran 2018 error stop with variable character
-    
+
     integer, intent(in) :: i
     character(*), intent(in) :: filename
     character(*), intent(in), optional :: namelist
-    
+
     character(:), allocatable :: nml, msg
-    
+
     if(i==0) return
-    
+
     nml = ""
     if(present(namelist)) nml = namelist
-    
+
     if (is_iostat_end(i)) error stop "namelist " // nml // ': ensure there is a trailing blank line in ' // filename
-    
+
     msg = ""
     select case (get_compiler_vendor())
     case ("Intel")
@@ -407,10 +407,10 @@ contains
         msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"
       end select
     end select
-    
-    
+
+
     if (len(msg)==0) write(stderr,*) "namelist read error code",i
-    
+
     error stop 'namelist ' // nml // " from " // filename // " problem: " // msg
   end subroutine check_nml_io
 end submodule config_nml
