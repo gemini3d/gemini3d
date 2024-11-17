@@ -9,6 +9,10 @@
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_COMPILE_WARNING_AS_ERROR": false
+  },
+  "environment": {
+    "CTEST_NO_TESTS_ACTION": "error",
+    "CTEST_PARALLEL_LEVEL": "0"
   }
 },
 {
