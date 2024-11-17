@@ -40,9 +40,6 @@ jobs:
         hwm14: [false]
         os: [ubuntu-24.04]
         gcc: [12, 13, 14]
-        # include:
-        # - os: macos-latest
-        #   gcc: 13
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -89,7 +86,6 @@ jobs:
     - uses: ./.github/workflows/composite-linux
 
 
-
   gcc-old:
     timeout-minutes: 30
 
@@ -110,5 +106,36 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - uses: ./.github/workflows/composite-pkg
+    - uses: ./.github/workflows/composite-linux
+
+
+  macos:
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        hwm14: [false]
+        compiler: [ {cpp: clang++, c: clang, fc: gfortran-14 },
+                    {cpp: g++-14, c: gcc-14, fc: gfortran-14 }]
+
+    env:
+      CC: ${{ matrix.compiler.c }}
+      CXX: ${{ matrix.compiler.cpp }}
+      FC: ${{ matrix.compiler.fc }}
+      CMAKE: cmake
+      CTEST: ctest
+
+    runs-on: macos-latest
+
+    steps:
+
+    - name: install Flang
+      if: ${{ matrix.compiler.fc == 'flang-new' }}
+      run: brew install flang
+
+    - uses: actions/checkout@v4
+
     - uses: ./.github/workflows/composite-pkg
     - uses: ./.github/workflows/composite-linux
