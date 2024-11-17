@@ -87,8 +87,9 @@ TR(ix1)=Ts(ix1)/(dt/2)+E(ix1) &
 
 
 !> INTERIOR GRID POINTS
-do concurrent (ix1=3:lx1-2)
-  !! do concurrent OK because only indexing already defined things
+do ix1=3,lx1-2
+!! removed do concurrent to avoid oneAPI compiler ICE #5623
+!! do concurrent OK because only indexing already defined things
   M(ll+5,ix1-2) = 0
   !! ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2 &        !ix1-1
@@ -169,7 +170,8 @@ TRBDF21D(ix1)=E(ix1) &
 
 
 !> INTERIOR GRID POINTS
-do concurrent (ix1=3:lx1-2)
+do ix1=3,lx1-2
+!! removed do concurrent to avoid oneAPI compiler ICE #5623
   M(ll+5,ix1-2)=0                                               !ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &        !ix1-1
              +B(ix1)/(dx1(ix1+1)+dx1(ix1))
@@ -281,7 +283,8 @@ M(ll+1,ix1+2)=0
 
 
 !> INTERIOR GRID POINTS
-do concurrent (ix1=3:lx1-2)
+do ix1=3,lx1-2
+!! removed do concurrent to avoid oneAPI compiler ICE #5623
   M(ll+5,ix1-2) = 0
   !! ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
