@@ -113,9 +113,12 @@ contains
     endif
 
     !> absolute paths or paths relative to cfg%outdir
+    ! print '(a)', "TRACE: indat_size " // expand_envvar(indat_size)
+    ! print '(a)', "TRACE: outdir = " // cfg%outdir
     cfg%indatsize = absolute(expand_envvar(indat_size), cfg%outdir)
     cfg%indatgrid = absolute(expand_envvar(indat_grid), cfg%outdir)
     cfg%indatfile = absolute(expand_envvar(indat_file), cfg%outdir)
+    ! print '(a)', "TRACE: absolute(indat_size) " // cfg%indatsize
 
     if (namelist_exists(u, "neutral_perturb", verbose)) then
       cfg%flagdneu = 1

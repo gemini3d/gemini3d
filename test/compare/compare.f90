@@ -120,12 +120,22 @@ integer, intent(out) :: lx1, lx2all, lx3all
 
 integer :: R_lx1, R_lx2all, R_lx3all
 
-call get_simsize3(ref // "/inputs/simsize.h5", R_lx1, R_lx2all, R_lx3all)
-call get_simsize3(new // "/inputs/simsize.h5", lx1, lx2all, lx3all)
+character(:), allocatable :: ref_size, new_size
 
-if(lx1 /= R_lx1) error stop 'lx1 != ref: ' // new
-if(lx2all /= R_lx2all) error stop 'lx2all != ref: ' // new
-if(lx3all /= R_lx3all) error stop 'lx3all != ref: ' // new
+new_size = new // "/inputs/simsize.h5"
+ref_size = ref // "/inputs/simsize.h5"
+
+print '(a)', "check_simsize:  reference " // ref_size
+call get_simsize3(ref_size, R_lx1, R_lx2all, R_lx3all)
+
+print '(a)', "check_simsize:  new " // new_size
+call get_simsize3(new_size, lx1, lx2all, lx3all)
+
+if(lx1 /= R_lx1) error stop 'lx1 != ref: ' // new_size
+if(lx2all /= R_lx2all) error stop 'lx2all != ref: ' // new_size
+if(lx3all /= R_lx3all) error stop 'lx3all != ref: ' // new_size
+
+print '(a,2x,i0,1x,i0,1x,i0)', "check_simsize:  OK: " // new_size, lx1, lx2all, lx3all
 
 end subroutine check_simsize
 
