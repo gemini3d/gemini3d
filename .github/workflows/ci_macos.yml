@@ -1,0 +1,56 @@
+name: ci_macos
+
+env:
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CMAKE_BUILD_PARALLEL_LEVEL: 4
+  CMAKE_INSTALL_PREFIX: ~/libs
+  CMAKE_PREFIX_PATH: ~/libs
+
+on:
+  push:
+    paths:
+      - "**.c"
+      - "**.cpp"
+      - "**.f90"
+      - "**.F90"
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - "CMakePresets.json"
+      - "cmake/libraries.json"
+      - "!cmake/intel.cmake"
+      - "!cmake/cray.cmake"
+      - ".github/workflows/ci_macos.yml"
+
+
+jobs:
+
+  macos:
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        hwm14: [false]
+        compiler: [ {cpp: clang++, c: clang, fc: gfortran-14 },
+                    {cpp: g++-14, c: gcc-14, fc: gfortran-14 }]
+  # flang-new not yet working
+
+    env:
+      CC: ${{ matrix.compiler.c }}
+      CXX: ${{ matrix.compiler.cpp }}
+      FC: ${{ matrix.compiler.fc }}
+      CMAKE: cmake
+      CTEST: ctest
+
+    runs-on: macos-latest
+
+    steps:
+
+    - name: install Flang
+      if: ${{ matrix.compiler.fc == 'flang-new' }}
+      run: brew install flang
+
+    - uses: actions/checkout@v4
+
+    - uses: ./.github/workflows/composite-pkg
+    - uses: ./.github/workflows/composite-linux

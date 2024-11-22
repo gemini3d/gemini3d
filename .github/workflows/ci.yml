@@ -18,15 +18,9 @@ on:
       - "CMakePresets.json"
       - "cmake/libraries.json"
       - "!cmake/intel.cmake"
-      - ".github/workflows/**"
+      - "!cmake/cray.cmake"
+      - ".github/workflows/ci.yml"
       - "!docs/**"
-      - "!**/cray.cmake"
-      - "mumps/**"
-      - "ffilesystem/**"
-      - "msis/**"
-      - "glow/**"
-      - "h5fortran/**"
-      - "hwm14/**"
 
 
 jobs:
@@ -106,37 +100,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-pkg
-    - uses: ./.github/workflows/composite-linux
-
-
-  macos:
-    timeout-minutes: 30
-
-    strategy:
-      fail-fast: false
-      matrix:
-        hwm14: [false]
-        compiler: [ {cpp: clang++, c: clang, fc: gfortran-14 },
-                    {cpp: g++-14, c: gcc-14, fc: gfortran-14 }]
-  # flang-new not yet working
-
-    env:
-      CC: ${{ matrix.compiler.c }}
-      CXX: ${{ matrix.compiler.cpp }}
-      FC: ${{ matrix.compiler.fc }}
-      CMAKE: cmake
-      CTEST: ctest
-
-    runs-on: macos-latest
-
-    steps:
-
-    - name: install Flang
-      if: ${{ matrix.compiler.fc == 'flang-new' }}
-      run: brew install flang
-
-    - uses: actions/checkout@v4
-
     - uses: ./.github/workflows/composite-pkg
     - uses: ./.github/workflows/composite-linux
