@@ -122,8 +122,8 @@ UTsec = new%UTsec0
 
 do while (t <= new%tdur)
 
-  new_file = date_filename(new%precdir, ymd, UTsec) // suffix(new%indatsize)
-  ref_file = date_filename(ref%precdir, ymd, UTsec) // suffix(ref%indatsize)
+  new_file = date_filename(new%precdir, ymd, UTsec) // ".h5"
+  ref_file = date_filename(ref%precdir, ymd, UTsec) // ".h5"
 
   if(.not. is_file(new_file)) error stop "compare:check_precip: new precip file not found: " // new_file
   if(.not. is_file(ref_file)) error stop "compare:check_precip: ref precip file not found: " // ref_file
@@ -190,8 +190,8 @@ UTsec = new%UTsec0
 
 do while (t <= new%tdur)
 
-  new_file = date_filename(new%E0dir, ymd, UTsec) // suffix(new%indatsize)
-  ref_file = date_filename(ref%E0dir, ymd, UTsec) // suffix(ref%indatsize)
+  new_file = date_filename(new%E0dir, ymd, UTsec) // ".h5"
+  ref_file = date_filename(ref%E0dir, ymd, UTsec) // ".h5"
 
   if(.not. is_file(new_file)) error stop "compare:check_Efield: new Efield file not found: " // new_file
   if(.not. is_file(ref_file)) error stop "compare:check_Efield: ref Efield file not found: " // ref_file

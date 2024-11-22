@@ -173,6 +173,7 @@ block
 
   select case (suffix(cfg%indatsize))
   case ('.dat')
+    print '(a)', "WARNING: Magcalc .dat input format is long-deprecated and may not work."
     open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
     read(u) lpoints    !size of coordinates for field points
     if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints

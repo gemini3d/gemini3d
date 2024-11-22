@@ -126,6 +126,7 @@ contains
     case ('.nml')
       call read_nml(cfg, verbose)
     case ('.ini')
+      print '(a)', "WARNING: .ini files are long-deprecated and may not work."
       call read_ini(cfg)
     case default
       error stop 'ERROR:gemini3d:config: not sure how to read Gemini3D configuration file: ' // cfg%infile

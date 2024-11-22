@@ -35,6 +35,8 @@ runs:
     shell: bash
     run: $CTEST --preset release -L unit
 
-  # - name: Release core test
-  #   shell: bash
-  #   run: $CTEST --preset release -LE unit -E 3d
+  - name: Release core test
+    shell: bash
+    run: $CTEST --preset release -LE unit -R "(2dew_.*fang$|2dns_.*fang$)"
+
+    # run: $CTEST --preset release -LE unit -E 3d

@@ -28,8 +28,8 @@ t = 0
 do while (t <= cfg%tdur)
 
   ok = check_out(cfg, &
-    new_file=date_filename(new_path, ymd, UTsec) // suffix(cfg%indatsize), &
-    ref_file=date_filename(ref_path, ymd, UTsec) // suffix(cfg%indatsize), &
+    new_file=date_filename(new_path, ymd, UTsec) // ".h5", &
+    ref_file=date_filename(ref_path, ymd, UTsec) // ".h5", &
     lx1=lx1, lx2all=lx2all, lx3all=lx3all, P=P)
 
   if(.not. ok) then
