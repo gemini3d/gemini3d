@@ -7,7 +7,7 @@ program gemini_compare
 !! if the values are mismatched sufficiently, we print a message and optionally plot the difference to PNG file(s).
 
 use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_grid, params
-use filesystem, only : expanduser, same_file
+use filesystem, only : expanduser, same_file, is_dir
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
@@ -28,9 +28,13 @@ call get_command_argument(1, buf, status=i)
 if (i/=0) error stop help
 new_path = expanduser(buf)
 
+if(.not. is_dir(new_path)) error stop "ERROR:gemini_compare: new_path is not a directory: " // new_path
+
 call get_command_argument(2, buf, status=i)
 if (i/=0) error stop help
 ref_path = expanduser(buf)
+
+if(.not. is_dir(ref_path)) error stop "ERROR:gemini_compare: ref_path is not a directory: " // ref_path
 
 if (same_file(new_path, ref_path)) error stop "paths must be different: " // new_path // " is equivalent to " // ref_path
 
