@@ -1,14 +1,15 @@
 !> Utility procedures not involving mpi communication (directly at least)
 module potential_nompi
 
-use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
+use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB, Re
 use grid, only: gridflag, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use calculus, only: grad3d2, grad3d3
+use efielddataobj, only: efielddata
 
 implicit none (type, external)
 private
-public :: velocities_nompi,set_fields_test
+public :: velocities_nompi,set_fields_test,compute_BGEfields_nompi
 
 contains
   !> This is a subroutine to compute velocities assuming that the primary state variables n,v,T have
@@ -104,4 +105,58 @@ contains
       end do
     end do
   end subroutine set_fields_test
+
+
+  subroutine compute_BGEfields_nompi(x,E02,E03,efield)
+    !> Returns a background electric field calculation for use by external program units.
+    !   This requires that all necessary files, etc. have already been loaded into module
+    !   variables.  This is only to be called by a root process as it deals with fullgrid
+    !   data.  An interface for workers and root is in the top-level potential module.  This
+    !   particular bit of code is needed both when setting boundary conditions and also when
+    !   initializing background electric field; hence it is a subroutine as opposed to block of code
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:), intent(inout) :: E02,E03
+    !! intent(out)
+    type(efielddata), intent(inout) :: efield
+    integer :: ix1,ix2,ix3
+    real(wp) :: h2ref,h3ref
+    integer :: ix1ref,ix2ref,ix3ref    ! reference locations for field line mapping
+
+    !! the only danger here is that this routine could be called before any module data are loaded
+    !   so check just to make sure it isn't being misused in this way
+    !!    FIXME: does this accomplish anything???
+    if (.not. associated(efield%E0xinow)) error stop  &
+          'potentialBCs:compute_rootBGEfields is trying to access unallocated module data'
+
+    !! recompute reference locations here (also computed in object)
+    if (lx2 > 1 .and. lx3>1) then ! 3D sim
+      ix2ref = lx2/2      !note integer division
+      ix3ref = lx3/2
+    else if (lx2==1 .and. lx3>1) then
+      ix2ref = 1
+      ix3ref=lx3/2
+    else if (lx2>1 .and. lx3==1) then
+      ix2ref=lx2/2
+      ix3ref=1
+    else
+      error stop 'Unable to orient boundary conditions for electric potential'
+    endif
+
+    !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
+    !! These are the coordinates for inputs varying along axes 2,3
+    ix1ref = minloc(abs(x%r(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)
+
+    !! scale electric fields at some reference point into the full grid
+    do ix3=1,lx3
+      do ix2=1,lx2
+        h2ref=x%h2(ix1ref,ix2,ix3)
+        !! define a reference metric factor for a given field line
+        h3ref=x%h3(ix1ref,ix2,ix3)
+        do ix1=1,lx1
+          E02(ix1,ix2,ix3)=efield%E0xinow(ix2,ix3)*h2ref/x%h2(ix1,ix2,ix3)
+          E03(ix1,ix2,ix3)=efield%E0yinow(ix2,ix3)*h3ref/x%h3(ix1,ix2,ix3)
+        end do
+      end do
+    end do
+  end subroutine compute_BGEfields_nompi
 end module potential_nompi

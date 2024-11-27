@@ -48,7 +48,7 @@ use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspe
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
-use potential_nompi, only: set_fields_test,velocities_nompi
+use potential_nompi, only: set_fields_test,velocities_nompi,compute_BGEfields_nompi
 use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
@@ -359,6 +359,8 @@ contains
     deallocate(intvars%Vminx1slab,intvars%Vmaxx1slab)
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
+
+    ! FIXME: why are we not deallocating intvars%eprecip and intvars%efield?
 
     deallocate(intvars)
   end subroutine gemini_work_dealloc
@@ -1234,7 +1236,9 @@ contains
   end subroutine solar_ionization_in
 
 
-  !> For purposes of testing we just want to set some values for the electric fields and comput drifts.
+  !> For purposes of testing we just want to set some values for the electric fields and compute drifts.  
+  !    In principle this is useful for doing simulations where the potential (or background field) is
+  !    specified and a potential solution is not required.  
   subroutine electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -1257,6 +1261,18 @@ contains
     allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
     call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+
+    if (cfg%flagE0file==1) then
+      call compute_BGEfields_nompi(x,intvars%E02,intvars%E03,intvars%efield)
+      intvars%E01=0._wp
+      E1(1:lx1,1:lx2,1:lx3)=intvars%E01
+      E2(1:lx1,1:lx2,1:lx3)=intvars%E02
+      E3(1:lx1,1:lx2,1:lx3)=intvars%E03
+    else 
+      E1=0._wp
+      E2=0._wp
+      E3=0._wp
+    end if
     call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)

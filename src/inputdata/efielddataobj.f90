@@ -45,6 +45,8 @@ type, extends(inputdata) :: efielddata
   real(wp), dimension(:), pointer :: Vminx2isnow,Vmaxx2isnow    !only slices because field lines (x1-dimension) are equipotentials
   real(wp), dimension(:), pointer :: Vminx3isnow,Vmaxx3isnow
 
+  logical :: flagrootonly=.true.                                 ! by default we assume that only root is creating/managing this object
+                                                                 !   some uses of ForestGEMINI will subvert this.  
   contains
     ! overriding procedures
     procedure :: set_sizes=>set_sizes_efield
@@ -59,6 +61,16 @@ type, extends(inputdata) :: efielddata
 end type efielddata
 
 contains
+  !> Need to tell the object whether or not it will be created by just the root process or also by all workers; this only
+  !    has to be done if you aren't using the default case (true, i.e. root-only object)
+  subroutine set_flagroot(self, flagtargetvalue)
+    class(efielddata), intent(inout) :: self
+    logical, intent(in) :: flagtargetvalue
+
+    self%flagrootonly=flagtargetvalue
+  end subroutine set_flagroot
+
+
   !> need to override set_sizes so to account for fact that target interpolation is to a 2D grid, by default object will
   !    assume 3D and get the sizes from the simulation grid
   subroutine set_sizes_efield(self, &
@@ -95,7 +107,11 @@ contains
     !    ! dipolemesh mesh permuted ~alt,lat,lon, whereas inputdata organized lon,lat
     !  class default
         self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
-        self%lc2i=x%lx2all; self%lc3i=x%lx3all;
+    if (self%flagrootonly) then
+      self%lc2i=x%lx2all; self%lc3i=x%lx3all;
+    else
+      self%lc2i=x%lx2; self%lc3i=x%lx3;
+    end if
     !end select
 
     ! check that the user is trying something sensible
@@ -266,58 +282,116 @@ contains
 
     ! source arrays in the grid object may have ghost cells; these are offsets for arrays that do not
     !   preserve lbound and ubound, e.g. array(:,1,1) and the like
-    ix1offset=1-lbound(x%rall,1)
-    ix2offset=1-lbound(x%rall,2)
-    ix3offset=1-lbound(x%rall,3)
+    if (self%flagrootonly) then
+      ix1offset=1-lbound(x%rall,1)
+      ix2offset=1-lbound(x%rall,2)
+      ix3offset=1-lbound(x%rall,3)
 
-    !! reference locations for determining points onto which we are interpolating
-    !! these are grid specific, not object specific...
-    if (x%lx2all > 1 .and. x%lx3all>1) then ! 3D sim
-      ix2ref = x%lx2all/2      !note integer division
-      ix3ref = x%lx3all/2
-    else if (x%lx2all==1 .and. x%lx3all>1) then
-      ix2ref = 1
-      ix3ref=x%lx3all/2
-    else if (x%lx2all>1 .and. x%lx3all==1) then
-      ix2ref=x%lx2all/2
-      ix3ref=1
+      !! reference locations for determining points onto which we are interpolating
+      !! these are grid specific, not object specific...
+      if (x%lx2all > 1 .and. x%lx3all>1) then ! 3D sim
+        ix2ref = x%lx2all/2      !note integer division
+        ix3ref = x%lx3all/2
+      else if (x%lx2all==1 .and. x%lx3all>1) then
+        ix2ref = 1
+        ix3ref=x%lx3all/2
+      else if (x%lx2all>1 .and. x%lx3all==1) then
+        ix2ref=x%lx2all/2
+        ix3ref=1
+      else
+        error stop 'Unable to orient boundary conditions for electric potential'
+      endif
     else
-      error stop 'Unable to orient boundary conditions for electric potential'
-    endif
+      ix1offset=1-lbound(x%r,1)
+      ix2offset=1-lbound(x%r,2)
+      ix3offset=1-lbound(x%r,3)
+
+      !! FIXME: This probably won't work well with dipole grids due to using different
+      !           reference locations for each patch.  
+      if (x%lx2 > 1 .and. x%lx3>1) then ! 3D sim
+        ix2ref = x%lx2/2      !note integer division
+        ix3ref = x%lx3/2
+      else if (x%lx2==1 .and. x%lx3>1) then
+        ix2ref = 1
+        ix3ref=x%lx3/2
+      else if (x%lx2>1 .and. x%lx3==1) then
+        ix2ref=x%lx2/2
+        ix3ref=1
+      else
+        error stop 'Unable to orient boundary conditions for electric potential'
+      endif
+    end if
+
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     !! These are the coordinates for inputs varying along axes 2,3
-    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
-    ix1ref=ix1ref-ix1offset
-    do ix3=1,lx3all
-      do ix2=1,lx2all
-        iflat=(ix3-1)*lx2all+ix2
-        self%coord2iax23(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
-        self%coord3iax23(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+    if (self%flagrootonly) then
+      ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
+      ix1ref=ix1ref-ix1offset
+      do ix3=1,lx3all
+        do ix2=1,lx2all
+          iflat=(ix3-1)*lx2all+ix2
+          self%coord2iax23(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
+          self%coord3iax23(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+        end do
       end do
-    end do
-    if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
-                                     minval(self%coord3iax23),maxval(self%coord3iax23)
-    if (debug) print *, 'Grid has size:  ',iflat
-
-    if (self%flagdipmesh) then
-      !! for electric field input data we also have some things that vary along axis 3 only
-      do ix2=1,x%lx2all    ! note mangling ix2->ix3
-        self%coord3iax3(ix2)=90-x%thetaall(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
-      end do
-      !! for BCs varing along axis 2 only
-      do ix3=1,x%lx3all    ! note mangling ix3->ix2
-        self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
-      end do
+      if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
+                                       minval(self%coord3iax23),maxval(self%coord3iax23)
+      if (debug) print *, 'Grid has size:  ',iflat
+  
+      if (self%flagdipmesh) then
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix2=1,x%lx2all    ! note mangling ix2->ix3
+          self%coord3iax3(ix2)=90-x%thetaall(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix3=1,x%lx3all    ! note mangling ix3->ix2
+          self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
+        end do
+      else
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix3=1,x%lx3all
+          self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix2=1,x%lx2all
+          self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
+        end do
+      end if
     else
-      !! for electric field input data we also have some things that vary along axis 3 only
-      do ix3=1,x%lx3all
-        self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
+      ix1ref = minloc(abs(x%r(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)    ! includes ghost cells if x%rall has ghost cells
+      ix1ref=ix1ref-ix1offset
+      do ix3=1,lx3
+        do ix2=1,lx2
+          iflat=(ix3-1)*lx2+ix2
+          self%coord2iax23(iflat)=x%phi(ix1ref,ix2,ix3)*180/pi
+          self%coord3iax23(iflat)=90-x%theta(ix1ref,ix2,ix3)*180/pi
+        end do
       end do
-      !! for BCs varing along axis 2 only
-      do ix2=1,x%lx2all
-        self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
-      end do
+      if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
+                                       minval(self%coord3iax23),maxval(self%coord3iax23)
+      if (debug) print *, 'Grid has size:  ',iflat
+  
+      if (self%flagdipmesh) then
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix2=1,x%lx2    ! note mangling ix2->ix3
+          self%coord3iax3(ix2)=90-x%theta(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix3=1,x%lx3    ! note mangling ix3->ix2
+          self%coord2iax2(ix3)=x%phi(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
+        end do
+      else
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix3=1,x%lx3
+          self%coord3iax3(ix3)=90-x%theta(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix2=1,x%lx2
+          self%coord2iax2(ix2)=x%phi(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
+        end do
+      end if
+
     end if
 
     !! mark coordinates as set
