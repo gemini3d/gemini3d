@@ -77,7 +77,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
-            check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc
+            check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
+            set_electrodynamics_commtype
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -1251,6 +1252,19 @@ contains
   end subroutine solar_ionization_in
 
 
+  !> Manually set the root vs. worker data collection flag in the efielddata object to user-specified value.  
+  subroutine set_electrodynamics_commtype(flagrootonly, intvars)
+    logical, intent(in) :: flagrootonly
+    type(gemini_work), intent(inout) :: intvars
+
+    if (associated(intvars%efield)) then
+      intvars%efield%flagrootonly=flagrootonly
+    else
+      error stop 'Setting electro communication type without first allocating efield class...'
+    end if
+  end subroutine set_electrodynamics_commtype
+
+
   !> For purposes of testing we just want to set some values for the electric fields and compute drifts.  
   !    In principle this is useful for doing simulations where the potential (or background field) is
   !    specified and a potential solution is not required.  
@@ -1264,7 +1278,7 @@ contains
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
     real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
     integer :: lx1,lx2,lx3,lsp
-    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav     !FIXME: use static arrays?
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)

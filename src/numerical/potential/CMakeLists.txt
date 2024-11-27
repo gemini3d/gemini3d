@@ -17,9 +17,9 @@ boundary_conditions/potentialBCs_mumps.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(potential PRIVATE PDEelliptic calculus collision meshobj efielddata interp timeutils mpimod reader const
-inputdata efielddata grid
+inputdata grid
 MPI::MPI_Fortran
 )
 
 add_library(potential_nompi OBJECT potential_nompi.f90)
-target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid)
+target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid efielddata)
