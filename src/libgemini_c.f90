@@ -51,7 +51,7 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
             cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
-            precip_perturb_in, interp3_in, interp2_in, check_finite_output_in
+            precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, set_electrodynamics_commtype
 
 implicit none (type, external)
 
@@ -1017,7 +1017,20 @@ contains
   end subroutine solar_ionization_C
 
 
-  !> call a routine to generate test
+  !> call a routine to generate test, no solve electric field information
+  subroutine set_electrodynamics_commtype_C(flagrootonlyC, intvarsC)  bind(C, name="set_electrodynamics_commtype_C")
+    integer(C_INT), intent(in) :: flagrootonlyC
+    type(c_ptr), intent(in) :: intvarsC
+    type(gemini_work), pointer :: intvars
+    logical :: flagrootonly=.true.
+    
+    call c_f_pointer(intvarsC,intvars)
+    flagrootonly=flagrootonlyC/=0
+    call set_electrodynamics_commtype(flagrootonly, intvars)
+  end subroutine set_electrodynamics_commtype_C
+
+
+  !> call a routine to generate test, no solve electric field information
   subroutine electrodynamics_test_C(cfgC,xtype,xC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC) &
                bind(C, name="electrodynamics_test_C")
     type(c_ptr), intent(in) :: cfgC
