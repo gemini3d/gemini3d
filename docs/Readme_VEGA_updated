@@ -1,4 +1,4 @@
-# GEMINI Setup and Build Guide for ERAU HPC system
+#GEMINI Setup and Build Guide for ERAU HPC system
 
 ## Overview
 This outlines the steps to build and install GEMINI3D and its dependencies on an ERAU HPC system.
@@ -20,7 +20,7 @@ module load intel-oneapi-mpi
 module load gcc/8.5.0-gcc-8.5.0-cokvw3c
 module load cmake
 module load openmpi
-
+```
 ### 2. Clone the GEMINI3D Repository
 Choose the location where you want to download the repository. For this example, we'll use ~/Projects:
 
