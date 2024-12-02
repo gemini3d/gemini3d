@@ -102,7 +102,10 @@ extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, vo
 extern void set_electrodynamics_commtype_C(int*, void**);
 extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**,void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
+extern void init_precipinput_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void precip_perturb_C(void**,void**,int*,void**,double*,double*,int*,double*);
+extern void init_efieldinput_nompi_C(void**, int*, void**, double*, double*, int*, double*, void**);
+extern void efield_perturb_nompi_C(void**,void**,int*,void**,double*,double*,int*,double*);
 extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double**,int*,int*,
 		double*,double*,double*,double**,double**);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,
@@ -121,7 +124,6 @@ extern void init_inputdata_C(void**, int*, void**, double*, double*, int*, doubl
 extern void init_Efieldinput_C(void**, int*, void**, double*, double*, void**, int*, double*);
 extern void pot2perpfield_C(int*, void**, double**);
 extern void BGfield_Lagrangian_C(void**, int*, void**, double**, void**);
-extern void init_precipinput_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void init_neutralperturb_C(double*, void**, int*, void**, void**, int*, double*);
 extern void get_initial_drifts_C(void**, int*, void**, double**, double**, double**, void**);
 extern void neutral_atmos_wind_update_C(void**);
