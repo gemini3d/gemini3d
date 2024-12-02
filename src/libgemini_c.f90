@@ -1017,7 +1017,7 @@ contains
   end subroutine solar_ionization_C
 
 
-  !> call a routine to generate test, no solve electric field information
+  !> this is a way for users to control how the efield data class reads input files (root only vs. all workers)
   subroutine set_electrodynamics_commtype_C(flagrootonlyC, intvarsC)  bind(C, name="set_electrodynamics_commtype_C")
     integer(C_INT), intent(in) :: flagrootonlyC
     type(c_ptr), intent(in) :: intvarsC
