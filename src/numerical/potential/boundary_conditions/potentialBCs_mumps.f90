@@ -29,7 +29,8 @@ contains
     type(efielddata), intent(inout) :: efield
 
     !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
-    if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
+    if ( (mpi_cfg%myid==0 .and. cfg%flagE0file==1) .or. (.not. efield%flagrootonly) ) then    !only root needs these...
+      print*, 'Warning:  initializing efield data...'
       call efield%init(cfg,cfg%E0dir,x,dt,cfg%dtE0,ymd,UTsec)
     end if
   end subroutine init_Efieldinput
