@@ -57,19 +57,21 @@ type, extends(inputdata) :: efielddata
     procedure :: load_data=>load_data_efield
     procedure :: load_grid=>load_grid_efield
     procedure :: load_size=>load_size_efield
+
+    ! final
     final :: destructor
 end type efielddata
 
 contains
-  !> Need to tell the object whether or not it will be created by just the root process or also by all workers; this only
-  !    has to be done if you aren't using the default case (true, i.e. root-only object)
-  subroutine set_flagroot(self, flagtargetvalue)
-    class(efielddata), intent(inout) :: self
-    logical, intent(in) :: flagtargetvalue
-
-    self%flagrootonly=flagtargetvalue
-  end subroutine set_flagroot
-
+!  !> Need to tell the object whether or not it will be created by just the root process or also by all workers; this only
+!  !    has to be done if you aren't using the default case (true, i.e. root-only object)
+!  subroutine set_flagroot(self, flagtargetvalue)
+!    class(efielddata), intent(inout) :: self
+!    logical, intent(in) :: flagtargetvalue
+!
+!    self%flagrootonly=flagtargetvalue
+!  end subroutine set_flagroot
+!
 
   !> need to override set_sizes so to account for fact that target interpolation is to a 2D grid, by default object will
   !    assume 3D and get the sizes from the simulation grid
