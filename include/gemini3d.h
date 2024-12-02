@@ -99,7 +99,7 @@ extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
 extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
-extern void set_electrodynamics_comtype_C(int*, void**);
+extern void set_electrodynamics_commtype_C(int*, void**);
 extern void electrodynamics_test_C(void**,int*,void**,double**,double**,double**,void**);
 extern void get_neutralperturb_interptype_C(void**,int*);
 extern void precip_perturb_C(void**,void**,int*,void**,double*,double*,int*,double*);
