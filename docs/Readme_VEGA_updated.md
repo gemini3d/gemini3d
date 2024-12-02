@@ -1,7 +1,7 @@
-# GEMINI Setup and Build Guide for ERAU HPC system
+# GEMINI Setup Guide for ERAU HPC system
 
 ## Overview
-This outlines the steps to build and install GEMINI3D and its dependencies on an ERAU HPC system.
+This outlines the steps to build and install GEMINI and its dependencies on an ERAU HPC system.
 
 Before building GEMINI, ensure the following dependencies are available:
 - **GCC 8.5.0**
@@ -21,34 +21,36 @@ module load gcc/8.5.0-gcc-8.5.0-cokvw3c
 module load cmake
 module load openmpi
 ```
+
 ### 2. Clone the GEMINI3D Repository
 Choose the location where you want to download the repository. For this example, we'll use ~/Projects:
 
 ```
 cd ~/Projects
-
+```
 Use git to clone the repository:
 ```
 git clone https://github.com/gemini3d/gemini3d.git
-
+```
 Ensure you have git installed and configured before attempting to clone.
 
 ### 3. Build LAPACK Locally
 #### Create a directory for LAPACK under .local
 ```
 mkdir ~/.local/lapack
-
+```
 #### Download the LAPACK source code
 ```
 cd ~/.local/lapack
 git clone https://github.com/Reference-LAPACK/lapack.git
-
+```
 #### Build and install LAPACK
 ```
 cmake -B build -DCMAKE_INSTALL_PREFIX=$HOME/.local/lapack
-cmake --build build -j16 (-j16 specifies the number of cores to use for the build (16 in this case). You can adjust this depending on how many cores your system has.)
+cmake --build build -j16
 cmake --install build
-
+```
+j16 specifies the number of cores to use for the build (16 in this case). You can adjust this depending on how many cores your system has.
 #### Verify Installation
 Confirm the installation by checking the contents of the .local/lapack/ directory.
 
@@ -56,22 +58,27 @@ Confirm the installation by checking the contents of the .local/lapack/ director
 Set the environment variable to point to the installed LAPACK library.
 ```
 export LAPACK_ROOT=$HOME/.local/lapack/
+```
 To make this consistent across sessions, add the line above to your .bashrc
 
 ### 4. Build GEMINI
 Navigate to the cloned gemini3d directory (if not already cloned, perform step 2)
 ```
 cd ~/Projects/gemini3d
-
+```
 #### Run cmake to configure the build
+```
 cmake -B build
-This will configure the build system and generate the necessary files in the build directory. This script will take a few minutes to complete; it will note multiple missing packages but will download source code for these to be compiled during the build step. This step can take up to 10 minutes depending on download times. If this completes successfully you can move on to the compile step:
+```
+This will configure the build system and generate the necessary files in the build directory. This script will take a few minutes to complete; it will note multiple missing packages but will download source code for these to be compiled during the build step. This step can take up to 10 minutes, depending on download times. If this completes successfully, you can move on to the compile step:
 
 #### Compile
-cmake --build build -j16 (adjust j# accordingly based on how many cores your system has)
-A full compile will take approximate 5-10 minutes depending on which packages need to be compiled; you will see lots of warnings but these can be safely ignored. Executables are placed in the build directory and can be run from there.
+```
+cmake --build build -j16
+```
+Adjust j# accordingly based on your system cores. A full compile will take approximately 5-10 minutes, depending on which packages need to be compiled; you will see many warnings, but these can be safely ignored. Executables are placed in the build directory and can be run from there.
 
-## To avoid manually loading the required modules every time you log in, you can add the module load commands to your .bashrc file. This ensures that the modules are automatically loaded when you start a new session.
+To avoid manually loading the required modules every time you log in, add the module load commands to your .bashrc file. This ensures the modules are automatically loaded when you start a new session.
 ```
 # .bashrc
 # Source global definitions
@@ -106,8 +113,9 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
-
-If your system runs .bash_profile on login (as is common in many systems, including Vega), you can include a line in your .bash_profile to source .bashrc. This ensures that the settings and environment variables in .bashrc are applied during login.
+```
+If your system runs .bash_profile on login (as is common in many systems, including VEGA), you can include a line in your .bash_profile to source .bashrc. This ensures that the settings and environment variables in .bashrc are applied during login.
+```
 # .bash_profile
   
 # Get the aliases and functions
@@ -118,11 +126,11 @@ fi
 This checks if .bashrc exists and sources it to apply the environment settings defined there.
 
 # Running GEMINI on the ERAU HPC
-To start an interactive session
+To start an interactive session:
 ```
 qsub -I -l walltime=24:000:00 -l nodes=1:ppn=192
-
-For longer or more expensive simulations you will need to use the queueing system, which requires a script that runs the code to be placed in the build directory where executables reside or by adding the build directory as working directoty. An example of such a script is shown below:
+```
+For longer or more expensive simulations, you will need to use the queueing system, which requires a script that runs the code to be placed in the build directory where executables reside or by adding the build directory as a working directory. An example of such a script is shown below:
 ```
 #!/bin/bash
 # This is comment
@@ -148,4 +156,4 @@ module load openmpi
 
 # Run the program
 mpirun -np $PBS_NP ./gemini.bin ../simulations/mooreOK3D_hemis_medres_corrected_control/
-
+```
