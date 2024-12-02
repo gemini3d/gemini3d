@@ -285,7 +285,6 @@ contains
     ! source arrays in the grid object may have ghost cells; these are offsets for arrays that do not
     !   preserve lbound and ubound, e.g. array(:,1,1) and the like
     if (self%flagrootonly) then
-      print*, 'Warning:  Using root only arrays...'
       ix1offset=1-lbound(x%rall,1)
       ix2offset=1-lbound(x%rall,2)
       ix3offset=1-lbound(x%rall,3)
@@ -305,7 +304,6 @@ contains
         error stop 'Unable to orient boundary conditions for electric potential'
       endif
     else
-      print*, 'Warning:  avoiding root only arrays...'
       ix1offset=1-lbound(x%r,1)
       ix2offset=1-lbound(x%r,2)
       ix3offset=1-lbound(x%r,3)
