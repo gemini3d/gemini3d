@@ -54,6 +54,7 @@ use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use sanity_check, only : check_finite_output
+use potentialBCs_mumps, only: init_Efieldinput, potentialBCs2D_fileinput_nompi !, potentialBCs2D
 
 implicit none (type, external)
 private
@@ -78,7 +79,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
-            set_electrodynamics_commtype
+            set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -661,7 +662,23 @@ contains
   end subroutine init_precipinput_in
 
 
-  !> Wrapper for initialization of electron precipitation data
+  !> initialize electric field input data
+  subroutine init_efieldinput_nompi_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt, t
+    type(gemini_work), intent(inout) :: intvars
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call init_efieldinput(dt,cfg,ymd,UTsec,x,intvars%efield)
+  end subroutine init_efieldinput_nompi_in
+
+
+!  !> initialization procedure needed for MSIS 2.0
+!  subroutine msisinit_in(cfg)
+
+
   subroutine init_solfluxinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -1112,6 +1129,29 @@ contains
       call solfluxBCs(cfg,x,ymd,UTsec,intvars%Iinf)
     end if
   end subroutine solflux_perturb_in
+  
+
+  !> compute boundary conditions for electric field solutions
+  subroutine efield_perturb_nompi_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    type(gemini_cfg), intent(in) :: cfg
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(inout) :: x     ! unit vectors could be deallocated in this procedure
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    !> assign values to the background fields, etc., irrespective of whether or not we do a potential solve
+    if (cfg%flagE0file==1) then
+      call potentialBCs2D_fileinput_nompi(dt,t,ymd,UTsec,cfg,x,intvars%efield,intvars%Vminx1,intvars%Vmaxx1, &
+                                      intvars%Vminx2,intvars%Vmaxx2,intvars%Vminx3,intvars%Vmaxx3, &
+                                      intvars%E01,intvars%E02,intvars%E03,intvars%flagdirich)
+! FIXME not implemented sans mpi yet...
+!    else
+!      call potentialBCs2D(UTsec,cfg,x,intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2,&
+!                            intvars%Vminx3,intvars%Vmaxx3, &
+!                            intvars%E01,intvars%E02,intvars%E03,intvars%flagdirich)     !user needs to manually swap x2 and x3 in this function, e.g. for EIA, etc.
+    end if
+  end subroutine efield_perturb_nompi_in
 
 
   !> source/loss numerical solutions for all state variables; calls source/loss solutions for individual state
