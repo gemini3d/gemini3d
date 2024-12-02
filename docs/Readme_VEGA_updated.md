@@ -39,6 +39,7 @@ Ensure you have git installed and configured before attempting to clone.
 ```
 mkdir ~/.local/lapack
 ```
+make sure to create this folder in the home (login), not in the scratch
 #### Download the LAPACK source code
 ```
 cd ~/.local/lapack
