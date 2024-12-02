@@ -1280,6 +1280,7 @@ contains
     integer :: lx1,lx2,lx3,lsp
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav     !FIXME: use static arrays?
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
+    integer :: ix1min,ix1max,ix2min,ix2max,ix3min,ix3max
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
@@ -1291,17 +1292,32 @@ contains
     allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
     call conductivities(intvars%atmos%nn,intvars%atmos%Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 
+    ! pointers don't carry lbound
+    ix1min=lbound(E2,1)+2
+    ix1max=ubound(E2,1)-2
+    ix2min=lbound(E2,2)+2
+    ix2max=ubound(E2,2)-2
+    ix3min=lbound(E2,3)+2
+    ix3max=ubound(E2,3)-2
+
     if (cfg%flagE0file==1) then
       call compute_BGEfields_nompi(x,intvars%E02,intvars%E03,intvars%efield)
       intvars%E01=0._wp
-      E1(1:lx1,1:lx2,1:lx3)=intvars%E01
-      E2(1:lx1,1:lx2,1:lx3)=intvars%E02
-      E3(1:lx1,1:lx2,1:lx3)=intvars%E03
+      E1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E01
+      E2(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E02
+      E3(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E03
     else 
       E1=0._wp
       E2=0._wp
       E3=0._wp
     end if
+
+    !print*, intvars%E02
+    !print*, shape(intvars%efield%E0xinow), shape(intvars%efield%E0yinow)
+    !print*, intvars%efield%E0xinow
+    !print*, intvars%efield%E0yinow
+    ! print*, shape(intvars%E02), shape(intvars%E03)
+    ! print*, shape(E2), shape(intvars%E02)
     call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
