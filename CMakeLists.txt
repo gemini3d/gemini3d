@@ -24,8 +24,6 @@ include(CTest)
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
 
-set(CMAKE_CXX_STANDARD 20)
-
 include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)

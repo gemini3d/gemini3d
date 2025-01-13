@@ -36,6 +36,7 @@ configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)
 
 add_library(exe_frontend OBJECT cpu_count.cpp ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
 target_compile_definitions(exe_frontend PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
+target_compile_features(exe_frontend PRIVATE cxx_std_17)
 target_link_libraries(exe_frontend PRIVATE gemini3d_config timeutils const
 ffilesystem::filesystem
 )

@@ -3,11 +3,10 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
-#include <cstring>
+#include <string>
 #include <exception>
 
 #include <filesystem>
-static_assert(__cpp_lib_filesystem, "C++17 <filesystem> required");
 
 namespace fs = std::filesystem;
 
@@ -16,11 +15,16 @@ namespace fs = std::filesystem;
 #include "gemini3d.h"
 #include "ffilesystem.h"
 
+
 int main(int argc, char **argv) {
 
   struct params s;
   int myid;
   int ierr = MPI_Init(&argc, &argv);
+  if(ierr){
+    std::cerr << "MPI_Init failed\n";
+    return EXIT_FAILURE;
+  }
 
   // CLI
   if (argc < 2) {
@@ -29,24 +33,29 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0) {
+  std::string_view a1(argv[1]);
+
+  if (a1 == "-h" || a1 == "-help") {
     help_gemini_bin();
     MPI_Finalize();
     return EXIT_SUCCESS;
   }
 
   // simulation directory
-  fs::path out_dir(fs_expanduser(argv[1]));
+  std::string out_dir(fs_expanduser(a1));
 
-  if(! fs::is_directory(out_dir))
-    throw std::runtime_error("Gemini3D simulation output directory does not exist: " + out_dir.string());
+  if( !fs_is_dir(out_dir)){
+    std::cerr << "Gemini3D simulation output directory does not exist: " << out_dir << "\n";
+    MPI_Finalize();
+    return EXIT_FAILURE;
+  }
 
   // we don't have a C++ parser for Fortran namelist files,
   // so read the namelist file directly in Fortran as usual.
   s.fortran_nml = true;
 
   // Prepare Gemini3D struct
-  std::strcpy(s.out_dir, out_dir.generic_string().c_str());
+  std::strcpy(s.out_dir, out_dir.data());
 
   s.fortran_cli = false;
   s.debug = false;
@@ -55,17 +64,23 @@ int main(int argc, char **argv) {
   MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
   for (int i = 2; i < argc; i++) {
-    if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "-debug") == 0) s.debug = true;
-    if (strcmp(argv[i], "-dryrun") == 0) s.dryrun = true;
-    if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) {
+    std::string_view arg(argv[i]);
+    if (arg == "-d" || arg == "-debug")
+      s.debug = true;
+
+    if (arg == "-dryrun")
+      s.dryrun = true;
+
+    if (arg == "-h" || arg == "-help") {
       help_gemini_bin();
       MPI_Finalize();
       return EXIT_SUCCESS;
     }
-    if (strcmp(argv[i], "-manual_grid") == 0) {
+    if (arg == "-manual_grid") {
       if (argc < i+1) {
         MPI_Finalize();
-        throw std::runtime_error("-manual_grid lid2in lid3in");
+        std::cerr << "-manual_grid lid2in lid3in\n";
+        return EXIT_FAILURE;
       }
       lid2in = atoi(argv[i]);
       lid3in = atoi(argv[i+1]);
@@ -74,8 +89,10 @@ int main(int argc, char **argv) {
 
   gemini_main(&s, &lid2in, &lid3in);
 
-  if(MPI_Finalize())
-    throw std::runtime_error("MPI_Finalize failed");
+  if(MPI_Finalize()){
+    std::cerr << "MPI_Finalize failed\n";
+    return EXIT_FAILURE;
+  }
 
   return EXIT_SUCCESS;
 }

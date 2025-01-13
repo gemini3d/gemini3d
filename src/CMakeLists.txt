@@ -264,6 +264,7 @@ gemini3d_c
 gemini3d
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
+target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
 install(TARGETS gemini_c.bin EXPORT ${PROJECT_NAME}-targets)
 
