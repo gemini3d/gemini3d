@@ -114,8 +114,9 @@ contains
           call cpu_time(tstart)
           !! First check whether any capacitance is specified, then whether periodic mesh or no
           if (flagstatic) then    ! static solve
-            if (flagdirich==2) then    ! we want to force the code to use current boundary conditions which changes the structure of
-                                       !   the function call; in this case additional coefficients are needed for boundary specs
+            if (flagdirich==2) then    ! We want to force the code to use current boundary conditions which changes the structure of
+                                       !   the function call; in this case additional coefficients are needed for boundary specs.  
+                                       !   Additionally, there is no option for periodic here; this is always Neumann
               integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
               sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
               SigPBC2=sigintegral(lx1,:,:)
@@ -141,12 +142,20 @@ contains
                       SigPBC2all,SigPBC3all,SigHBC2all,SigHBC3all, &
                       Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                       dt,x,flagdirich,perflag,it)
-            else
+            else    ! for this case we are going to use potential normal derivative boundary conditions
               !! FIXME: add optional for static periodic solve here.
-              if (debug) print *, '!!!GEMINI detects static potential solve...'
-              Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
+              if (.not. x%flagper) then
+                if (debug) print *, '!!!GEMINI detects static potential solve...'
+                Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
                                      SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                      dt,x,flagdirich,perflag,it)
+              else    ! FIXME:  should be a static periodic solve (not implemented); but for now use the dynamic solver
+                      !  with zero capacitance
+                Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
+                                         incapintall,v2slaball,v3slaball, &
+                                         Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+                                         dt,x,Phislab0,perflag,it)
+              end if
             end if
           else                             ! solve with leading order polarization term
             if (.not. x%flagper) then     !nonperiodic mesh
