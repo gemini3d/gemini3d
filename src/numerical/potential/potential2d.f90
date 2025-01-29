@@ -9,7 +9,8 @@ implicit none (type, external)
 
 contains
   module procedure potential2D_static_J0
-    ! wrapper for static, field-integradted solution for ionospheric potential equation in 2D
+    ! wrapper for static, field-integradted solution for ionospheric potential equation in 2D.  This version
+    !   enforces zero current density rather than zero potential normal derivative
 
     integer, dimension(4) :: flagsdirich
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
@@ -39,7 +40,8 @@ contains
 
 
   module procedure potential2D_static
-    ! wrapper for static, field-integradted solution for ionospheric potential equation in 2D
+    ! Wrapper for static, field-integradted solution for ionospheric potential equation in 2D.  This version
+    !   enforces zero potential normal derivative.  
 
     integer, dimension(4) :: flagsdirich
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3

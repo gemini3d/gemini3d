@@ -3,7 +3,7 @@ submodule (PDEelliptic) elliptic2d
 implicit none (type, external)
 
 contains
-  !>  A static solvers that support J=0 boundary conditions with anisotropic conductance
+  !>  A static solver that support J=0 boundary conditions with anisotropic conductance
   module procedure elliptic2D_static_J0
     !------------------------------------------------------------
     !-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
