@@ -21,5 +21,5 @@ inputdata grid
 MPI::MPI_Fortran
 )
 
-add_library(potential_nompi OBJECT potential_nompi.f90)
+add_library(potential_nompi OBJECT potential_nompi.f90 boundary_conditions/potentialBCs_nompi.f90)
 target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid efielddata)

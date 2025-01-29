@@ -54,7 +54,7 @@ use geomagnetic, only: geog2geomag,ECEFspher2ENU
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use sanity_check, only : check_finite_output
-use potentialBCs_mumps, only: init_Efieldinput, potentialBCs2D_fileinput_nompi !, potentialBCs2D
+use potentialBCs_nompi, only: potentialBCs2D_fileinput_nompi, init_Efieldinput_nompi
 
 implicit none (type, external)
 private
@@ -671,7 +671,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_efieldinput(dt,cfg,ymd,UTsec,x,intvars%efield)
+    call init_efieldinput_nompi(dt,cfg,ymd,UTsec,x,intvars%efield)
   end subroutine init_efieldinput_nompi_in
 
 
