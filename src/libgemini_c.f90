@@ -49,7 +49,8 @@ use gemini3d, only: c_params, init_precipinput_in, msisinit_in, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
             read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, gemini_cfg_dealloc, grid_size_in, read_config_in, &
-            cli_in, gemini_grid_generate, gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
+            cli_in, gemini_grid_generate, gemini_grid_generate_altnull, &
+            gemini_grid_dealloc, setv2v3, maxcfl_in, plasma_output_nompi_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, set_electrodynamics_commtype, &
             init_efieldinput_nompi_in, efield_perturb_nompi_in
@@ -262,6 +263,18 @@ contains
     x=>set_gridpointer_dyntype(xtype,xC)
     call gemini_grid_generate(x)
   end subroutine gemini_grid_generate_C
+
+
+  !> C wrapper to force generate of grid internal data quantities
+  subroutine gemini_grid_generate_altnull_C(xtype,xC,altnullC) bind(C, name='gemini_grid_generate_altnull_C')
+    integer, intent(inout) :: xtype
+    type(c_ptr), intent(inout) :: xC
+    real(wp), intent(inout) :: altnullC
+    class(curvmesh), pointer :: x
+
+    x=>set_gridpointer_dyntype(xtype,xC)
+    call gemini_grid_generate_altnull(x,altnullC)
+  end subroutine gemini_grid_generate_altnull_C
 
 
   !> wrapper to have a worker dump their state var data to a file
