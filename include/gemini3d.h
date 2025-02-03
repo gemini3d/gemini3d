@@ -97,6 +97,7 @@ extern void plasma_output_nompi_C(void**, int*, double*, double**, double**, int
 extern void read_fullsize_gridcenter_C(void**);
 extern void gemini_grid_dealloc_C(int*,void**);
 extern void gemini_grid_generate_C(int*, void**);
+extern void gemini_grid_generate_altnull_C(int*, void**, double*);
 extern void setv2v3_C(double*, double*);
 extern void set_global_boundaries_allspec_C(int*, void**, double**, double**, void**, int*);
 extern void set_electrodynamics_commtype_C(int*, void**);

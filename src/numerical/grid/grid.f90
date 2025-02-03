@@ -392,9 +392,11 @@ contains
 
 
   !> Trigger a generation of all grid internal data
-  subroutine grid_internaldata_generate(x)
+  subroutine grid_internaldata_generate(x,altnull_in)
     class(curvmesh), intent(inout) :: x
+    real(wp), optional, intent(in) :: altnull_in
 
+    if (present(altnull_in)) call x%set_altnull(altnull_in)    ! allows programmer to change default null transition altitude
     call x%make()                              ! trigger generation of all internal data arrays
     call set_gridflag(x%gridflag)              ! set module variable to match the type stored in the grid class
   end subroutine
