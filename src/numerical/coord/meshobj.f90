@@ -157,12 +157,17 @@ type, abstract :: curvmesh
   !! coordinates
   real(wp) :: glonctr,glatctr
 
+  
+  !> contains information about where to assign null cells, most uses will assume default value
+  real(wp) :: altnull=80e3
+
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   contains
     procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
     procedure :: calc_coord_diffs       ! compute bwd and midpoint diffs from coordinates
     procedure :: calc_coord_diffs_root  ! coordinate diffs for root fullgrid
     procedure :: calc_difflengths       ! compute differential lengths
+    procedure :: set_altnull            ! adjust the default altitude below which cells are considered non-computational
     procedure :: calc_inull             ! compute null points
     procedure :: calc_gridflag          ! compute the type of grid we have
     procedure :: init_storage           ! allocate space for coordinate specific arrays
@@ -570,6 +575,17 @@ contains
   end subroutine calc_gridflag
 
 
+  !> Setter routine for controlling altitude below which points are considered non-computational.  
+  !   This isn't strictly necessary since the type data can be directly manipulated -- unless
+  !   members are later made private.  
+  subroutine set_altnull(self,altnull_in)
+    class(curvmesh), intent(inout) :: self
+    real(wp), intent(in) :: altnull_in
+
+    self%altnull=altnull_in
+  end subroutine set_altnull
+
+
   !> compute the number of null grid points and their indices for later use
   pure subroutine calc_inull(self)
     class(curvmesh), intent(inout) :: self
@@ -589,7 +605,7 @@ contains
     allocate(alttmp(lx1,lx2,lx3))
     alttmp=self%alt(1:lx1,1:lx2,1:lx3)
     !where (alttmp < 50e3_wp)
-    where (alttmp < 80e3_wp)
+    where (alttmp < self%altnull)
       self%nullpts=.true.
     end where
     deallocate(alttmp)

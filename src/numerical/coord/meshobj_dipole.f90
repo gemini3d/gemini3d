@@ -16,6 +16,7 @@ public :: dipolemesh, qp2rtheta
 
 ! type extension for dipolemesh
 type, extends(curvmesh) :: dipolemesh
+  ! pointers/aliases to mesh data
   real(wp), dimension(:), pointer :: q
   real(wp), dimension(:), pointer :: p
   real(wp), dimension(:), pointer :: phidip
@@ -28,7 +29,6 @@ type, extends(curvmesh) :: dipolemesh
   real(wp), dimension(:,:,:), pointer :: hqphii,hpphii,hphiphii
   real(wp), dimension(:,:,:,:), pointer :: eq,ep,ephidip
   real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
-
   contains
     !> Specific methods
     procedure :: calc_rtheta_2D, calc_qp_2D

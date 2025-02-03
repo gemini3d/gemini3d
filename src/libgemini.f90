@@ -76,7 +76,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             read_fullsize_gridcenter_in, &
             gemini_work_alloc, gemini_work_dealloc, gemini_cfg_alloc, cli_in, read_config_in, gemini_cfg_dealloc, &
             grid_size_in, gemini_double_alloc, gemini_double_dealloc, gemini_grid_dealloc, &
-            gemini_grid_generate, setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
+            gemini_grid_generate, gemini_grid_generate_altnull, &
+            setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in
@@ -439,6 +440,15 @@ contains
 
     call grid_internaldata_generate(x)
   end subroutine gemini_grid_generate
+
+
+  !> subroutine to force generate of grid internal objects (grid must already be allocated); user-defined null altitude
+  subroutine gemini_grid_generate_altnull(x,altnull)
+    class(curvmesh), intent(inout) :: x
+    real(wp), intent(in) :: altnull
+
+    call grid_internaldata_generate(x,altnull)    ! same procedure, just uses the optional argument
+  end subroutine gemini_grid_generate_altnull
 
 
   !> deallocate grid data
