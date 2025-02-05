@@ -1362,12 +1362,6 @@ contains
       E3=0._wp
     end if
 
-    !print*, intvars%E02
-    !print*, shape(intvars%efield%E0xinow), shape(intvars%efield%E0yinow)
-    !print*, intvars%efield%E0xinow
-    !print*, intvars%efield%E0yinow
-    ! print*, shape(intvars%E02), shape(intvars%E03)
-    ! print*, shape(E2), shape(intvars%E02)
     call velocities_nompi(muP,muH,nusn,E2,E3,intvars%atmos%vn2,intvars%atmos%vn3,ns,Ts,x, &
                       cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
     deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)

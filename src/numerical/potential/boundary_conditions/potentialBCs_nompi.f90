@@ -24,8 +24,9 @@ contains
     !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
     !    In this case don't check root v. all; assuming calling function knows already
     !if ( (mpi_cfg%myid==0 .and. cfg%flagE0file==1) .or. (.not. efield%flagrootonly) ) then    !only root needs these...
+    if (cfg%flagE0file==1) then
       call efield%init(cfg,cfg%E0dir,x,dt,cfg%dtE0,ymd,UTsec)
-    !end if
+    end if
   end subroutine init_Efieldinput_nompi
 
 
