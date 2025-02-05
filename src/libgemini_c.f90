@@ -991,8 +991,9 @@ contains
   end subroutine clear_ionization_arrays_C
 
 
-  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec,f107a,f107,gavg,Tninf) &
+ subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
+                  UTsec,f107a,f107, & !first,
+                  gavg,Tninf) &
                   bind(C, name="impact_ionization_C")
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
@@ -1003,6 +1004,7 @@ contains
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec,f107,f107a
+    !logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
