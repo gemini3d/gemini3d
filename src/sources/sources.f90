@@ -429,12 +429,15 @@ contains
       !NEUTRAL-ION collisions
       
       do isp2=1,ln
+      
         call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
 
-        nuneut = (ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nu*vn1)/()
-
-        Lon(:,:,:,isp)=Lon(:,:,:,isp)+nu
-        Prn(:,:,:,isp)=Prn(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nu*vn1
+        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
+        ! these are all ion-neutral collisions
+        nuneut = (ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nu)/(nn(:,:,:,isp2)*mn(isp2))
+        
+        ! The rate of momentum change per unit volume (seems directly applicable to the right side of MAGIC?
+        momentumsource(:,:,:) = momentumsource(:,:,:) + nn(1:lx1,1:lx2,1:lx3,isp)*mn(isp)*nuneut*(vs1-vn1)
 
       end do
     end do
