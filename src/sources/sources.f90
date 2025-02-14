@@ -8,7 +8,7 @@ use grid, only: isglobalx1max,isglobalx1min
 
 implicit none (type, external)
 private
-public :: srcsenergy, srcsmomentum, srcscontinuity
+public :: srcsenergy, srcsmomentum, srcscontinuity, srcsmomentum_neut, srcsenergy_neut
 
 interface srcsMomentum
   module procedure srcsMomentum_curv
@@ -392,64 +392,6 @@ contains
     end do
   end subroutine srcsMomentum_curv
 
-  subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
-
-! Neutrals. 1 - O, 2- N2, 3 - O2, 4 - H
-    real(wp), dimension(:,:,:,:), intent(in) :: nn
-! Neutral velocities and temperature (without ghost cells?)
-    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-! Ions/Elecgtrons density, velcities and temperature
-    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-    class(curvmesh), intent(in) :: x
-    
-
-    ! I need momentum in each direction, so 5-dimension variable
-    !e1,e2,e3,v
-    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
-
-    ! should be used to avoid ghost_cells
-    integer :: lx1,lx2,lx3,isp,isp2
-    
-    ! ion-neuytral and neutral-ion collision frequencies
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut
-    
-    lx1=size(Ts,1)-4
-    lx2=size(Ts,2)-4
-    lx3=size(Ts,3)-4
-    
-    momentumneut_source=0._wp
-    
-    do isp=1,lsp
-      !NEUTRAL-ION collisions
-
-      ! I hope ln is 4
-      do isp2=1,ln
-
-        nu = 0._wp
-        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
-        nuneut = 0._wp
-        
-        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
-        ! these are all ion-neutral collisions for this ion
-            where (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) > 0)
-                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * nu) / &
-                         (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2))
-            elsewhere
-                nuneut = 0._wp
-            end where
-
-        ! Accumulate momentum rate over all neutrals and ions
-momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs1 - vn1)
-momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs2 - vn2)
-momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs3 - vn3)
-
-
-      end do
-    end do
-    
-  end subroutine srcsMomentum_neut
-
-  
   subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
     !------------------------------------------------------------
     !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
@@ -540,4 +482,124 @@ momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3
     Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
     Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
   end subroutine srcsEnergy
+
+  subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+
+! Neutrals. 1 - O, 2- N2, 3 - O2, 4 - H
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+! Neutral velocities and temperature (without ghost cells?)
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+! Ions/Elecgtrons density, velcities and temperature
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    class(curvmesh), intent(in) :: x
+    
+
+    ! I need momentum in each direction, so 5-dimension variable
+    !e1,e2,e3,v
+    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
+
+    ! should be used to avoid ghost_cells
+    integer :: lx1,lx2,lx3,isp,isp2
+    
+    ! ion-neuytral and neutral-ion collision frequencies
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut
+    
+    lx1=size(Ts,1)-4
+    lx2=size(Ts,2)-4
+    lx3=size(Ts,3)-4
+    
+    momentumneut_source=0._wp
+    
+    do isp=1,lsp
+      !NEUTRAL-ION collisions
+
+      ! I hope ln is 4
+      do isp2=1,ln
+
+        nu = 0._wp
+        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
+        nuneut = 0._wp
+        
+        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
+        ! these are all ion-neutral collisions for this ion
+            where (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) > 0)
+                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * nu) / &
+                         (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2))
+            elsewhere
+                nuneut = 0._wp
+            end where
+
+        ! Accumulate momentum rate over all neutrals and ions
+momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs1 - vn1)
+momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs2 - vn2)
+momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs3 - vn3)
+
+
+      end do
+    end do
+    
+  end subroutine srcsMomentum_neut
+
+    subroutine srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+    !! intent(out)
+    integer :: lx1,lx2,lx3,isp,isp2
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact
+    real(wp) :: sfact,gamman
+    
+    lx1=size(Ts,1)-4
+    lx2=size(Ts,2)-4
+    lx3=size(Ts,3)-4
+
+    !ELASTIC COLLISIONS
+    do isp=1,lsp
+      !ION-NEUTRAL
+      do isp2=1,ln
+
+  select case (isp2)
+    case (1)
+      gamman=5/3
+    case (2)
+      gamman=7/5
+    case (3)
+      gamman=7/5
+    case (4)
+      gamman=5/3
+  end select
+
+
+        nu = 0._wp
+        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
+        nuneut = 0._wp
+        
+        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
+        ! these are all ion-neutral collisions for this ion
+            where (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) > 0)
+                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * nu) / &
+                         (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2))
+            elsewhere
+                nuneut = 0._wp
+            end where
+
+        !HEAT TRANSFER
+        fact=2*nuneut/(ms(isp)+mn(isp2))
+
+        energyneut_source(:,:,:)=energyneut_source(:,:,:)+nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman-1)*fact*(Ts(1:lx1,1:lx2,1:lx3,isp) - Tn)
+
+        !FRICTION
+        fact=fact*mn(isp2)/3
+                energyneut_source(:,:,:)=energyneut_source(:,:,:)+nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman-1) &
+                      *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
+                      +(vn3-vn3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
+  
+      end do
+  
+    !INELASTIC COLLISIONS FOR ELECTRONS, ROTATIONAL - excluded for now
+    
+  end subroutine srcsEnergy_neut
 end module sources
