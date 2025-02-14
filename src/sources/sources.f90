@@ -392,52 +392,57 @@ contains
     end do
   end subroutine srcsMomentum_curv
 
-  subroutine srcsMomentum_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Prn,Lon)
+  subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
 
+! Neutrals. 1 - O, 2- N2, 3 - O2, 4 - H
     real(wp), dimension(:,:,:,:), intent(in) :: nn
-    real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
+! Neutral velocities and temperature (without ghost cells?)
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+! Ions/Elecgtrons density, velcities and temperature
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
-    real(wp), dimension(:,:,:,:), intent(in) :: Q
     class(curvmesh), intent(in) :: x
     
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Prn,Lon
-    !! intent(out)
-    
+
+    ! I need momentum in each direction, so 5-dimension variable
+    !e1,e2,e3,v
+    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
+
+    ! should be used to avoid ghost_cells
     integer :: lx1,lx2,lx3,isp,isp2
+    
+    ! ion-neuytral and neutral-ion collision frequencies
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
-    real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1
-    integer :: ix1,ix2,ix3
     
     lx1=size(Ts,1)-4
     lx2=size(Ts,2)-4
     lx3=size(Ts,3)-4
     
-    Prn=0._wp
-    Lon=0._wp
-    
-    !CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH OF THE SPECIES CALCULATIONS
-    h1h2h3=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
-    tmpderiv=grad3D1(x%h2(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
-    dh2dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
-    tmpderiv=grad3D1(x%h3(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
-    dh3dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
+    momentumneut_source=0._wp
     
     do isp=1,lsp
       !NEUTRAL-ION collisions
-      
-      do isp2=1,ln
-      
-        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
 
-        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
-        ! these are all ion-neutral collisions
-        nuneut = (ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nu)/(nn(:,:,:,isp2)*mn(isp2))
+      ! I hope ln is 4
+      do isp2=1,ln
+
+        nu = 0._wp
+        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
+        nuneut = 0._wp
         
-        ! The rate of momentum change per unit volume (seems directly applicable to the right side of MAGIC?
-        momentumsource(:,:,:) = momentumsource(:,:,:) + nn(1:lx1,1:lx2,1:lx3,isp)*mn(isp)*nuneut*(vs1-vn1)
+        ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
+        ! these are all ion-neutral collisions for this ion
+            where (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) > 0)
+                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * nu) / &
+                         (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2))
+            elsewhere
+                nuneut = 0._wp
+            end where
+
+        ! Accumulate momentum rate over all neutrals and ions
+momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs1 - vn1)
+momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs2 - vn2)
+momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs3 - vn3)
+
 
       end do
     end do
