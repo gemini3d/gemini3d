@@ -392,7 +392,62 @@ contains
     end do
   end subroutine srcsMomentum_curv
 
+  subroutine srcsMomentum_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)
 
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
+    real(wp), dimension(:,:,:,:), intent(in) :: Q
+    class(curvmesh), intent(in) :: x
+    
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Pr,Lo
+    !! intent(out)
+    
+    integer :: lx1,lx2,lx3,isp,isp2
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
+    real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1
+    integer :: ix1,ix2,ix3
+    
+    lx1=size(Ts,1)-4
+    lx2=size(Ts,2)-4
+    lx3=size(Ts,3)-4
+    
+    Pr=0._wp
+    Lo=0._wp
+    
+    !CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH OF THE SPECIES CALCULATIONS
+    h1h2h3=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
+    tmpderiv=grad3D1(x%h2(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
+    dh2dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
+    tmpderiv=grad3D1(x%h3(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
+    dh3dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
+    
+    do isp=1,lsp
+      !NEUTRAL-ION collisions
+      
+      do isp2=1,ln
+        call maxwell_colln(isp,isp2,nn,Tn,Ts,nu) ! Find ion-neutral collisions nu
+
+        Lo(:,:,:,isp)=Lo(:,:,:,isp)+nu
+        Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*nu*vn1
+
+      end do
+
+      !ACCUMULATE ALL FORCES
+    !      Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1+Epol1) &
+      Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*(E1filt+Epol1) &
+!                    -pressure(1:lx1,1:lx2,1:lx3)*gradlp1(1:lx1,1:lx2,1:lx3) &
+                    -ionpressterm &
+                    -gradQ &
+                    +geom &
+                    +ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*x%g1
+    end do
+  end subroutine srcsMomentum_curv
+
+  
   subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
     !------------------------------------------------------------
     !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
