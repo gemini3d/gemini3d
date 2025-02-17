@@ -556,6 +556,9 @@ momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3
     lx2=size(Ts,2)-4
     lx3=size(Ts,3)-4
 
+  energyneut_source = 0._wp
+
+
     !ELASTIC COLLISIONS
     do isp=1,lsp
       !ION-NEUTRAL
@@ -563,13 +566,13 @@ momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3
 
   select case (isp2)
     case (1)
-      gamman=5/3
+      gamman=5._wp/3._wp
     case (2)
-      gamman=7/5
+      gamman=7._wp/5._wp
     case (3)
-      gamman=7/5
+      gamman=7._wp/5._wp
     case (4)
-      gamman=5/3
+      gamman=5._wp/3._wp
   end select
 
 
@@ -595,7 +598,7 @@ momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3
         fact=fact*mn(isp2)/3
                 energyneut_source(:,:,:)=energyneut_source(:,:,:)+nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman-1) &
                       *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
-                      +(vn3-vn3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
+                      +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
   
       end do
   
