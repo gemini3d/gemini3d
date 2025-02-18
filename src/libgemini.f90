@@ -1260,6 +1260,44 @@ contains
   end subroutine clear_ionization_arrays
 
 
+  !> Compute heating from precipitation and collisional stuff 
+  subroutine neutral_rates(cfg,fluidvars,intvars,x,dt,t,ymd, &
+                                        UTsec,f107a,f107,gavg,Tninf)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt,t
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: f107a,f107
+    real(wp), intent(in) :: gavg,Tninf
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source
+    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
+
+    
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    
+  ! Here I need to call:
+  ! sources.f90:
+    ! srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+      !   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: energyneut_source
+    ! subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+      !   real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3) :: momentumneut_source
+
+! To energyneut_source I'll need to add heating rate from precipitation
+
+  ! intvars%Prprecip
+  energyneut_source = energyneut_source + intvars%Prprecip*0.6*5.45e-18
+    
+energyneut_source
+
+
+    
+  end subroutine neutral_rates
+
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
