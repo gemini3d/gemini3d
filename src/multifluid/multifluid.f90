@@ -423,22 +423,22 @@ end subroutine impact_ionization
 !> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want solely solar sources :)
 !  Upon entry:  we assume any photoinization has already been computed and placed in results arrays
 !  Upson exit:  intvars%Prionize and intvars%Qeionize include added solar sources
-subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,gavg,Tninf,Iinf)
+subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf,Iinf)
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
   real(wp), intent(in) :: f107a,f107
-  real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
-  real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
+  real(wp), dimension(:,:,:,:), intent(inout) :: Prionize
+  real(wp), dimension(:,:,:), intent(inout) :: Qeionize
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
   real(wp), intent(in) :: gavg,Tninf
   real(wp), dimension(:,:,:,:), intent(in) :: Iinf
-  real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3),1:size(Prprecip,4)) :: Prpreciptmp
-  real(wp), dimension(1:size(Qeprecip,1),1:size(Qeprecip,2),1:size(Qeprecip,3)) :: Qepreciptmp
-  real(wp), dimension(1:size(Prprecip,1),1:size(Prprecip,2),1:size(Prprecip,3)) :: chi
+  real(wp), dimension(1:size(Prionize,1),1:size(Prionize,2),1:size(Prionize,3),1:size(Prionize,4)) :: Prionizetmp
+  real(wp), dimension(1:size(Qeionize,1),1:size(Qeionize,2),1:size(Qeionize,3)) :: Qeionizetmp
+  real(wp), dimension(1:size(Prionize,1),1:size(Prionize,2),1:size(Prionize,3)) :: chi
 
   ! solar zenith angle
   chi=sza(ymd(1),ymd(2),ymd(3),UTsec,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3))   ! chi size depends on glon,glat size b/c sza elemental
@@ -449,23 +449,23 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,ns,nn,Tn,
   end if
 
   ! solar fluxes and resulting ionization rates
-  Prpreciptmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
+  Prionizetmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
   !if (mpi_cfg%myid==0 .and. debug) then
   if (debug) then
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
-      minval(Prpreciptmp), maxval(Prpreciptmp)
+      minval(Prionizetmp), maxval(Prionizetmp)
   end if
 
-  Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
+  Prionizetmp = max(Prionizetmp, 1e-5_wp)
   !! enforce minimum production rate to preserve conditioning for species that rely on constant production
   !! testing should probably be done to see what the best choice is...
 
-  Qepreciptmp = eheating(nn,Prpreciptmp,ns)
+  Qeionizetmp = eheating(nn,Prionizetmp,ns)
   !! thermal electron heating rate from Swartz and Nisbet, (1978)
 
   !> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
-  Prprecip = Prprecip + Prpreciptmp
-  Qeprecip = Qeprecip + Qepreciptmp
+  Prionize = Prionize + Prionizetmp
+  Qeionize = Qeionize + Qeionizetmp
 end subroutine solar_ionization
 
 
