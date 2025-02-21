@@ -222,7 +222,7 @@ contains
     !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
-    print*, 'Preparing to prime input data arrays...'
+    !print*, 'Preparing to prime input data arrays...'
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
   end subroutine init_efield
 
@@ -235,11 +235,11 @@ contains
     if (.not. self%flagsource) error stop 'efielddata:load_size_precip() - must define a source directory first'
 
     ! read sizes
-    print '(/,A,/,A)', 'Electric field input:','--------------------'
-    print '(A)', 'READ electric field size from: ' // self%sourcedir
+    !print '(/,A,/,A)', 'Electric field input:','--------------------'
+    !print '(A)', 'READ electric field size from: ' // self%sourcedir
     call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
-    print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
+    !print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
     if (self%llon==-1 .and. self%llat==-1) then
       print*, ' !!!!! efielddata detected a direct fill of input arrays (no interpolation) !!!!!'
       !if (.not. self%flagsizes) error stop ' flagsizes not set but attempting to access size vars!'
@@ -269,8 +269,8 @@ contains
     ! read grid data
     call get_grid2(self%sourcedir // "/simgrid.h5", self%mlonp, self%mlatp)
 
-    print '(A,4F9.3)', 'Electric field mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
-                                                           minval(self%mlatp(:)),maxval(self%mlatp(:))
+    !print '(A,4F9.3)', 'Electric field mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
+    !                                                       minval(self%mlatp(:)),maxval(self%mlatp(:))
     if(.not. all(ieee_is_finite(self%mlonp))) error stop 'efielddata:loadgrid() - mlon must be finite'
     if(.not. all(ieee_is_finite(self%mlatp))) error stop 'efielddata:loadgrid() - mlat must be finite'
   end subroutine load_grid_efield
@@ -418,8 +418,8 @@ contains
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
     !! all workers read data out of this file
-    print*, '  date and time:  ',ymdtmp,UTsectmp
-    print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+    !print*, '  date and time:  ',ymdtmp,UTsectmp
+    !print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
 
     call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp) // ".h5", &
       flagdirich_int,self%E0xp,self%E0yp,self%Vminx1p,self%Vmaxx1p,&

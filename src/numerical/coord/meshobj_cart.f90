@@ -61,9 +61,9 @@ subroutine init_cartmesh(self)
 
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
-  print *,"cart:calc_coord_diffs done"
+  !print *,"cart:calc_coord_diffs done"
   call self%init_storage()
-  print *, "cart:init_storage done"
+  !print *, "cart:init_storage done"
   ! fixme: need to add geographic coord arrays first...
   !call self%calc_inull()
 
@@ -106,7 +106,7 @@ subroutine make_cartmesh(self)
   allocate(phispher(-1:lzg-2,-1:lxg-2,-1:lyg-2))
 
   ! array sizes without ghost cells for convenience
-  print '(A,1X,I0,1X,I0,1X,I0)', ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
+  !print '(A,1X,I0,1X,I0,1X,I0)', ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
   lz=lzg-4; lx=lxg-4; ly=lyg-4;
 
   call self%native2ECEFspher(self%glonctr,self%glatctr,self%z,self%x,self%y,r,theta,phispher)
@@ -118,66 +118,66 @@ subroutine make_cartmesh(self)
   deallocate(r,theta,phispher)
 
   ! compute the geographic coordinates
-  print*, ' make_cartmesh:  geographic coordinates from magnetic...'
+  !print*, ' make_cartmesh:  geographic coordinates from magnetic...'
   call self%calc_geographic()
 
   ! compute and store the metric factors; these need to include ghost cells
   !  these are function calls because I have to bind the deferred procedures...
-  print*, ' make_cartmesh:  metric factors for cell centers...'
+  !print*, ' make_cartmesh:  metric factors for cell centers...'
   self%hz(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h1(r,theta,phispher)
   self%hx(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h2(r,theta,phispher)
   self%hy(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h3(r,theta,phispher)
 
   ! q cell interface metric factors
-  print*, ' make_cartmesh:  metric factors for cell q-interfaces...'
+  !print*, ' make_cartmesh:  metric factors for cell q-interfaces...'
   self%hzzi=1
   self%hxzi=1
   self%hyzi=1
 
   ! p cell interface metric factors
-  print*, ' make_cartmesh:  metric factors for cell p-intefaces...'
+  !print*, ' make_cartmesh:  metric factors for cell p-intefaces...'
   self%hzxi=1
   self%hxxi=1
   self%hyxi=1
 
-  print*, ' make_cartmesh:  metric factors for cell phi-interfaces...'
+  !print*, ' make_cartmesh:  metric factors for cell phi-interfaces...'
   self%hzyi=1
   self%hxyi=1
   self%hyyi=1
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
-  print*, ' make_cartmesh:  spherical ECEF unit vectors...'
+  !print*, ' make_cartmesh:  spherical ECEF unit vectors...'
   call self%calc_er()
   call self%calc_etheta()
   call self%calc_ephi()
 
   ! cart coordinate system unit vectors (Cart. ECEF)
-  print*, ' make_cartmesh:  cartesian unit vectors...'
+  !print*, ' make_cartmesh:  cartesian unit vectors...'
   call self%calc_e1()
   call self%calc_e2()
   call self%calc_e3()
 
   ! magnetic field magnitude
-  print*, ' make_cartmesh:  magnetic fields...'
+  !print*, ' make_cartmesh:  magnetic fields...'
   call self%calc_Bmag()
 
   ! gravity components
-  print*, ' make_cartmesh:  gravity...'
+  !print*, ' make_cartmesh:  gravity...'
   call self%calc_grav()
 
   ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
 
   ! now finish by calling procedures from base abstract type
-  print*, ' make_cartmesh:  base type-bound procedure calls...'
+  !print*, ' make_cartmesh:  base type-bound procedure calls...'
   call self%calc_difflengths()     ! differential lengths (units of m)
   call self%calc_inull()           ! null points (non computational)
   call self%calc_gridflag()        ! compute and store grid type
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
-  print*, ' make_cartmesh:  inclination angle...'
+  !print*, ' make_cartmesh:  inclination angle...'
   call self%calc_inclination()
-  print *, "make_cartmesh done"
+  !print *, "make_cartmesh done"
 end subroutine make_cartmesh
 
 
@@ -244,7 +244,7 @@ subroutine calc_grav_cart(self)
   class(cartmesh), intent(inout) :: self
   ! fixme: error checking?
 
-  print*, size(self%r,1),size(self%r,2),size(self%r,3)
+  !print*, size(self%r,1),size(self%r,2),size(self%r,3)
 !  self%gz=-Gconst*Me/self%r(1:size(self%r,1)-4,1:size(self%r,2)-4,1:size(self%r,3)-4)**2     ! radial component of gravity
   self%gz=-Gconst*Me/self%r(1:self%lx1,1:self%lx2,1:self%lx3)**2     ! radial component of gravity
   self%gx=0
@@ -400,7 +400,7 @@ subroutine destructor(self)
   type(cartmesh) :: self
 
   call self%dissociate_pointers()
-  print*, '  cartmesh destructor completed successfully'
+  !print*, '  cartmesh destructor completed successfully'
 end subroutine destructor
 
 end module meshobj_cart

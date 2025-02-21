@@ -129,6 +129,8 @@ type gemini_work
   type(efielddata), pointer :: efield=>null()           ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
+
+  real(wp), dimension(:,:,:,:), pointer :: user_output=>null()
 end type gemini_work
 
 

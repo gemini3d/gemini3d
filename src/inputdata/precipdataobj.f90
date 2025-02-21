@@ -156,11 +156,11 @@ contains
     if (.not. self%flagsource) error stop 'precipdata:load_size_precip() - must define a source directory first'
 
     ! read sizes
-    print '(/,A,/,A)', 'Precipitation input:','--------------------'
-    print '(A)', 'READ precipitation size from: ' // self%sourcedir
+    !print '(/,A,/,A)', 'Precipitation input:','--------------------'
+    !print '(A)', 'READ precipitation size from: ' // self%sourcedir
     call get_simsize2(self%sourcedir // "/simsize.h5", llon=self%llon, llat=self%llat)
 
-    print '(A,2I6)', 'Precipitation size: llon,llat:  ',self%llon,self%llat
+    !print '(A,2I6)', 'Precipitation size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
      print*, '  precipitation grid size must be strictly positive: ' //  self%sourcedir
      error stop
@@ -181,8 +181,8 @@ contains
     ! read grid data
     call get_grid2(self%sourcedir // "/simgrid.h5", self%mlonp, self%mlatp)
 
-    print '(A,4F9.3)', 'Precipitation mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
-                                                           minval(self%mlatp(:)),maxval(self%mlatp(:))
+    !print '(A,4F9.3)', 'Precipitation mlon,mlat extent:  ',minval(self%mlonp(:)),maxval(self%mlonp(:)), &
+    !                                                       minval(self%mlatp(:)),maxval(self%mlatp(:))
     if(.not. all(ieee_is_finite(self%mlonp))) error stop 'precipBCs_fileinput: mlon must be finite'
     if(.not. all(ieee_is_finite(self%mlatp))) error stop 'precipBCs_fileinput: mlat must be finite'
   end subroutine load_grid_precip
