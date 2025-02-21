@@ -334,7 +334,7 @@ contains
     if (self%flagdoinput) then
       if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
       if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
-      print*, '  Priming dataset:  ',self%dataname
+      !print*, '  Priming dataset:  ',self%dataname
 
       !! find the last input data preceding the milestone/initial condition that we start with
       !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
@@ -366,8 +366,8 @@ contains
 
       self%flagprimed=.true.
 
-      print*, 'prime times:  ',self%tref(1),self%tref(2)
-      print*, 'prime reference date:  ', self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
+      !print*, 'prime times:  ',self%tref(1),self%tref(2)
+      !print*, 'prime reference date:  ', self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
     end if
   end subroutine prime_data
 
