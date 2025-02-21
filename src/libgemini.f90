@@ -1275,7 +1275,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source
     real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
-
+    real(wp), c5=-2.87528801d-13, c4=3.31979754d-10, c3=-9.47129680d-08, c2=-1.14351921d-05, c1=5.61825276d-03, c0=1.42163320d-01
     
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -1289,12 +1289,11 @@ contains
 
 ! To energyneut_source I'll need to add heating rate from precipitation
 
-  ! intvars%Prprecip
-  energyneut_source = energyneut_source + intvars%Prprecip*0.6*5.45e-18
-    
-energyneut_source
+! Efficiency requires altitude
+eff = c5**alt**5 + c4*alt**4 + c3*alt**3 + c2*alt**2 + c1*alt + c0
 
-
+  ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
+  energyneut_source = energyneut_source + intvars%Prprecip*0.6*5.45e-18 ! W is in Joules, so I should have output J/m3s
     
   end subroutine neutral_rates
 
