@@ -373,7 +373,8 @@ contains
     call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call source_neut_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+
+    call source_neut_in(fluidvars,intvars,x)
 
     ! density to be cleaned after source/loss
     call clean_param_in(3,x,fluidvars)

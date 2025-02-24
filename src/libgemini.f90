@@ -45,7 +45,8 @@ use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspe
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
             VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,solar_ionization, clean_param,rhoe2T,T2rhoe, &
-            rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
+            rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy, &
+            source_neut
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
@@ -124,6 +125,10 @@ type gemini_work
 
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
+
+  !> Use to store neutral momentum and energy rate
+  real(wp), dimension(:,:,:,:), pointer :: momentneut=>null()
+  real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
   !> Inputdata objects that are needed for each subgrid
   type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
@@ -298,6 +303,10 @@ contains
     allocate(intvars%PhiWmWm2,mold=intvars%W0)
     intvars%W0=1e3
     intvars%PhiWmWm2=1e-5
+
+    !> allocation neutral rate variables
+    allocate(intvars%momentneut(1:lx1,1:lx2,1:lx3,1:3))
+    allocate(intvars%energyneut(1:lx1,1:lx2,1:lx3))
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
@@ -1262,31 +1271,19 @@ contains
 
 
   !> Compute heating from precipitation and collisional stuff 
-  subroutine source_neut_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  subroutine source_neut_in(fluidvars,intvars,x)
   
-    type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
-    real(wp), intent(in) :: dt,t
-    integer :: isp
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: f107a,f107
-    real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
-    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
-
     
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
 ! Here it should be a call to multifluid
-    call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
-    intvars%Prprecip,momentumneut_source,energyneut_source)
-
+    call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+    intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
+    intvars%Prprecip,intvars%momentneut,intvars%energyneut)
             
   end subroutine source_neut_in
 
