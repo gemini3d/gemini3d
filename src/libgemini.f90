@@ -70,6 +70,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             energy_diffusion_in, &
             source_loss_allparams_in, &
             source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
+            source_neut_in, &
             clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
@@ -1261,7 +1262,7 @@ contains
 
 
   !> Compute heating from precipitation and collisional stuff 
-  subroutine neutral_rates(cfg,fluidvars,intvars,x,dt,t,ymd, &
+  subroutine source_neut_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec,f107a,f107,gavg,Tninf, &
                            momentumneut_source,energyneut_source,eff)
     type(gemini_cfg), intent(in) :: cfg
@@ -1303,7 +1304,7 @@ contains
 intvars%Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
     end do
 
-  end subroutine neutral_rates
+  end subroutine source_neut_in
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
