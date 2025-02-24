@@ -174,7 +174,7 @@ subroutine source_loss_energy(dt,x,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
   call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
 
-subroutine source_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source,energyneut_source)
+subroutine source_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: nn
