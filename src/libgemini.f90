@@ -1284,9 +1284,9 @@ contains
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
 ! Here it should be a call to multifluid
-    call source_neut(dt,x,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,intvars%Prionize, &
-            intvars%Qeionize,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,vs1,vs2,vs3,rhoes, &
-            intvars%Pr,intvars%Lo,intvars%Q)
+    call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
+    intvars%Prprecip,momentumneut_source,energyneut_source)
+
             
   end subroutine source_neut_in
 
