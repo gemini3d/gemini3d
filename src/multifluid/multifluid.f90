@@ -174,6 +174,26 @@ subroutine source_loss_energy(dt,x,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
   call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
 
+subroutine source_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source,energyneut_source)
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
+  real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,rhovs1,vs1,vs2,vs3,Ts
+  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+  
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: eff
+  real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
+  real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
+  real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
+  
+  ! Call sources
+  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+
+end subroutine source_neut
+
 
 !> Compute temperatures from internal energy densities
 subroutine rhoe2T(ns,rhoes,Ts)
