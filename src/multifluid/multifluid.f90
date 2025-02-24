@@ -180,9 +180,9 @@ subroutine source_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source,energyn
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
   real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,rhovs1,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
   real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
-  
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: eff
   real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
   real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
@@ -191,6 +191,17 @@ subroutine source_neut(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source,energyn
   ! Call sources
   call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
   call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+
+    eff = c5*x%alt(1:lx1,1:lx2,1:lx3)**5 + c4*x%alt(1:lx1,1:lx2,1:lx3)**4 + &
+        c3*x%alt(1:lx1,1:lx2,1:lx3)**3 + c2*x%alt(1:lx1,1:lx2,1:lx3)**2 + c1*x%alt(1:lx1,1:lx2,1:lx3) + c0
+
+! Neutral heating efficiency
+  ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
+    do isp=1,6 ! it looks that I don't need 7 here
+  energyneut_source = energyneut_source + &
+  Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
+    end do
+    
 
 end subroutine source_neut
 
