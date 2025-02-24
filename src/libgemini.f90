@@ -1262,9 +1262,8 @@ contains
 
 
   !> Compute heating from precipitation and collisional stuff 
-  subroutine source_neut_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf, &
-                           momentumneut_source,energyneut_source,eff)
+  subroutine source_neut_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1276,34 +1275,19 @@ contains
     real(wp), intent(in) :: f107a,f107
     real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source,eff
-    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
-    real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
-    real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
-    real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
+
     
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-    
-  ! Here I need to call:
-  ! sources.f90:
-    ! srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
-      !   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: energyneut_source
-    ! subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
-      !   real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3) :: momentumneut_source
+    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-! To energyneut_source I'll need to add heating rate from precipitation
-
-! Efficiency requires altitude
-
-    eff = c5*x%alt(1:lx1,1:lx2,1:lx3)**5 + c4*x%alt(1:lx1,1:lx2,1:lx3)**4 + &
-        c3*x%alt(1:lx1,1:lx2,1:lx3)**3 + c2*x%alt(1:lx1,1:lx2,1:lx3)**2 + c1*x%alt(1:lx1,1:lx2,1:lx3) + c0
-
-  ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
-    do isp=1,6 ! it looks that I don't need 7 here
-  energyneut_source = energyneut_source + &
-intvars%Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
-    end do
-
+! Here it should be a call to multifluid
+    call source_neut(dt,x,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,intvars%Prionize, &
+            intvars%Qeionize,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,vs1,vs2,vs3,rhoes, &
+            intvars%Pr,intvars%Lo,intvars%Q)
+            
   end subroutine source_neut_in
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
