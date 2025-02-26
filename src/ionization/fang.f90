@@ -39,22 +39,22 @@ module ionize_fang
    9.48930e-1_wp,  1.97385e-1_wp, -2.50660e-3_wp, -2.06938e-3_wp], shape(P), order=[2,1])
   
    real(wp), parameter :: phi_Evans_keV(64) = &
-   [1.99356e8_wp,	1.82982e8_wp,	1.70856e8_wp,	1.60908e8_wp, &
-    1.52842e8_wp,	1.46431e8_wp,	1.41496e8_wp,	1.39092e8_wp, &
-    1.36728e8_wp,	1.36728e8_wp,	1.36728e8_wp,	1.34404e8_wp, &
-    1.34404e8_wp,	1.34404e8_wp,	1.34404e8_wp,	1.34404e8_wp, &
-    1.34404e8_wp,	1.34404e8_wp,	1.34404e8_wp,	1.34404e8_wp, &
-    1.34404e8_wp,	1.34404e8_wp,	1.34404e8_wp,	1.36728e8_wp, &
-    1.39092e8_wp,	1.42714e8_wp,	1.46431e8_wp,	1.47692e8_wp, &
-    1.51538e8_wp,	1.54158e8_wp,	1.59534e8_wp,	1.63689e8_wp, &
-    1.67953e8_wp,	1.73810e8_wp,	1.78337e8_wp,	1.86145e8_wp, &
-    1.17517e9_wp,	9.98575e8_wp,	8.26979e8_wp,	6.73232e8_wp, &
-    5.34156e8_wp,	4.09528e8_wp,	3.22155e8_wp,	2.36630e8_wp, &
-    1.65098e8_wp,	1.17182e8_wp,	0.76341e8_wp,	0.50594e8_wp, &
-    0.31849e8_wp,	0.15336e8_wp,	0.08840e8_wp,	0.04054e8_wp, &
-    0.02064e8_wp,	0.00832e8_wp,	0.00374e8_wp,	0.00132e8_wp, &
-    4.66259e4_wp,	1.29068e4_wp,	3.54600e3_wp,	8.60021e2_wp, &
-    1.84025e2_wp,	3.47254e1_wp,	5.77661e0_wp,	7.51004e-1_wp]
+   [1.99356e8_wp, 1.82982e8_wp, 1.70856e8_wp, 1.60908e8_wp, &
+    1.52842e8_wp, 1.46431e8_wp, 1.41496e8_wp, 1.39092e8_wp, &
+    1.36728e8_wp, 1.36728e8_wp, 1.36728e8_wp, 1.34404e8_wp, &
+    1.34404e8_wp, 1.34404e8_wp, 1.34404e8_wp, 1.34404e8_wp, &
+    1.34404e8_wp, 1.34404e8_wp, 1.34404e8_wp, 1.34404e8_wp, &
+    1.34404e8_wp, 1.34404e8_wp, 1.34404e8_wp, 1.36728e8_wp, &
+    1.39092e8_wp, 1.42714e8_wp, 1.46431e8_wp, 1.47692e8_wp, &
+    1.51538e8_wp, 1.54158e8_wp, 1.59534e8_wp, 1.63689e8_wp, &
+    1.67953e8_wp, 1.73810e8_wp, 1.78337e8_wp, 1.86145e8_wp, &
+    1.17517e9_wp, 9.98575e8_wp, 8.26979e8_wp, 6.73232e8_wp, &
+    5.34156e8_wp, 4.09528e8_wp, 3.22155e8_wp, 2.36630e8_wp, &
+    1.65098e8_wp, 1.17182e8_wp, 0.76341e8_wp, 0.50594e8_wp, &
+    0.31849e8_wp, 0.15336e8_wp, 0.08840e8_wp, 0.04054e8_wp, &
+    0.02064e8_wp, 0.00832e8_wp, 0.00374e8_wp, 0.00132e8_wp, &
+    4.66259e4_wp, 1.29068e4_wp, 3.54600e3_wp, 8.60021e2_wp, &
+    1.84025e2_wp, 3.47254e1_wp, 5.77661e0_wp, 7.51004e-1_wp]
    
   if (E0_keV < 0.099_wp .or. E0_keV > 1000) then
     write(E0_str,'(F12.4)') E0_keV
@@ -122,7 +122,8 @@ module ionize_fang
       if (kappa <= 2) then
         error stop 'ERROR:ionize_fang:fang2010_spectrum: for finite <E>, kappa must be greater than 2'
       end if
-      phi_keV = (Q0_keV/(2*E0_keV**2)) * (Ebin_keV/E0_keV) * ((kappa-1)*(kappa-2)/kappa**2) * (1+Ebin_keV/E0_keV/kappa)**(-1-1*kappa)
+      phi_keV = (Q0_keV/(2*E0_keV**2)) * (Ebin_keV/E0_keV) * ((kappa-1)*(kappa-2)/kappa**2) * &
+              (1+Ebin_keV/E0_keV/kappa)**(-1-1*kappa)
     case (2) ! multiple Maxwellians
       if (bimax_frac <= 1) then
         error stop 'ERROR:ionize_fang:fang2010_spectrum: bimax_frac must be greater than 1'
@@ -136,7 +137,8 @@ module ionize_fang
       if (Ebin_keV<E0_keV) then ! no electrons with energies less than potential drop
         phi_keV = 0
       else ! E0_keV = acc. potential, E0_char_keV = thermal energy
-        phi_keV = (Q0_keV/(E0_char_keV**2+(E0_char_keV+E0_keV)**2)) * (Ebin_keV/E0_char_keV) * exp(-1*(Ebin_keV-E0_keV)/E0_char_keV)
+        phi_keV = (Q0_keV/(E0_char_keV**2+(E0_char_keV+E0_keV)**2)) * &
+                (Ebin_keV/E0_char_keV) * exp(-1*(Ebin_keV-E0_keV)/E0_char_keV)
       end if
     case (4) ! Data used from Evans, D. S. (1974)
       phi_keV = (Q0_keV/4.54615e9_wp)*phi_Evans_keV(k) ! normalizes to Q0 map
