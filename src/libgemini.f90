@@ -82,7 +82,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
-            set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in
+            set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
+            user_populate
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -135,6 +136,10 @@ type gemini_work
   type(efielddata), pointer :: efield=>null()           ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
+
+  !> user output data
+  integer :: lparms=0                                   ! number of 3D arrays to be output to hdf5 files
+  real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
 
@@ -339,6 +344,9 @@ contains
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
     allocate(intvars%solflux)
+
+    ! lastly we want to allocate whatever data the user want to store and output for their particular application
+    call user_allocate(intvars)
   end function gemini_work_alloc
 
 
@@ -390,8 +398,40 @@ contains
 
     ! FIXME: why are we not deallocating intvars%eprecip and intvars%efield?
 
+    ! Call user deallocate
+    call user_deallocate(intvars)
+
     deallocate(intvars)
   end subroutine gemini_work_dealloc
+
+
+  ! Set the size and do the allocation of their custom output variables; user controls through intvars%lparms
+  subroutine user_allocate(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    if (.not. associated(intvars%user_output)) then
+      allocate(intvars%user_output(1:lx1,1:lx2,1:lx3,1:intvars%lparms))     ! user data must not include ghost cells
+    else
+      error stop 'attempting to allocate user_output when already in use.'
+    end if
+  end subroutine user_allocate
+
+
+  ! User should write code to put their data into the output buffer here; this will be called prior to doing a output
+  subroutine user_populate(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    ! intvars%user_output(:,:,:,1)=variable1
+    ! intvars%user_output(:,:,:,2)=variable2
+  end subroutine user_populate
+
+
+  ! Deallocate user_output; user controls through intvars%lparms
+  subroutine  user_deallocate(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    if (associated(intvars%user_output)) deallocate(intvars%user_output)
+  end subroutine user_deallocate
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory; this is primarily meant

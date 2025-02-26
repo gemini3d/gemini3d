@@ -96,6 +96,8 @@ module mpimod
 
     integer :: SigPBC2=116, SigPBC3=117, SigHBC2=118, SigHBC3=119
     integer :: flagstatic=120
+
+    integer :: uservar=121
   end type gemini_mpi_tags
 
   type(gemini_mpi_tags), protected :: gemini_mpi
