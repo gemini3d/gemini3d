@@ -96,7 +96,7 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    real(wp), dimension(:,:,:,:), intent(in) :: user_output   
+    real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output   
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
     real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall

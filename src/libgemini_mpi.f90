@@ -232,7 +232,7 @@ contains
       flagoutput=cfg%flagoutput
       if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
         flagoutput=1                   !force a full output at the milestone
-        call user_populate(intvars)    ! custom user data
+        call user_populate(fluidvars,electrovars,intvars)    ! custom user data
         call output_plasma(cfg%outdir,flagoutput,ymd, &
           UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
           cfg%out_format,intvars%user_output)

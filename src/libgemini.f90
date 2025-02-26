@@ -138,7 +138,7 @@ type gemini_work
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 
   !> user output data
-  integer :: lparms=0                                   ! number of 3D arrays to be output to hdf5 files
+  integer :: lparms=6                                   ! number of 3D arrays to be output to hdf5 files
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
@@ -418,11 +418,31 @@ contains
 
 
   ! User should write code to put their data into the output buffer here; this will be called prior to doing a output
-  subroutine user_populate(intvars)
-    type(gemini_work), intent(inout) :: intvars
+  subroutine user_populate(fluidvars,electrovars,intvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+    integer :: i1start,i1end,i2start,i2end,i3start,i3end
 
-    ! intvars%user_output(:,:,:,1)=variable1
-    ! intvars%user_output(:,:,:,2)=variable2
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    ! for arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells
+    i1start=lbound(ns,1)+2
+    i1end=i1start+lx1-1
+    i2start=lbound(ns,2)+2
+    i2end=i2start+lx2-1
+    i3start=lbound(ns,3)+2
+    i3end=i3start+lx3-1
+
+    intvars%user_output(:,:,:,1)=ns(i1start:i1end,i2start:i2end,i3start:i3end,7)
+    intvars%user_output(:,:,:,2)=vs1(i1start:i1end,i2start:i2end,i3start:i3end,7)
+    intvars%user_output(:,:,:,3)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
+    intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
+    intvars%user_output(:,:,:,5)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
+    intvars%user_output(:,:,:,6)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
   end subroutine user_populate
 
 
