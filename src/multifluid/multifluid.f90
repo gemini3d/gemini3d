@@ -358,15 +358,19 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
   real(wp), dimension(:,:,:,:), intent(inout) :: Prprecip
   real(wp), dimension(:,:,:), intent(inout) :: Qeprecip
   real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
-  real(wp), dimension(:,:,:), intent(inout) :: iver
+  real(wp), dimension(:,:,:), pointer, intent(inout) :: iver
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
   logical, intent(in) :: first  !< first time step
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prpreciptmp
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qepreciptmp
-  real(wp), dimension(1:size(iver,1),1:size(iver,2),1:size(iver,3)) :: ivertmp
+  real(wp), dimension(:,:,:), allocatable :: ivertmp
   integer :: iprec,lprec
+
+  if (associated(iver)) then
+    allocate(ivertmp(1:size(iver,1),1:size(iver,2),1:size(iver,3)))
+  end if
 
   ! compute impact ionization given input boundary conditions
   lprec=size(W0,3)    ! just recompute the number of precipitating populations
@@ -408,6 +412,8 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
     !  print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
     !end if
   end if
+
+  if (allocated(ivertmp)) deallocate(ivertmp)
 
   !if (mpi_cfg%myid==0) then
     if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &

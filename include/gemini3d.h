@@ -113,6 +113,8 @@ extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,do
 		double**);
 extern void get_it_C(int*);
 extern void itinc_C();
+extern void init_solfluxinput_C(void**, int*, void**, double*, double*, int*, double*, void**);
+extern void solflux_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 
 /* interfaces for libgemini_mpi */
 // some of these will very likely need to be rewritten when used with forestclaw
