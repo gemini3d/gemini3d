@@ -16,7 +16,7 @@ If CMake is too old, install a [new CMake](./Readme_cmake_install.md).
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d
+cmake -S gemini3d -B gemini3d/build
 
 cmake --build gemini3d/build
 

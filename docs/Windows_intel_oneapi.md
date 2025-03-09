@@ -39,7 +39,7 @@ set FC=%CMPLR_ROOT%/bin/ifx.exe
 ```sh
 git clone https://github.com/gemini3d/gemini3d
 
-cmake -S gemini3d -B build/gemini3d -G Ninja
+cmake -S gemini3d -B gemini3d/build -G Ninja
 
 cmake --build gemini3d/build
 
