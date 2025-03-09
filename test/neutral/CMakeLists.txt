@@ -3,7 +3,7 @@ set_property(DIRECTORY PROPERTY LABEL neutral)
 add_executable(gemini_projection test_proj.f90
 )
 
-foreach(t IN ITEMS newton spherical geomagnetic meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
+foreach(t IN ITEMS newton spherical geomagnetic dipole meshobj meshobj_cart meshobj_dipole grid autogrid neutral interp
 neutraldata neutraldata3D neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
 )
 

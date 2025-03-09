@@ -7,8 +7,9 @@ module meshobj_dipole
 ! uses
 use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
-use newton, only: newtopts,newton_exact,objfun,objfun_deriv
+!use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
+use dipole, only: qp2rtheta,rtheta2qp
 
 implicit none (type, external)
 private
@@ -54,34 +55,6 @@ type, extends(curvmesh) :: dipolemesh
     final :: destructor
 end type dipolemesh
 
-
-!> declarations and interfaces for submodule functions, apparently these need to be generic interfaces.  These are generally
-!   routines that do not directly deal with the derived type data arrays but instead perform very basic calculations
-!   related to specifically dipole coordinate transformations.
-interface    ! dipole_fns.f90
-  module subroutine qp2rtheta(q,p,r,theta)
-    real(wp), intent(in) :: q,p
-    real(wp), intent(out) :: r,theta
-  end subroutine qp2rtheta
-  module subroutine rtheta2qp(r,theta,q,p)
-    real(wp), intent(in) :: r,theta
-    real(wp), intent(out) :: q,p
-  end subroutine rtheta2qp
-  module elemental function qr2theta(q,r) result(theta)
-    real(wp), intent(in) :: q,r
-    real(wp) :: theta
-  end function qr2theta
-  module function rpoly(x,parms) result(fval)
-    real(wp), intent(in) :: x
-    real(wp), dimension(:), intent(in) :: parms
-    real(wp) :: fval
-  end function rpoly
-  module function rpoly_deriv(x,parms) result(fval_deriv)
-    real(wp), intent(in) :: x
-    real(wp), dimension(:), intent(in) :: parms
-    real(wp) :: fval_deriv
-  end function rpoly_deriv
-end interface
 
 contains
 

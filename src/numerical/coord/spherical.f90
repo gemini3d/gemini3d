@@ -7,7 +7,7 @@ implicit none (type, external)
 private
 public :: er_spherical,etheta_spherical,ephi_spherical
 
-!> overload calls for scalar vs. array (rank3)
+!> overload calls for scalar vs. array (rank3) target coordinates
 interface er_spherical
   procedure er_spherical_scalar, er_spherical_rank3
 end interface er_spherical

@@ -79,7 +79,7 @@ neutral
 neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
 neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi
 neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
-meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
+meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic dipole
 multifluid
 PDEparabolic gbsv
 precipBCs solfluxBCs reader sanity_check errors sources temporal timeutils
@@ -106,7 +106,7 @@ neutral
 neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_fclaw_axisymm neutraldata3D_fclaw_3Dx
 neutraldata3D_mpi neutraldata3D_geom_mpi neutraldata3D_geog_mpi
 neutraldata2D neutraldata2Daxisymm neutraldata2Dcart
-meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
+meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic dipole
 multifluid
 multifluid_mpi
 neutral_perturbations
