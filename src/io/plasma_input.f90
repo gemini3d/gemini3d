@@ -40,7 +40,7 @@ subroutine input_root_currents(outdir,out_format, flagoutput,ymd,UTsec,J1,J2,J3)
   integer, intent(in) :: flagoutput
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
-  real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+  real(wp), dimension(-1:,-1:,-1:), intent(inout) :: J1,J2,J3
   !! intent(out)
 
 

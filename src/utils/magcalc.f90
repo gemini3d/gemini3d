@@ -282,6 +282,22 @@ if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> worker exchange of edge volumes...
 call halo_end(dV,dVend,dVtop,dVcorner,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
+
+!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!  ! Debug
+!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!  block
+!    integer :: funit=42
+!    if (mpi_cfg%myid==0) then
+!      open(newunit=funit,file='error.dV.dat',status='replace',access='stream')
+!      write(funit) dV,dVend,dVtop,dVcorner
+!      close(funit)
+!      error stop 'Debug output'
+!    end if
+!  end block
+!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 if (mpi_cfg%myid==0) print*, 'magcalc.f90 --> worker exchange of edge distances...'
 !> now get the "end" and "top" pieces for the source coordinates
 call halo_end(xp,xpend,xptop,xpcorner,tag%Rx)    !just reuse position tag
@@ -366,6 +382,7 @@ main : do while (t < cfg%tdur)
   call halo_end(Jx,Jxend,Jxtop,Jxcorner,tag%Jx)
   call halo_end(Jy,Jyend,Jytop,Jycorner,tag%Jy)
   call halo_end(Jz,Jzend,Jztop,Jzcorner,tag%Jz)
+
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
