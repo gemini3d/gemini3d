@@ -99,6 +99,9 @@ type :: gemini_cfg
   !> do we consider pressure terms in perp momentum equations
   logical :: flagdiamagnetic = .false.
 
+  !> do we consider pressure terms in perp momentum equations
+  logical :: flagtwoway = .false.
+
   !> is the background current assumed to be divergence free?
   logical :: flagnodivJ0 = .false.
 end type gemini_cfg

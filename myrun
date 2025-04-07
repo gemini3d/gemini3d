@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+## Required Slurm Directives --------------------------------------
+#SBATCH --account=DARPA4763B987
+#SBATCH --partition=general
+#SBATCH --qos=background
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=128
+#SBATCH --time=04:00:00
+#
+## Optional Slurm Directives --------------------------------------
+#SBATCH --job-name=mayPERTURB
+#SBATCH --export=ALL
+#
+## Execution Block ----------------------------------------------
+# Environment Setup
+# Get sequence number of unique job identifier
+JOBID=`echo $SLURM_JOB_ID`
+#
+# create and cd to job-specific directory in your personal directory
+# in the scratch file system ($WORKDIR/$JOBID)
+#
+# mkdir $WORKDIR/$JOBID
+cd /p/work1/inchinp/GEMINIHTMS/gemini3d/build
+#
+# Launching
+# copy executable from $HOME and execute it with a .out output file
+#
+# cp $HOME/my_mpi_program .
+#
+# mpiexec -n 4096 ./xclawmpihdf
+# Don't forget to archive and clean up your results (see the Navy DSRC Archive Guide for details)
+mpiexec -np 36 ./gemini.bin /p/work1/inchinp/simulations/tests/ -manual_grid 4 9 -out_format h5

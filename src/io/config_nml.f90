@@ -51,6 +51,7 @@ contains
     logical :: flaggravdrift
     logical :: flaglagrangian
     logical :: flagdiamagnetic
+    logical :: flagtwoway
     logical :: flagnodivJ0
     integer :: diff_num_flux
     real(wp) :: kappa, bimax_frac, W0_char
@@ -73,6 +74,7 @@ contains
     namelist /gravdrift/ flaggravdrift
     namelist /lagrangian/ flaglagrangian
     namelist /diamagnetic/ flagdiamagnetic
+    namelist /twoway_coupled/ flagtwoway
     namelist /nodivJ0/ flagnodivJ0
     namelist /solflux/ dtsolflux,solfluxdir
     namelist /neutralBG_file/ dtneutralBGfile, neutralBGdir
@@ -327,6 +329,16 @@ contains
       cfg%flagdiamagnetic=flagdiamagnetic
     else
       cfg%flagdiamagnetic=.false.
+    end if
+
+       !> two-way coupled option
+    if (namelist_exists(u,'twoway_coupled')) then
+      rewind(u)
+      read(u,nml=twoway_coupled,iostat=i)
+      call check_nml_io(i,cfg%infile,"twoway_coupled")
+      cfg%flagtwoway=flagtwoway
+    else
+      cfg%flagtwoway=.false.
     end if
 
     if (namelist_exists(u,'nodivJ0')) then

@@ -494,7 +494,7 @@ contains
     class(curvmesh), intent(in) :: x
     
 
-    ! I need momentum in each direction, so 5-dimension variable
+    ! I need momentum in each direction, so 4-dimension variable
     !e1,e2,e3,v
     real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
 
@@ -509,7 +509,7 @@ contains
     lx3=size(Ts,3)-4
     
     momentumneut_source=0._wp
-    
+
     do isp=1,lsp
       !NEUTRAL-ION collisions
 
@@ -523,7 +523,8 @@ contains
         ! Schunk 4.158. Here I use nu calculated in maxwell_colln above. 
         ! these are all ion-neutral collisions for this ion
             where (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) > 0)
-                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * nu) / &
+                nuneut = (ns(1:lx1,1:lx2,1:lx3,isp) * ms(isp) * &
+                         nu(1:lx1,1:lx2,1:lx3)) / &
                          (nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2))
             elsewhere
                 nuneut = 0._wp
@@ -531,12 +532,14 @@ contains
 
         ! Accumulate momentum rate over all neutrals and ions
    momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + &
-nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs1(1:lx1,1:lx2,1:lx3,isp) - vn1(1:lx1,1:lx2,1:lx3))
+    nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+    nuneut * (vs1(1:lx1,1:lx2,1:lx3,isp) - vn1(1:lx1,1:lx2,1:lx3))
    momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + &
-nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs2(1:lx1,1:lx2,1:lx3,isp) - vn2(1:lx1,1:lx2,1:lx3))
+    nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+    nuneut * (vs2(1:lx1,1:lx2,1:lx3,isp) - vn2(1:lx1,1:lx2,1:lx3))
    momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + &
-nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs3(1:lx1,1:lx2,1:lx3,isp) - vn3(1:lx1,1:lx2,1:lx3))
-
+    nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+    nuneut * (vs3(1:lx1,1:lx2,1:lx3,isp) - vn3(1:lx1,1:lx2,1:lx3))
 
       end do
     end do
@@ -600,9 +603,10 @@ nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * nuneut * (vs3(1:lx1,1:lx2,1:lx3,isp) - v
 
         !FRICTION
         fact=fact*mn(isp2)/3
-                energyneut_source(:,:,:)=energyneut_source(:,:,:)+nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman-1) &
-                      *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
-                      +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
+   energyneut_source(:,:,:)=energyneut_source(:,:,:) + &
+   nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman-1) &
+   *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
+   +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
   
       end do
    end do  

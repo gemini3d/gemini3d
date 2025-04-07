@@ -1331,12 +1331,16 @@ contains
 
 
   !> Compute heating from precipitation and collisional stuff 
-  subroutine source_neut_in(fluidvars,intvars,x)
-  
+  subroutine source_neut_in(cfg,fluidvars,intvars,x)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    if (cfg%flagtwoway) then
+
+!	write(*,*),'Calculating two way'
     
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
@@ -1344,6 +1348,12 @@ contains
     call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
     intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
     intvars%Prprecip,intvars%momentneut,intvars%energyneut)
+
+    else
+
+!        write(*,*),'Skip two way'
+
+    end if
             
   end subroutine source_neut_in
 
