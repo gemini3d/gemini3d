@@ -363,7 +363,7 @@ contains
       call check_nml_io(i, cfg%infile, "evibcool")
       cfg%flagevibcool = flagevibcool
     else
-      cfg%flagevibcool = 1
+      cfg%flagevibcool = 0    ! default to legacy rates, for now, so CI still works okay
     endif
 
     close(u)

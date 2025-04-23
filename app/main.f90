@@ -346,41 +346,40 @@ contains
     ! Energy diffusion (thermal conduction) substep
     do isub=1,lsub
       ! FIXME: try to handle diffusion and sources together in call below
-      !call cpu_time(tstart)
-      !call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
-      !call cpu_time(tfin)
-      !if (myid==0 .and. debug) then
-      !  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-      !end if
+      call cpu_time(tstart)
+      call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
+      call cpu_time(tfin)
+      if (myid==0 .and. debug) then
+        print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      end if
   
-    ! cleanup and convert to specific internal energy density for sources substeps
-    call clean_param_in(3,x,fluidvars)
-    call T2rhoe_in(fluidvars,fluidauxvars)
-
-    !> all workers need to "agree" on a gravity and exospheric temperature
-    call get_gavg_Tinf_in(intvars,gavg,Tninf)
-
-
-    !> Compute ionization sources for the present time step
-    call clear_ionization_arrays(intvars)
-    call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
-    call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !> solve all source/loss processes
-    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)     ! reassert x1 boundary since derivatives (dx1) done for momentum sources
-    !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    ! density to be cleaned after source/loss
-    call clean_param_in(3,x,fluidvars)
-    call clean_param_in(2,x,fluidvars)
-    call clean_param_in(1,x,fluidvars)
-
+      ! cleanup and convert to specific internal energy density for sources substeps
+      call clean_param_in(3,x,fluidvars)
+      call T2rhoe_in(fluidvars,fluidauxvars)
+  
+      !> all workers need to "agree" on a gravity and exospheric temperature
+      call get_gavg_Tinf_in(intvars,gavg,Tninf)
+  
+  
+      !> Compute ionization sources for the present time step
+      call clear_ionization_arrays(intvars)
+      call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
+                                          UTsec,f107a,f107,gavg,Tninf)
+      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
+  
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !> solve all source/loss processes
+      call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)     ! reassert x1 boundary since derivatives (dx1) done for momentum sources
+      !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+      call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
+      call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
+      call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  
+      ! density to be cleaned after source/loss
+      call clean_param_in(3,x,fluidvars)
+      call clean_param_in(2,x,fluidvars)
+      call clean_param_in(1,x,fluidvars)
     end do
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv
