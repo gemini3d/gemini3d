@@ -38,7 +38,8 @@ public ::   sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,solar_ionization,clean_param, &
             rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
-            source_loss_mass,source_loss_momentum,source_loss_energy
+            source_loss_mass,source_loss_momentum,source_loss_energy, &
+            diffusion_source_loss_energy
 
 real(wp), parameter :: xicon = 3
 !real(wp), parameter :: xicon = 0
@@ -474,6 +475,60 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,
   Prionize = Prionize + Prionizetmp
   Qeionize = Qeionize + Qeionizetmp
 end subroutine solar_ionization
+
+
+!> execute diffusion of energy with simultaneous source/loss terms for all equations (all resolved in parabolic solver)
+!subroutine diffusion_source_loss_energy(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,Q,f107a,f107,nn,vn1,vn2,vn3, &
+!                                   Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts,iver,gavg,Tninf, &
+!                                   eprecip,flagdiffsolve,Teinf,J1)
+subroutine diffusion_source_loss_energy(cfg,dt,x,J1,nn,vn1,vn2,vn3,Tn,flagdiffsolve,Teinf,Pr,Lo,Qeprecip, &
+                E2,E3,ns,vs1,vs2,vs3,Ts)
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), intent(in) :: dt
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  integer, intent(in) :: flagdiffsolve
+  real(wp), intent(in) :: Teinf
+  real(wp), dimension(:,:,:,:), intent(inout) :: Pr
+  real(wp), dimension(:,:,:,:), intent(inout) :: Lo
+  real(wp), dimension(:,:,:), intent(in) :: Qeprecip
+  real(wp), dimension(-1:,-1:,-1:) :: E2,E3 
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,vs2,vs3,Ts
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
+  integer :: isp, lsp
+  real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param
+
+  ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
+  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x,cfg)                     ! collisional interactions
+
+  lsp=size(Ts,4)
+  do isp=1,lsp
+    param=Ts(:,:,:,isp)     !temperature for this species
+    call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+
+    call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+
+    ! go ahead and just put the source terms in with the diffusion solve so they can be resolved simultaneously.  
+    A=A-Lo(:,:,:,isp)
+    E=E+Pr(:,:,:,isp)*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
+    if (isp==lsp) E=E+Qeprecip*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
+
+    select case (flagdiffsolve)
+      case (1)
+        param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+      case (2)
+        param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+      case default
+        print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
+        error stop
+    end select
+
+    Ts(:,:,:,isp) = param
+    Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
+  end do
+end subroutine diffusion_source_loss_energy
 
 
 !> Energy source/loss solutions.  Upon entry the energy density should have the most recently updated state.  Upon exit

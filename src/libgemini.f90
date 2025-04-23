@@ -45,7 +45,8 @@ use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspe
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
             VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,solar_ionization, clean_param,rhoe2T,T2rhoe, &
-            rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy
+            rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy, &
+            diffusion_source_loss_energy
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
@@ -80,7 +81,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             setv2v3, v2grid, v3grid, maxcfl_in, plasma_output_nompi_in, set_global_boundaries_allspec_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
-            set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in
+            set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
+            diffusion_source_loss_energy_in
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -1259,6 +1261,27 @@ contains
             intvars%Qeionize,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,vs1,vs2,vs3,rhoes, &
             intvars%Pr,intvars%Lo,intvars%Q,E2,E3)
   end subroutine source_loss_energy_in
+
+
+  !> diffusion of energy with simultaneous resolution of sources
+  subroutine diffusion_source_loss_energy_in(cfg,x,fluidvars,electrovars,intvars,dt)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
+    real(wp), intent(in) :: dt
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    !call energy_diffusion(dt,x,ns,Ts,J1,intvars%atmos%nn,intvars%atmos%Tn,cfg%diffsolvetype,cfg%Teinf)
+    call diffusion_source_loss_energy(cfg,dt,x,J1,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2, &
+            intvars%atmos%vn3,intvars%atmos%Tn,cfg%diffsolvetype,cfg%Teinf,intvars%Pr,intvars%Lo, &
+            intvars%Qeprecip,E2,E3,ns,vs1,vs2,vs3,Ts)
+  end subroutine diffusion_source_loss_energy_in
 
 
   !> Ionization and heating rates must be re-accumulated each time so initialize to zero.  The precip arrays

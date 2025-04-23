@@ -343,7 +343,7 @@ contains
       print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
 
-    ! Energy diffusion (thermal conduction) substep
+    ! Energy diffusion (thermal conduction) substep, not that we don't change items that depend on date, etc. for subcycling
     do isub=1,lsub
       ! FIXME: try to handle diffusion and sources together in call below
       call cpu_time(tstart)
@@ -363,7 +363,7 @@ contains
   
       !> Compute ionization sources for the present time step
       call clear_ionization_arrays(intvars)
-      call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
+      call impact_ionization_in(cfg,fluidvars,intvars,x,dt/lsub,t,ymd, &
                                           UTsec,f107a,f107,gavg,Tninf)
       call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
   
