@@ -331,6 +331,10 @@ contains
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
     allocate(intvars%solflux)
+
+!    ! Here the user needs to allocate any custom variables they want to pass around and/or output
+!    allocate(intvars%sigP(1:lx1,1:lx2,1:lx3))
+!    allocate(intvars%sigH, mold=intvars%sigP)
   end function gemini_work_alloc
 
 
@@ -381,6 +385,9 @@ contains
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
     ! FIXME: why are we not deallocating intvars%eprecip and intvars%efield?
+
+!    ! Here the user *must* deallocate their custom vars
+!    deallocate(intvars%sigP,intvars%sigH)
 
     deallocate(intvars)
   end subroutine gemini_work_dealloc
@@ -1283,6 +1290,18 @@ contains
     intvars%Prionize=intvars%Prionize+intvars%Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
     intvars%Qeionize=intvars%Qeionize+intvars%Qeprecip
   end subroutine impact_ionization_in
+
+
+!=======
+!    call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
+!    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+!    call source_loss_allparams(dt,t,cfg,ymd,UTsec,x,E1,E2,E3,intvars%Q,f107a,f107,intvars%atmos%nn, &
+!                                     intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3, &
+!                                     intvars%atmos%Tn,first,ns,rhovs1,rhoes,vs1,vs2,vs3,Ts, &
+!                                     intvars%iver,gavg,Tninf,intvars%eprecip, &
+!                                     cfg%diffsolvetype,cfg%Teinf,J1)
+!  end subroutine source_loss_allparams_in
+!>>>>>>> 969ab4efaa53ca11dd996ac250d15542314487b1
 
 
   !> Compute photoionization and *add* results to intvars%Prioinize and intvars%Qeionize

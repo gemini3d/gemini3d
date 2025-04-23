@@ -52,8 +52,16 @@ contains
     logical :: flaglagrangian
     logical :: flagdiamagnetic
     logical :: flagnodivJ0
+
+    ! for controlling energy distribution of incident electron flux
     integer :: diff_num_flux
     real(wp) :: kappa, bimax_frac, W0_char
+
+    ! for controlling inclusion of Farley-Buneman anomalous heating/conductance
+    integer :: flagFBI
+
+    ! for controlling which electron cooling rates are used in energy equations
+    integer :: flagevibcool
 
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
     namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -77,6 +85,8 @@ contains
     namelist /solflux/ dtsolflux,solfluxdir
     namelist /neutralBG_file/ dtneutralBGfile, neutralBGdir
     namelist /fang_pars/ diff_num_flux, kappa, bimax_frac, W0_char
+    namelist /FBI/ flagFBI
+    namelist /evibcool/ flagevibcool
 
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -338,6 +348,24 @@ contains
       cfg%flagnodivJ0=.false.
     end if
 
+    if (namelist_exists(u, 'FBI')) then
+      rewind(u)
+      read(u, nml=FBI, iostat=i)
+      call check_nml_io(i, cfg%infile, "FBI")
+      cfg%flagFBI = flagFBI
+    else
+      cfg%flagFBI = 0
+    endif
+
+    if (namelist_exists(u, 'evibcool')) then
+      rewind(u)
+      read(u, nml=evibcool, iostat=i)
+      call check_nml_io(i, cfg%infile, "evibcool")
+      cfg%flagevibcool = flagevibcool
+    else
+      cfg%flagevibcool = 1
+    endif
+
     close(u)
   end procedure read_nml
 
@@ -382,7 +410,6 @@ contains
     integer, intent(in) :: i
     character(*), intent(in) :: filename
     character(*), intent(in), optional :: namelist
-
     character(:), allocatable :: nml, msg
 
     if(i==0) return

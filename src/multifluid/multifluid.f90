@@ -126,7 +126,6 @@ subroutine sweep2_allspec_energy(dt,x,vs2i,rhoes)
 end subroutine sweep2_allspec_energy
 
 
-
 subroutine source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prionize)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -144,7 +143,7 @@ end subroutine source_loss_mass
 subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1, E2, E3
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,Tn

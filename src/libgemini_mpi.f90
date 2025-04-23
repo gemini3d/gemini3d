@@ -25,6 +25,10 @@ use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers,
                       solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in, &
                       neutral_atmos_winds, get_it, tneuBG
 use sanity_check, only : check_finite_perturb
+!=======
+!                      v2grid, v3grid, setv2v3, set_start_timefromcfg
+!use gemini_work_def, only: gemini_work
+!>>>>>>> 969ab4efaa53ca11dd996ac250d15542314487b1
 
 implicit none (type, external)
 private
@@ -234,13 +238,13 @@ contains
         flagoutput=1    !force a full output at the milestone
         call output_plasma(cfg%outdir,flagoutput,ymd, &
           UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
-          cfg%out_format)
+          cfg%out_format,intvars)
         tmilestone = t + cfg%dtout * cfg%mcadence
         if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
       else
         call output_plasma(cfg%outdir,flagoutput,ymd, &
           UTsec,vs2,vs3,ns,vs1,Ts,intvars%Phiall,J1,J2,J3, &
-          cfg%out_format)
+          cfg%out_format,intvars)
       end if
       if (mpi_cfg%myid==0 .and. debug) then
         call cpu_time(tfin)
