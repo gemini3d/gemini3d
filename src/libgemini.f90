@@ -1176,7 +1176,8 @@ contains
   !> source/loss numerical solutions for all state variables; calls source/loss solutions for individual state
   !    variables, which alternatively could be called from the main program instead of this routine if one needed
   !    finer-grained control over solutions.
-  subroutine source_loss_allparams_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  subroutine source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
@@ -1184,14 +1185,15 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
 
-    call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_allparams_in
 
 
   !> Solve for plasma mass source/losses for all species
-  subroutine source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  subroutine source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
@@ -1213,7 +1215,8 @@ contains
 
 
   !> Momentum sources, all species
-  subroutine source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  subroutine source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
@@ -1235,7 +1238,8 @@ contains
 
 
   !> Energy sources, all species
-  subroutine source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+  subroutine source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
@@ -1251,9 +1255,9 @@ contains
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call source_loss_energy(dt,x,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,intvars%Prionize, &
+    call source_loss_energy(dt,x,cfg,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,intvars%Prionize, &
             intvars%Qeionize,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,vs1,vs2,vs3,rhoes, &
-            intvars%Pr,intvars%Lo,intvars%Q)
+            intvars%Pr,intvars%Lo,intvars%Q,E2,E3)
   end subroutine source_loss_energy_in
 
 

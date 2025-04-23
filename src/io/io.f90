@@ -76,7 +76,7 @@ interface !< plasma.f90
     !! intent(out)
   end subroutine input_plasma_currents
 
-  module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,intvars)
+  module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -84,7 +84,6 @@ interface !< plasma.f90
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    type(gemini_work), intent(in) :: intvars
   end subroutine output_plasma
 end interface
 

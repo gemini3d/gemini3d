@@ -1,5 +1,6 @@
 module gemini3d_config
 
+use filesystem, only: suffix
 use phys_consts, only : wp
 
 implicit none (type, external)
@@ -114,12 +115,17 @@ type :: gemini_cfg
 
 end type gemini_cfg
 
+
 interface
   module subroutine read_nml(cfg, verbose)
     class(gemini_cfg), intent(inout) :: cfg
     logical, intent(in), optional :: verbose
   end subroutine read_nml
+  module subroutine read_ini(cfg)
+    class(gemini_cfg), intent(inout) :: cfg
+  end subroutine read_ini
 end interface
+
 
 contains
   subroutine read_configfile(cfg, verbose)

@@ -143,7 +143,7 @@ end subroutine source_loss_mass
 subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1, E2, E3
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
@@ -156,10 +156,11 @@ subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhov
 end subroutine source_loss_momentum
 
 
-subroutine source_loss_energy(dt,x,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
-                vs1,vs2,vs3,rhoes,Pr,Lo,Q)
+subroutine source_loss_energy(dt,x,cfg,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
+                vs1,vs2,vs3,rhoes,Pr,Lo,Q,E2,E3)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
+  type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
@@ -167,9 +168,10 @@ subroutine source_loss_energy(dt,x,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3, &
   real(wp), dimension(:,:,:,:), intent(inout) :: Prionize
   real(wp), dimension(:,:,:), intent(inout) :: Qeionize
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
+  real(wp), dimension(-1:,-1:,-1:) :: E2,E3
 
   ! Stiff/balanced energy source, i.e. source/losses for energy equation(s)
-  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)                     ! collisional interactions
+  call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x,cfg)               ! collisional interactions
   call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
 

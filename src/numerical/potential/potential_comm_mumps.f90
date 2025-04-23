@@ -145,20 +145,16 @@ contains
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    type(gemini_work), intent(inout) :: intvars
-    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0,sigPgrav,sigHgrav
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
-    real(wp), dimension(:,:,:), pointer :: sigP,sigH
     real(wp) :: tstart,tfin
     real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sigNCP,sigNCH   
     ! background variables and boundary conditions, full grid sized variables
 
     ! slab-sized background variables
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E02src,E03src
-
-    !> convenience aliases
-    sigP=>intvars%sigP; sigH=>intvars%sigH    ! this is the "global" version of conductivity
 
     !> update conductivities and mobilities
     call cpu_time(tstart)

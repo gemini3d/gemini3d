@@ -6,7 +6,7 @@ implicit none (type, external)
 
 interface ! plasma_output_*.f90
   module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                                Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,sigPall,sigHall)
+                                                Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -16,7 +16,6 @@ interface ! plasma_output_*.f90
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
     real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all   ! tricky/confusing - J1,2,3 have ghost cells but these do not!
     real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-    real(wp), dimension(:,:,:), intent(in) :: sigPall,sigHall
   end subroutine
 end interface
 
@@ -28,14 +27,14 @@ contains
     !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
     
     if (mpi_cfg%myid == 0) then
-      call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,intvars)
+      call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
     else
-      call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,intvars)
+      call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
     end if
   end procedure output_plasma
 
 
-  subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,intvars)
+  subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
     !------------------------------------------------------------
     !-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
     !-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
@@ -44,7 +43,6 @@ contains
     !------------------------------------------------------------
         real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    type(gemini_work), intent(in) :: intvars
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp     ! contiguous buffer for MPI
     
@@ -71,16 +69,10 @@ contains
     call gather_send(Jtmp,tag%J2)
     Jtmp=J3(1:lx1,1:lx2,1:lx3)
     call gather_send(Jtmp,tag%J3)
-
-    ! the user can add gather operations for their various custom variables stored in intvars
-    Jtmp=intvars%sigP(1:lx1,1:lx2,1:lx3)
-    call gather_send(Jtmp,tag%sigP)
-    Jtmp=intvars%sigH(1:lx1,1:lx2,1:lx3)
-    call gather_send(Jtmp,tag%sigH)
   end subroutine output_workers_mpi
   
   
-  subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,intvars)
+  subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
     !------------------------------------------------------------
     !------- Root needs to gather data and pass to subroutine to
     !------- write to disk in the appropriate format.
@@ -93,12 +85,11 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    type(gemini_work), intent(in) :: intvars
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
     real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: Jtmp    ! continguous buffer for variables to be message-passed
-    real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all,sigPall,sigHall
+    real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all
     
     
     print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
@@ -137,18 +128,11 @@ contains
       Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
     end if
 
-    ! here the user can add any output custom variables stored in intvars, call signature of output below needs to be adapted to
-    !   include all arrays user wants in output file
-    Jtmp=intvars%sigP(1:lx1,1:lx2,1:lx3)
-    call gather_recv(Jtmp,tag%sigP,sigPall)
-    Jtmp=intvars%sigH(1:lx1,1:lx2,1:lx3)
-    call gather_recv(Jtmp,tag%sigH,sigHall)
-    
     !> Now figure out which type of file we write to
     select case (out_format)
       case ('h5')
         call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                           Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,sigPall,sigHall)
+                                           Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
       case default
         error stop 'plasma_output:output_root_stream_api: unknown format' // out_format
     end select

@@ -82,11 +82,11 @@ extern void VNRicht_artvisc_C(double**, void**);
 extern void compression_C(double**, double**, void**, int*, void**, double*);
 extern void rhoe2T_C(double**, double**);
 extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**, double*);
-extern void source_loss_allparams_C(double**, double**, double**, void**, int*, void**, 
+extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
                                       double*);
-extern void source_loss_mass_C(double**,double**,double**,void**,int*,void**,double*);
-extern void source_loss_momentum_C(double**,double**,double**,void**,int*,void**,double*);
-extern void source_loss_energy_C(double**,double**,double**,void**,int*,void**,double*);
+extern void source_loss_mass_C(void**, double**,double**,double**,void**,int*,void**,double*);
+extern void source_loss_momentum_C(void**, double**,double**,double**,void**,int*,void**,double*);
+extern void source_loss_energy_C(void**, double**,double**,double**,void**,int*,void**,double*);
 extern void clear_ionization_arrays_C(void**);
 extern void impact_ionization_C(void**,double**,void**,int*,void**,double*,double*,int*,double*,double*,double*,double*,double*);
 extern void solar_ionization_C(void**,double**,void**,int*,void**,double*,int*,double*,double*,double*,double*,double*);

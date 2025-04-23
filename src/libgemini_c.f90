@@ -907,8 +907,9 @@ contains
 
 
   !> source/loss numerical solutions
-  subroutine source_loss_allparams_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
+  subroutine source_loss_allparams_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
                   bind(C, name="source_loss_allparams_C")
+    type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
@@ -924,16 +925,18 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
 
+    call c_f_pointer(cfgC, cfg)   
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
-    call source_loss_allparams_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_allparams_C
 
 
-  subroutine source_loss_mass_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) bind(C, name="source_loss_mass_C")
+  subroutine source_loss_mass_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) bind(C, name="source_loss_mass_C")
+    type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
@@ -946,18 +949,21 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
-
+    type(gemini_cfg), pointer :: cfg
+   
+    call c_f_pointer(cfgC, cfg)   
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
-    call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_mass_C
 
 
-  subroutine source_loss_momentum_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
+  subroutine source_loss_momentum_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
                   bind(C, name="source_loss_momentum_C")
+    type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
@@ -970,18 +976,21 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
+    type(gemini_cfg), pointer :: cfg
 
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
-    call source_loss_momentum_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_momentum_C
 
 
-  subroutine source_loss_energy_C(fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
+  subroutine source_loss_energy_C(cfgC,fluidvarsC,fluidauxvarsC,electrovarsC,intvarsC,xtype,xC,dt) &
                   bind(C, name="source_loss_energy_C")
+    type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
     type(c_ptr), intent(inout) :: fluidvarsC
@@ -994,13 +1003,15 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
+    type(gemini_cfg), pointer :: cfg
 
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
     call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
-    call source_loss_energy_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
+    call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
   end subroutine source_loss_energy_C
 
 
