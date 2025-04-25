@@ -374,9 +374,10 @@ contains
     call source_loss_mass_in(fluidvars,fluidauxvars,electrovars,intvars,x,dt)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+    !> compute momentum and energy rates for neutral atmosphere (off by default)
     call source_neut_in(cfg,fluidvars,intvars,x)
 
-    ! density to be cleaned after source/loss
+    !> density to be cleaned after source/loss
     call clean_param_in(3,x,fluidvars)
     call clean_param_in(2,x,fluidvars)
     call clean_param_in(1,x,fluidvars)

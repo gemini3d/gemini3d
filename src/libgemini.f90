@@ -138,7 +138,8 @@ type gemini_work
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 
   !> user output data
-  integer :: lparms=6                                   ! number of 3D arrays to be output to hdf5 files
+  !integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
+  integer :: lparms=0
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
@@ -437,12 +438,10 @@ contains
     i3start=lbound(ns,3)+2
     i3end=i3start+lx3-1
 
-    intvars%user_output(:,:,:,1)=ns(i1start:i1end,i2start:i2end,i3start:i3end,7)
-    intvars%user_output(:,:,:,2)=vs1(i1start:i1end,i2start:i2end,i3start:i3end,7)
-    intvars%user_output(:,:,:,3)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
-    intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
-    intvars%user_output(:,:,:,5)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
-    intvars%user_output(:,:,:,6)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
+    ! intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
+    ! intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
+    ! intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
+    ! intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
   end subroutine user_populate
 
 
@@ -1330,7 +1329,7 @@ contains
   end subroutine clear_ionization_arrays
 
 
-  !> Compute heating from precipitation and collisional stuff 
+  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma 
   subroutine source_neut_in(cfg,fluidvars,intvars,x)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
@@ -1338,24 +1337,16 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
+    !> check if the user wants these rates before computing
     if (cfg%flagtwoway) then
+      call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
-!	write(*,*),'Calculating two way'
-    
-    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
-
-! Here it should be a call to multifluid
-    call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
-    intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
-    intvars%Prprecip,intvars%momentneut,intvars%energyneut)
-
-    else
-
-!        write(*,*),'Skip two way'
-
+      call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+             intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
+             intvars%Prprecip,intvars%momentneut,intvars%energyneut)
     end if
-            
   end subroutine source_neut_in
+
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  

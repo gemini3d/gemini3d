@@ -1,7 +1,6 @@
 submodule(gemini3d_config) config_nml
 
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
-
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
 use filesystem, only : absolute
 
@@ -331,7 +330,7 @@ contains
       cfg%flagdiamagnetic=.false.
     end if
 
-       !> two-way coupled option
+    !> two-way coupled option
     if (namelist_exists(u,'twoway_coupled')) then
       rewind(u)
       read(u,nml=twoway_coupled,iostat=i)
