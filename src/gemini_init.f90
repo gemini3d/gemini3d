@@ -141,6 +141,12 @@ if (mpi_cfg%myid==0) then
     print*, 'Gravitaional drift terms disabled.'
   end if
 
+  if (cfg%flagtwoway) then
+    print*, 'Two-way coupling enabled.'
+  else
+    print*, 'Two-way coupling disabled.'
+  end if
+  
   if (cfg%flaglagrangian) then
     print*, 'Lagrangian grid enabled.'
   else
