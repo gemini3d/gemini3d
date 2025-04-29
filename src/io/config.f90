@@ -109,7 +109,7 @@ type :: gemini_cfg
   !! 2: abnormal heating and non-linear current
 
   !> electron rotational and vibrational cooling
-  integer :: flagevibcool = 1
+  integer :: flagevibcool = 0
   !! default: 1, use new model
   !! 0: use old model
 

@@ -19,7 +19,7 @@ module multifluid
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use advec, only: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
 use calculus, only: etd_uncoupled, div3d
-use collisions, only:  thermal_conduct
+use collisions, only:  thermal_conduct, thermal_conduct_new
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
@@ -506,7 +506,11 @@ subroutine diffusion_source_loss_energy(cfg,dt,x,J1,nn,vn1,vn2,vn3,Tn,flagdiffso
   lsp=size(Ts,4)
   do isp=1,lsp
     param=Ts(:,:,:,isp)     !temperature for this species
-    call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+    if (cfg%flagevibcool /= 0) then
+      call thermal_conduct_new(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)           
+    else
+      call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+    end if
 
     call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
 

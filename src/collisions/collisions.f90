@@ -8,7 +8,7 @@ use meshobj, only : curvmesh
 
 implicit none (type, external)
 private
-public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln, NLConductivity
+public :: thermal_conduct, thermal_conduct_new, conductivities, capacitance, maxwell_colln, coulomb_colln, NLConductivity
 
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( [ real(wp) :: &
@@ -216,18 +216,57 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
     lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
     beta=0.0
   else                  !electrons
+    lambda=elchrg * 100 * 7.7e5_wp*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ &
+      (1 + 3.22e4_wp*Ts(1:lx1,1:lx2,1:lx3)**2/ns(1:lx1,1:lx2,1:lx3)* &
+        (nn(:,:,:,1)*1.1e-16_wp*(1+5.7e-4_wp*Ts(1:lx1,1:lx2,1:lx3)) + &
+        nn(:,:,:,2)*2.82e-17_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))* &
+        (1-1.21e-4_wp*Ts(1:lx1,1:lx2,1:lx3))+nn(:,:,:,3)* &
+        2.2e-16_wp*(1+3.6e-2_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))) ))
+    beta=5.0_wp/2 * kB/elchrg * J1(1:lx1,1:lx2,1:lx3)
+  end if
+end subroutine thermal_conduct
+
+
+pure subroutine thermal_conduct_new(isp,Ts,ns,nn,J1,lambda,beta)
+  !! COMPUTE THERMAL CONDUCTIVITY.
+  !! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
+  !! Note that it is done on a per species basis
+  
+  integer, intent(in) :: isp
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: lambda,beta
+  !! intent(out)
+  real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: Tstmp1, Tstmp2, Teaux1, Teaux2
+  integer :: lx1,lx2,lx3
+  
+  
+  lx1=size(Ts,1)-4
+  lx2=size(Ts,2)-4
+  lx3=size(Ts,3)-4
+  
+  if (isp<lsp) then
+    ! Tstmp=Ts(1:lx1,1:lx2,1:lx3)
+
+    ! where (Ts(1:lx1,1:lx2,1:lx3) > 6000.0)
+    !   Tstmp=6000.0
+    ! end where
+
+  !! ion species
+  !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
+    !! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
+    lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
+    beta=0.0
+  else                  !electrons
     Tstmp1=Ts(1:lx1,1:lx2,1:lx3)
-
     Teaux1=(1/1.21e-4_wp)-100._wp ! Find the point where goes -, substract 1000. 
-
     where (Ts(1:lx1,1:lx2,1:lx3) > Teaux1)
       Tstmp1=Teaux1
     end where
 
     Tstmp2=Ts(1:lx1,1:lx2,1:lx3)
-
     Teaux2=(1/1.35e-4_wp)-100._wp ! Find the point where goes -, substract 1000. 
-
     where (Ts(1:lx1,1:lx2,1:lx3) > Teaux2)
       Tstmp2=Teaux2
     end where
@@ -240,7 +279,8 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
           nn(:,:,:,4)*5.47e-15_wp*(1-1.35e-4*Tstmp2)))
     beta=5.0_wp/2 * kB/elchrg * J1(1:lx1,1:lx2,1:lx3)
   end if
-end subroutine thermal_conduct
+end subroutine thermal_conduct_new
+
 
 
 subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
