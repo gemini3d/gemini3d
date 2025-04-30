@@ -46,7 +46,8 @@ use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspe
             VNRicht_artvisc,compression, &
             energy_diffusion,impact_ionization,solar_ionization, clean_param,rhoe2T,T2rhoe, &
             rhov12v1,v12rhov1,clean_param_after_regrid,source_loss_mass,source_loss_momentum,source_loss_energy, &
-            diffusion_source_loss_energy
+            diffusion_source_loss_energy, &
+            source_neut
 use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
@@ -71,6 +72,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             energy_diffusion_in, &
             source_loss_allparams_in, &
             source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
+            source_neut_in, &
             clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
             fluidauxvar_pointers, electrovar_pointers, gemini_work, &
@@ -82,7 +84,8 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             get_fullgrid_lims_in,get_cfg_timevars,electrodynamics_test, precip_perturb_in, interp3_in, interp2_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            diffusion_source_loss_energy_in
+            diffusion_source_loss_energy_in, &
+            user_populate
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -126,13 +129,20 @@ type gemini_work
   !> Neutral information for top-level gemini program
   type(neutral_info), pointer :: atmos=>null()
 
+  !> Use to store neutral momentum and energy rate
+  real(wp), dimension(:,:,:,:), pointer :: momentneut=>null()
+  real(wp), dimension(:,:,:), pointer :: energyneut=>null()
+
   !> Inputdata objects that are needed for each subgrid
   type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
   type(efielddata), pointer :: efield=>null()           ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 
-  real(wp), dimension(:,:,:,:), pointer :: user_output=>null()
+  !> user output data
+  !integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
+  integer :: lparms=0
+  real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
 
@@ -302,6 +312,10 @@ contains
     intvars%W0=1e3
     intvars%PhiWmWm2=1e-5
 
+    !> allocation neutral rate variables
+    allocate(intvars%momentneut(1:lx1,1:lx2,1:lx3,1:3))
+    allocate(intvars%energyneut(1:lx1,1:lx2,1:lx3))
+
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
     allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
@@ -337,6 +351,9 @@ contains
 !    ! Here the user needs to allocate any custom variables they want to pass around and/or output
 !    allocate(intvars%sigP(1:lx1,1:lx2,1:lx3))
 !    allocate(intvars%sigH, mold=intvars%sigP)
+
+    ! lastly we want to allocate whatever data the user want to store and output for their particular application
+    call user_allocate(intvars)
   end function gemini_work_alloc
 
 
@@ -391,8 +408,58 @@ contains
 !    ! Here the user *must* deallocate their custom vars
 !    deallocate(intvars%sigP,intvars%sigH)
 
+    ! Call user deallocate
+    call user_deallocate(intvars)
+
     deallocate(intvars)
   end subroutine gemini_work_dealloc
+
+
+  ! Set the size and do the allocation of their custom output variables; user controls through intvars%lparms
+  subroutine user_allocate(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    if (.not. associated(intvars%user_output)) then
+      allocate(intvars%user_output(1:lx1,1:lx2,1:lx3,1:intvars%lparms))     ! user data must not include ghost cells
+    else
+      error stop 'attempting to allocate user_output when already in use.'
+    end if
+  end subroutine user_allocate
+
+
+  ! User should write code to put their data into the output buffer here; this will be called prior to doing a output
+  subroutine user_populate(fluidvars,electrovars,intvars)
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(in) :: intvars
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
+    integer :: i1start,i1end,i2start,i2end,i3start,i3end
+
+    call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    ! for arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells
+    i1start=lbound(ns,1)+2
+    i1end=i1start+lx1-1
+    i2start=lbound(ns,2)+2
+    i2end=i2start+lx2-1
+    i3start=lbound(ns,3)+2
+    i3end=i3start+lx3-1
+
+    ! intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
+    ! intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
+    ! intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
+    ! intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
+  end subroutine user_populate
+
+
+  ! Deallocate user_output; user controls through intvars%lparms
+  subroutine  user_deallocate(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    if (associated(intvars%user_output)) deallocate(intvars%user_output)
+  end subroutine user_deallocate
 
 
   !> allocate space for gemini state variables, bind pointers to blocks of memory; this is primarily meant
@@ -1294,6 +1361,25 @@ contains
     intvars%Prionize=0._wp
     intvars%Qeionize=0._wp
   end subroutine clear_ionization_arrays
+
+
+  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma 
+  subroutine source_neut_in(cfg,fluidvars,intvars,x)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+
+    !> check if the user wants these rates before computing
+    if (cfg%flagtwoway) then
+      call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+
+      call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+             intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
+             intvars%Prprecip,intvars%momentneut,intvars%energyneut)
+    end if
+  end subroutine source_neut_in
 
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into

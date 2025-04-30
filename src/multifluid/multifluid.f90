@@ -26,6 +26,7 @@ use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use sources, only: srcsenergy, srcsmomentum, srcscontinuity
+use sources, only: srcsMomentum_neut, srcsEnergy_neut
 use timeutils, only : sza
 use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
@@ -39,7 +40,8 @@ public ::   sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             energy_diffusion,impact_ionization,solar_ionization,clean_param, &
             rhoe2T,T2rhoe,rhov12v1,v12rhov1,clean_param_after_regrid, &
             source_loss_mass,source_loss_momentum,source_loss_energy, &
-            diffusion_source_loss_energy
+            diffusion_source_loss_energy, &
+            source_neut
 
 real(wp), parameter :: xicon = 3
 !real(wp), parameter :: xicon = 0
@@ -175,6 +177,38 @@ subroutine source_loss_energy(dt,x,cfg,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3
   call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,E2,E3,x,cfg)               ! collisional interactions
   call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
+
+subroutine source_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: nn
+  real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+  real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
+  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: eff
+  real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
+  real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
+  real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
+  integer :: isp
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: altkm
+
+  ! Call sources
+  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+
+  altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
+
+  eff = c5*altkm(1:lx1,1:lx2,1:lx3)**5 + c4*altkm(1:lx1,1:lx2,1:lx3)**4 + &
+        c3*altkm(1:lx1,1:lx2,1:lx3)**3 + c2*altkm(1:lx1,1:lx2,1:lx3)**2 + c1*altkm(1:lx1,1:lx2,1:lx3) + c0
+
+! Neutral heating efficiency
+  ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
+  do isp=1,6 ! it looks that I don't need 7 here
+    energyneut_source = energyneut_source + &
+    Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
+  end do
+end subroutine source_neut
 
 
 !> Compute temperatures from internal energy densities

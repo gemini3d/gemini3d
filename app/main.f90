@@ -36,6 +36,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
                       source_loss_allparams_in, &
                       source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
+                      source_neut_in, &
                       dateinc_in,get_subgrid_size, get_fullgrid_size, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
@@ -375,12 +376,15 @@ contains
       call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
       call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  
+
       ! density to be cleaned after source/loss
       call clean_param_in(3,x,fluidvars)
       call clean_param_in(2,x,fluidvars)
       call clean_param_in(1,x,fluidvars)
     end do
+
+    !> compute momentum and energy rates for neutral atmosphere (off by default)
+    call source_neut_in(cfg,fluidvars,intvars,x)
     !should the electron velocity be recomputed here now that densities have changed...
   end subroutine fluid_adv
 end program

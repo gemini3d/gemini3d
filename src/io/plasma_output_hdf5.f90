@@ -49,6 +49,11 @@ module procedure output_root_stream_mpi_hdf5
       call hout%write('J3all',    real(J3all(1:lx1,1:lx2all,1:lx3all)))
       call hout%write('v2avgall', real(v2avgall(1:lx1,1:lx2all,1:lx3all)))
       call hout%write('v3avgall', real(v3avgall(1:lx1,1:lx2all,1:lx3all)))
+
+      ! these are user-specified output variables
+      if (size(user_outputall,4)>0) then
+        call hout%write('user_outputall', real(user_outputall(1:lx1,1:lx2all,1:lx3all,:)))
+      end if
   end select
 
   if (gridflag==1) then

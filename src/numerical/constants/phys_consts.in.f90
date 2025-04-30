@@ -51,14 +51,19 @@ real(wp), parameter :: gammas(lsp)=[5.0_wp/3, &
                                     5.0_wp/3, &
                                     5.0_wp/3, &
                                     5.0_wp/3]
-  !! adiabatic index for each speces
+  !! adiabatic index for each species
 
 
 !> NEUTRAL DATA
 integer, parameter :: ln=4, lnchem=6
   !! number of neutral densities, and number of neutrals in chem. rxns.
-real(wp),parameter :: mn(ln)=[real(wp) :: 16,28,32,1]*amu
+real(wp), parameter :: mn(ln)=[real(wp) :: 16,28,32,1]*amu
   !! mass of neutral species
+real(wp), parameter :: gamman(ln)=[5.0_wp/3, &
+                                   7.0_wp/5, &
+                                   7.0_wp/5, &
+                                   5.0_wp/3]
+  !! neutral species adiabatic index
 
 !AURORAL DATA
 integer, parameter :: lwave=15 !spectral auroral lines tracked in GLOWv0.982
@@ -78,10 +83,12 @@ real(wp), parameter :: wavelengths(lwave)=[real(wp) :: 3371, &
                                         1493, &
                                         1304] !wavelength of each auroral line, housekeeping
 
+
 !> HOUSEKEEPING PARAMETERS for conditioning densities
 real(wp), parameter :: mindens     = 1.0e-100_wp
 real(wp), parameter :: mindensnull = 1.0e-20_wp
 real(wp), parameter :: mindensdiv  = 1.0e-5_wp
+
 
 !To control the amount of console output; can be changed by user command line flag "-debug"
 logical :: debug=.false.

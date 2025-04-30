@@ -183,6 +183,11 @@ flaglagrangian=.true.         ! whether or not to have the grid drift at the ExB
 &diamagnetic
 flagdiamagnetic=.true.        ! whether or not to compute pressure terms in perp. momentum balance
 /
+
+! (optional - off by default)
+&twoway_coupled
+flagtwoway=.true.        ! whether or not to compute momentum and energy rates back to neutrals
+/
 ```
 
 <a name="grid_input_files"></a>
