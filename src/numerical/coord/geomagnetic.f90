@@ -192,4 +192,37 @@ contains
       end do
     end do
   end subroutine ECEFspher2ENU
+
+
+  ! take a set of ENU coordinates and transform to ECEF spherical
+  subroutine ENU2ECEFspher(x,y,z,theta1,phi1,alt,theta,phi)
+    real(wp), intent(in), dimension(:,:,:) :: x,y,z    !ENU, as if produced by meshgrid-type operation
+    real(wp), intent(in) :: theta1,phi1
+    real(wp), intent(inout), dimension(:,:,:) :: alt,theta,phi
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+    real(wp) :: gamma1,gamma2
+    logical :: flag3D=.false.
+
+    lx1=size(x,1)
+    lx2=size(x,2)
+    lx3=size(x,3)
+    if (size(alt,1)/=lx1 .or. size(alt,2)/=lx2 .or. size(alt,3)/=lx3) then 
+      error stop 'ECEFspher2ENU:  inconsistent input array sizes'
+    end if
+
+    if (size(x,2)/=1 .and. size(x,3)/=1) flag3D=.true.
+
+    alt(:,:,:)=z(:,:,:)
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          gamma1=y(ix1,ix2,ix3)/Re
+          gamma2=x(ix2,ix2,ix3)/Re
+
+          theta(ix1,ix2,ix3)=theta1-gamma1
+          phi(ix1,ix2,ix3)=phi1+gamma2
+        end do
+      end do
+    end do
+  end subroutine ENU2ECEFspher
 end module geomagnetic
