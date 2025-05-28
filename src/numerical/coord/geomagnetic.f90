@@ -11,7 +11,7 @@ real(wp), parameter :: thetan=11*pi/180
 real(wp), parameter :: phin=289*pi/180
 
 private
-public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU
+public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU, ENU2ECEFspher
 
 contains
   !> convert geomagnetic coordinates to geographic
