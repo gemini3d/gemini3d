@@ -314,9 +314,9 @@ contains
     intvars%PhiWmWm2=1e-5
 
     !> allocation neutral rate variables
-    allocate(intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:4)
+    allocate(intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:4))
     intvars%momentneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:3)
-    intvars%energyneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1))
+    intvars%energyneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1)
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
@@ -384,9 +384,11 @@ contains
     deallocate(intvars%Q)
 
     deallocate(intvars%W0)
-    deallocate(intvars%PhimWm2)
+    deallocate(intvars%PhiWmWm2)
 
-    deallcoate(intvars%neutralrates)
+    deallocate(intvars%neutralrates)
+    intvars%momentneut=>null();
+    intvars%energyneut=>null();
 
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
