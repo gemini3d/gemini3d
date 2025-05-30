@@ -130,6 +130,7 @@ type gemini_work
   type(neutral_info), pointer :: atmos=>null()
 
   !> Use to store neutral momentum and energy rate
+  real(wp), dimension(:,:,:,:), pointer :: neutralrates=>null()
   real(wp), dimension(:,:,:,:), pointer :: momentneut=>null()
   real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
@@ -313,8 +314,9 @@ contains
     intvars%PhiWmWm2=1e-5
 
     !> allocation neutral rate variables
-    allocate(intvars%momentneut(1:lx1,1:lx2,1:lx3,1:3))
-    allocate(intvars%energyneut(1:lx1,1:lx2,1:lx3))
+    allocate(intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:4)
+    intvars%momentneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:3)
+    intvars%energyneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1))
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
@@ -380,6 +382,11 @@ contains
     deallocate(intvars%vs2i)
     deallocate(intvars%vs3i)
     deallocate(intvars%Q)
+
+    deallocate(intvars%W0)
+    deallocate(intvars%PhimWm2)
+
+    deallcoate(intvars%neutralrates)
 
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
