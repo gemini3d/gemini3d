@@ -1,8 +1,8 @@
 
 # flags we don't want leaking into Git submodules to avoid excessive warnings on projects we don't control.
 set(${PROJECT_NAME}_flags
-$<$<COMPILE_LANGUAGE:Fortran>:-warn>
-$<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
+$<$<AND:$<CONFIG:Debug,RelWithDebInfo>,$<COMPILE_LANGUAGE:Fortran>>:-warn>
+$<$<AND:$<CONFIG:Debug,RelWithDebInfo>,$<COMPILE_LANGUAGE:C,CXX>>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 )
 
@@ -10,7 +10,7 @@ $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 # or runtime error / weird behavior with non-standard C_BOOL values.
 # -standard-semantics is no good because it breaks linkage within oneAPI itself e.g. oneMPI library!
 if(NOT WIN32)
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-fpscomp;logicals>")
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-fpscomp;logicals>")
 endif()
 
 # add_compile_options($<$<CONFIG:Debug>:-Rno-debug-disables-optimization>)
@@ -21,16 +21,16 @@ endif()
 
 if(NOT WIN32)
   if(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
-    add_compile_options(-fiopenmp)
+    list(APPEND ${PROJECT_NAME}_flags -fiopenmp)
   endif()
   # -fiopenmp:
   # undefined reference to `omp_get_max_threads'
   # undefined reference to `__kmpc_global_thread_num' and more similar
-  add_link_options(-qopenmp)
+  list(APPEND ${PROJECT_NAME}_flags -qopenmp)
   # undefined reference to `__kmpc_begin'
 endif()
 
-add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
+list(APPEND ${PROJECT_NAME}_flags $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
 # heap-arrays: avoid stack overflow, for both unit tests and actual simulations
 # it's needed on Linux and Windows
 # https://www.intel.com/content/www/us/en/develop/documentation/fortran-compiler-oneapi-dev-guide-and-reference/top/compiler-reference/compiler-options/advanced-optimization-options/heap-arrays.html
@@ -39,15 +39,11 @@ add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
 # --- IMPORTANT: bounds checking
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-check>")
 # -check is an alias for -check all. However, MUMPS trips on -check, so we have to use a less stringent check.
-add_compile_options(
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-CB>"
-)
+list(APPEND ${PROJECT_NAME}_flags "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-CB>")
 # -CB is an alias for -check bounds.
 # --- IMPORTANT
 
-add_compile_options(
-"$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-debug>"
-)
+list(APPEND ${PROJECT_NAME}_flags "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-debug>")
 # -debug is an alias for -debug all
 # -fpe0 causes MUMPS failures (internal to MUMPS)
 
