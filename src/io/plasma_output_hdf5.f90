@@ -21,7 +21,7 @@ module procedure output_root_stream_mpi_hdf5
 
   call hout%write("/flagoutput", flagoutput)
   call hout%write('/time/ymd', ymd)
-  call hout%write('/time/UThour',   real(UTsec/3600.))
+  call hout%write('/time/UThour', UTsec/3600.)
 
   select case (flagoutput)
     case (2)    !output ISR-like average parameters
