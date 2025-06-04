@@ -18,4 +18,4 @@ runs:
   - name: Install packages (MacOS)
     shell: bash
     if: runner.os == 'macOS'
-    run: brew install ninja open-mpi hdf5 scalapack
+    run: brew install open-mpi hdf5 scalapack

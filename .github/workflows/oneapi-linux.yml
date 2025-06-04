@@ -70,11 +70,6 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: install Ninja
-      run: sudo apt install ninja-build
-# install ninja needs to be own step as not cached by design
-# we use ninja to help debu build failures as it prints the failing command by default
-
     - name: CMake Configure
       run: cmake --preset default -G Ninja
 
