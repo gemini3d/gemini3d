@@ -21,7 +21,12 @@ on:
       - "!cmake/cray.cmake"
       - ".github/workflows/ci.yml"
       - "!docs/**"
+  workflow_dispatch:
 
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 

@@ -33,6 +33,13 @@ on:
 # paths ignore starting with "!"
       - "!docs/**"
       - "!**/cray.cmake"
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
 
