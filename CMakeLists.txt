@@ -76,7 +76,12 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(LAPACK REQUIRED)
+if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
+  # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
+  find_package(LAPACK REQUIRED)
+else()
+  find_package(SCALAPACK REQUIRED)
+endif()
 
 set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
