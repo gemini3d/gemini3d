@@ -21,7 +21,12 @@ on:
       - "!cmake/cray.cmake"
       - ".github/workflows/ci.yml"
       - "!docs/**"
+  workflow_dispatch:
 
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -54,12 +59,12 @@ jobs:
   cmake-320:
     timeout-minutes: 30
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
         cmake_version: ["3.20.6"]
-        gcc: [9]
+        gcc: [12]
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -87,7 +92,7 @@ jobs:
       matrix:
         hwm14: [false]
         os: [ubuntu-22.04]
-        gcc: [10, 11]
+        gcc: [9, 10, 11]
 
     env:
       CC: gcc-${{ matrix.gcc }}

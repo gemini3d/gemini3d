@@ -27,7 +27,7 @@ contains
 
     ! read in the ICs size and allocate modele-scope variables to store full-grid data
     call get_simsize3(indatsize,lx1in,lx2in,lx3in)
-    allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))   
+    allocate(x1in(-1:lx1in+2),x2in(-1:lx2in+2),x3in(-1:lx3in+2))
     allocate(nsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               vs1all(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
               Tsall(-1:lx1in+2,-1:lx2in+2,-1:lx3in+2,1:lsp), &
@@ -37,7 +37,7 @@ contains
     call get_grid3_coords_hdf5(indatgrid,x1in,x2in,x3in,glonctr,glatctr)
     call getICs_hdf5_nompi(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
 
-    ! there isn't a corresponding call to deallocate module-scope input data arrays 
+    ! there isn't a corresponding call to deallocate module-scope input data arrays
   end subroutine load_ICs2mod
 
 
@@ -47,7 +47,7 @@ contains
       if (allocated(x1in)) deallocate(x1in)
       if (allocated(x2in)) deallocate(x2in)
       if (allocated(x3in)) deallocate(x3in)
-  
+
       if (allocated(nsall)) deallocate(nsall)
       if (allocated(vs1all)) deallocate(vs1all)
       if (allocated(Tsall)) deallocate(Tsall)
@@ -109,7 +109,7 @@ contains
 
     ! We must make sure that the target coordinates do not range outside the input file coordinates.
     ! Moreoever, we do currently allow for the x3 size to be 1, in which case we just assume we
-    !   are doing a 2D interpolation.  
+    !   are doing a 2D interpolation.
     !print*, 'target grid size:  ',lx1,lx2,lx3
     if(x1(1)<x1in(1) .or. x1(lx1)>x1in(lx1in)) then
       error stop 'interp_file2grid: x1 target coordinates beyond input grid coords'
@@ -143,7 +143,7 @@ contains
       else
         ix3=lx3in/2
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),vs1all(1:lx1in,1:lx2in,ix3,isp), &
-                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))
       end if
       vs1(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
 
@@ -153,7 +153,7 @@ contains
       else
         ix3=lx3in/2
         parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),Tsall(1:lx1in,1:lx2in,ix3,isp), &
-                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))
       end if
 
       Ts(1:lx1,1:lx2,1:lx3,isp)=reshape(parmflat,[lx1,lx2,lx3])
@@ -163,9 +163,9 @@ contains
       parmflat=interp3(x1in(1:lx1in),x2in(1:lx2in),x3in(1:lx3in),Phiall(1:lx1in,1:lx2in,1:lx3in), &
                          x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3),x3i(1:lx1*lx2*lx3))
     else
-      ix3=lx3in/2           
+      ix3=lx3in/2
       parmflat=interp2(x1in(1:lx1in),x2in(1:lx2in),Phiall(1:lx1in,1:lx2in,ix3), &
-                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))   
+                           x1i(1:lx1*lx2*lx3),x2i(1:lx1*lx2*lx3))
     end if
     Phi(1:lx1,1:lx2,1:lx3)=reshape(parmflat,[lx1,lx2,lx3])
 
@@ -182,19 +182,19 @@ contains
   subroutine forceinputZOH(param)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
     integer :: lx1,lx2,lx3
-  
+
     lx1=size(param,1)-4; lx2=size(param,2)-4; lx3=size(param,3)-4;
-  
+
     param(0,:,:,:)=param(1,:,:,:)
     param(-1,:,:,:)=param(1,:,:,:)
     param(lx1+1,:,:,:)=param(lx1,:,:,:)
     param(lx1+2,:,:,:)=param(lx1,:,:,:)
-  
+
     param(:,0,:,:)=param(:,1,:,:)
     param(:,-1,:,:)=param(:,1,:,:)
     param(:,lx2+1,:,:)=param(:,lx2,:,:)
     param(:,lx2+2,:,:)=param(:,lx2,:,:)
-  
+
     param(:,:,0,:)=param(:,:,1,:)
     param(:,:,-1,:)=param(:,:,1,:)
     param(:,:,lx3+1,:)=param(:,:,lx3,:)
@@ -249,7 +249,7 @@ contains
     call hout%open(filenamefull, action='w',comp_lvl=comp_lvl)
     call hout%write("/flagoutput", flagoutput)
     call hout%write('/time/ymd', ymd)
-    call hout%write('/time/UThour',   real(UTsec/3600.))
+    call hout%write('/time/UThour', UTsec/3600.)
     if (present(x1lims)) call hout%write('/x1lims',real(x1lims))
     if (present(x2lims)) call hout%write('/x2lims',real(x2lims))
     if (present(x3lims)) call hout%write('/x3lims',real(x3lims))

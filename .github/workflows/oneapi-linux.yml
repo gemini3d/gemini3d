@@ -33,6 +33,13 @@ on:
 # paths ignore starting with "!"
       - "!docs/**"
       - "!**/cray.cmake"
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
 
@@ -69,11 +76,6 @@ jobs:
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
-
-    - name: install Ninja
-      run: sudo apt install ninja-build
-# install ninja needs to be own step as not cached by design
-# we use ninja to help debu build failures as it prints the failing command by default
 
     - name: CMake Configure
       run: cmake --preset default -G Ninja
