@@ -217,7 +217,7 @@ contains
       do ix2=1,lx2
         do ix1=1,lx1
           gamma1=y(ix1,ix2,ix3)/Re
-          gamma2=x(ix2,ix2,ix3)/Re
+          gamma2=x(ix1,ix2,ix3)/Re
 
           theta(ix1,ix2,ix3)=theta1-gamma1
           phi(ix1,ix2,ix3)=phi1+gamma2
