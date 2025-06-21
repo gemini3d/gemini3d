@@ -28,6 +28,8 @@ include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
+set(CMAKE_CXX_STANDARD 17)
+
 # Fortran filesystem library "ffilesystem"
 set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
