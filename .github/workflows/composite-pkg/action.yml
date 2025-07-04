@@ -13,7 +13,7 @@ runs:
     if: runner.os == 'Linux'
     run: |
       sudo apt update
-      sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build liblapack-dev
+      sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
 
   - name: Install packages (MacOS)
     shell: bash
