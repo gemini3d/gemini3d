@@ -4,10 +4,6 @@ env:
   CC: icx
   CXX: icpx
   FC: ifx
-  LINUX_CPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp
-  LINUX_FORTRAN_COMPONENTS: intel-oneapi-compiler-fortran
-  LINUX_MKL_COMPONENTS: intel-oneapi-mkl intel-oneapi-mkl-devel
-  LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   CTEST_NO_TESTS_ACTION: error
   CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -48,8 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # strategy:
-    #   matrix:
+    strategy:
+      matrix:
+        oneapi: [2025.1]
     #     hwm14: [true, false]
 
     steps:
@@ -71,7 +68,13 @@ jobs:
       # 5 minutes times out sometimes
       run: |
         sh -c .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install --no-install-recommends ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
+        sudo apt install --no-install-recommends \
+          intel-oneapi-compiler-fortran-${{ matrix.oneapi }} \
+          intel-oneapi-compiler-dpcpp-cpp-${{ matrix.oneapi }} \
+          intel-oneapi-mpi \
+          intel-oneapi-mpi-devel \
+          intel-oneapi-mkl-${{ matrix.oneapi }} \
+          intel-oneapi-mkl-devel-${{ matrix.oneapi }}
 
     - name: Setup Intel oneAPI environment
       run: |
@@ -81,15 +84,18 @@ jobs:
     - name: CMake Configure
       run: cmake --preset default
 
-    - name: print config log
-      if: ${{ failure() }}
-      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+    - name: Upload log failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: oneapi-${{ runner.os }}-CMakeConfigureLog.yaml
+        path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: build
       run: cmake --build --preset default
 
     - name: build failed
-      if: ${{ failure() }}
+      if: ${{ failure() }} && ${{ hashFiles('build/build.ninja') != '' }}
       run: cmake --build --preset default -j1 -v
 
     - name: unit test
