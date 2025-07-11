@@ -8,10 +8,12 @@ runs:
     shell: bash
     run: $CMAKE --preset multi -Dhwm14:BOOL=${{ matrix.hwm14 }}
 
-  - name: print config log
-    shell: bash
-    if: ${{ failure() }}
-    run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+  - name: Upload log failure
+    if: failure()
+    uses: actions/upload-artifact@v4
+    with:
+      name: ${{ env.CC }}-${{ env.FC}}-${{ runner.os }}-CMakeConfigureLog.yaml
+      path: build/CMakeFiles/CMakeConfigureLog.yaml
 
 
   - name: Debug build
