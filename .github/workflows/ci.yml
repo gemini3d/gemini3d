@@ -92,7 +92,8 @@ jobs:
       matrix:
         hwm14: [false]
         os: [ubuntu-22.04]
-        gcc: [9, 10, 11]
+        gcc: [10, 11]
+# GCC 9 segfaults on gemini:mini2dns_fang gemini:mini2dew_fang
 
     env:
       CC: gcc-${{ matrix.gcc }}
