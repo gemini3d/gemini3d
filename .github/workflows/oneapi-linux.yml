@@ -13,6 +13,7 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 4
   CMAKE_BUILD_TYPE: Release
   CTEST_PARALLEL_LEVEL: 0
+  CMAKE_GENERATOR: Ninja
   # oneAPI Debug triggers asan errors on Linux in general on any project
   CMAKE_INSTALL_PREFIX: ~/libs
   CMAKE_PREFIX_PATH: ~/libs
@@ -62,15 +63,15 @@ jobs:
       with:
         path: |
           /opt/intel/oneapi
-        key: install-apt
+        key: install-oneapi-apt
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 8
       # 5 minutes times out sometimes
       run: |
-        .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
+        sh -c .github/workflows/oneapi_setup_apt_repo_linux.sh
+        sudo apt install --no-install-recommends ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
 
     - name: Setup Intel oneAPI environment
       run: |
@@ -78,7 +79,7 @@ jobs:
         printenv >> $GITHUB_ENV
 
     - name: CMake Configure
-      run: cmake --preset default -G Ninja
+      run: cmake --preset default
 
     - name: print config log
       if: ${{ failure() }}
@@ -103,4 +104,4 @@ jobs:
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
-      run: .github/workflows/oneapi_cache_exclude_linux.sh
+      run: sh -c .github/workflows/oneapi_cache_exclude_linux.sh
