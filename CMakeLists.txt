@@ -116,7 +116,7 @@ add_subdirectory(msis)
 add_subdirectory(src)
 
 # --- Gemini3D self test
-include(cmake/test/launcher.cmake) # for MPI tests
+include(cmake/test/mpi_launcher.cmake) # for MPI tests
 
 add_subdirectory(test)
 # fundamental tests of MPI and numeric libraries essential for Gemini3D
