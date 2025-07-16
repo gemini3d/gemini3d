@@ -1384,7 +1384,7 @@ contains
     if (cfg%flagtwoway) then
       call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
-      call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+      call source_neut(intvars%atmos,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
              intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
              intvars%Prprecip,intvars%momentneut,intvars%energyneut)
     end if

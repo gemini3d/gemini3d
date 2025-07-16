@@ -30,6 +30,7 @@ use sources, only: srcsMomentum_neut, srcsEnergy_neut
 use timeutils, only : sza
 use gemini3d_config, only: gemini_cfg
 use precipdataobj, only: precipdata
+use neutral, only: neutral_info, rotate_native2geo
 
 implicit none (type, external)
 private
@@ -178,14 +179,18 @@ subroutine source_loss_energy(dt,x,cfg,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3
   call energy_source_loss_solve(dt,Pr,Lo,Qeionize,rhoes,Ts,ns)                         ! source/loss numerical solution
 end subroutine source_loss_energy
 
-subroutine source_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
+
+!> Energy and momnetum inputs into the neutral atmopshere from the plasma 
+subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
+  type(neutral_info), intent(inout) :: atmos
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
-  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(out) :: momentumneut_source
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source
+  real(wp), dimension(:,:,:), allocatable :: momalt, momlon, momlat
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: eff
   real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
   real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
@@ -195,6 +200,14 @@ subroutine source_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumne
 
   ! Call sources
   call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  ! Need to create temp space here for distinct arguments
+  allocate(momalt, momlon, momlat, mold=altkm)
+  call rotate_native2geo(momentumneut_source(:,:,:,1),momentumneut_source(:,:,:,2),momentumneut_source(:,:,:,3), &
+          momalt, momlon, momlat, x, atmos)
+  momentumneut_source(:,:,:,1)=momalt
+  momentumneut_source(:,:,:,2)=momlon
+  momentumneut_source(:,:,:,3)=momlat
+  deallocate(momalt, momlon, momlat)
   call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
 
   altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
