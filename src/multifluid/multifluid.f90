@@ -206,23 +206,15 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   allocate(momalt(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2))
   allocate(momlon, momlat, mold=momalt)
 
-  print*, shape(momalt)
-
   call rotate_native2geo(momentumneut_source(:,:,:,1),momentumneut_source(:,:,:,2),momentumneut_source(:,:,:,3), &
           momalt, momlon, momlat, x, atmos)
-
-  print*, 'after rotate'
 
   momentumneut_source(:,:,:,1)=momalt
   momentumneut_source(:,:,:,2)=momlon
   momentumneut_source(:,:,:,3)=momlat
 
-  print*, 'after assign'
-
   deallocate(momalt, momlon, momlat)
   call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
-
-  print*, 'after first energy part'
 
   altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
 
