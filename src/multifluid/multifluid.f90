@@ -220,7 +220,7 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
 ! Neutral heating efficiency
   ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
   do isp=1,6 ! it looks that I don't need 7 here
-    energyneut_source = energyneut_source + &
+    energyneut_source(1:lx1,1:lx2,1:lx3) = energyneut_source(1:lx1,1:lx2,1:lx3) + &
     Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
   end do
 end subroutine source_neut
