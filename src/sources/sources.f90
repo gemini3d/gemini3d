@@ -982,7 +982,7 @@ contains
     ! I need momentum in each direction, so 4-dimension variable
     !e1,e2,e3,v
     ! MZ - I'm changing to inout, because if allocatable intent(out) forces deallocate/reallocate
-    real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
+    real(wp), dimension(-1:,-1:,-1:,1:), intent(inout) :: momentumneut_source
     ! should be used to avoid ghost_cells
     integer :: lx1,lx2,lx3,isp,isp2
     ! ion-neuytral and neutral-ion collision frequencies
@@ -1030,7 +1030,7 @@ contains
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(out) :: energyneut_source
+    real(wp), dimension(-1:size(Ts,1)+2,-1:size(Ts,2)+4,-1:size(Ts,3)+2), intent(out) :: energyneut_source
     !! intent(out)
     integer :: lx1,lx2,lx3,isp,isp2
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut
@@ -1060,12 +1060,12 @@ contains
 
         !HEAT TRANSFER
         fact=2*nuneut/(ms(isp)+mn(isp2))
-        energyneut_source(:,:,:)=energyneut_source(:,:,:)+ &
+        energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3)+ &
           nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman(isp2)-1)*fact*(Ts(1:lx1,1:lx2,1:lx3,isp) - Tn)
 
         !FRICTION
         fact=fact*mn(isp2)/3
-        energyneut_source(:,:,:)=energyneut_source(:,:,:) + &
+        energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3) + &
           nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman(isp2)-1) &
           *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
           +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact

@@ -188,15 +188,17 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
-  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source
+!  real(wp), dimension(size(Ts,1)-4, size(Ts,2)-4, size(Ts,3)-4, 3), intent(inout) :: momentumneut_source
+!  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4), intent(inout) :: energyneut_source
+  real(wp), dimension(-1:,-1:,-1:,1:), intent(inout) :: momentumneut_source
+  real(wp), dimension(-1:,-1:,-1:), intent(inout) :: energyneut_source
   real(wp), dimension(:,:,:), allocatable :: momalt, momlon, momlat
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: eff
   real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
   real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
   real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
   integer :: isp
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: altkm
+  real(wp), dimension(-1:size(Ts,1)+2,-1:size(Ts,2)+2,-1:size(Ts,3)+2) :: altkm
 
   ! Call sources
   call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)

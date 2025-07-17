@@ -313,10 +313,11 @@ contains
     intvars%W0=1e3
     intvars%PhiWmWm2=1e-5
 
-    !> allocation neutral rate variables
-    allocate(intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:4))
-    intvars%momentneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1:3)
-    intvars%energyneut=>intvars%neutralrates(1:lx1,1:lx2,1:lx3,1)
+    !> allocation neutral rate variables - because of the way these interface with Trees GEMINI we
+    !    need them to include ghost cells
+    allocate(intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:4))
+    intvars%momentneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:3)
+    intvars%energyneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,4)
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI

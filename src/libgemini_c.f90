@@ -1216,7 +1216,7 @@ contains
   end subroutine solflux_perturb_C
 
 
-  !> call gemini's internal interpolation code
+  !> call gemini's internal interpolation code; note that input data are assumed to include ghost cells
   subroutine interp3_C(xC,yC,zC,mx,my,mz,qC,auxC,meqn,maux,xi,yi,zi,qiC,auxiC) bind(C,name='interp3_C')
     type(C_PTR), intent(in) :: xC,yC,zC
     integer(C_INT), intent(in) :: mx,my,mz
