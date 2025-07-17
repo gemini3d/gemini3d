@@ -1030,7 +1030,7 @@ contains
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-    real(wp), dimension(-1:size(Ts,1)+2,-1:size(Ts,2)+4,-1:size(Ts,3)+2), intent(out) :: energyneut_source
+    real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2), intent(out) :: energyneut_source
     !! intent(out)
     integer :: lx1,lx2,lx3,isp,isp2
     real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,nuneut

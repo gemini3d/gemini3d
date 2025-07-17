@@ -198,19 +198,31 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
   real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
   integer :: isp
-  real(wp), dimension(-1:size(Ts,1)+2,-1:size(Ts,2)+2,-1:size(Ts,3)+2) :: altkm
+  real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: altkm
 
   ! Call sources
   call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
   ! Need to create temp space here for distinct arguments
-  allocate(momalt, momlon, momlat, mold=altkm)
+  allocate(momalt(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2))
+  allocate(momlon, momlat, mold=momalt)
+
+  print*, shape(momalt)
+
   call rotate_native2geo(momentumneut_source(:,:,:,1),momentumneut_source(:,:,:,2),momentumneut_source(:,:,:,3), &
           momalt, momlon, momlat, x, atmos)
+
+  print*, 'after rotate'
+
   momentumneut_source(:,:,:,1)=momalt
   momentumneut_source(:,:,:,2)=momlon
   momentumneut_source(:,:,:,3)=momlat
+
+  print*, 'after assign'
+
   deallocate(momalt, momlon, momlat)
   call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+
+  print*, 'after first energy part'
 
   altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
 

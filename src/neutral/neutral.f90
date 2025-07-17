@@ -208,11 +208,14 @@ contains
   !    In this function we do not necessarily want to assume a location for input or output
   !    wind components; they should instead be provided as array inputs.  
   subroutine rotate_native2geo(vn1,vn2,vn3,vnalt,vnglat,vnglon,x,atmos)
-    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3
-    real(wp), dimension(:,:,:), intent(inout) :: vnalt,vnglat,vnglon
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: vn1,vn2,vn3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: vnalt,vnglat,vnglon
     class(curvmesh), intent(in) :: x
     type(neutral_info), intent(inout) :: atmos
-    real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
+    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3
 
     !> if first time called then allocate space for projections and compute
     if (.not. atmos%flagprojections) then
@@ -222,10 +225,23 @@ contains
     end if
 
     !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb
-    !    fields of the atmos derived type
-    vnalt=vn1*atmos%proj_ealt_e1 + vn2*atmos%proj_ealt_e2 + vn3*atmos%proj_ealt_e3
-    vnglon=vn1*atmos%proj_eglon_e1 + vn2*atmos%proj_eglon_e2 + vn3*atmos%proj_eglon_e3
-    vnglat=vn1*atmos%proj_eglat_e1 + vn2*atmos%proj_eglat_e2 + vn3*atmos%proj_eglat_e3
+    !    fields of the atmos derived type.  Note tha the projection fields have size (lx1,lx2,lx3)
+    !    whereas the size of the input and output arrays includes ghost cells...
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          vnalt(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_ealt_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_ealt_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_ealt_e3(ix1,ix2,ix3)
+          vnglon(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_eglon_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_eglon_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_eglon_e3(ix1,ix2,ix3)
+          vnglat(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_eglat_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_eglat_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_eglat_e3(ix1,ix2,ix3)
+        end do
+      end do
+    end do
   end subroutine rotate_native2geo
 
 

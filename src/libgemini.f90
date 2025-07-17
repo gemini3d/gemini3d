@@ -141,8 +141,8 @@ type gemini_work
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 
   !> user output data
-  !integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
-  integer :: lparms=0
+  integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
+  !integer :: lparms=0
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
@@ -457,10 +457,10 @@ contains
     i3start=lbound(ns,3)+2
     i3end=i3start+lx3-1
 
-    ! intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
-    ! intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
-    ! intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
-    ! intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
+    intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
+    intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
+    intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
+    intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
   end subroutine user_populate
 
 
