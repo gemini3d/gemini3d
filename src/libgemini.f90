@@ -449,18 +449,21 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    ! for arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells
-    i1start=lbound(ns,1)+2
+    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.  
+    !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
+    !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
+    !   this information.  
+    i1start=lbound(intvars%energyneut,1)+2
     i1end=i1start+lx1-1
-    i2start=lbound(ns,2)+2
+    i2start=lbound(intvars%energyneut,2)+2
     i2end=i2start+lx2-1
-    i3start=lbound(ns,3)+2
+    i3start=lbound(intvars%energyneut,3)+2
     i3end=i3start+lx3-1
 
-    intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
-    intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
-    intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
-    intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%energyneut(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,1)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,2)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,3)
   end subroutine user_populate
 
 

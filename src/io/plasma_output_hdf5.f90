@@ -53,6 +53,7 @@ module procedure output_root_stream_mpi_hdf5
       ! these are user-specified output variables
       if (size(user_outputall,4)>0) then
         call hout%write('user_outputall', real(user_outputall(1:lx1,1:lx2all,1:lx3all,:)))
+        !print*, 'Min/max user var written:  ',minval(real(user_outputall)),maxval(real(user_outputall))
       end if
   end select
 
