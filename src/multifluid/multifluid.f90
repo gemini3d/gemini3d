@@ -197,36 +197,68 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   real(wp), parameter :: c5=-2.87528801d-13, c4=3.31979754d-10
   real(wp), parameter :: c3=-9.47129680d-08, c2=-1.14351921d-05
   real(wp), parameter :: c1=5.61825276d-03, c0=1.42163320d-01
-  integer :: isp
+  integer :: isp,icomp
   real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: altkm
 
-  ! Call sources
+  !! Momentum source (and rotation into geographic)
   call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
   ! Need to create temp space here for distinct arguments
   allocate(momalt(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2))
   allocate(momlon, momlat, mold=momalt)
-
   call rotate_native2geo(momentumneut_source(:,:,:,1),momentumneut_source(:,:,:,2),momentumneut_source(:,:,:,3), &
           momalt, momlon, momlat, x, atmos)
-
   momentumneut_source(:,:,:,1)=momalt
   momentumneut_source(:,:,:,2)=momlon
   momentumneut_source(:,:,:,3)=momlat
-
   deallocate(momalt, momlon, momlat)
+
+  !! Energy sources from elastic collisions
   call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
 
-  altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
 
+  !! Energy sources from inelastic collisions
+  altkm=x%alt(1:lx1,1:lx2,1:lx3)/1e3
   eff = c5*altkm(1:lx1,1:lx2,1:lx3)**5 + c4*altkm(1:lx1,1:lx2,1:lx3)**4 + &
         c3*altkm(1:lx1,1:lx2,1:lx3)**3 + c2*altkm(1:lx1,1:lx2,1:lx3)**2 + c1*altkm(1:lx1,1:lx2,1:lx3) + c0
 
-! Neutral heating efficiency
+  ! Neutral heating efficiency
   ! momentumneut_source - should be a call here. kg/m3s2=N/m3 - Force (need to recalculate to acceleration in MAGIC)
   do isp=1,6 ! it looks that I don't need 7 here
     energyneut_source(1:lx1,1:lx2,1:lx3) = energyneut_source(1:lx1,1:lx2,1:lx3) + &
     Prprecip(1:lx1,1:lx2,1:lx3,isp)*eff(1:lx1,1:lx2,1:lx3)*5.45e-18 ! W is in Joules, so I should have output J/m3s
   end do
+
+  !! We do need to fill the ghost cells with some sensible data; here will generate nearest neighbor interpolation...
+  do icomp=1,3
+    momentumneut_source(-1,:,:,icomp)=momentumneut_source(1,:,:,icomp)
+    momentumneut_source(0,:,:,icomp)=momentumneut_source(1,:,:,icomp)
+    momentumneut_source(lx1+1,:,:,icomp)=momentumneut_source(lx1,:,:,icomp)
+    momentumneut_source(lx1+2,:,:,icomp)=momentumneut_source(lx1,:,:,icomp)
+
+    momentumneut_source(:,-1,:,icomp)=momentumneut_source(:,1,:,icomp)
+    momentumneut_source(:,0,:,icomp)=momentumneut_source(:,1,:,icomp)
+    momentumneut_source(:,lx2+1,:,icomp)=momentumneut_source(:,lx2,:,icomp)
+    momentumneut_source(:,lx2+2,:,icomp)=momentumneut_source(:,lx2,:,icomp)
+
+    momentumneut_source(:,:,-1,icomp)=momentumneut_source(:,:,1,icomp)
+    momentumneut_source(:,:,0,icomp)=momentumneut_source(:,:,1,icomp)
+    momentumneut_source(:,:,lx3+1,icomp)=momentumneut_source(:,:,lx3,icomp)
+    momentumneut_source(:,:,lx3+2,icomp)=momentumneut_source(:,:,lx3,icomp)
+  end do
+  energyneut_source(-1,:,:)=energyneut_source(1,:,:)
+  energyneut_source(0,:,:)=energyneut_source(1,:,:)
+  energyneut_source(lx1+1,:,:)=energyneut_source(lx1,:,:)
+  energyneut_source(lx1+2,:,:)=energyneut_source(lx1,:,:)
+
+  energyneut_source(:,-1,:)=energyneut_source(:,1,:)
+  energyneut_source(:,0,:)=energyneut_source(:,1,:)
+  energyneut_source(:,lx2+1,:)=energyneut_source(:,lx2,:)
+  energyneut_source(:,lx2+2,:)=energyneut_source(:,lx2,:)
+
+  energyneut_source(:,:,-1)=energyneut_source(:,:,1)
+  energyneut_source(:,:,0)=energyneut_source(:,:,1)
+  energyneut_source(:,:,lx3+1)=energyneut_source(:,:,lx3)
+  energyneut_source(:,:,lx3+2)=energyneut_source(:,:,lx3)
 end subroutine source_neut
 
 
