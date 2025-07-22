@@ -108,7 +108,7 @@ extern void precip_perturb_C(void**,void**,int*,void**,double*,double*,int*,doub
 extern void init_efieldinput_nompi_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void efield_perturb_nompi_C(void**,void**,int*,void**,double*,double*,int*,double*);
 extern void interp3_C(double**,double**,double**,int*,int*,int*,double**,double**,int*,int*,
-		double*,double*,double*,double**,double**);
+		double*,double*,double*,double**,double**,int*);
 extern void interp2_C(double**,double**,int*,int*,double**,double**,int*,int*,double*,double*,double**,
 		double**);
 extern void get_it_C(int*);

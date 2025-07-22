@@ -1237,13 +1237,14 @@ contains
 
 
   !> call gemini's internal interpolation code; note that input data are assumed to include ghost cells
-  subroutine interp3_C(xC,yC,zC,mx,my,mz,qC,auxC,meqn,maux,xi,yi,zi,qiC,auxiC) bind(C,name='interp3_C')
+  subroutine interp3_C(xC,yC,zC,mx,my,mz,qC,auxC,meqn,maux,xi,yi,zi,qiC,auxiC,interptype) bind(C,name='interp3_C')
     type(C_PTR), intent(in) :: xC,yC,zC
     integer(C_INT), intent(in) :: mx,my,mz
     type(C_PTR), intent(in) :: qC,auxC
     integer(C_INT), intent(in) :: meqn,maux
     real(wp), intent(in) :: xi,yi,zi
     type(C_PTR), intent(inout) :: qiC,auxiC
+    integer(C_INT), intent(in) :: interptype
     real(wp), dimension(:), pointer :: x,y,z
     real(wp), dimension(:,:,:,:), pointer :: q
     real(wp), dimension(:,:,:,:), pointer :: aux
@@ -1258,7 +1259,7 @@ contains
     call c_f_pointer(qiC,qi,[meqn])
     call c_f_pointer(auxiC,auxi,[maux])
 
-    call interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
+    call interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi,interptype)
   end subroutine interp3_C
 
 

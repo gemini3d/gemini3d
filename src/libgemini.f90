@@ -1529,12 +1529,13 @@ contains
 
 
   !> Interface to access trilinear interpolation routines in gemini and interpolate MAGIC data
-  subroutine interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
+  subroutine interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi,interptype)
     real(wp), dimension(:), intent(in) :: x
     real(wp), dimension(:), intent(in) :: y
     real(wp), dimension(:), intent(in) :: z
     real(wp), intent(in) :: xi,yi,zi    ! single points based on forestclaw organization
     real(wp), dimension(:), intent(inout) :: qi,auxi
+    integer, intent(in) :: interptype
     real(wp), intent(in), dimension(:,:,:,:) :: q,aux
     integer :: mx,my,mz,meqn,maux,ieqn,iaux
     real(wp), dimension(1) :: xiarr,yiarr,ziarr,qiarr,auxiarr
@@ -1546,11 +1547,11 @@ contains
 
     ! interpolate
     do ieqn=1,meqn
-      qiarr=interp3(x,y,z,q(:,:,:,ieqn),xiarr,yiarr,ziarr)     !note that the MAGIC coordinatees are permuted x,y,z
+      qiarr=interp3(x,y,z,q(:,:,:,ieqn),xiarr,yiarr,ziarr,interptype)     !note that the MAGIC coordinatees are permuted x,y,z
       qi(ieqn)=qiarr(1)
     end do
     do iaux=1,maux
-      auxiarr=interp3(x,y,z,aux(:,:,:,iaux),xiarr,yiarr,ziarr)
+      auxiarr=interp3(x,y,z,aux(:,:,:,iaux),xiarr,yiarr,ziarr,interptype)
       auxi(iaux)=auxiarr(1)
     end do
   end subroutine interp3_in
