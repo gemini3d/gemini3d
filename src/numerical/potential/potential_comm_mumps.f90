@@ -111,7 +111,7 @@ contains
   subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,efield, &
                            E1,E2,E3,J1,J2,J3,Phiall,flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                            Vminx1slab,Vmaxx1slab,E01,E02,E03, &
-                           ymd,UTsec)
+                           ymd,UTsec,sig0,sigP,sigH,sigNCP,sigNCH)
 
     !! THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !! PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
@@ -135,6 +135,7 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), intent(inout) :: sig0,sigP,sigH,sigNCP,sigNCH
     integer :: flagdirich
     real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
     real(wp), dimension(:,:) :: Vminx2,Vmaxx2
@@ -144,12 +145,11 @@ contains
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sig0,sigP,sigH,sigPgrav,sigHgrav
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sigPgrav,sigHgrav
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
     real(wp) :: tstart,tfin
     real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
-    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sigNCP,sigNCH   
     ! background variables and boundary conditions, full grid sized variables
 
     ! slab-sized background variables

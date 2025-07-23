@@ -611,7 +611,7 @@ contains
                            intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2, &
                            intvars%Vminx3,intvars%Vmaxx3,intvars%Vminx1slab,intvars%Vmaxx1slab, &
                            intvars%E01,intvars%E02,intvars%E03, &
-                           ymd,UTsec)
+                           ymd,UTsec,intvars%sig0,intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH)
   end subroutine electrodynamics_in
 
 

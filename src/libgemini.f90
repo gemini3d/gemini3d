@@ -115,6 +115,10 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
 
+  !> Conductivities for potential solve
+  real(wp), dimension(:,:,:), pointer :: sig0=>null(),sigP=>null(),sigH=>null()
+  real(wp), dimension(:,:,:), pointer :: sigNCP=>null(),sigNCH=>null()
+
   !> Use to pass information about electromagnetic boundary condtions between procedures
   integer :: flagdirich
   real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1
@@ -333,6 +337,9 @@ contains
     allocate(intvars%Pr(1:lx1,1:lx2,1:lx3,1:lsp))
     allocate(intvars%Lo,mold=intvars%Pr)
 
+    allocate(intvars%sig0(1:lx1,1:lx2,1:lx3))
+    allocate(intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH, mold=intvars%sig0)
+
     allocate(intvars%Vminx1(1:lx2all,1:lx3all))
     allocate(intvars%Vmaxx1,mold=intvars%Vminx1)
     allocate(intvars%Vminx2(1:lx1,1:lx3all))
@@ -400,8 +407,9 @@ contains
     deallocate(intvars%Prionize)
     deallocate(intvars%Qeionize)
     if(associated(intvars%iver)) deallocate(intvars%iver)
-
     deallocate(intvars%Pr,intvars%Lo)
+
+    deallocate(intvars%sig0,intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH)
 
     deallocate(intvars%Vminx1,intvars%Vmaxx1)
     deallocate(intvars%Vminx2,intvars%Vmaxx2)
