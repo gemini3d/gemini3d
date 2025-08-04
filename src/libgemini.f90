@@ -115,6 +115,10 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
 
+  !> Conductivities for potential solve
+  real(wp), dimension(:,:,:), pointer :: sig0=>null(),sigP=>null(),sigH=>null()
+  real(wp), dimension(:,:,:), pointer :: sigNCP=>null(),sigNCH=>null()
+
   !> Use to pass information about electromagnetic boundary condtions between procedures
   integer :: flagdirich
   real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1
@@ -130,6 +134,7 @@ type gemini_work
   type(neutral_info), pointer :: atmos=>null()
 
   !> Use to store neutral momentum and energy rate
+  real(wp), dimension(:,:,:,:), pointer :: neutralrates=>null()
   real(wp), dimension(:,:,:,:), pointer :: momentneut=>null()
   real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
@@ -140,8 +145,8 @@ type gemini_work
   type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
 
   !> user output data
-  !integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
-  integer :: lparms=0
+  integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
+  !integer :: lparms=0
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
 
@@ -312,9 +317,11 @@ contains
     intvars%W0=1e3
     intvars%PhiWmWm2=1e-5
 
-    !> allocation neutral rate variables
-    allocate(intvars%momentneut(1:lx1,1:lx2,1:lx3,1:3))
-    allocate(intvars%energyneut(1:lx1,1:lx2,1:lx3))
+    !> allocation neutral rate variables - because of the way these interface with Trees GEMINI we
+    !    need them to include ghost cells
+    allocate(intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:4))
+    intvars%momentneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:3)
+    intvars%energyneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,4)
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
@@ -329,6 +336,9 @@ contains
 
     allocate(intvars%Pr(1:lx1,1:lx2,1:lx3,1:lsp))
     allocate(intvars%Lo,mold=intvars%Pr)
+
+    allocate(intvars%sig0(1:lx1,1:lx2,1:lx3))
+    allocate(intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH, mold=intvars%sig0)
 
     allocate(intvars%Vminx1(1:lx2all,1:lx3all))
     allocate(intvars%Vmaxx1,mold=intvars%Vminx1)
@@ -381,6 +391,13 @@ contains
     deallocate(intvars%vs3i)
     deallocate(intvars%Q)
 
+    deallocate(intvars%W0)
+    deallocate(intvars%PhiWmWm2)
+
+    deallocate(intvars%neutralrates)
+    intvars%momentneut=>null();
+    intvars%energyneut=>null();
+
     if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
     if (associated(intvars%efield)) deallocate(intvars%efield)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
@@ -390,8 +407,9 @@ contains
     deallocate(intvars%Prionize)
     deallocate(intvars%Qeionize)
     if(associated(intvars%iver)) deallocate(intvars%iver)
-
     deallocate(intvars%Pr,intvars%Lo)
+
+    deallocate(intvars%sig0,intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH)
 
     deallocate(intvars%Vminx1,intvars%Vmaxx1)
     deallocate(intvars%Vminx2,intvars%Vmaxx2)
@@ -439,18 +457,21 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    ! for arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells
-    i1start=lbound(ns,1)+2
+    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.  
+    !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
+    !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
+    !   this information.  
+    i1start=lbound(intvars%energyneut,1)+2
     i1end=i1start+lx1-1
-    i2start=lbound(ns,2)+2
+    i2start=lbound(intvars%energyneut,2)+2
     i2end=i2start+lx2-1
-    i3start=lbound(ns,3)+2
+    i3start=lbound(intvars%energyneut,3)+2
     i3end=i3start+lx3-1
 
-    ! intvars%user_output(:,:,:,1)=intvars%energyneut(1:lx1,1:lx2,1:lx3)
-    ! intvars%user_output(:,:,:,2)=intvars%momentneut(1:lx1,1:lx2,1:lx3,1)
-    ! intvars%user_output(:,:,:,3)=intvars%momentneut(1:lx1,1:lx2,1:lx3,2)
-    ! intvars%user_output(:,:,:,4)=intvars%momentneut(1:lx1,1:lx2,1:lx3,3)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%energyneut(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,1)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,2)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,3)
   end subroutine user_populate
 
 
@@ -1375,7 +1396,7 @@ contains
     if (cfg%flagtwoway) then
       call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
-      call source_neut(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+      call source_neut(intvars%atmos,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
              intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
              intvars%Prprecip,intvars%momentneut,intvars%energyneut)
     end if
@@ -1516,12 +1537,13 @@ contains
 
 
   !> Interface to access trilinear interpolation routines in gemini and interpolate MAGIC data
-  subroutine interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
+  subroutine interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi,interptype)
     real(wp), dimension(:), intent(in) :: x
     real(wp), dimension(:), intent(in) :: y
     real(wp), dimension(:), intent(in) :: z
     real(wp), intent(in) :: xi,yi,zi    ! single points based on forestclaw organization
     real(wp), dimension(:), intent(inout) :: qi,auxi
+    integer, intent(in) :: interptype
     real(wp), intent(in), dimension(:,:,:,:) :: q,aux
     integer :: mx,my,mz,meqn,maux,ieqn,iaux
     real(wp), dimension(1) :: xiarr,yiarr,ziarr,qiarr,auxiarr
@@ -1533,11 +1555,11 @@ contains
 
     ! interpolate
     do ieqn=1,meqn
-      qiarr=interp3(x,y,z,q(:,:,:,ieqn),xiarr,yiarr,ziarr)     !note that the MAGIC coordinatees are permuted x,y,z
+      qiarr=interp3(x,y,z,q(:,:,:,ieqn),xiarr,yiarr,ziarr,interptype)     !note that the MAGIC coordinatees are permuted x,y,z
       qi(ieqn)=qiarr(1)
     end do
     do iaux=1,maux
-      auxiarr=interp3(x,y,z,aux(:,:,:,iaux),xiarr,yiarr,ziarr)
+      auxiarr=interp3(x,y,z,aux(:,:,:,iaux),xiarr,yiarr,ziarr,interptype)
       auxi(iaux)=auxiarr(1)
     end do
   end subroutine interp3_in

@@ -683,14 +683,14 @@ contains
   !    This works on a full spatial arrays worth of data.
   subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
     class(curvmesh), intent(in) :: self
-    real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglon,eglat
+    real(wp), dimension(:,:,:,:), intent(inout) :: ealt,eglon,eglat
     integer :: lx1,lx2,lx3,ix1,ix2,ix3
     real(wp) :: thetagg,phigg    ! geographic spherical coords
     real(wp), dimension(3,3) :: Rgg2gm
     real(wp), dimension(3,1) :: ehere,ehererot
 
     if ( .not. self%geog_set_status) then
-      error stop 'geographic coords. must be set prior to computing unit vectors'
+      error stop 'geographic coords. must be set prior to computing geographic unit vectors'
     endif
     ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
@@ -722,6 +722,41 @@ contains
       end do
     end do
   end subroutine calc_unitvec_geo
+
+
+  !> units vectors in the magnetic mlon,mlat directions (ECEF magnetic Cartesian 
+  !    components)
+  subroutine calc_unitvec_mag(self,ealt,emlon,emlat)
+    class(curvmesh), intent(in) :: self
+    real(wp), dimension(:,:,:,:), intent(inout) :: ealt,emlon,emlat
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+    real(wp), dimension(3,1) :: ehere
+
+    ! we can be assured that the magnetic ECEF unit vectors are set if the geographic coords have been assigned
+    if ( .not. self%geog_set_status) then
+      error stop 'geographic coords. must be set prior to computing magnetic unit vectors'
+    endif
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+
+    ! assign magnetic unit vectors based on spherical ECEF magnetic
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          ! altitude unit vector
+          ehere(1:3,1)=er_spherical(self%theta(ix1,ix2,ix3),self%phi(ix1,ix2,ix3))
+          ealt(ix1,ix2,ix3,1:3)=ehere(1:3,1)
+
+          ! latitude unit vector
+          ehere(1:3,1) = -1*etheta_spherical(self%theta(ix1,ix2,ix3),self%phi(ix1,ix2,ix3))
+          emlat(ix1,ix2,ix3,1:3)=ehere(1:3,1)
+
+          ! longitude
+          ehere(1:3,1) = ephi_spherical(self%theta(ix1,ix2,ix3),self%phi(ix1,ix2,ix3))
+          emlon(ix1,ix2,ix3,1:3)=ehere(1:3,1)
+        end do
+      end do
+    end do
+  end subroutine calc_unitvec_mag
 
 
   !> write the size of the grid to a file

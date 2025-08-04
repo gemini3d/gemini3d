@@ -12,7 +12,8 @@ use msis_interface, only : msisinit
 implicit none (type, external)
 private
 public :: neutral_atmos, init_neutralBG_input, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
-  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, init_neutralBG
+  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, &
+  init_neutralBG, rotate_native2geo
 
 
 !> type encapsulating information needed by neutral module; FIXME: arguably this should be a class with type-bound procedures.
@@ -190,7 +191,8 @@ contains
       atmos%flagprojections=.true.
     end if
 
-    !> rotate vectors into model native coordinate system
+    !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb
+    !    fields of the atmos derived type
     if (present(flagBG) .and. flagBG) then
       atmos%vn1base=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
       atmos%vn2base=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
@@ -201,6 +203,47 @@ contains
       atmos%vn3=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
     end if
   end subroutine rotate_geo2native
+
+
+  !> rotate winds from model native coordinate system (x1,x2,x3) to geographic coordinates.
+  !    In this function we do not necessarily want to assume a location for input or output
+  !    wind components; they should instead be provided as array inputs.  
+  subroutine rotate_native2geo(vn1,vn2,vn3,vnalt,vnglat,vnglon,x,atmos)
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: vn1,vn2,vn3
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: vnalt,vnglat,vnglon
+    class(curvmesh), intent(in) :: x
+    type(neutral_info), intent(inout) :: atmos
+    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+
+    lx1=x%lx1; lx2=x%lx2; lx3=x%lx3
+
+    !> if first time called then allocate space for projections and compute
+    if (.not. atmos%flagprojections) then
+      call x%calc_unitvec_geo(ealt,eglon,eglat)
+      call store_geo2native_projections(x,ealt,eglon,eglat,atmos)
+      atmos%flagprojections=.true.
+    end if
+
+    !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb
+    !    fields of the atmos derived type.  Note tha the projection fields have size (lx1,lx2,lx3)
+    !    whereas the size of the input and output arrays includes ghost cells...
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          vnalt(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_ealt_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_ealt_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_ealt_e3(ix1,ix2,ix3)
+          vnglon(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_eglon_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_eglon_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_eglon_e3(ix1,ix2,ix3)
+          vnglat(ix1,ix2,ix3)=vn1(ix1,ix2,ix3)*atmos%proj_eglat_e1(ix1,ix2,ix3) + &
+                               vn2(ix1,ix2,ix3)*atmos%proj_eglat_e2(ix1,ix2,ix3) + &
+                               vn3(ix1,ix2,ix3)*atmos%proj_eglat_e3(ix1,ix2,ix3)
+        end do
+      end do
+    end do
+  end subroutine rotate_native2geo
 
 
   !> compute projections for rotating winds geographic to native coordinate system

@@ -54,7 +54,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            init_solfluxinput_in, solflux_perturb_in
+            init_solfluxinput_in, solflux_perturb_in, source_neut_in
 
 implicit none (type, external)
 
@@ -1024,7 +1024,27 @@ contains
   end subroutine clear_ionization_arrays_C
 
 
- subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
+  subroutine source_neut_C(cfgC,fluidvarsC,intvarsC,xtype,xC) bind(C,name="source_neut_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: intvarsC
+
+    type(gemini_cfg), pointer :: cfg
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    type(gemini_work), pointer :: intvars
+    class(curvmesh), pointer :: x
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(intvarsC,intvars)
+    call source_neut_in(cfg,fluidvars,intvars,x)
+  end subroutine source_neut_C
+
+
+  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
                   UTsec,f107a,f107, & !first,
                   gavg,Tninf) &
                   bind(C, name="impact_ionization_C")
@@ -1216,14 +1236,15 @@ contains
   end subroutine solflux_perturb_C
 
 
-  !> call gemini's internal interpolation code
-  subroutine interp3_C(xC,yC,zC,mx,my,mz,qC,auxC,meqn,maux,xi,yi,zi,qiC,auxiC) bind(C,name='interp3_C')
+  !> call gemini's internal interpolation code; note that input data are assumed to include ghost cells
+  subroutine interp3_C(xC,yC,zC,mx,my,mz,qC,auxC,meqn,maux,xi,yi,zi,qiC,auxiC,interptype) bind(C,name='interp3_C')
     type(C_PTR), intent(in) :: xC,yC,zC
     integer(C_INT), intent(in) :: mx,my,mz
     type(C_PTR), intent(in) :: qC,auxC
     integer(C_INT), intent(in) :: meqn,maux
     real(wp), intent(in) :: xi,yi,zi
     type(C_PTR), intent(inout) :: qiC,auxiC
+    integer(C_INT), intent(in) :: interptype
     real(wp), dimension(:), pointer :: x,y,z
     real(wp), dimension(:,:,:,:), pointer :: q
     real(wp), dimension(:,:,:,:), pointer :: aux
@@ -1238,7 +1259,7 @@ contains
     call c_f_pointer(qiC,qi,[meqn])
     call c_f_pointer(auxiC,auxi,[maux])
 
-    call interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi)
+    call interp3_in(x,y,z,q,aux,xi,yi,zi,qi,auxi,interptype)
   end subroutine interp3_C
 
 
