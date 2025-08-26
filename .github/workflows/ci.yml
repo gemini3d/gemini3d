@@ -2,9 +2,9 @@ name: ci
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
   CMAKE_INSTALL_PREFIX: ~/libs
   CMAKE_PREFIX_PATH: ~/libs
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -50,10 +50,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - &checkout
+      uses: actions/checkout@v5
 
-    - uses: ./.github/workflows/composite-pkg
-    - uses: ./.github/workflows/composite-linux
+    - &pkg
+      uses: ./.github/workflows/composite-pkg
+
+    - &linux-build
+      uses: ./.github/workflows/composite-linux
 
 
   cmake-320:
@@ -73,16 +77,17 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - *checkout
 
-    - uses: ./.github/workflows/composite-pkg
+    - *pkg
 
     - name: Install GCC-${{ matrix.gcc }}
       timeout-minutes: 15
       run: sudo apt install gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - uses: ./.github/workflows/composite-cmake
-    - uses: ./.github/workflows/composite-linux
+
+    - *linux-build
 
 
   gcc-old:
@@ -105,6 +110,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/composite-pkg
-    - uses: ./.github/workflows/composite-linux
+    - *checkout
+    - *pkg
+    - *linux-build
