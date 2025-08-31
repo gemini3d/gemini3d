@@ -8,19 +8,13 @@ env:
 
 on:
   push:
-    paths:
-      - "**.c"
-      - "**.cpp"
-      - "**.f90"
-      - "**.F90"
-      - "**.cmake"
-      - "**/CMakeLists.txt"
-      - "CMakePresets.json"
-      - "cmake/libraries.json"
-      - "!cmake/intel.cmake"
-      - "!cmake/cray.cmake"
-      - ".github/workflows/ci.yml"
-      - "!docs/**"
+    paths-ignore:
+      - "cmake/intel.cmake"
+      - "cmake/cray.cmake"
+      - ".github/workflows/ci_macos.yml"
+      - ".github/workflows/oneapi-linux.yml"
+      - "docs/**"
+
   workflow_dispatch:
 
 # avoid wasted runs
