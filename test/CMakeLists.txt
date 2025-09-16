@@ -36,7 +36,7 @@ RESOURCE_LOCK cpu_mpi
 # --- MUMPS
 add_executable(gemini_mumps_standalone test_mumps.f90)
 target_link_libraries(gemini_mumps_standalone PRIVATE mumps_interface
-MUMPS::MUMPS
+MUMPS::MUMPS MPI::MPI_Fortran
 )
 # same link logic applied to gemini.bin
 target_include_directories(gemini_mumps_standalone PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
