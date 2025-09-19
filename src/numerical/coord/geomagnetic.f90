@@ -6,14 +6,50 @@ use phys_consts, only: wp,Re,pi
 implicit none (type, external)
 
 
-! magnetic pole location in geographic coordinates
-real(wp), parameter :: thetan=11*pi/180
-real(wp), parameter :: phin=289*pi/180
+! magnetic pole location in geographic coordinates. Now based on the year (set_magnetic_pole)
+real(wp) :: thetan
+real(wp) :: phin
 
 private
-public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU
+public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU, ENU2ECEFspher
 
 contains
+
+  !> Set magnetic pole location based on year
+  subroutine set_magnetic_pole(year)
+    integer, intent(in) :: year
+
+    select case (year)
+      case (1920:1987)
+        thetan = 11.000_wp * pi / 180
+        phin = 289.00_wp * pi / 180
+      case (1988:1992)
+        thetan = 10.862_wp * pi / 180
+        phin = 288.87_wp * pi / 180
+      case (1993:1997)
+        thetan = 10.677_wp * pi / 180
+        phin = 288.58_wp * pi / 180
+      case (1998:2002)
+        thetan = 10.457_wp * pi / 180
+        phin = 288.43_wp * pi / 180
+      case (2003:2007)
+        thetan = 10.252_wp * pi / 180
+        phin = 288.19_wp * pi / 180
+      case (2008:2012)
+        thetan = 9.9840_wp * pi / 180
+        phin = 287.79_wp * pi / 180
+      case (2013:2017)
+        thetan = 9.6869_wp * pi / 180
+        phin = 287.39_wp * pi / 180
+      case (2018:2025)
+        thetan = 9.4105_wp * pi / 180
+        phin = 287.32_wp * pi / 180
+      case default
+        thetan = 11.000_wp * pi / 180
+        phin = 289.00_wp * pi / 180
+    end select
+  end subroutine set_magnetic_pole
+
   !> convert geomagnetic coordinates to geographic
   elemental subroutine geog2geomag(glon,glat,phi,theta)
     real(wp), intent(in) :: glon,glat
@@ -192,4 +228,37 @@ contains
       end do
     end do
   end subroutine ECEFspher2ENU
+
+
+  ! take a set of ENU coordinates and transform to ECEF spherical
+  subroutine ENU2ECEFspher(x,y,z,theta1,phi1,alt,theta,phi)
+    real(wp), intent(in), dimension(:,:,:) :: x,y,z    !ENU, as if produced by meshgrid-type operation
+    real(wp), intent(in) :: theta1,phi1
+    real(wp), intent(inout), dimension(:,:,:) :: alt,theta,phi
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+    real(wp) :: gamma1,gamma2
+    logical :: flag3D=.false.
+
+    lx1=size(x,1)
+    lx2=size(x,2)
+    lx3=size(x,3)
+    if (size(alt,1)/=lx1 .or. size(alt,2)/=lx2 .or. size(alt,3)/=lx3) then 
+      error stop 'ECEFspher2ENU:  inconsistent input array sizes'
+    end if
+
+    if (size(x,2)/=1 .and. size(x,3)/=1) flag3D=.true.
+
+    alt(:,:,:)=z(:,:,:)
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          gamma1=y(ix1,ix2,ix3)/Re     ! angle subtended in y
+          gamma2=x(ix1,ix2,ix3)/Re     ! angle subtended in x
+
+          theta(ix1,ix2,ix3)=theta1-gamma1    ! if y is positive north, then theta runs the opposite direction
+          phi(ix1,ix2,ix3)=phi1+gamma2
+        end do
+      end do
+    end do
+  end subroutine ENU2ECEFspher
 end module geomagnetic
