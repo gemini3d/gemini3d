@@ -230,5 +230,6 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   clean_param_C(&two, pxtype, &xC, &fluidvars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);
 
+  source_neut_C(&cfgC,&fluidvars,&intvars,pxtype,&xC);
   // Fix electron veloc???
 }

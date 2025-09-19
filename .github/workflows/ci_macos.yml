@@ -2,24 +2,18 @@ name: ci_macos
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
   CMAKE_INSTALL_PREFIX: ~/libs
   CMAKE_PREFIX_PATH: ~/libs
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
-    paths:
-      - "**.c"
-      - "**.cpp"
-      - "**.f90"
-      - "**.F90"
-      - "**.cmake"
-      - "**/CMakeLists.txt"
-      - "CMakePresets.json"
-      - "cmake/libraries.json"
-      - "!cmake/intel.cmake"
-      - "!cmake/cray.cmake"
-      - ".github/workflows/ci_macos.yml"
+    paths-ignore:
+      - "cmake/intel.cmake"
+      - "cmake/cray.cmake"
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/oneapi-linux.yml"
+      - "docs/**"
 
 
 jobs:
@@ -33,8 +27,8 @@ jobs:
       fail-fast: false
       matrix:
         hwm14: [false]
-        compiler: [ {cpp: clang++, c: clang, fc: gfortran-14 },
-                    {cpp: g++-14, c: gcc-14, fc: gfortran-14 }]
+        compiler: [ {cpp: clang++, c: clang, fc: gfortran-15 },
+                    {cpp: g++-15, c: gcc-15, fc: gfortran-15 }]
   # flang-new not yet working
 
     env:
@@ -52,7 +46,7 @@ jobs:
       if: ${{ matrix.compiler.fc == 'flang-new' }}
       run: brew install flang
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - uses: ./.github/workflows/composite-pkg
     - uses: ./.github/workflows/composite-linux

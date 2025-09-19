@@ -13,9 +13,9 @@ runs:
     if: runner.os == 'Linux'
     run: |
       sudo apt update
-      sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev ninja-build liblapack-dev
+      sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
 
   - name: Install packages (MacOS)
     shell: bash
     if: runner.os == 'macOS'
-    run: brew install ninja open-mpi hdf5 scalapack
+    run: brew install open-mpi hdf5 scalapack

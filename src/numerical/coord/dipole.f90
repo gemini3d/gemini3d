@@ -54,7 +54,7 @@ contains
   
   
   !> convert a single point r,theta to q,p
-  subroutine rtheta2qp(r,theta,q,p)
+  elemental subroutine rtheta2qp(r,theta,q,p)
     real(wp), intent(in) :: r,theta
     real(wp), intent(out) :: q,p
   

@@ -28,6 +28,8 @@ include(cmake/package/git_rev.cmake)
 include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
+set(CMAKE_CXX_STANDARD 17)
+
 # Fortran filesystem library "ffilesystem"
 set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
@@ -76,7 +78,12 @@ include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(LAPACK REQUIRED)
+if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
+  # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
+  find_package(LAPACK REQUIRED)
+else()
+  find_package(SCALAPACK REQUIRED)
+endif()
 
 set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
@@ -109,7 +116,7 @@ add_subdirectory(msis)
 add_subdirectory(src)
 
 # --- Gemini3D self test
-include(cmake/test/launcher.cmake) # for MPI tests
+include(cmake/test/mpi_launcher.cmake) # for MPI tests
 
 add_subdirectory(test)
 # fundamental tests of MPI and numeric libraries essential for Gemini3D

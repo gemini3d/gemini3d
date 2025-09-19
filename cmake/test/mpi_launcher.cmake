@@ -1,6 +1,6 @@
 function(test_mpi_launcher target test Nworker)
 
-if(NOT (DEFINED MPIEXEC_EXECUTABLE AND DEFINED MPIEXEC_NUMPROC_FLAG))
+if(NOT MPIEXEC_EXECUTABLE OR NOT MPIEXEC_NUMPROC_FLAG)
   message(FATAL_ERROR "MPIEXEC_EXECUTABLE and MPIEXEC_NUMPROC_FLAG must be defined to use test_mpi_launcher")
 endif()
 

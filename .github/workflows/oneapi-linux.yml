@@ -4,35 +4,29 @@ env:
   CC: icx
   CXX: icpx
   FC: ifx
-  LINUX_CPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp
-  LINUX_FORTRAN_COMPONENTS: intel-oneapi-compiler-fortran
-  LINUX_MKL_COMPONENTS: intel-oneapi-mkl intel-oneapi-mkl-devel
-  LINUX_MPI_COMPONENTS: intel-oneapi-mpi intel-oneapi-mpi-devel
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
   CTEST_NO_TESTS_ACTION: error
-  CMAKE_BUILD_PARALLEL_LEVEL: 4
   CMAKE_BUILD_TYPE: Release
   CTEST_PARALLEL_LEVEL: 0
+  CMAKE_GENERATOR: Ninja
   # oneAPI Debug triggers asan errors on Linux in general on any project
   CMAKE_INSTALL_PREFIX: ~/libs
   CMAKE_PREFIX_PATH: ~/libs
 
 on:
   push:
-    paths:
-      - "**.c"
-      - "**.cpp"
-      - "**.f90"
-      - "**.F90"
-      - "**.cmake"
-      - "cmake/libraries.json"
-      - "CMakePresets.json"
-      - "**/CMakeLists.txt"
-      - "!cmake/gnu.cmake"
-      - ".github/workflows/oneapi-linux.yml"
-# paths ignore starting with "!"
-      - "!docs/**"
-      - "!**/cray.cmake"
+    paths-ignore:
+      - ".github/workflows/ci_macos.yml"
+      - ".github/workflows/ci.yml"
+      - "docs/**"
+      - "cmake/cray.cmake"
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
 
@@ -40,13 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # strategy:
-    #   matrix:
+    strategy:
+      matrix:
+        oneapi: [2025.2]
     #     hwm14: [true, false]
 
     steps:
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     # this must be before oneAPI script commands else the scripts do not exist on the image
 
     - name: cache install oneAPI
@@ -55,38 +50,42 @@ jobs:
       with:
         path: |
           /opt/intel/oneapi
-        key: install-apt
+        key: oneapi-${{ matrix.oneapi }}-apt
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
       timeout-minutes: 8
       # 5 minutes times out sometimes
       run: |
-        .github/workflows/oneapi_setup_apt_repo_linux.sh
-        sudo apt install ${{ env.LINUX_FORTRAN_COMPONENTS }} ${{ env.LINUX_CPP_COMPONENTS }} ${{ env.LINUX_MPI_COMPONENTS }} ${{ env.LINUX_MKL_COMPONENTS }}
+        sh -c .github/workflows/oneapi_setup_apt_repo_linux.sh
+        sudo apt install --no-install-recommends \
+          intel-oneapi-compiler-fortran-${{ matrix.oneapi }} \
+          intel-oneapi-compiler-dpcpp-cpp-${{ matrix.oneapi }} \
+          intel-oneapi-mpi \
+          intel-oneapi-mpi-devel \
+          intel-oneapi-mkl-${{ matrix.oneapi }} \
+          intel-oneapi-mkl-devel-${{ matrix.oneapi }}
 
     - name: Setup Intel oneAPI environment
       run: |
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: install Ninja
-      run: sudo apt install ninja-build
-# install ninja needs to be own step as not cached by design
-# we use ninja to help debu build failures as it prints the failing command by default
-
     - name: CMake Configure
-      run: cmake --preset default -G Ninja
+      run: cmake --preset default
 
-    - name: print config log
-      if: ${{ failure() }}
-      run: cat build/CMakeFiles/CMakeConfigureLog.yaml
+    - name: Upload log failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: oneapi-${{ matrix.oneapi }}-${{ runner.os }}-CMakeConfigureLog.yaml
+        path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: build
       run: cmake --build --preset default
 
     - name: build failed
-      if: ${{ failure() }}
+      if: ${{ failure() }} && ${{ hashFiles('build/build.ninja') != '' }}
       run: cmake --build --preset default -j1 -v
 
     - name: unit test
@@ -101,4 +100,4 @@ jobs:
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
-      run: .github/workflows/oneapi_cache_exclude_linux.sh
+      run: sh -c .github/workflows/oneapi_cache_exclude_linux.sh

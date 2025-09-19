@@ -80,7 +80,7 @@ contains
   end function interp1
   
   
-  pure real(wp) function interp3(x1,x2,x3,f,x1i,x2i,x3i)
+  pure real(wp) function interp3(x1,x2,x3,f,x1i,x2i,x3i,interptypein)
     !------------------------------------------------------------
     !-------A 3D TRILINEAR INTERPOLATION FUNCTION.  THIS VERSION ASSUMES
     !-------THAT THE LIST OF OUTPUT POINTS IS A 'FLAT LIST' RATHER THAN
@@ -88,13 +88,22 @@ contains
     !------------------------------------------------------------
     real(wp), dimension(:), intent(in) :: x1,x2,x3,x1i,x2i,x3i
     real(wp), dimension(:,:,:), intent(in) :: f
+    integer, intent(in), optional :: interptypein
     dimension :: interp3(1:size(x1i,1))     !interpolated points are a flat list
     real(wp) :: fx1ix2pix3p,fx1ix2nix3p,fx1ix2pix3n,fx1ix2nix3n    !function estimates at x1i point  vs. at x2 interfaces
     real(wp) :: fx2ix3p,fx2ix3n
     real(wp) :: slope                     !temp value for slope for interpolations
     integer :: lx1,lx2,lx3,lxi,ix1,ix2,ix3,ixi
     integer :: ix10,ix1fin,ix20,ix2fin,ix30,ix3fin
-    
+    integer :: interptype     ! set to zero for nearest neighbor, anything else will be trilinear
+
+    ! alter the default interpolation type if the user has provided an input
+    if (present(interptypein)) then 
+      interptype=interptypein
+    else
+      interptype=1
+    end if
+
     lx1=size(x1,1)
     lx2=size(x2,1)
     lx3=size(x3,1)
@@ -166,37 +175,46 @@ contains
       end if
     
       if (ix1>1 .and. ix1<=lx1 .and. ix2>1 .and. ix2<=lx2 .and. ix3>1 .and. ix3<=lx3) then   !interpolation
-        !interpolate x1 for fixed values of x2,x3 (four separate interps)
-        !first the "prev" x2 value, "prev" x2 value
-        slope=(f(ix1,ix2-1,ix3-1)-f(ix1-1,ix2-1,ix3-1))/(x1(ix1)-x1(ix1-1))
-        fx1ix2pix3p=f(ix1-1,ix2-1,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
-    
-        !now the "next" x2 value, "prev" x3
-        slope=(f(ix1,ix2,ix3-1)-f(ix1-1,ix2,ix3-1))/(x1(ix1)-x1(ix1-1))
-        fx1ix2nix3p=f(ix1-1,ix2,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
-    
-        !prev x2, next x3
-        slope=(f(ix1,ix2-1,ix3)-f(ix1-1,ix2-1,ix3))/(x1(ix1)-x1(ix1-1))
-        fx1ix2pix3n=f(ix1-1,ix2-1,ix3)+slope*(x1i(ixi)-x1(ix1-1))
-    
-        !next x3, next x3
-        slope=(f(ix1,ix2,ix3)-f(ix1-1,ix2,ix3))/(x1(ix1)-x1(ix1-1))
-        fx1ix2nix3n=f(ix1-1,ix2,ix3)+slope*(x1i(ixi)-x1(ix1-1))
-    
-    
-        !interpolate between each x2 value (two separate interps)
-        !interp in x2 for the x3 prev points
-        slope=(fx1ix2nix3p-fx1ix2pix3p)/(x2(ix2)-x2(ix2-1))
-        fx2ix3p=fx1ix2pix3p+slope*(x2i(ixi)-x2(ix2-1))
-    
-        !interp in 2 for the next x3 points
-        slope=(fx1ix2nix3n-fx1ix2pix3n)/(x2(ix2)-x2(ix2-1))
-        fx2ix3n=fx1ix2pix3n+slope*(x2i(ixi)-x2(ix2-1))
-    
-    
-        !finally an interpolation in x2 to finish things off (single interp)
-        slope=(fx2ix3n-fx2ix3p)/(x3(ix3)-x3(ix3-1))
-        interp3(ixi)=fx2ix3p+slope*(x3i(ixi)-x3(ix3-1))
+        if (interptype/=0) then     ! trilinear interpolation
+          !interpolate x1 for fixed values of x2,x3 (four separate interps)
+          !first the "prev" x2 value, "prev" x2 value
+          slope=(f(ix1,ix2-1,ix3-1)-f(ix1-1,ix2-1,ix3-1))/(x1(ix1)-x1(ix1-1))
+          fx1ix2pix3p=f(ix1-1,ix2-1,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
+      
+          !now the "next" x2 value, "prev" x3
+          slope=(f(ix1,ix2,ix3-1)-f(ix1-1,ix2,ix3-1))/(x1(ix1)-x1(ix1-1))
+          fx1ix2nix3p=f(ix1-1,ix2,ix3-1)+slope*(x1i(ixi)-x1(ix1-1))
+      
+          !prev x2, next x3
+          slope=(f(ix1,ix2-1,ix3)-f(ix1-1,ix2-1,ix3))/(x1(ix1)-x1(ix1-1))
+          fx1ix2pix3n=f(ix1-1,ix2-1,ix3)+slope*(x1i(ixi)-x1(ix1-1))
+      
+          !next x3, next x3
+          slope=(f(ix1,ix2,ix3)-f(ix1-1,ix2,ix3))/(x1(ix1)-x1(ix1-1))
+          fx1ix2nix3n=f(ix1-1,ix2,ix3)+slope*(x1i(ixi)-x1(ix1-1))
+      
+      
+          !interpolate between each x2 value (two separate interps)
+          !interp in x2 for the x3 prev points
+          slope=(fx1ix2nix3p-fx1ix2pix3p)/(x2(ix2)-x2(ix2-1))
+          fx2ix3p=fx1ix2pix3p+slope*(x2i(ixi)-x2(ix2-1))
+      
+          !interp in 2 for the next x3 points
+          slope=(fx1ix2nix3n-fx1ix2pix3n)/(x2(ix2)-x2(ix2-1))
+          fx2ix3n=fx1ix2pix3n+slope*(x2i(ixi)-x2(ix2-1))
+      
+      
+          !finally an interpolation in x2 to finish things off (single interp)
+          slope=(fx2ix3n-fx2ix3p)/(x3(ix3)-x3(ix3-1))
+          interp3(ixi)=fx2ix3p+slope*(x3i(ixi)-x3(ix3-1))
+        else     ! nearest neighbor interpolation
+          ! find indices closest to current query point
+          if( abs(x1i(ixi)-x1(ix1)) > abs(x1i(ixi)-x1(ix1-1)) ) ix1=ix1-1
+          if( abs(x2i(ixi)-x2(ix2)) > abs(x2i(ixi)-x2(ix2-1)) ) ix2=ix2-1
+          if( abs(x3i(ixi)-x3(ix3)) > abs(x3i(ixi)-x3(ix3-1)) ) ix3=ix3-1
+
+          interp3(ixi)=f(ix1,ix2,ix3)
+        end if
       else
         interp3(ixi)=0._wp
       end if

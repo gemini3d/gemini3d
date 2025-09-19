@@ -137,7 +137,7 @@ contains
       call gather_recv(tmp,tag%uservar,tmpall)
       user_outputall(:,:,:,iparm)=tmpall
     end do
-    
+
     !COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
     !> possible bottleneck; should have workers help?
     !> also only compute these if they are actually being output
