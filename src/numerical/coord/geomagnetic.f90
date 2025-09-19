@@ -7,8 +7,8 @@ implicit none (type, external)
 
 
 ! magnetic pole location in geographic coordinates. Now based on the year (set_magnetic_pole)
-real(wp) :: thetan
-real(wp) :: phin
+real(wp) :: thetan=11._wp*pi/180
+real(wp) :: phin=289._wp*pi/180
 
 private
 public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU, ENU2ECEFspher
