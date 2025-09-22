@@ -114,6 +114,8 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()   ! ionization rates from precipitation and total sources
   real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
+  real(wp) :: gavg,Tninf                                                        ! place to store average/exospheric values that
+                                                                                !   workers agree upon for use in ionoization calculations
 
   !> Conductivities for potential solve
   real(wp), dimension(:,:,:), pointer :: sig0=>null(),sigP=>null(),sigH=>null()
@@ -1406,7 +1408,7 @@ contains
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,gavg,Tninf)
+                                        UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1414,7 +1416,7 @@ contains
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: gavg,Tninf
+    !real(wp), intent(in) :: gavg,Tninf
     real(wp) :: f107a,f107   
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
@@ -1440,7 +1442,7 @@ contains
 
 
   !> Compute photoionization and *add* results to intvars%Prioinize and intvars%Qeionize
-  subroutine solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,gavg,Tninf)
+  subroutine solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1448,14 +1450,14 @@ contains
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: gavg,Tninf
+    !real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp) :: f107a,f107   
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call get_solar_indices(cfg,f107,f107a)
     call solar_ionization(t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
-            intvars%atmos%nn,intvars%atmos%Tn,gavg,Tninf,intvars%Iinf)     ! solar and impact ionization sources
+            intvars%atmos%nn,intvars%atmos%Tn,intvars%gavg,intvars%Tninf,intvars%Iinf)     ! solar and impact ionization sources
   end subroutine solar_ionization_in
 
 

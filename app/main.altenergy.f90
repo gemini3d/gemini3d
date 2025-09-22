@@ -272,7 +272,7 @@ contains
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
     !real(wp) :: f107,f107a
-    real(wp) :: gavg,Tninf
+    !real(wp) :: gavg,Tninf
     integer :: isub,lsub=1   ! variables for controlling subcycling of terms
 
     ! pull solar indices from module type
@@ -347,13 +347,13 @@ contains
     ! Energy diffusion and source/loss substeps
     do isub=1,lsub 
       !> all workers need to "agree" on a gravity and exospheric temperature
-      call get_gavg_Tinf_in(intvars,gavg,Tninf)
+      call get_gavg_Tinf_in(intvars)
     
       !> Compute ionization sources for the present time step
       call clear_ionization_arrays(intvars)
       call impact_ionization_in(cfg,fluidvars,intvars,x,dt/lsub,t,ymd, &
-                                          UTsec,gavg,Tninf)
-      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,gavg,Tninf)
+                                          UTsec)
+      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec)
   
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !> Handle diffusion and sources together in parabolic solvers

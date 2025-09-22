@@ -311,11 +311,11 @@ contains
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
-    real(wp) :: f107,f107a
-    real(wp) :: gavg,Tninf
+    !real(wp) :: f107,f107a
+    !real(wp) :: gavg,Tninf
 
     ! pull solar indices from module type
-    call get_solar_indices(cfg,f107,f107a)
+    !call get_solar_indices(cfg,f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1_in(fluidvars,fluidauxvars)

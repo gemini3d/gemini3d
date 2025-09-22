@@ -146,7 +146,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   void* cfgC, void* xC, void* intvars)
   {
   //double f107,f107a;
-  double gavg,Tninf;
+  //double gavg,Tninf;
 
   int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
 
@@ -210,13 +210,13 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   T2rhoe_C(&fluidvars,&fluidauxvars);
 
   /* Prep for sources step - all workers must have a common average gravity and exospheric temperature */
-  get_gavg_Tinf_C(&intvars, &gavg ,&Tninf);
+  get_gavg_Tinf_C(&intvars);
 
   /* Compute sources of ionization and heating */
   clear_ionization_arrays_C(&intvars);
   impact_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pdt,pt,pymd,
-                                        pUTsec,&gavg,&Tninf);
-  solar_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pt,pymd,pUTsec,&gavg,&Tninf);
+                                        pUTsec);
+  solar_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pt,pymd,pUTsec);
 
   /* Sources substep and finalize solution for this time step */
 //  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...

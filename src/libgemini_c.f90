@@ -1070,7 +1070,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,gavg,Tninf)
+                                        UTsec)
   end subroutine impact_ionization_C
 
 
@@ -1098,7 +1098,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd, &
-                                        UTsec,gavg,Tninf)
+                                        UTsec)
   end subroutine solar_ionization_C
 
 
