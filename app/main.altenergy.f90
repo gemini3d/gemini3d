@@ -271,12 +271,12 @@ contains
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
-    real(wp) :: f107,f107a
+    !real(wp) :: f107,f107a
     real(wp) :: gavg,Tninf
     integer :: isub,lsub=1   ! variables for controlling subcycling of terms
 
     ! pull solar indices from module type
-    call get_solar_indices(cfg,f107,f107a)
+    !call get_solar_indices(cfg,f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1_in(fluidvars,fluidauxvars)
@@ -352,8 +352,8 @@ contains
       !> Compute ionization sources for the present time step
       call clear_ionization_arrays(intvars)
       call impact_ionization_in(cfg,fluidvars,intvars,x,dt/lsub,t,ymd, &
-                                          UTsec,f107a,f107,gavg,Tninf)
-      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
+                                          UTsec,gavg,Tninf)
+      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,gavg,Tninf)
   
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !> Handle diffusion and sources together in parabolic solvers

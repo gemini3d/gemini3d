@@ -1045,7 +1045,7 @@ contains
 
 
   subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec,f107a,f107, & !first,
+                  UTsec, & !f107a,f107, & !first,
                   gavg,Tninf) &
                   bind(C, name="impact_ionization_C")
     type(c_ptr), intent(in) :: cfgC
@@ -1056,7 +1056,7 @@ contains
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
-    real(wp), intent(in) :: UTsec,f107,f107a
+    real(wp), intent(in) :: UTsec
     !logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
@@ -1070,12 +1070,13 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
+                                        UTsec,gavg,Tninf)
   end subroutine impact_ionization_C
 
 
   subroutine solar_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,t,ymd, &
-                  UTsec,f107a,f107,gavg,Tninf) &
+                  UTsec, & !f107a,f107,
+                  gavg,Tninf) &
                   bind(C, name="solar_ionization_C")
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
@@ -1084,7 +1085,7 @@ contains
     type(c_ptr), intent(in) :: intvarsC
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
-    real(wp), intent(in) :: UTsec,f107,f107a
+    real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
@@ -1097,7 +1098,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
+                                        UTsec,gavg,Tninf)
   end subroutine solar_ionization_C
 
 

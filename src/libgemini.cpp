@@ -145,13 +145,13 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   int* pxtype,
   void* cfgC, void* xC, void* intvars)
   {
-  double f107,f107a;
+  //double f107,f107a;
   double gavg,Tninf;
 
   int one=1,two=2,three=3;    // silly but I need some way to pass these ints by reference to fortran...
 
   /* Set up variables for the time step */
-  get_solar_indices_C(&cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
+  //get_solar_indices_C(&cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
   v12rhov1_C(&fluidvars,&fluidauxvars);
   T2rhoe_C(&fluidvars,&fluidauxvars);
 
@@ -215,8 +215,8 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   /* Compute sources of ionization and heating */
   clear_ionization_arrays_C(&intvars);
   impact_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pdt,pt,pymd,
-                                        pUTsec,&f107a,&f107,&gavg,&Tninf);
-  solar_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pt,pymd,pUTsec,&f107a,&f107,&gavg,&Tninf);
+                                        pUTsec,&gavg,&Tninf);
+  solar_ionization_C(&cfgC,&fluidvars,&intvars,pxtype,&xC,pt,pymd,pUTsec,&gavg,&Tninf);
 
   /* Sources substep and finalize solution for this time step */
 //  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
