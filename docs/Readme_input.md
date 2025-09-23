@@ -187,6 +187,30 @@ flagdiamagnetic=.true.        ! whether or not to compute pressure terms in perp
 ! (optional - off by default)
 &twoway_coupled
 flagtwoway=.true.        ! whether or not to compute momentum and energy rates back to neutrals
+
+! (optional - off by default) assume background current divergence free?
+&nodivJ0
+flagnodivJ0 = .false.
+/
+
+! (optional - off by default) Farley-Buneman instability
+&FBI
+flagFBI = 0
+/
+!! default: 0, which does not run FBI model.
+!! 1: turn on only abnormal heating
+!! 2: abnormal heating and non-linear current
+
+! (optional - 0 by default) electron rotational and vibrational cooling
+&evibcool
+flagevibcool = 0
+/
+!! 1: use new model
+!! 0: use old model
+
+! whether or not to compute magnetic pole location based on year (.false.=use default; .true.=compute based on year)
+&magpole
+flagmagpole=.false.
 /
 ```
 

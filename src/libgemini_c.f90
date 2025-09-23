@@ -54,7 +54,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            init_solfluxinput_in, solflux_perturb_in, source_neut_in
+            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in
 
 implicit none (type, external)
 
@@ -111,6 +111,15 @@ contains
     call c_f_pointer(cfgC,cfg)
     call read_config_in(p,cfg)
   end subroutine read_config_in_C
+
+
+  subroutine set_magnetic_pole_in_C(cfgC) bind(C,name='set_magnetic_pole_in_C')
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call set_magnetic_pole_in(cfg)
+  end subroutine set_magnetic_pole_in_C
 
 
   !> interface for reading in grid sizes into fortran module variables

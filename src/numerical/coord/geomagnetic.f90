@@ -11,7 +11,8 @@ real(wp) :: thetan=11._wp*pi/180
 real(wp) :: phin=289._wp*pi/180
 
 private
-public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU, ENU2ECEFspher
+public :: geomag2geog, geog2geomag, r2alt, alt2r, rotgg2gm, rotgm2gg, ECEFspher2ENU, ENU2ECEFspher, &
+            set_magnetic_pole
 
 contains
 

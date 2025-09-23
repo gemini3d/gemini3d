@@ -41,7 +41,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
                       gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, check_finite_output_in, &
                       init_neutralBG_input_in, get_it, itinc, &
-                      diffusion_source_loss_energy_in
+                      diffusion_source_loss_energy_in, set_magnetic_pole_in
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
@@ -146,6 +146,9 @@ contains
 
     !> read in config file and add contents to cfg
     call read_config_in(p,cfg)           ! read configuration file and add information to cfg
+
+    !> set the magnetic pole based on year if the user specified to do so
+    call set_magnetic_pole_in(cfg)
 
     !> allocations depend on grid size so read that into our module variables
     call grid_size_in(cfg)               ! retrieve the total grid size form the input filename stored in cfg

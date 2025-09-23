@@ -113,9 +113,11 @@ type :: gemini_cfg
 
   !> electron rotational and vibrational cooling
   integer :: flagevibcool = 0
-  !! default: 1, use new model
+  !! 1: use new model
   !! 0: use old model
 
+  !> whether or not to compute magnetic pole location based on year (.false.=use default; .true.=compute based on year)
+  logical :: flagmagpole=.false.
 end type gemini_cfg
 
 

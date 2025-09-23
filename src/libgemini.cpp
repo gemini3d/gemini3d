@@ -42,6 +42,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   gemini_cfg_alloc_C(&cfgC);
   cli_in_C(ps,plid2in,plid3in,&cfgC);
   read_config_in_C(ps,&cfgC);
+  set_magnetic_pole_in_C(&cfgC);
   grid_size_in_C(&cfgC);
 
   // Grab some variables out of fortran modules

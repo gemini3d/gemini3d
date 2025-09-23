@@ -53,6 +53,7 @@ use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi,compute_BGEfields_nompi
 !use geomagnetic, only: geog2geomag,ECEFspher2ENU
+use geomagnetic, only: set_magnetic_pole
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use sanity_check, only : check_finite_output
@@ -85,7 +86,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
             diffusion_source_loss_energy_in, &
-            user_populate
+            user_populate, set_magnetic_pole_in
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -215,6 +216,16 @@ contains
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
     !call check_input_files(cfg)
   end subroutine read_config_in
+
+
+  !> Adjusts the magnetic pole location based on year if the user so specifies
+  subroutine set_magnetic_pole_in(cfg)
+    type(gemini_cfg), intent(in) :: cfg
+
+    if (cfg%flagmagpole) then
+      call set_magnetic_pole(cfg%ymd0(1))
+    end if
+  end subroutine set_magnetic_pole_in
 
 
   !> return some data from cfg that is needed in the main program
