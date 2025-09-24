@@ -16,3 +16,5 @@ add_subdirectory(advection)
 add_subdirectory(potential)
 
 add_subdirectory(coord)
+
+add_subdirectory(mesh)
