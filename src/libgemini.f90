@@ -322,6 +322,7 @@ contains
     allocate(intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:4))
     intvars%momentneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,1:3)
     intvars%energyneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,4)
+    intvars%neutralrates(:,:,:,:)=0._wp
 
     ! First check that our module-scope arrays are allocated before going on to calculations.  
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
