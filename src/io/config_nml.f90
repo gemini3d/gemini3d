@@ -383,7 +383,7 @@ contains
 
     if (namelist_exists(u, 'magpole')) then
       rewind(u)
-      read(u, nml=evibcool, iostat=i)
+      read(u, nml=magpole, iostat=i)
       call check_nml_io(i, cfg%infile, "magpole")
       cfg%flagmagpole = flagmagpole
     else
