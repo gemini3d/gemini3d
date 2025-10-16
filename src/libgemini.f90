@@ -52,7 +52,8 @@ use advec, only: interface_vels_allspec,set_global_boundaries_allspec
 use timeutils, only: dateinc
 use io_nompi, only: interp_file2subgrid,plasma_output_nompi
 use potential_nompi, only: set_fields_test,velocities_nompi,compute_BGEfields_nompi
-use geomagnetic, only: geog2geomag,ECEFspher2ENU
+!use geomagnetic, only: geog2geomag,ECEFspher2ENU
+use geomagnetic, only: set_magnetic_pole
 use interpolation, only: interp3,interp2
 use calculus, only: grad3D2,grad3D3
 use sanity_check, only : check_finite_output
@@ -85,7 +86,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             check_finite_output_in, solflux_perturb_in, init_solfluxinput_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
             diffusion_source_loss_energy_in, &
-            user_populate
+            user_populate, set_magnetic_pole_in
 
 !> tracking lagrangian grid (same across all subgrids)
 real(wp), protected :: v2grid,v3grid
@@ -114,6 +115,8 @@ type gemini_work
   real(wp), dimension(:,:,:,:), pointer :: PrPrecip=>null(), Prionize=>null()   ! ionization rates from precipitation and total sources
   real(wp), dimension(:,:,:), pointer :: QePrecip=>null(), Qeionize=>null()     ! electron heating rates from precip. and total
   real(wp), dimension(:,:,:,:), pointer :: Pr=>null(),Lo=>null()                ! work arrays for tracking production/loss rates for conservation laws
+  real(wp) :: gavg,Tninf                                                        ! place to store average/exospheric values that
+                                                                                !   workers agree upon for use in ionoization calculations
 
   !> Conductivities for potential solve
   real(wp), dimension(:,:,:), pointer :: sig0=>null(),sigP=>null(),sigH=>null()
@@ -213,6 +216,16 @@ contains
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
     !call check_input_files(cfg)
   end subroutine read_config_in
+
+
+  !> Adjusts the magnetic pole location based on year if the user so specifies
+  subroutine set_magnetic_pole_in(cfg)
+    type(gemini_cfg), intent(in) :: cfg
+
+    if (cfg%flagmagpole) then
+      call set_magnetic_pole(cfg%ymd0(1))
+    end if
+  end subroutine set_magnetic_pole_in
 
 
   !> return some data from cfg that is needed in the main program
@@ -534,7 +547,7 @@ contains
   end subroutine gemini_double_dealloc
 
 
-  !> subroutine to force generate of grid internal objects (grid must already be allocated)
+  !> subroutine to force generation of grid internal objects (grid must already be allocated)
   subroutine gemini_grid_generate(x)
     class(curvmesh), intent(inout) :: x
 
@@ -542,7 +555,7 @@ contains
   end subroutine gemini_grid_generate
 
 
-  !> subroutine to force generate of grid internal objects (grid must already be allocated); user-defined null altitude
+  !> subroutine to force generation of grid internal objects (grid must already be allocated); user-defined null altitude
   subroutine gemini_grid_generate_altnull(x,altnull)
     class(curvmesh), intent(inout) :: x
     real(wp), intent(in) :: altnull
@@ -1407,7 +1420,7 @@ contains
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
   !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
+                                        UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1415,11 +1428,12 @@ contains
     real(wp), intent(in) :: dt,t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: f107a,f107
-    real(wp), intent(in) :: gavg,Tninf
+    !real(wp), intent(in) :: gavg,Tninf
+    real(wp) :: f107a,f107   
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call get_solar_indices(cfg,f107,f107a)
     call impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,intvars%Prprecip,intvars%Qeprecip, &
             intvars%W0,intvars%PhiWmWm2,intvars%iver,ns,Ts,intvars%atmos%nn,intvars%atmos%Tn,(get_it()==1))   ! precipiting electrons
     intvars%Prionize=intvars%Prionize+intvars%Prprecip    ! we actually need to keep a copy of the ionization by particles since GLOW not called every time step
@@ -1440,7 +1454,7 @@ contains
 
 
   !> Compute photoionization and *add* results to intvars%Prioinize and intvars%Qeionize
-  subroutine solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
+  subroutine solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
@@ -1448,13 +1462,14 @@ contains
     real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), intent(in) :: f107a,f107
-    real(wp), intent(in) :: gavg,Tninf
+    !real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp) :: f107a,f107   
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
+    call get_solar_indices(cfg,f107,f107a)
     call solar_ionization(t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
-            intvars%atmos%nn,intvars%atmos%Tn,gavg,Tninf,intvars%Iinf)     ! solar and impact ionization sources
+            intvars%atmos%nn,intvars%atmos%Tn,intvars%gavg,intvars%Tninf,intvars%Iinf)     ! solar and impact ionization sources
   end subroutine solar_ionization_in
 
 

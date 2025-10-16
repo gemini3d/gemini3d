@@ -54,7 +54,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            init_solfluxinput_in, solflux_perturb_in, source_neut_in
+            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in
 
 implicit none (type, external)
 
@@ -111,6 +111,15 @@ contains
     call c_f_pointer(cfgC,cfg)
     call read_config_in(p,cfg)
   end subroutine read_config_in_C
+
+
+  subroutine set_magnetic_pole_in_C(cfgC) bind(C,name='set_magnetic_pole_in_C')
+    type(c_ptr), intent(inout) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    call c_f_pointer(cfgC,cfg)
+    call set_magnetic_pole_in(cfg)
+  end subroutine set_magnetic_pole_in_C
 
 
   !> interface for reading in grid sizes into fortran module variables
@@ -1045,7 +1054,7 @@ contains
 
 
   subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec,f107a,f107, & !first,
+                  UTsec, & !f107a,f107, & !first,
                   gavg,Tninf) &
                   bind(C, name="impact_ionization_C")
     type(c_ptr), intent(in) :: cfgC
@@ -1056,7 +1065,7 @@ contains
     real(wp), intent(in) :: dt
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
-    real(wp), intent(in) :: UTsec,f107,f107a
+    real(wp), intent(in) :: UTsec
     !logical, intent(in) :: first
     real(wp), intent(in) :: gavg,Tninf
 
@@ -1070,12 +1079,13 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
+                                        UTsec)
   end subroutine impact_ionization_C
 
 
   subroutine solar_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,t,ymd, &
-                  UTsec,f107a,f107,gavg,Tninf) &
+                  UTsec, & !f107a,f107,
+                  gavg,Tninf) &
                   bind(C, name="solar_ionization_C")
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
@@ -1084,7 +1094,7 @@ contains
     type(c_ptr), intent(in) :: intvarsC
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
-    real(wp), intent(in) :: UTsec,f107,f107a
+    real(wp), intent(in) :: UTsec
     real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
@@ -1097,7 +1107,7 @@ contains
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(intvarsC,intvars)
     call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd, &
-                                        UTsec,f107a,f107,gavg,Tninf)
+                                        UTsec)
   end subroutine solar_ionization_C
 
 

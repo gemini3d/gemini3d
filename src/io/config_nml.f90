@@ -63,6 +63,9 @@ contains
     ! for controlling which electron cooling rates are used in energy equations
     integer :: flagevibcool
 
+    ! user flag to enable calculation of magnetic pole based on year
+    logical :: flagmagpole=.false.
+
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
     namelist /files/ file_format, indat_size, indat_grid, indat_file
     namelist /flags/ potsolve, flagperiodic, flagoutput
@@ -88,6 +91,7 @@ contains
     namelist /fang_pars/ diff_num_flux, kappa, bimax_frac, W0_char
     namelist /FBI/ flagFBI
     namelist /evibcool/ flagevibcool
+    namelist /magpole/ flagmagpole
 
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -375,6 +379,15 @@ contains
       cfg%flagevibcool = flagevibcool
     else
       cfg%flagevibcool = 0    ! default to legacy rates, for now, so CI still works okay
+    endif
+
+    if (namelist_exists(u, 'magpole')) then
+      rewind(u)
+      read(u, nml=magpole, iostat=i)
+      call check_nml_io(i, cfg%infile, "magpole")
+      cfg%flagmagpole = flagmagpole
+    else
+      cfg%flagmagpole = .false.    ! by default use the legacy GEMINI value
     endif
 
     close(u)

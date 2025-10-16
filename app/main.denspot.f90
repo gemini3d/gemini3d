@@ -40,7 +40,7 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
                       gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, &
-                      fluidvar_pointers, check_finite_output_in, itinc, get_it
+                      fluidvar_pointers, check_finite_output_in, itinc, get_it, set_magnetic_pole_in
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
@@ -148,6 +148,9 @@ contains
 
     !> read in config file and add contents to cfg
     call read_config_in(p,cfg)           ! read configuration file and add information to cfg
+
+    !> set the magnetic pole based on year if the user specified to do so
+    call set_magnetic_pole_in(cfg)
 
     !> allocations depend on grid size so read that into our module variables
     call grid_size_in(cfg)               ! retrieve the total grid size form the input filename stored in cfg
@@ -311,11 +314,11 @@ contains
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
-    real(wp) :: f107,f107a
-    real(wp) :: gavg,Tninf
+    !real(wp) :: f107,f107a
+    !real(wp) :: gavg,Tninf
 
     ! pull solar indices from module type
-    call get_solar_indices(cfg,f107,f107a)
+    !call get_solar_indices(cfg,f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1_in(fluidvars,fluidauxvars)

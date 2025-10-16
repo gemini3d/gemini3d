@@ -153,6 +153,12 @@ if (mpi_cfg%myid==0) then
     print*, 'Lagrangian grid disabled'
   end if
 
+  if (cfg%flagmagpole) then
+    print*, 'Using year-based magnetic pole.'
+  else
+    print*, 'Using default magnetic pole.'
+  end if
+
   print *,  '**************** end input config ***************'
 end if
 

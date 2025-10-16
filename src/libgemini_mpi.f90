@@ -695,11 +695,10 @@ contains
 
 
   !> agree on average value of gravity and exospheric temp
-  subroutine get_gavg_Tinf_in(intvars,gavg,Tninf)
-    type(gemini_work), intent(in) :: intvars
-    real(wp), intent(inout) :: gavg,Tninf
+  subroutine get_gavg_Tinf_in(intvars)
+    type(gemini_work), intent(inout) :: intvars
 
-    call get_gavg_Tinf(intvars%atmos,gavg,Tninf)
+    call get_gavg_Tinf(intvars%atmos,intvars%gavg,intvars%Tninf)
   end subroutine get_gavg_Tinf_in
 
 

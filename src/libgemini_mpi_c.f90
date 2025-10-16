@@ -493,7 +493,7 @@ contains
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(intvarsC,intvars)
-    call get_gavg_Tinf_in(intvars, gavg,Tninf)
+    call get_gavg_Tinf_in(intvars)
   end subroutine get_gavg_Tinf_C
 
 

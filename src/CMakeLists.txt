@@ -243,30 +243,6 @@ EXPORT ${PROJECT_NAME}-targets
 
 # --- Gemini_c.bin
 # C++ main program just like Fortran gemini.bin
-
-add_library(gemini3d_cpp libgemini.cpp)
-target_include_directories(gemini3d_cpp PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
-)
-target_link_libraries(gemini3d_cpp PUBLIC
-gemini3d_mpi_c
-gemini3d_mpi
-gemini3d_c
-h5fortran::h5fortran
-MUMPS::MUMPS
-MPI::MPI_CXX
-$<$<BOOL:${glow}>:glow::glow>
-ffilesystem::filesystem
-)
-target_compile_definitions(gemini3d_cpp PRIVATE
-$<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>
-)
-#$<$<BOOL:${MSVC}>:_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH>
-#$<$<BOOL:${MSVC}>:_HAS_ITERATOR_DEBUGGING=1>
-#$<$<BOOL:${MSVC}>:_ITERATOR_DEBUG_LEVEL=2>
-install(TARGETS gemini3d_cpp EXPORT ${PROJECT_NAME}-targets)
-
 # C++ Gemini3D executable
 if(HAVE_CXX_FILESYSTEM)
 
@@ -281,13 +257,18 @@ target_include_directories(gemini_c.bin PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(gemini_c.bin PRIVATE
-gemini3d_cpp
+target_link_libraries(gemini_c.bin PUBLIC
 gemini3d_mpi_c
 gemini3d_mpi
 gemini3d_c
 gemini3d
+h5fortran::h5fortran
+MUMPS::MUMPS
+MPI::MPI_CXX
+$<$<BOOL:${glow}>:glow::glow>
+ffilesystem::filesystem
 )
+
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 target_compile_features(gemini_c.bin PRIVATE cxx_std_17)
 
