@@ -415,7 +415,8 @@ subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
   lx1=x%lx1
   lx2=x%lx2
   lx3=x%lx3
-  Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+!  Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+  Bmagnitude=abs(x%Bmag(1:lx1,1:lx2,1:lx3))
   Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
   
   !!Initialize arrays as 0s

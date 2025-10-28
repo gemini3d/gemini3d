@@ -822,7 +822,7 @@ contains
     lx3=x%lx3
     
     !Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
-    Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
+    Bmagnitude=abs(x%Bmag(1:lx1,1:lx2,1:lx3))    ! for Cartesian grid x%Bmag is negative in northern hemisphere
     Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
     
     !!Initialize arrays a 0s and loss as 1s
