@@ -74,6 +74,12 @@ contains
   end subroutine init_neutralBG_input
 
 
+  !> Neutral background perturbations based on file input
+  subroutine neutralBG_perturb()
+
+  end subroutine neutralBG_perturb
+
+
   !> initialization procedure needed for MSIS 2.0
   subroutine msisinit_in(cfg)
     type(gemini_cfg), intent(in) :: cfg

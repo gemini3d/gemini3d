@@ -59,11 +59,11 @@ module procedure neutral_atmos
             Dn=d, Tn=t)
         end if
 
-        atmos%nnmsis(ix1,ix2,ix3,1)= d(2)
-        atmos%nnmsis(ix1,ix2,ix3,2)= d(3)
-        atmos%nnmsis(ix1,ix2,ix3,3)= d(4)
-        atmos%nnmsis(ix1,ix2,ix3,4)= d(7)
-        atmos%nnmsis(ix1,ix2,ix3,5)= d(8)
+        atmos%nnmsis(ix1,ix2,ix3,1)= d(2)    ! O
+        atmos%nnmsis(ix1,ix2,ix3,2)= d(3)    ! N2
+        atmos%nnmsis(ix1,ix2,ix3,3)= d(4)    ! O2
+        atmos%nnmsis(ix1,ix2,ix3,4)= d(7)    ! H
+        atmos%nnmsis(ix1,ix2,ix3,5)= d(8)    ! N
 
         atmos%Tnmsis(ix1,ix2,ix3)= t(2)
         atmos%nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/atmos%Tnmsis(ix1,ix2,ix3))*atmos%nnmsis(ix1,ix2,ix3,3)+ &

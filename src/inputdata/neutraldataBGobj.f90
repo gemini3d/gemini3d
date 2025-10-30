@@ -65,8 +65,8 @@ contains
     call self%load_size()
     call self%set_sizes(0, &
                        0,0,0, &
-                       0,0,0, &     ! 22 different wavelength bins to interpolate for GEMINI's solar flux calculations
-                       6, &
+                       0,0,0, &
+                       6, &     ! target data for neutralBG info is a 3D set of arrays
                        x )
     call self%init_storage()
     call self%set_cadence(dtdata)
@@ -76,8 +76,8 @@ contains
     call self%load_grid()
 
     ! Set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
-    self%natmp=>self%data3D(:,1,1,:)
-    self%natmiprev=>self%data3Di(:,:,:,:,1)     !contiguous in memory since only one element in x2,3
+    self%natmp=>self%data3D(:,1,1,:)   !contiguous in memory since only one element in x2,3
+    self%natmiprev=>self%data3Di(:,:,:,:,1)     
     self%natminext=>self%data3Di(:,:,:,:,2)
     self%natminow=>self%data3Dinow(:,:,:,:)
 
@@ -107,14 +107,13 @@ contains
     !print '(A)', 'READ neutralBG size from: ' // self%sourcedir
     call get_simsize1(self%sourcedir // "/simsize.h5", self%lalt)   ! mangling lat->alt
 
+    self%llon=1; self%llat=1;    ! force input to be only profile-based
+
     !print '(A,2I6)', 'soflux size: llon,llat:  ',self%llon,self%llat
     if (self%lalt < 1) then
      print*, '  neutralBG grid size must be strictly positive: ' //  self%sourcedir
      error stop
     end if
-
-!    ! set dim 1 so we can use interpolation into a 3D array
-!    self%lc1=lalt
 
     ! flag to denote input data size is set
     self%flagdatasize=.true.
@@ -150,8 +149,7 @@ contains
 
     allocate(self%altimat(1:x%lx1,1:x%lx2,1:x%lx3))     ! why not local variables?  FIXME
 
-    ! Target coordinates are 3D in this case...
-    ! set full 2D target coordinates along axes 2,3 - these are the only targets we have for precipitation data
+    ! Target coordinates are 3D in this case, e.g. due to dipole grid where alt spacing varies across domain
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
