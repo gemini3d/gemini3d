@@ -34,7 +34,7 @@ Clone the latest gemini3d repository and build it:
 git clone https://github.com/gemini3d/gemini3d.git
 cd gemini3d
 cmake -B build
-cmake --build build --parallel
+cmake --build build -j16
 ```
 The build configuration (`-B build`) will generate the necessary files in the build directory.
 This script will take a few minutes to complete; it will note multiple missing packages but will download source code for these to be compiled during the build step.
@@ -46,8 +46,8 @@ To ensure the binaries complied correctly, ensure you read, for example,
 [100%] Built target gemini.bin
 ```
 
-### 3. Test GEMINI installation (**NOT YET WORKING**)
-**Do not run ctest on VEGA login node!** You will get yelled at. First download the applicable tests,
+### 3. Test GEMINI installation
+***Do not run ctest on VEGA login node!*** You will get yelled at. First download the applicable tests,
 ```sh
 ctest --test-dir build --preset download
 ```
@@ -55,9 +55,11 @@ and ensure you read
 ```sh
 100% tests passed, 0 tests failed out of 8
 ```
-Now, run an interactive PBS job,
+Next, run an interactive PBS job.
+This interactive session requires all processors available in the node (on VEGA this is always 192).
+To start the session, run
 ```sh
-qsub -I -l walltime=1:00:00
+qsub -I -l walltime=1:00:00 -l nodes=1:ppn=192
 ```
 and navigate back to the `gemini3d` directory. Then run the tests,
 ```sh
@@ -65,8 +67,10 @@ ctest --test-dir build
 ```
 and ensure you read
 ```sh
-100% tests passed, 0 tests failed out of 73
+100% tests passed, 0 tests failed out of 68
 ```
+The amount of tests that run might vary, depending on how many are disabled.
+Make sure to exit the interactive session when finished.
 
 ---
 ---
@@ -89,7 +93,7 @@ PyGEMINI cannot (and should not) be installed on the root VEGA python. Create a 
 mkdir ~/.venvs
 python -m venv ~/.venvs/gemini
 ```
-Next, in `~/.bash_profile`, append:
+Next, if you expect to be working in this environment most of the time, append the following in `~/.bash_profile`:
 ```sh
 source ~/.venvs/gemini/bin/activate
 ```
@@ -97,9 +101,10 @@ and then run
 ```sh
 source ~/.bash_profile
 ```
+Otherwise, simply source the `activate` file.
 
 ### 3. Install PyGEMINI
-Simply run
+When inside the GEMINI environment (terminal starts with e.g. `(gemini) [username@vegaln1 ~]$`), simply run
 ```sh
 pip install gemini3d
 ```
@@ -124,8 +129,8 @@ Inside your simulation directory, create a PBS batch script (e.g. `pbs.script`) 
 #PBS -q normalq
 #PBS -l nodes=1:ppn=128
 #PBS -l walltime=4:00:00
-#PBS -o example_simulation.out
-#PBS -e example_simulation.err
+#PBS -o $HOME/logs/${PBS_JOBNAME}.${PBS_JOBID}.out
+#PBS -e $HOME/logs/${PBS_JOBNAME}.${PBS_JOBID}.err
 #PBS -V
 
 # Modules to load:
@@ -135,12 +140,13 @@ module load openmpi/5.0.2-gcc-8.5.0-diludms
 module load netlib-lapack/3.11.0-gcc-8.5.0-hlxv33x
 
 # Commands to run:
-cp -r $GEMINI_SIM_ROOT/example_simulation $PBS_O_HOME/scratch
-cp $GEMINI_ROOT/build/gemini.bin $PBS_O_HOME/scratch/example_simulation
-cd $PBS_O_HOME/scratch/example_simulation
-mpiexec gemini.bin . > example_simulation_live.out 2> example_simulation_live.err
-cp -nr $PBS_O_HOME/scratch/example_simulation $GEMINI_SIM_ROOT
+cp -r $GEMINI_SIM_ROOT/$PBS_JOBNAME $PBS_O_HOME/scratch
+cp $GEMINI_ROOT/build/gemini.bin $PBS_O_HOME/scratch/$PBS_JOBNAME
+cd $PBS_O_HOME/scratch/$PBS_JOBNAME
+mpiexec gemini.bin . > $PBS_JOBNAME.out 2> $PBS_JOBNAME.err
+cp -nr $PBS_O_HOME/scratch/$PBS_JOBNAME $GEMINI_SIM_ROOT
 ```
+If all is well, you can remove the simulation directory from `~/scratch` when finished.
 
 ### 3. Submit your job to the queue
 Submit your job to the queue,
@@ -151,7 +157,7 @@ and check on its status with
 ```sh
 qstat -u $USER
 ```
-You can check the job status with more detail using `checkjob <JOB_ID>` or by checking
+You can check the job status with more detail using `checkjob <JOB_ID>` or by reading
 ```sh
-~/scratch/example_simulation/example_simulation_live.out
+~/scratch/example_simulation/example_simulation.out
 ```
