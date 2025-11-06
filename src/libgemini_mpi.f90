@@ -463,6 +463,8 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
+    print*, associated(intvars%atmosbackground)
+
     call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmosbackground)
   end subroutine init_neutralbackground_in
 
@@ -537,7 +539,7 @@ contains
     else
       !> get neutral background
 !      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     
-      if ( cfg%flagneuBG .and. t>tneuBG) then     
+      if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then     
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
         call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables

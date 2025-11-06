@@ -374,6 +374,7 @@ contains
     allocate(intvars%efield)
     ! fields of intvars%atmos are allocated in neutral:neutral_info_alloc()
     allocate(intvars%solflux)
+    allocate(intvars%atmosbackground)
 
 !    ! Here the user needs to allocate any custom variables they want to pass around and/or output
 !    allocate(intvars%sigP(1:lx1,1:lx2,1:lx3))
@@ -439,6 +440,7 @@ contains
     if (associated(intvars%efield)) deallocate(intvars%efield)
     if (associated(intvars%solflux)) deallocate(intvars%solflux)
     !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
+    if (associated(intvars%atmosbackground) ) deallocate(intvars%atmosbackground)
 
     ! Call user deallocate
     call user_deallocate(intvars)
