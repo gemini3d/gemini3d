@@ -24,11 +24,11 @@ implicit none (type, external)
 logical :: flagneuperturb=.false.
 
 private
-public :: init_neutralperturb,neutral_update,neutral_perturb,neutral_denstemp_update,neutral_wind_update,clear_dneu
+public :: init_neutral_perturb,neutral_perturb,clear_neutral_perturb
 
 contains
   !> initialize/allocate neutral perturbation data object
-  subroutine init_neutralperturb(cfg,x,dt,ymd,UTsec,atmosperturb)
+  subroutine init_neutral_perturb(cfg,x,dt,ymd,UTsec,atmosperturb)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dt
@@ -64,7 +64,7 @@ contains
       ! call object init procedure
       call atmosperturb%init(cfg,cfg%sourcedir,x,dt,cfg%dtneu,ymd,UTsec)
     end if
-  end subroutine init_neutralperturb
+  end subroutine init_neutral_perturb
 
 
  !> update neutral perturbations and add to main neutral arrays.  It is assumed that the main GEMINI app will control
@@ -85,84 +85,15 @@ contains
     ! advance object state
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
 
-    !Add interpolated perturbations to module reference atmosphere arrays
-    call neutral_update(v2grid,v3grid,atmos,atmosperturb)
+    !Add interpolated perturbations to module reference atmosphere arrays -- move to libgemini_mpi
+    !call neutral_aggregate(v2grid,v3grid,atmos,atmosperturb)
   end subroutine neutral_perturb
 
 
-  !> update density, temperature, and winds
-  subroutine neutral_update(v2grid,v3grid,atmos,atmosperturb)
-    !! adds stored base and perturbation neutral atmospheric parameters
-    !!  these are module-scope parameters so not needed as input
-    real(wp) :: v2grid,v3grid
-    type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), pointer, intent(inout) :: atmosperturb
-
-    call neutral_denstemp_update(atmos,atmosperturb)
-    call neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
-  end subroutine neutral_update
-
-
-  !> Adds stored base (viz. background) and perturbation neutral atmospheric density
-  !   This does not use any of the existing data in arrays, but is declared inout to avoid potential
-  !   issues with deallocation/reallocation.  This procedure should be used when you have both neutral
-  !   background and perturbations and an update needs to be done.
-  subroutine neutral_denstemp_update(atmos,atmosperturb)
-    type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), intent(inout) :: atmosperturb
-
-    !> background neutral parameters
-    atmos%nn=atmos%nnmsis
-    atmos%Tn=atmos%Tnmsis
-
-    !> add perturbations, if used
-    if (flagneuperturb) then
-      atmos%nn(:,:,:,1)=atmos%nn(:,:,:,1)+atmosperturb%dnOinow
-      atmos%nn(:,:,:,2)=atmos%nn(:,:,:,2)+atmosperturb%dnN2inow
-      atmos%nn(:,:,:,3)=atmos%nn(:,:,:,3)+atmosperturb%dnO2inow
-      atmos%nn(:,:,:,1)=max(atmos%nn(:,:,:,1),1._wp)
-      atmos%nn(:,:,:,2)=max(atmos%nn(:,:,:,2),1._wp)
-      atmos%nn(:,:,:,3)=max(atmos%nn(:,:,:,3),1._wp)
-      !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
-      !! species perturbations.
-
-      atmos%Tn=atmos%Tn+atmosperturb%dTninow
-      atmos%Tn=max(atmos%Tn,50._wp)
-    end if
-  end subroutine neutral_denstemp_update
-
-
-  !> update wind variables with background and perturbation quantities, note that this does not use any of the
-  !    existing data in vn; but we still use intent(inout) to avoid weirdness with allocatable arrays.  This procedure
-  !    should only be used when one has both a background and perturbation.
-  subroutine neutral_wind_update(v2grid,v3grid,atmos,atmosperturb)
-    real(wp), intent(in) :: v2grid,v3grid
-    type(neutral_info), intent(inout) :: atmos
-    class(neutraldata), pointer, intent(inout) :: atmosperturb
-
-    !> background neutral parameters
-    atmos%vn1=atmos%vn1base
-    atmos%vn2=atmos%vn2base
-    atmos%vn3=atmos%vn3base
-
-    !> perturbations, if used
-    if (flagneuperturb) then
-      atmos%vn1=atmos%vn1+atmosperturb%dvn1inow
-      atmos%vn2=atmos%vn2+atmosperturb%dvn2inow
-      atmos%vn3=atmos%vn3+atmosperturb%dvn3inow
-    end if
-
-    !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
-    !print*, '<><><><><><><><><> subtracting off:  ',v2grid,v3grid
-    atmos%vn2=atmos%vn2-v2grid
-    atmos%vn3=atmos%vn3-v3grid
-  end subroutine neutral_wind_update
-
-
   !> deallocate neutral data object
-  subroutine clear_dneu(atmosperturb)
+  subroutine clear_neutral_perturb(atmosperturb)
     class(neutraldata), pointer, intent(inout) :: atmosperturb
 
     if (associated(atmosperturb)) deallocate(atmosperturb)
-  end subroutine clear_dneu
+  end subroutine clear_neutral_perturb
 end module neutral_perturbations

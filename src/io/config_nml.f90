@@ -35,7 +35,7 @@ contains
     logical :: flagEIA
     real(wp) :: v0equator
     real(wp) :: dtsolflux
-    real(wp) :: dtneutralBGfile
+    real(wp) :: dtneuBGfile
 
     ! for "default backgroud"
     logical :: flagneuBG=.false.
@@ -87,7 +87,7 @@ contains
     namelist /twoway_coupled/ flagtwoway
     namelist /nodivJ0/ flagnodivJ0
     namelist /solflux/ dtsolflux,solfluxdir
-    namelist /neutralBG_file/ dtneutralBGfile, neutralBGdir
+    namelist /neutralBG_file/ dtneuBGfile, neutralBGdir
     namelist /fang_pars/ diff_num_flux, kappa, bimax_frac, W0_char
     namelist /FBI/ flagFBI
     namelist /evibcool/ flagevibcool
@@ -195,7 +195,7 @@ contains
       read(u, nml=solflux, iostat=i)
       call check_nml_io(i, cfg%infile, "neutralBG_file")
       cfg%neutralBGdir = absolute(expand_envvar(neutralBGdir), cfg%outdir)
-      cfg%dtneutralBG = dtneutralBGfile
+      cfg%dtneuBGfile = dtneuBGfile
     else
       cfg%flagneutralBGfile = 0
       cfg%neutralBGdir = ""

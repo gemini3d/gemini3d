@@ -26,7 +26,7 @@ contains
     !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing column dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension; problematic for x2divisions...
     gavg=8._wp
 
-    Tninf=maxval(atmos%Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
+    Tninf=maxval(atmos%TnBG)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
 
     !both g and Tinf need to be computed as average over the entire grid...
     if (mpi_cfg%myid==0) then     !root

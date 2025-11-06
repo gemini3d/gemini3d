@@ -114,7 +114,21 @@ contains
     call hf%close()
     
   end procedure get_grid2_hdf5
+   
+
+  module procedure get_grid3_hdf5
+    type(hdf5_file) :: hf
     
+    if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid:', path
+    
+    call hf%open(path, action='r')
+    call hf%read('alt', altp)
+    call hf%read('/lon', lonp)
+    call hf%read('/lat', latp)
+    call hf%close()
+    
+  end procedure get_grid3_hdf5
+
     
   module procedure get_Efield_hdf5
     type(hdf5_file) :: hf
@@ -233,4 +247,25 @@ contains
     
     call hf%close()
   end procedure get_solflux_hdf5
+
+
+  module procedure get_neutral3BG_hdf5
+    type(hdf5_file) :: hf
+    
+    if (debug) print *, 'READ neutral background 3D data from file: ',path
+    
+    call hf%open(path, action='r')
+    
+    call hf%read('/n0all', nOall)
+    call hf%read('/nN2all', nN2all)
+    call hf%read('/nO2all', nO2all)
+    call hf%read('/nNall', nNall)
+    call hf%read('/nHall', nHall)
+    call hf%read('/vnxall', vnxall)
+    call hf%read('/vnrhoall', vnrhoall)
+    ! no (known) background vertical wind)?
+    call hf%read('/Tnall', Tnall)
+    
+    call hf%close()
+  end procedure get_neutral3BG_hdf5
 end submodule reader_hdf5

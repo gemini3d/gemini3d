@@ -7,23 +7,27 @@ use phys_consts, only: wp,debug,pi
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
-use reader, only: get_simsize1,get_grid1!,get_neutralBG
+use reader, only: get_simsize3,get_grid3,get_neutralBG
 use timeutils, only: dateinc,date_filename
 
 implicit none (type, external)
 private
-public :: neutralBGdata
+public :: neutraldataBG
 
-type, extends(inputdata) :: neutralBGdata
+type, extends(inputdata) :: neutraldataBG
   ! coordinates for input precipitation data, and storage
-  real(wp), dimension(:), pointer :: altp
+  real(wp), dimension(:), pointer :: altp,glonp,glatp
   integer, pointer :: llon,llat,lalt
-  real(wp), dimension(:,:), pointer :: natmp
+  real(wp), dimension(:,:,:,:), pointer :: natmp
   real(wp), dimension(:,:,:,:), pointer :: natmiprev,natminext,natminow
 
   ! work and target coordinates
-  real(wp), dimension(:,:,:), allocatable :: altimat
-  real(wp), dimension(:), pointer :: alti
+  real(wp), dimension(:), pointer :: alti,gloni,glati
+
+  ! projection factors needed to rotate input data onto grid
+  real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3
+  real(wp), dimension(:,:,:), allocatable :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3
+  real(wp), dimension(:,:,:), allocatable :: proj_exp_e1,proj_exp_e2,proj_exp_e3
 
   contains
     ! deferred bindings
@@ -32,8 +36,16 @@ type, extends(inputdata) :: neutralBGdata
     procedure :: load_data=>load_data_neutralBG
     procedure :: load_grid=>load_grid_neutralBG
     procedure :: load_size=>load_size_neutralBG     ! load the size of the input data files
+
+    ! overriding procedures
+    !procedure :: update
+
+    ! unique to this class
+    !procedure :: rotate_winds
+
+    ! final
     final :: destructor
-end type neutralBGdata
+end type neutraldataBG
 
 contains
   !> set pointers to appropriate data arrays (taking into account dimensionality of the problem) and prime everything
@@ -41,7 +53,7 @@ contains
   !  After this procedure is called all pointer aliases are set and can be used; internal to this procedure pay attention
   !  to ordering of when pointers are set with respect to when various type-bound procedures are called
   subroutine init_neutralBG(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
-    class(neutralBGdata), intent(inout) :: self
+    class(neutraldataBG), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg                 ! gemini config type for optional params
     character(*), intent(in) :: sourcedir    ! directory for precipitation data input
     class(curvmesh), intent(in) :: x                    ! curvmesh object
@@ -66,7 +78,7 @@ contains
     call self%set_sizes(0, &
                        0,0,0, &
                        0,0,0, &
-                       6, &     ! target data for neutralBG info is a 3D set of arrays
+                       9, &     ! target data for neutralBG info is a 3D set of arrays
                        x )
     call self%init_storage()
     call self%set_cadence(dtdata)
@@ -76,7 +88,7 @@ contains
     call self%load_grid()
 
     ! Set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
-    self%natmp=>self%data3D(:,1,1,:)   !contiguous in memory since only one element in x2,3
+    self%natmp=>self%data3D(:,:,:,:)   !contiguous in memory since only one element in x2,3
     self%natmiprev=>self%data3Di(:,:,:,:,1)     
     self%natminext=>self%data3Di(:,:,:,:,2)
     self%natminow=>self%data3Dinow(:,:,:,:)
@@ -96,20 +108,15 @@ contains
 
   !> get the input grid size from file, all workers will just call this sicne this is a one-time thing
   subroutine load_size_neutralBG(self)
-    class(neutralBGdata), intent(inout) :: self
+    class(neutraldataBG), intent(inout) :: self
     integer :: ltmp    ! throwaway variable
 
     ! basic error checking
-    if (.not. self%flagsource) error stop 'neutralBGdata:load_size_neutralBG() - must define a source directory first'
+    if (.not. self%flagsource) error stop 'neutraldataBG:load_size_neutralBG() - must define a source directory first'
 
     ! read sizes
-    !print '(/,A,/,A)', 'neutralBG input:','--------------------'
-    !print '(A)', 'READ neutralBG size from: ' // self%sourcedir
-    call get_simsize1(self%sourcedir // "/simsize.h5", self%lalt)   ! mangling lat->alt
+    call get_simsize3(self%sourcedir // "/simsize.h5", self%lalt, self%llon, self%llat)
 
-    self%llon=1; self%llat=1;    ! force input to be only profile-based
-
-    !print '(A,2I6)', 'soflux size: llon,llat:  ',self%llon,self%llat
     if (self%lalt < 1) then
      print*, '  neutralBG grid size must be strictly positive: ' //  self%sourcedir
      error stop
@@ -122,54 +129,117 @@ contains
 
   !> get the grid information from a file, all workers will just call this since one-time
   subroutine load_grid_neutralBG(self)
-    class(neutralBGdata), intent(inout) :: self
+    class(neutraldataBG), intent(inout) :: self
 
     ! read grid data
-    call get_grid1(self%sourcedir // "/simgrid.h5", self%altp)
+    call get_grid3(self%sourcedir // "/simgrid.h5", self%altp, self%glonp, self%glatp)
 
-    !print '(A,4F9.3)', 'Solar flux glon,glat extent:  ',minval(self%glonp(:)),maxval(self%glonp(:)), &
-    !                                                       minval(self%glatp(:)),maxval(self%glatp(:))
-    if(.not. all(ieee_is_finite(self%altp))) error stop 'neutralBGBCs_fileinput: glon must be finite'
-    !if(.not. all(ieee_is_finite(self%glatp))) error stop 'neutralBGBCs_fileinput: glat must be finite'
-
-    !print*, 'min/max glonp:  ',minval(self%glonp),maxval(self%glonp)
-    !print*, 'min/max glatp:  ',minval(self%glatp),maxval(self%glatp)
+    if(.not. all(ieee_is_finite(self%altp))) error stop 'neutralBGBCs_fileinput: alt must be finite'
+    if(.not. all(ieee_is_finite(self%glonp))) error stop 'neutralBGBCs_fileinput: glon must be finite'
+    if(.not. all(ieee_is_finite(self%glatp))) error stop 'neutralBGBCs_fileinput: glat must be finite'
   end subroutine load_grid_neutralBG
 
 
   !> set target coordinates for interpolation sights
   subroutine set_coordsi_neutralBG(self,cfg,x)
-    class(neutralBGdata), intent(inout) :: self
+    class(neutraldataBG), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg     ! presently not used but possibly eventually?
     class(curvmesh), intent(in) :: x
     integer :: ix1,ix2,ix3
+    real(wp), dimension(:,:,:), allocatable :: altimat,glonimat,glatimat
+    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon   
+    real(wp) :: tmpsca
+    real(wp), dimension(3) :: tmpvec, exprm, eyp, ezp
 
     ! aliases for target interpolation sites
     self%alti=>self%coord1i
+    self%gloni=>self%coord2i
+    self%glati=>self%coord3i
 
-    allocate(self%altimat(1:x%lx1,1:x%lx2,1:x%lx3))     ! why not local variables?  FIXME
+    allocate(altimat(1:x%lx1,1:x%lx2,1:x%lx3))
+    allocate(glonimat,glatimat,mold=altimat)
 
-    ! Target coordinates are 3D in this case, e.g. due to dipole grid where alt spacing varies across domain
+    ! Target coordinates are 3D geographic
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1
-          self%altimat(ix1,ix2,ix3)=x%alt(ix1,ix2,ix3)
+          altimat(ix1,ix2,ix3)=x%alt(ix1,ix2,ix3)
+          glonimat(ix1,ix2,ix3)=x%glon(ix1,ix2,ix3)
+          glatimat(ix1,ix2,ix3)=x%glat(ix1,ix2,ix3)
         end do
       end do
     end do
-    self%alti=pack(self%altimat,.true.)
+    self%alti=pack(altimat,.true.)
+    self%gloni=pack(glonimat,.true.)
+    self%glati=pack(glatimat,.true.)
+    deallocate(altimat,glonimat,glatimat)
 
-    deallocate(self%altimat)
+    ! Storage of projections needed to rotate winds into geographic components (alt,glon,glat) -> (z,x,y)
+    allocate(self%proj_ezp_e1(x%lx1,x%lx2,x%lx3),self%proj_ezp_e2(x%lx1,x%lx2,x%lx3),self%proj_ezp_e3(x%lx1,x%lx2,x%lx3))
+    allocate(self%proj_eyp_e1(x%lx1,x%lx2,x%lx3),self%proj_eyp_e2(x%lx1,x%lx2,x%lx3),self%proj_eyp_e3(x%lx1,x%lx2,x%lx3))
+    allocate(self%proj_exp_e1(x%lx1,x%lx2,x%lx3),self%proj_exp_e2(x%lx1,x%lx2,x%lx3),self%proj_exp_e3(x%lx1,x%lx2,x%lx3))
+
+    call x%calc_unitvec_geo(ealt,eglon,eglat)   
+    do ix3=1,x%lx3
+      do ix2=1,x%lx2
+        do ix1=1,x%lx1
+          !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections as well)
+          ezp=ealt(ix1,ix2,ix3,:)
+          !ezp=x%er(ix1,ix2,ix3,:)
+
+          tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ezp_e2(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ezp_e1(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
+          self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
+
+          ! we now need geographic unit vectors which we can get from our grid methods
+          eyp=eglat(ix1,ix2,ix3,:)
+          !eyp= -x%etheta(ix1,ix2,ix3,:)
+
+          tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_eyp_e1(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_eyp_e2(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_eyp_e3(ix1,ix2,ix3)=tmpsca
+
+          exprm=eglon(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
+          !exprm=x%ephi(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
+
+          tmpvec=exprm*x%e1(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_exp_e1(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=exprm*x%e2(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_exp_e2(ix1,ix2,ix3)=tmpsca
+
+          tmpvec=exprm*x%e3(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_exp_e3(ix1,ix2,ix3)=tmpsca
+        end do
+      end do
+    end do
+
     self%flagcoordsi=.true.
-
-    !print*, 'min/max gloni:  ',minval(self%gloni),maxval(self%gloni)
-    !print*, 'min/max glati:  ',minval(self%glati),maxval(self%glati)
   end subroutine set_coordsi_neutralBG
 
 
   !> have all processes read in data from file to avoid any message passing
   subroutine load_data_neutralBG(self,t,dtmodel,ymdtmp,UTsectmp)
-    class(neutralBGdata), intent(inout) :: self
+    class(neutraldataBG), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
@@ -182,22 +252,78 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
-    !!!!!!  read in solar flux data from file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !!!!!!  read in solar neutral background data from file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! this read must be done repeatedly through simulation so have only root do file io
-    !print*, '  date and time:  ',ymdtmp,UTsectmp
-    !print*, '  neutralBG filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+    print*, '  date and time:  ',ymdtmp,UTsectmp
+    print*, '  neutralBG filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+
     ! read in the data for the "next" frame from file
-    !call get_neutralBG(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", self%Iinfp)
+!    call get_neutralBG(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", &
+!            self%nOp,self%nN2p,self%nO2,self%nH,self%nN,self%vnx,self%vny,self%Tn)
+    call get_neutralBG(date_filename(self%sourcedir,ymdtmp,UTsectmp) // ".h5", &
+            self%natmp(:,:,:,1),self%natmp(:,:,:,2),self%natmp(:,:,:,3),self%natmp(:,:,:,4), &
+            self%natmp(:,:,:,5),self%natmp(:,:,:,7),self%natmp(:,:,:,8), &
+            self%natmp(:,:,:,9) )
+    self%natmp(:,:,:,6)=0._wp    ! vertical drift
     !print*, 'min/max data:  ',  minval(self%Iinfp),maxval(self%Iinfp)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    !print*, ' precip data succesfully input...'
   end subroutine load_data_neutralBG
+
+
+!    !> overriding procedure for updating neutral atmos (need additional rotation steps)
+!  subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
+!    class(neutraldata3D_mpi), intent(inout) :: self
+!    type(gemini_cfg), intent(in) :: cfg
+!    real(wp), intent(in) :: dtmodel             ! need both model and input data time stepping
+!    real(wp), intent(in) :: t                   ! simulation absoluate time for which perturabation is to be computed
+!    class(curvmesh), intent(in) :: x            ! mesh object
+!    integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
+!    real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
+!
+!    ! execute a basic update
+!    call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
+!
+!    call self%rotate_winds()
+!  end subroutine update
+!
+!
+!  ! FIXME: the model already assumes the background data will be in geographic coordinates!!!
+!  !> This subroutine takes winds stored in self%dvn?inow and applies a rotational transformation onto the
+!  !      grid object for this simulation
+!  subroutine rotate_winds(self)
+!    class(neutraldata3D), intent(inout) :: self
+!    integer :: ix1,ix2,ix3
+!    real(wp) :: vnx,vny,vnz
+!
+!    ! do rotations one grid point at a time to cut down on temp storage needed
+!    do ix3=1,self%lc3i
+!      do ix2=1,self%lc2i
+!        do ix1=1,self%lc1i
+!          vnz=self%dvn1inow(ix1,ix2,ix3)    ! geographic altitude direction prior to rotation
+!          vnx=self%dvn2inow(ix1,ix2,ix3)    ! geographic east (longitude) prior to rotation
+!          vny=self%dvn3inow(ix1,ix2,ix3)    ! geograhpic north (latitude) prior to rotation
+!          self%dvn1inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + vnx*self%proj_exp_e1(ix1,ix2,ix3) + &
+!                                        vny*self%proj_eyp_e1(ix1,ix2,ix3)
+!          self%dvn2inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + vnx*self%proj_exp_e2(ix1,ix2,ix3) + &
+!                                        vny*self%proj_eyp_e2(ix1,ix2,ix3)
+!          self%dvn3inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + vnx*self%proj_exp_e3(ix1,ix2,ix3) + &
+!                                        vny*self%proj_eyp_e3(ix1,ix2,ix3)
+!        end do
+!      end do
+!    end do
+!  end subroutine rotate_winds
 
 
   !> destructor needs to clear memory out
   subroutine destructor(self)
-    type(neutralBGdata), intent(inout) :: self
+    type(neutraldataBG), intent(inout) :: self
+
+    if (self%flagcoordsi) then
+      ! in addition to the normal coordsi allocatables we also have projections for this extension
+      deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
+      deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
+      deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
+    end if
 
     call self%dissociate_pointers()
   end subroutine destructor

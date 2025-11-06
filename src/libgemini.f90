@@ -28,6 +28,7 @@ use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
 use neutraldata3Dobj, only: neutraldata3D
 use neutraldata3Dobj_fclaw, only: neutraldata3D_fclaw
+use neutraldataBGobj, only: neutraldataBG
 use solfluxdataobj, only: solfluxdata
 use gemini3d_config, only: gemini_cfg
 use collisions, only: conductivities
@@ -39,7 +40,8 @@ use grid, only: grid_size,lx1,lx2,lx3,lx2all,lx3all,grid_from_extents,read_size_
 use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput, precipBCs_fileinput, precipBCs
 use solfluxBCs_mod, only: init_solfluxinput, solfluxBCs_fileinput, solfluxBCs
-use neutral, only: neutral_info,init_neutralBG_input,neutral_atmos,neutral_winds,neutral_info_alloc,neutral_info_dealloc
+use neutral, only: neutral_info,neutral_info_alloc,neutral_info_dealloc
+use neutral_background, only: init_neutral_background
 use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
             sweep2_allspec_mass,sweep2_allspec_momentum,sweep2_allspec_energy, &
@@ -63,7 +65,7 @@ implicit none (type, external)
 private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_input_in, &
-            set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            set_update_cadence, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
@@ -133,7 +135,7 @@ type gemini_work
   !> Used to pass solar flux data between routine
   real(wp), dimension(:,:,:,:), pointer :: Iinf
 
-  !> Neutral information for top-level gemini program
+  !> Neutral information for top-level gemini program; will aggregate any background and perturbations provided from files
   type(neutral_info), pointer :: atmos=>null()
 
   !> Use to store neutral momentum and energy rate
@@ -142,10 +144,11 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip=>null()          ! input precipitation information 
-  type(efielddata), pointer :: efield=>null()           ! contains input electric field data
-  class(neutraldata), pointer :: atmosperturb=>null()   ! perturbations about atmospheric background; not associated by default and may never be associated
-  type(solfluxdata), pointer :: solflux=>null()         ! perturbations to solar flux, e.g., from a flare or eclipse
+  type(precipdata), pointer :: eprecip=>null()              ! input precipitation information 
+  type(efielddata), pointer :: efield=>null()               ! contains input electric field data
+  class(neutraldata), pointer :: atmosperturb=>null()       ! perturbations about atmospheric background; not associated by default and may never be associated
+  type(solfluxdata), pointer :: solflux=>null()             ! perturbations to solar flux, e.g., from a flare or eclipse
+  type(neutraldataBG), pointer :: atmosbackground=>null()   ! background file file input
 
   !> user output data
   integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
@@ -306,7 +309,7 @@ contains
 
     !> neutral variables (never need to be haloed, etc.)
     allocate(intvars%atmos)
-    call neutral_info_alloc(intvars%atmos)
+    call neutral_info_alloc(intvars%atmos)    ! contains object to hold file-based background neutral input
 
      !> space for integrated volume emission rates (lx2,lx3,lwave)
     if (cfg%flagglow /= 0) then
@@ -412,10 +415,6 @@ contains
     intvars%momentneut=>null();
     intvars%energyneut=>null();
 
-    if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
-    if (associated(intvars%efield)) deallocate(intvars%efield)
-    !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
-
     deallocate(intvars%Prprecip)
     deallocate(intvars%Qeprecip)
     deallocate(intvars%Prionize)
@@ -435,10 +434,11 @@ contains
 
     if (associated(intvars%Phiall)) deallocate(intvars%Phiall)
 
-    ! FIXME: why are we not deallocating intvars%eprecip and intvars%efield?
-
-!    ! Here the user *must* deallocate their custom vars
-!    deallocate(intvars%sigP,intvars%sigH)
+    ! deallocating intvars%eprecip and intvars%efield, etc.
+    if (associated(intvars%eprecip)) deallocate(intvars%eprecip)
+    if (associated(intvars%efield)) deallocate(intvars%efield)
+    if (associated(intvars%solflux)) deallocate(intvars%solflux)
+    !call clear_dneu(intvars%atmosperturb)    ! requies mpi so omitted here?
 
     ! Call user deallocate
     call user_deallocate(intvars)
@@ -825,7 +825,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG_input(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmosbackground)
   end subroutine init_neutralBG_input_in
 
 
@@ -844,20 +844,6 @@ contains
       iupdate = 1
     endif
   end subroutine set_update_cadence
-
-
-  !> compute background neutral density, temperature, and wind
-  subroutine neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
-    type(gemini_cfg), intent(in) :: cfg
-    class(curvmesh), intent(in) :: x
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    type(gemini_work), intent(inout) :: intvars
-
-    call neutral_atmos(ymd,UTsec,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3),x%alt(1:lx1,1:lx2,1:lx3), &
-                         cfg%activ,cfg%msis_version, atmos=intvars%atmos)
-    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, atmos=intvars%atmos)
-  end subroutine neutral_atmos_winds
 
 
   !> get solar indices from cfg struct

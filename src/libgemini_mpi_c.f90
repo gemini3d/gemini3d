@@ -16,21 +16,22 @@ use grid, only: lx1,lx2,lx3, grid_drift, read_grid
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics
-use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
+use neutral_perturbations, only: init_neutral_perturb,neutral_perturb
 use sanity_check, only : check_finite_perturb, check_finite_output
 use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
-use neutral_perturbations, only: clear_dneu
+use neutral_perturbations, only: clear_neutral_perturb
 
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work
 use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  outdir_fullgridvaralloc, get_initial_state, check_fileoutput, check_dryrun, &
  BGfield_Lagrangian, get_initial_drifts, init_procgrid, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, &
- init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
+ init_neutralperturb_in, dt_select, neutral_perturb_in, &
  electrodynamics_in,  halo_interface_vels_allspec_in, &
- halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_dneu_in, calc_subgrid_size_in, &
+ halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, clear_neutral_perturb_in, clear_neutral_background_in, &
+ calc_subgrid_size_in, &
  RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in
 use gemini3d_C, only : set_gridpointer_dyntype
 
@@ -308,14 +309,14 @@ contains
   end subroutine dt_select_C
 
 
-  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
-    type(C_PTR), intent(inout) :: intvarsC
-
-    type(gemini_work), pointer :: intvars
-
-    call c_f_pointer(intvarsC,intvars)
-    call neutral_atmos_wind_update(intvars)
-  end subroutine neutral_atmos_wind_update_C
+!  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
+!    type(C_PTR), intent(inout) :: intvarsC
+!
+!    type(gemini_work), pointer :: intvars
+!
+!    call c_f_pointer(intvarsC,intvars)
+!    call neutral_atmos_wind_update(intvars)
+!  end subroutine neutral_atmos_wind_update_C
 
 
   subroutine inputdata_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='inputdata_perturb_C')
@@ -497,12 +498,22 @@ contains
   end subroutine get_gavg_Tinf_C
 
 
-  subroutine clear_dneu_C(intvarsC) bind(C, name='clear_dneu_C')
+  subroutine clear_neutral_perturb_C(intvarsC) bind(C, name='clear_neutral_perturb_C')
     type(C_PTR), intent(inout) :: intvarsC
 
     type(gemini_work), pointer :: intvars
 
     call c_f_pointer(intvarsC,intvars)
-    call clear_dneu_in(intvars)
-  end subroutine clear_dneu_C
+    call clear_neutral_perturb_in(intvars)
+  end subroutine clear_neutral_perturb_C
+
+
+  subroutine clear_neutral_background_C(intvarsC) bind(C, name='clear_neutral_background_C')
+    type(C_PTR), intent(inout) :: intvarsC
+
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(intvarsC,intvars)
+    call clear_neutral_background_in(intvars)
+  end subroutine clear_neutral_background_C
 end module gemini3d_mpi_C

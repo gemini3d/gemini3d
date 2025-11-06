@@ -26,7 +26,7 @@ use gemini3d_config, only: gemini_cfg
 !> main gemini libraries
 use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       set_start_values_auxtimevars, set_start_values_auxvars, init_neutralBG_input_in, &
-                      set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+                      set_update_cadence, get_solar_indices, &
                       v12rhov1_in,T2rhoe_in,interface_vels_allspec_in, &
                       sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
                       sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
@@ -44,10 +44,10 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
-                          init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
+                          init_neutralperturb_in, dt_select, neutral_perturb_in, &
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
+                          clear_neutral_perturb_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in, inputdata_perturb_in
 
 implicit none (type, external)
@@ -290,7 +290,7 @@ contains
     end do main
 
     !> deallocate variables and module data
-    call clear_dneu_in(intvars)
+    call clear_neutral_perturb_in(intvars)
     !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
     call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
     call gemini_work_dealloc(cfg,intvars)

@@ -45,10 +45,11 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
-                          init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
+                          init_neutralperturb_in, dt_select, neutral_perturb_in, &
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
+                          clear_neutral_perturb_in,clear_neutral_background_in, &
+                          mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in, efield_perturb_in, inputdata_perturb_in
 
 implicit none (type, external)
@@ -250,8 +251,8 @@ contains
     end do main
 
     !> deallocate variables and module data
-    call clear_dneu_in(intvars)
-    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    call clear_neutral_perturb_in(intvars)
+    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
     call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
     call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
