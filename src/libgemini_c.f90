@@ -35,7 +35,7 @@ use neutraldataobj, only: neutraldata
 use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, &
             set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
-            init_neutralBG_input_in, set_update_cadence, neutral_atmos_winds, get_solar_indices, &
+            init_neutralBG_input_in, set_update_cadence, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
@@ -476,24 +476,24 @@ contains
   end subroutine set_update_cadence_C
 
 
-  !> compute background neutral density, temperature, and wind
-  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
-    type(c_ptr), intent(in) :: cfgC
-    integer(C_INT), intent(in) :: xtype
-    type(c_ptr), intent(in) :: xC
-    integer(C_INT), dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    type(c_ptr), intent(inout) :: intvarsC
-
-    type(gemini_cfg), pointer :: cfg
-    class(curvmesh), pointer :: x
-    type(gemini_work), pointer :: intvars
-
-    call c_f_pointer(cfgC,cfg)
-    x=>set_gridpointer_dyntype(xtype, xC)
-    call c_f_pointer(intvarsC,intvars)
-    call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
-  end subroutine neutral_atmos_winds_C
+!  !> compute background neutral density, temperature, and wind
+!  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
+!    type(c_ptr), intent(in) :: cfgC
+!    integer(C_INT), intent(in) :: xtype
+!    type(c_ptr), intent(in) :: xC
+!    integer(C_INT), dimension(3), intent(in) :: ymd
+!    real(wp), intent(in) :: UTsec
+!    type(c_ptr), intent(inout) :: intvarsC
+!
+!    type(gemini_cfg), pointer :: cfg
+!    class(curvmesh), pointer :: x
+!    type(gemini_work), pointer :: intvars
+!
+!    call c_f_pointer(cfgC,cfg)
+!    x=>set_gridpointer_dyntype(xtype, xC)
+!    call c_f_pointer(intvarsC,intvars)
+!    call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
+!  end subroutine neutral_atmos_winds_C
 
 
   !> get solar indices from cfg struct

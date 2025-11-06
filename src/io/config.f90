@@ -42,15 +42,15 @@ type :: gemini_cfg
   character(:), allocatable :: E0dir            ! location of electric field input data
   real(wp) :: dtE0 = 0                            ! time step between electric field inputs
 
-  !> solar flux inputs (not implemented yet)
+  !> solar flux inputs
   integer :: flagsolfluxfile=0
   character(:), allocatable :: solfluxdir
   real(wp) :: dtsolflux=0
 
-  !> solar flux inputs (not implemented yet)
+  !> neutral background file inputs
   integer :: flagneutralBGfile=0
   character(:), allocatable :: neutralBGdir
-  real(wp) :: dtneutralBG=0
+  real(wp) :: dtneuBGfile=0
 
   !> GLOW parameters
   integer :: flagglow              ! whether or not to use glow to compute impact ionization

@@ -1,4 +1,4 @@
-submodule (neutral) wind
+submodule (neutral_background) wind
 !! https://map.nrl.navy.mil/map/pub/nrl/HWM/HWM14/HWM14_ess224-sup-0002-supinfo/README.txt
 use hwm_interface, only : hwm_14, dwm_07
 use timeutils, only : ymd2doy
@@ -49,9 +49,9 @@ module procedure neutral_winds
     i1=x%inull(iinull,1)
     i2=x%inull(iinull,2)
     i3=x%inull(iinull,3)
-    atmos%vn1base(i1,i2,i3)=0.0
-    atmos%vn2base(i1,i2,i3)=0.0
-    atmos%vn3base(i1,i2,i3)=0.0
+    atmos%vn1BG(i1,i2,i3)=0.0
+    atmos%vn2BG(i1,i2,i3)=0.0
+    atmos%vn3BG(i1,i2,i3)=0.0
   end do
 
   !! taper winds according to altitude.  If this is not done there seems to be an issue where poorly resolved
@@ -61,7 +61,7 @@ module procedure neutral_winds
   !!  be revisited in the future.
   do i2=1,lx2
     do i3=1,lx3
-      atmos%vn1base(1:lx1,i2,i3)=atmos%vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
+      atmos%vn1BG(1:lx1,i2,i3)=atmos%vn1BG(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
     end do
   end do
 

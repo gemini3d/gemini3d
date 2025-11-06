@@ -1,4 +1,4 @@
-submodule (neutral) atmos
+submodule (neutral_background) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32, stderr=>error_unit
 
@@ -22,9 +22,9 @@ module procedure neutral_atmos
     !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
   !    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
 
-  lx1=size(atmos%nnmsis,1)
-  lx2=size(atmos%nnmsis,2)
-  lx3=size(atmos%nnmsis,3)
+  lx1=size(atmos%nnBG,1)
+  lx2=size(atmos%nnBG,2)
+  lx3=size(atmos%nnBG,3)
 
   !! CONVERT DATE INFO INTO EXPECTED FORM AND KIND
   ap = activ(3)
@@ -59,18 +59,22 @@ module procedure neutral_atmos
             Dn=d, Tn=t)
         end if
 
-        atmos%nnmsis(ix1,ix2,ix3,1)= d(2)    ! O
-        atmos%nnmsis(ix1,ix2,ix3,2)= d(3)    ! N2
-        atmos%nnmsis(ix1,ix2,ix3,3)= d(4)    ! O2
-        atmos%nnmsis(ix1,ix2,ix3,4)= d(7)    ! H
-        atmos%nnmsis(ix1,ix2,ix3,5)= d(8)    ! N
+        atmos%nnBG(ix1,ix2,ix3,1)= d(2)    ! O
+        atmos%nnBG(ix1,ix2,ix3,2)= d(3)    ! N2
+        atmos%nnBG(ix1,ix2,ix3,3)= d(4)    ! O2
+        atmos%nnBG(ix1,ix2,ix3,4)= d(7)    ! H
+        atmos%nnBG(ix1,ix2,ix3,5)= d(8)    ! N
 
-        atmos%Tnmsis(ix1,ix2,ix3)= t(2)
-        atmos%nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/atmos%Tnmsis(ix1,ix2,ix3))*atmos%nnmsis(ix1,ix2,ix3,3)+ &
-                            5e-7_wp*atmos%nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
+        atmos%TnBG(ix1,ix2,ix3)= t(2)
+
+        !atmos%nnBG(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/atmos%TnBG(ix1,ix2,ix3))*atmos%nnBG(ix1,ix2,ix3,3)+ &
+        !        5e-7_wp*atmos%nnBG(ix1,ix2,ix3,1)   !Mitra, 1968
       end do
     end do
   end do
+
+  ! compute nitric oxide
+  call NO_calc(atmos%nnBG,atmos%TnBG)
 
   !> if HWM selected call it similar to MSIS above, if not zero all out (default)
   !vn1base = 0; vn2base = 0; vn3base = 0
@@ -79,5 +83,12 @@ module procedure neutral_atmos
   !> Update current state with new background and existing perturbations, if used
   !call neutral_denstemp_update(nn,Tn)
 end procedure neutral_atmos
+
+
+!> Nitric oxide density calculation
+module procedure NO_calc
+  nn(:,:,:,6)=0.4_wp*exp(-3700/Tn(:,:,:))*nn(:,:,:,3)+ &
+                            5e-7_wp*nn(:,:,:,1)   !Mitra, 1968
+end procedure NO_calc
 
 end submodule atmos

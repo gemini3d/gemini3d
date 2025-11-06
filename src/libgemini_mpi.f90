@@ -13,17 +13,19 @@ use grid, only: lx1,lx2,lx3, grid_drift, read_grid, calc_subgrid_size
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics, BGfields_boundaries_root, BGfields_boundaries_worker
-use neutral_perturbations, only: init_neutralperturb,neutral_denstemp_update,neutral_wind_update,neutral_perturb
+use neutral_perturbations, only: init_neutral_perturb,neutral_perturb,clear_neutral_perturb
+use neutral_background, only: init_neutral_background, neutral_background_fileinput, neutral_background_empirical, &
+        clear_neutral_background_fileinput
+use neutral, only: neutral_aggregate, neutral_wind_aggregate
 use temporal_mpi, only : dt_comm
 use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
 use ionization_mpi, only: get_gavg_Tinf
-use neutral_perturbations, only: clear_dneu, neutral_wind_update
 use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work,  &
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
-                      solflux_perturb_in, init_solfluxinput_in, init_neutralBG_input_in, &
-                      neutral_atmos_winds, get_it, tneuBG, user_populate
+                      solflux_perturb_in, init_solfluxinput_in, &
+                      get_it, tneuBG, user_populate
 use sanity_check, only : check_finite_perturb
 !=======
 !                      v2grid, v3grid, setv2v3, set_start_timefromcfg
@@ -35,9 +37,10 @@ private
 public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_state, &
             BGfield_Lagrangian, check_dryrun, check_fileoutput, &
             get_initial_drifts, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, init_neutralperturb_in, dt_select, &
-            neutral_atmos_wind_update, neutral_perturb_in, electrodynamics_in,  &
+            neutral_perturb_in, electrodynamics_in, init_neutralbackground_in, &
             halo_interface_vels_allspec_in, halo_allparams_in, &
-            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_dneu_in, mpisetup_in, mpiparms, calc_subgrid_size_in, &
+            RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_neutral_perturb_in, clear_neutral_background_in, &
+            mpisetup_in, mpiparms, calc_subgrid_size_in, &
             RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in 
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
@@ -308,7 +311,7 @@ contains
 
       ! must recompute wind data since we've adjust grid drift
       print*, associated(intvars%atmos),associated(intvars%atmosperturb)
-      call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)   
+      call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.true.)   
       
       if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
     else                            ! stationary grid
@@ -396,7 +399,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutralBG_input_in(cfg,x,dt,t,ymd,UTsec,intvars)
+    call init_neutralbackground_in(dt,cfg,x,intvars,ymd,UTsec)
     call init_precipinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
     call init_Efieldinput_in(cfg,x,dt,intvars,ymd,UTsec)
     call init_neutralperturb_in(dt,cfg,x,intvars,ymd,UTsec)
@@ -447,8 +450,21 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call init_neutralperturb(cfg,x,dt,ymd,UTsec,intvars%atmosperturb)
+    call init_neutral_perturb(cfg,x,dt,ymd,UTsec,intvars%atmosperturb)
   end subroutine init_neutralperturb_in
+
+
+  !> initialize neutral background information
+  subroutine init_neutralbackground_in(dt,cfg,x,intvars,ymd,UTsec)
+    real(wp), intent(in) :: dt
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(inout) :: x
+    type(gemini_work), intent(inout) :: intvars
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+
+    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmosbackground)
+  end subroutine init_neutralbackground_in
 
 
   !> select time step and throttle if changing too rapidly
@@ -488,15 +504,6 @@ contains
   end subroutine dt_select
 
 
-  !> apply neutral perturbations/background and assign to main code variables
-  subroutine neutral_atmos_wind_update(intvars)
-    type(gemini_work), intent(inout) :: intvars
-
-    call neutral_denstemp_update(intvars%atmos,intvars%atmosperturb)
-    call neutral_wind_update(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
-  end subroutine neutral_atmos_wind_update
-
-
   !> update all perturbed inputdata quantities
   subroutine inputdata_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     type(gemini_cfg), intent(in) :: cfg
@@ -506,7 +513,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    call neutralBG_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+    call neutral_background_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call neutral_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call efield_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
     call precip_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
@@ -515,23 +522,26 @@ contains
 
 
   !> update the solar flux inputdata if present
-  subroutine neutralBG_perturb_in(cfg,intvars,x,dt,t,ymd,UTsec)
+  subroutine neutral_background_in(cfg,intvars,x,dt,t,ymd,UTsec)
     real(wp), intent(in) :: t,dt
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    class(curvmesh), intent(in) :: x
+    class(curvmesh), intent(inout) :: x
     type(gemini_work), intent(inout) :: intvars
 
     if (cfg%flagneutralBGfile==1) then
       print*, 'Empty stub for file-based neutral background perturb'
+      call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
+      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb) 
     else
       !> get neutral background
-      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     
+!      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     
+      if ( cfg%flagneuBG .and. t>tneuBG) then     
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
-        call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)          ! load background states into module variables
-        call neutral_atmos_wind_update(intvars)                    ! apply to variables in this program unit
+        call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
+        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
         !if (myid==0) then
         !  call cpu_time(tfin)
@@ -539,7 +549,7 @@ contains
         !end if
       end if      
     end if
-  end subroutine neutralBG_perturb_in
+  end subroutine neutral_background_in
 
 
   !> compute neutral perturbations and apply to main code variables
@@ -555,7 +565,10 @@ contains
       call neutral_perturb(cfg,dt,t,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
       call check_finite_perturb(cfg%outdir, t, mpi_cfg%myid, intvars%atmos%nn, intvars%atmos%Tn, &
                                  intvars%atmos%vn1, intvars%atmos%vn2, intvars%atmos%vn3)
+      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! extra step to tell GEMINI to agg the perturbations and BG
     end if
+
+    !> no default for neutral perturbations -- aggregate functions will ignore if not flagged.  
   end subroutine neutral_perturb_in
 
 
@@ -703,9 +716,17 @@ contains
 
 
   !> deallocate module storage for neutral perturbations
-  subroutine clear_dneu_in(intvars)
+  subroutine clear_neutral_perturb_in(intvars)
     type(gemini_work), intent(inout) :: intvars
 
-    call clear_dneu(intvars%atmosperturb)
-  end subroutine clear_dneu_in
+    call clear_neutral_perturb(intvars%atmosperturb)
+  end subroutine clear_neutral_perturb_in
+
+
+  !> deallocate module storage for neutral background
+  subroutine clear_neutral_background_in(intvars)
+    type(gemini_work), intent(inout) :: intvars
+
+    call clear_neutral_background_fileinput(intvars%atmosbackground)
+  end subroutine clear_neutral_background_in
 end module gemini3d_mpi

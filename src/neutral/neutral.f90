@@ -1,32 +1,35 @@
 module neutral
 
+!> This module performs and organizes top-level operations on neutral data used in the GEMINI model.  
+!    Calls to MSIS, HWM etc. for background states and file- or p4est-based inputs for perturbations
+!    are handled in separate modules
+
 use phys_consts, only: wp, lnchem, pi, Re, debug
 use grid, only: lx1, lx2, lx3
 use meshobj, only: curvmesh
-use timeutils, only : find_lastdate
 use gemini3d_config, only: gemini_cfg
-use msis_interface, only : msisinit
+use neutraldataobj, only: neutraldata
 
 ! also links MSIS from vendor/msis00/
 
 implicit none (type, external)
 private
-public :: neutral_atmos, init_neutralBG_input, neutral_info, neutral_info_dealloc, neutral_info_alloc, &
-  neutral_winds, rotate_geo2native, store_geo2native_projections, neutralBG_denstemp, neutralBG_wind, &
-  init_neutralBG, rotate_native2geo
+public :: neutral_info, neutral_info_dealloc, neutral_info_alloc, &
+  rotate_geo2native, store_geo2native_projections, rotate_native2geo, &
+  neutral_aggregate, neutral_wind_aggregate
 
 
 !> type encapsulating information needed by neutral module; FIXME: arguably this should be a class with type-bound procedures.
 type neutral_info
-  !! total//overall atmospheric state (BG + perturbations)
-  real(wp), dimension(:,:,:,:), allocatable :: nn    !! neutral density array
-  real(wp), dimension(:,:,:), allocatable :: Tn
-  real(wp), dimension(:,:,:), allocatable :: vn1,vn2,vn3    !! neutral temperature and velocities
+  !! aggregate atmospheric state (BG + perturbations)
+  real(wp), dimension(:,:,:,:), allocatable :: nn           ! neutral density array
+  real(wp), dimension(:,:,:), allocatable :: Tn             ! neutral temperature
+  real(wp), dimension(:,:,:), allocatable :: vn1,vn2,vn3    ! neutral velocities in model native components
 
   !! base msis state
-  real(wp), dimension(:,:,:,:), allocatable :: nnmsis
-  real(wp), dimension(:,:,:), allocatable :: Tnmsis
-  real(wp), dimension(:,:,:), allocatable :: vn1base,vn2base,vn3base
+  real(wp), dimension(:,:,:,:), allocatable :: nnBG
+  real(wp), dimension(:,:,:), allocatable :: TnBG
+  real(wp), dimension(:,:,:), allocatable :: vn1BG,vn2BG,vn3BG
 
   !! projection factors for converting vectors mag->geo; e.g. defining rotation matrix from geographic coords into
   logical :: flagprojections=.false.
@@ -36,150 +39,82 @@ type neutral_info
 end type neutral_info
 
 
-interface !< atmos.f90
-  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,msis_version,atmos)
-    integer, intent(in) :: ymd(3), msis_version
-    real(wp), intent(in) :: UTsecd
-    real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
-    real(wp), intent(in) :: activ(3)
-    type(neutral_info), intent(inout) :: atmos
-  end subroutine neutral_atmos
-end interface
-interface !< wind.f90
-  module subroutine neutral_winds(ymd, UTsec, Ap, x, atmos)
-    integer, intent(in) :: ymd(3)
-    real(wp), intent(in) :: UTsec, Ap
-    class(curvmesh), intent(in) :: x
-    type(neutral_info), intent(inout) :: atmos
-  end subroutine neutral_winds
-end interface
-
 contains
-  !> Determine whether we are using MSIS/HWM or file-based background atmospheric information
-  subroutine init_neutralBG_input(dt,cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
-    real(wp), intent(in) :: dt
-    type(gemini_cfg), intent(in) :: cfg
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    class(curvmesh), intent(inout) :: x
-    real(wp), intent(in) :: v2grid,v3grid
+  !> update density, temperature, and winds in aggregate variable (BG + perturb)
+  subroutine neutral_aggregate(v2grid,v3grid,atmos,atmosperturb,flagBGonly)
+    !! adds stored base and perturbation neutral atmospheric parameters
+    !!  these are module-scope parameters so not needed as input
+    real(wp) :: v2grid,v3grid
     type(neutral_info), intent(inout) :: atmos
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
+    logical, intent(in), optional :: flagBGonly
 
-    if (cfg%flagneutralBGfile==1) then
-      print*, 'Empty stub for file-based neutral background input'
+    if (present(flagBGonly)) then
+      call neutral_denstemp_aggregate(atmos,atmosperturb,flagBGonly)
+      call neutral_wind_aggregate(v2grid,v3grid,atmos,atmosperturb,flagBGonly)
     else
-      call msisinit_in(cfg)
-      call init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
+      call neutral_denstemp_aggregate(atmos,atmosperturb,.false.)
+      call neutral_wind_aggregate(v2grid,v3grid,atmos,atmosperturb,.false.)
     end if
-  end subroutine init_neutralBG_input
+  end subroutine neutral_aggregate
 
 
-  !> Neutral background perturbations based on file input
-  subroutine neutralBG_perturb()
-
-  end subroutine neutralBG_perturb
-
-
-  !> initialization procedure needed for MSIS 2.0
-  subroutine msisinit_in(cfg)
-    type(gemini_cfg), intent(in) :: cfg
-    logical :: exists
-
-    character(len=11) :: msis2_param_file
-
-    select case (cfg%msis_version)
-    case(0)
-      !! MSISE00
-      return
-    case(20)
-      msis2_param_file = "msis20.parm"
-    case(21)
-      msis2_param_file = "msis21.parm"
-    case default
-      !! new or unknown version of MSIS, default MSIS 2.x parameter file
-      msis2_param_file = ""
-    end select
-
-    if(len_trim(msis2_param_file) > 0) then
-      inquire(file=msis2_param_file, exist=exists)
-      if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
-        ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
-        'This limitation comes from how MSIS 2.x is coded internally.'
-      call msisinit(parmfile=msis2_param_file)
-    else
-      call msisinit()
-    end if
-  end subroutine msisinit_in
-
-
-  !> initializes neutral atmosphere by:
-  !    1)  establishing initial background for density, temperature, and winds from MSIS and HWM
-  !! Arguably this should be called for init and for neutral updates, except for the allocation part...
-  subroutine init_neutralBG(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)
-    type(gemini_cfg), intent(in) :: cfg
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
-    real(wp), intent(in) :: v2grid,v3grid
+  !> Adds stored base (viz. background) and perturbation neutral atmospheric density
+  !   This does not use any of the existing data in arrays, but is declared inout to avoid potential
+  !   issues with deallocation/reallocation.  This procedure should be used when you have both neutral
+  !   background and perturbations and an update needs to be done.
+  subroutine neutral_denstemp_aggregate(atmos,atmosperturb,flagBGonly)
     type(neutral_info), intent(inout) :: atmos
-    real(wp) :: tstart,tfin
-
-    !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
-    !call make_neuBG()
-
-    !! call msis to get an initial neutral background atmosphere
-    !if (mpi_cfg%myid == 0) call cpu_time(tstart)
-    call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3),x%alt(1:lx1,1:lx2,1:lx3), &
-                         cfg%activ,cfg%msis_version,atmos)
-    call neutralBG_denstemp(atmos)
-    !if (mpi_cfg%myid == 0) then
-      call cpu_time(tfin)
-      !print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-    !end if
-
-    !> Horizontal wind model initialization/background
-    !if (mpi_cfg%myid == 0) call cpu_time(tstart)
-    call cpu_time(tstart)
-    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, atmos=atmos)
-    call neutralBG_wind(atmos,v2grid,v3grid)
-    !! we sum the horizontal wind with the background state vector
-    !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
-    !if (mpi_cfg%myid == 0) then
-      call cpu_time(tfin)
-      !print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-    !end if
-  end subroutine init_neutralBG
-
-
-  !>  Sets the neutral density and temperature variables to background values 
-  !     (usually from MSIS).  Do not use this procedure
-  !     when using neutral perturbations unless for initialization; 
-  !     there is a sister procedure in that module for doing updates in that case.
-  subroutine neutralBG_denstemp(atmos)
-    type(neutral_info), intent(inout) :: atmos
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
+    logical, intent(in) :: flagBGonly
 
     !> background neutral parameters
-    atmos%nn=atmos%nnmsis
-    atmos%Tn=atmos%Tnmsis
-  end subroutine neutralBG_denstemp
+    atmos%nn=atmos%nnBG
+    atmos%Tn=atmos%TnBG
+
+    !> add perturbations, if used
+    if (associated(atmosperturb) .and. .not. flagBGonly) then
+      atmos%nn(:,:,:,1)=atmos%nn(:,:,:,1)+atmosperturb%dnOinow
+      atmos%nn(:,:,:,2)=atmos%nn(:,:,:,2)+atmosperturb%dnN2inow
+      atmos%nn(:,:,:,3)=atmos%nn(:,:,:,3)+atmosperturb%dnO2inow
+      atmos%nn(:,:,:,1)=max(atmos%nn(:,:,:,1),1._wp)
+      atmos%nn(:,:,:,2)=max(atmos%nn(:,:,:,2),1._wp)
+      atmos%nn(:,:,:,3)=max(atmos%nn(:,:,:,3),1._wp)
+      !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
+      !! species perturbations.
+
+      atmos%Tn=atmos%Tn+atmosperturb%dTninow
+      atmos%Tn=max(atmos%Tn,50._wp)
+    end if
+  end subroutine neutral_denstemp_aggregate
 
 
-  !>  Sets neutral winds to background values (usually from MSIS).  If running with neutral perturbations use the sister
-  !     procedure in neutral_perturb instead of this one.
-  subroutine neutralBG_wind(atmos,v2grid,v3grid)
-    type(neutral_info), intent(inout) :: atmos
+  !> update wind variables with background and perturbation quantities, note that this does not use any of the
+  !    existing data in vn; but we still use intent(inout) to avoid weirdness with allocatable arrays.  This procedure
+  !    should only be used when one has both a background and perturbation.
+  subroutine neutral_wind_aggregate(v2grid,v3grid,atmos,atmosperturb,flagBGonly)
     real(wp), intent(in) :: v2grid,v3grid
+    type(neutral_info), intent(inout) :: atmos
+    class(neutraldata), pointer, intent(inout) :: atmosperturb
+    logical, intent(in) :: flagBGonly
 
     !> background neutral parameters
-    atmos%vn1=atmos%vn1base
-    atmos%vn2=atmos%vn2base
-    atmos%vn3=atmos%vn3base
+    atmos%vn1=atmos%vn1BG
+    atmos%vn2=atmos%vn2BG
+    atmos%vn3=atmos%vn3BG
+
+    !> perturbations, if used; already rotated into native coordinates
+    if (associated(atmosperturb) .and. .not. flagBGonly) then
+      atmos%vn1=atmos%vn1+atmosperturb%dvn1inow
+      atmos%vn2=atmos%vn2+atmosperturb%dvn2inow
+      atmos%vn3=atmos%vn3+atmosperturb%dvn3inow
+    end if
 
     !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
+    !print*, '<><><><><><><><><> subtracting off:  ',v2grid,v3grid
     atmos%vn2=atmos%vn2-v2grid
     atmos%vn3=atmos%vn3-v3grid
-  end subroutine neutralBG_wind
+  end subroutine neutral_wind_aggregate
 
 
   !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
@@ -200,9 +135,9 @@ contains
     !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb
     !    fields of the atmos derived type
     if (present(flagBG) .and. flagBG) then
-      atmos%vn1base=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
-      atmos%vn2base=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
-      atmos%vn3base=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
+      atmos%vn1BG=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
+      atmos%vn2BG=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
+      atmos%vn3BG=vnalt*atmos%proj_ealt_e3+vnglat*atmos%proj_eglat_e3+vnglon*atmos%proj_eglon_e3
     else
       atmos%vn1=vnalt*atmos%proj_ealt_e1+vnglat*atmos%proj_eglat_e1+vnglon*atmos%proj_eglon_e1
       atmos%vn2=vnalt*atmos%proj_ealt_e2+vnglat*atmos%proj_eglat_e2+vnglon*atmos%proj_eglon_e2
@@ -257,7 +192,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglon,eglat
     type(neutral_info), intent(inout) :: atmos
-    real(wp), dimension(:,:,:,:,:), intent(out), optional :: rotmat    ! for debugging purposes
+    real(wp), dimension(:,:,:,:,:), intent(inout), optional :: rotmat    ! for debugging purposes
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
     !! allocate module-scope space for the projection factors
@@ -301,8 +236,8 @@ contains
                atmos%vn2(lx1,lx2,lx3),atmos%vn3(lx1,lx2,lx3))
 
     ! allocate space for background atmospheric state
-    allocate(atmos%nnmsis(lx1,lx2,lx3,lnchem),atmos%Tnmsis(lx1,lx2,lx3), &
-               atmos%vn1base(lx1,lx2,lx3),atmos%vn2base(lx1,lx2,lx3),atmos%vn3base(lx1,lx2,lx3))
+    allocate(atmos%nnBG(lx1,lx2,lx3,lnchem),atmos%TnBG(lx1,lx2,lx3), &
+               atmos%vn1BG(lx1,lx2,lx3),atmos%vn2BG(lx1,lx2,lx3),atmos%vn3BG(lx1,lx2,lx3))
 
     ! start everyone out at zero
     atmos%nn=0
@@ -310,11 +245,11 @@ contains
     atmos%vn1=0
     atmos%vn2=0
     atmos%vn3=0
-    atmos%nnmsis = 0
-    atmos%Tnmsis = 0
-    atmos%vn1base = 0
-    atmos%vn2base = 0
-    atmos%vn3base = 0
+    atmos%nnBG = 0
+    atmos%TnBG = 0
+    atmos%vn1BG = 0
+    atmos%vn2BG = 0
+    atmos%vn3BG = 0
 
     ! projection factors for geographic rotations
     allocate(atmos%proj_ealt_e1(lx1,lx2,lx3),atmos%proj_eglat_e1(lx1,lx2,lx3),atmos%proj_eglon_e1(lx1,lx2,lx3))
@@ -331,7 +266,7 @@ contains
     deallocate(atmos%nn,atmos%Tn,atmos%vn1,atmos%vn2,atmos%vn3)
 
     ! msis data
-    deallocate(atmos%nnmsis,atmos%Tnmsis,atmos%vn1base,atmos%vn2base,atmos%vn3base)
+    deallocate(atmos%nnBG,atmos%TnBG,atmos%vn1BG,atmos%vn2BG,atmos%vn3BG)
 
     ! rotations of neutral winds
     deallocate(atmos%proj_ealt_e1,atmos%proj_eglat_e1,atmos%proj_eglon_e1)

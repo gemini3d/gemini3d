@@ -8,8 +8,9 @@ use filesystem, only : is_file
 
 implicit none (type, external)
 private
-public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3, get_solflux, &
-        get_simsize1, get_grid1
+public :: get_simsize1, get_simsize3, get_simsize2, get_grid1, get_grid2, get_grid3, &
+        get_Efield, get_precip, get_neutral2, get_neutral3, get_solflux, &
+        get_neutralBG
 
 interface !< reader_{raw,hdf5,nc4}.f90
   module subroutine get_simsize1_hdf5(path, lalt)
@@ -37,6 +38,12 @@ interface !< reader_{raw,hdf5,nc4}.f90
   module subroutine get_grid2_hdf5(path, mlonp, mlatp)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(inout) :: mlonp, mlatp
+    !! intent(out)
+  end subroutine
+
+  module subroutine get_grid3_hdf5(path, altp, lonp, latp)
+    character(*), intent(in) :: path
+    real(wp), dimension(:), intent(inout) :: altp, lonp, latp
     !! intent(out)
   end subroutine
   
@@ -70,6 +77,12 @@ interface !< reader_{raw,hdf5,nc4}.f90
   module subroutine get_solflux_hdf5(path, Iinf)
     character(*), intent(in) :: path
     real(wp), dimension(:,:,:), intent(inout) :: Iinf
+  end subroutine
+
+  module subroutine get_neutral3BG_hdf5(path, nOall,nN2all,nO2all,nNall,nHall,vnxall,vnrhoall,Tnall)
+    character(*), intent(in) :: path
+    real(wp), dimension(:,:,:), intent(inout) :: nOall,nN2all,nO2all,nNall,nHall,vnxall,vnrhoall,Tnall
+    !! intent(out)
   end subroutine
 end interface
 
@@ -116,7 +129,16 @@ contains
     call get_grid2_hdf5(path, mlonp, mlatp)
   end subroutine get_grid2
   
-  
+
+  subroutine get_grid3(path, altp, lonp, latp)
+    character(*), intent(in) :: path
+    real(wp), dimension(:), intent(inout) :: altp, lonp, latp
+    !! intent(out)
+    
+    call get_grid3_hdf5(path, altp, lonp, latp)
+  end subroutine get_grid3  
+
+
   subroutine get_Efield(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
     character(*), intent(in) :: path
     integer, intent(out) :: flagdirich
@@ -186,4 +208,14 @@ contains
     
     call get_solflux_hdf5(path,Iinf)
   end subroutine get_solflux
+
+
+  subroutine get_neutralBG(path, nOall,nN2all,nO2all,nNall,nHall,vnxall,vnrhoall,Tnall)
+    character(*), intent(in) :: path
+    real(wp), dimension(:,:,:), intent(inout) :: nOall,nN2all,nO2all,nNall,nHall,vnxall,vnrhoall,Tnall
+    !! intent(out)
+    
+    call get_neutral3BG_hdf5(path, nOall,nN2all,nO2all,nNall,nHall,vnxall,vnrhoall,Tnall)
+  end subroutine get_neutralBG
+
 end module reader
