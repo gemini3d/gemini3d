@@ -252,9 +252,10 @@ contains
 
     !> deallocate variables and module data
     call clear_neutral_perturb_in(intvars)
-    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
-    call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
-    call gemini_work_dealloc(cfg,intvars)
+    call clear_neutral_background_in(intvars)
+    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
+    !call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+    !call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 
