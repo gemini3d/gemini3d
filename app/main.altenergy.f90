@@ -48,7 +48,8 @@ use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_i
                           init_neutralperturb_in, dt_select, neutral_perturb_in, &
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_neutral_perturb_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
+                          clear_neutral_perturb_in, clear_neutral_background_in, &
+                          mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in, efield_perturb_in, inputdata_perturb_in
 
 implicit none (type, external)
@@ -251,9 +252,10 @@ contains
 
     !> deallocate variables and module data
     call clear_neutral_perturb_in(intvars)
-    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
-    call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
-    call gemini_work_dealloc(cfg,intvars)
+    call clear_neutral_background_in(intvars)
+    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    !call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+    !call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 
