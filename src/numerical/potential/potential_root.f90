@@ -84,8 +84,9 @@ contains
           ! must be set since used later by the polarization current calculation
           v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);
           !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian,
-          !! so it's okay for the foreseeable future
-  
+          !! so it's okay for the foreseeable future as it's only used in the polarization calculations; will need to be fixed in
+          !! future work.
+
           !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
           call gather_recv(srctermint,tag%src,srctermintall)
           call gather_recv(incapint,tag%incapint,incapintall)
@@ -145,12 +146,23 @@ contains
             else    ! for this case we are going to use potential normal derivative boundary conditions
               !! FIXME: add optional for static periodic solve here.
               if (.not. x%flagper) then
-                if (debug) print *, '!!!GEMINI detects static potential solve...'
+                if (debug) print *, '!!!GEMINI detects static potential solve, aperiodic...'
                 Phislab=potential2D_static(srctermintall,SigPint2all,SigPint3all, &
                                      SigHintall,Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                      dt,x,flagdirich,perflag,it)
               else    ! FIXME:  should be a static periodic solve (not implemented); but for now use the dynamic solver
                       !  with zero capacitance
+
+                !print*, minval(srctermintall), maxval(srctermintall), any(isnan(srctermintall))
+                !print*, minval(SigPint2all), maxval(SigPint2all), any(isnan(SigPint2all))
+                !print*, minval(SigPint3all), maxval(SigPint3all), any(isnan(SigPint3all))
+                !print*, minval(SigHintall), maxval(SigHintall), any(isnan(SigHintall))
+                !print*, minval(incapintall), maxval(incapintall), any(isnan(incapintall))
+                !print*, minval(v2slaball), maxval(v2slaball), any(isnan(v2slaball))
+                !print*, minval(v3slaball), maxval(v3slaball), any(isnan(v3slaball))               
+                !error stop
+
+                if (debug) print *, '!!!GEMINI detects static potential solve, periodic...'
                 Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
                                          incapintall,v2slaball,v3slaball, &
                                          Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
@@ -159,14 +171,14 @@ contains
             end if
           else                             ! solve with leading order polarization term
             if (.not. x%flagper) then     !nonperiodic mesh
-              if (debug) print *, '!!!User selected aperiodic solve...'
+              if (debug) print *, '!!!User selected dynamic, aperiodic solve...'
               Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all, &
                                        SigHintall,incapintall,v2slaball,v3slaball, &
                                        Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                        dt,x,Phislab0,perflag,it)
               !! note that this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
             else
-              if (debug) print *, '!!!User selected periodic solve...'
+              if (debug) print *, '!!!User selected dynamic, periodic solve...'
               Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
                                          incapintall,v2slaball,v3slaball, &
                                          Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &

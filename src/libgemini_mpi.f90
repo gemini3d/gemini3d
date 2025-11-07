@@ -310,7 +310,6 @@ contains
       call setv2v3(v2gridtmp,v3gridtmp)
 
       ! must recompute wind data since we've adjust grid drift
-      print*, associated(intvars%atmos),associated(intvars%atmosperturb)
       call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.true.)   
       
       if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
@@ -451,6 +450,7 @@ contains
     real(wp), intent(in) :: UTsec
 
     call init_neutral_perturb(cfg,x,dt,ymd,UTsec,intvars%atmosperturb)
+    call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
   end subroutine init_neutralperturb_in
 
 
@@ -463,9 +463,8 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
 
-    print*, associated(intvars%atmosbackground)
-
-    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmosbackground)
+    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosbackground)
+    call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)     ! some problems can occur if no data are populated into neutral arrays used by rest of code
   end subroutine init_neutralbackground_in
 
 

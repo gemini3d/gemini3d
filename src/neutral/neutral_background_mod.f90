@@ -37,21 +37,23 @@ end interface
 
 contains
   !> Determine whether we are using MSIS/HWM or file-based background atmospheric information
-  subroutine init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,atmosbackground)
+  subroutine init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,atmos,atmosbackground)
     real(wp), intent(in) :: dt
     type(gemini_cfg), intent(in) :: cfg
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     class(curvmesh), intent(inout) :: x
     real(wp), intent(in) :: v2grid,v3grid
+    type(neutral_info), intent(inout) :: atmos
     type(neutraldataBG), intent(inout) :: atmosbackground
 
     if (cfg%flagneutralBGfile==1) then
       !allocate(neutralBGdata::atmos%atmosBGdata)    ! not a class pointer so is allocated a priori
       call atmosbackground%init(cfg,cfg%neutralBGdir,x,dt,cfg%dtneuBGfile,ymd,UTsec)
+      call neutral_background_fileinput_copyout(x,atmos,atmosbackground)          ! need to move data from object to shared space used by others
     else
       call msisinit_in(cfg)
-      !call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)    ! no initialization otherwise needed
+      call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,atmos)    ! this will actually store the data in shared space
     end if
   end subroutine init_neutral_background
 
@@ -69,6 +71,16 @@ contains
 
     call atmosbackground%update(cfg,dtmodel,t,x,ymd,UTsec)
 
+    call neutral_background_fileinput_copyout(x,atmos,atmosbackground)
+  end subroutine neutral_background_fileinput
+
+
+  subroutine neutral_background_fileinput_copyout(x,atmos,atmosbackground)
+    class(curvmesh), intent(in) :: x
+    type(neutral_info), intent(inout) :: atmos
+    type(neutraldataBG), intent(inout) :: atmosbackground
+
+    ! place the background atmospheric data from object into arrays used by other modules
     atmos%nnBG(:,:,:,1:5)=atmosbackground%natminow(:,:,:,1:5)
     atmos%TnBG=atmosbackground%natminow(:,:,:,9)
     call NO_calc(atmos%nnBG,atmos%TnBG)
@@ -78,7 +90,7 @@ contains
             atmosbackground%natminow(:,:,:,7), &
             atmosbackground%natminow(:,:,:,8), &
             x,atmos,.true.)
-  end subroutine neutral_background_fileinput
+  end subroutine neutral_background_fileinput_copyout
 
 
   !> initializes neutral atmosphere by:
