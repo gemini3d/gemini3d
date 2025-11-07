@@ -197,6 +197,7 @@ contains
     if(myid==0) print*, 'Priming inputdata'
     call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
+    if(myid==0) print*, 'Setting Lagrangian-ness'   
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(cfg,x,electrovars,intvars)
 
@@ -205,6 +206,8 @@ contains
 
     !> control rate of console printing
     call set_update_cadence(iupdate)
+
+    if(myid==0) print*, 'Starting main loop'
 
     !> Main time loop
     main : do while (t < tdur)

@@ -64,7 +64,8 @@ use potentialBCs_nompi, only: potentialBCs2D_fileinput_nompi, init_Efieldinput_n
 implicit none (type, external)
 private
 public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
-            set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, init_neutralBG_input_in, &
+            set_start_values_auxtimevars, set_start_timefromcfg, set_start_values_auxvars, &
+            init_neutralBG_input_in, &
             set_update_cadence, get_solar_indices, &
             v12rhov1_in, T2rhoe_in, interface_vels_allspec_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
@@ -827,7 +828,7 @@ contains
     real(wp), intent(in) :: UTsec
     type(gemini_work), intent(inout) :: intvars
 
-    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmosbackground)
+    call init_neutral_background(dt,cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos,intvars%atmosbackground)
   end subroutine init_neutralBG_input_in
 
 
