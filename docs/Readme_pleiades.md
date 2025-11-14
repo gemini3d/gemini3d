@@ -1,6 +1,8 @@
 # Running GEMINI on the NASA Pleiades system
 
-Logging in to Pleiades:
+Logging in to Pleiades-the SSH server will ask for 
+[NAS password](https://www.nas.nasa.gov/hecc/support/kb/obtaining-and-changing-your-nas-password_127.html) 
+and RSA passcode (fob or app).
 
 ```
 ssh <username>@sfe6.nas.nasa.gov
