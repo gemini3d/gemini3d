@@ -69,12 +69,12 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
   !! intent(out)
   integer :: lx1,lx2,lx3
   real(wp),dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)) :: Teff, Teaux
-  
+
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
   lx3=size(Ts,3)-4
-  
-  
+
+
   if (isp<lsp) then
   !! ion-neutral
     if (Csn(isp,isp2) < 0) then
@@ -90,7 +90,7 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
       else
         Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
 
-        Teaux=10**(1/C2sn2(isp,isp2))-1000._wp ! Find the point where goes -, substract 1000. 
+        Teaux=10**(1/C2sn2(isp,isp2))-1000._wp ! Find the point where goes -, substract 1000.
 
         where(Teff>Teaux)
           Teff=Teaux
@@ -106,13 +106,13 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
   else
   !! electron-neutral
     Teff=Ts(1:lx1,1:lx2,1:lx3,isp)
-  
+
     select case (isp2)
       case (1)
         nusn=8.9e-11_wp*(1.0+5.7e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
       case (2)
 
-        Teaux=(1/1.21e-4_wp)-1000._wp ! Find the point where goes -, substract 1000. 
+        Teaux=(1/1.21e-4_wp)-1000._wp ! Find the point where goes -, substract 1000.
 
         where (Teff>Teaux)    ! avoids negative collision frequency!1/1.12e-4=8.264e3
           Teff=Teaux
@@ -123,7 +123,7 @@ subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
         nusn=1.82e-10_wp*(1.0+3.6e-2_wp*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
       case (4)
 
-        Teaux=(1/1.35e-4_wp)-1000._wp ! Find the point where goes -, substract 1000. 
+        Teaux=(1/1.35e-4_wp)-1000._wp ! Find the point where goes -, substract 1000.
 
         where (Teff>Teaux)
           Teff=Teaux
@@ -145,22 +145,22 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
   !! NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
   !! TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
   !! Note that it is done on a per species basis
-  
+
   integer, intent(in) :: isp,isp2
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
-  
+
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: nusj,Phisj,Psisj
   !! intent(out)
   integer :: lx1,lx2,lx3
   real(wp) :: mred
   real(wp),dimension(1:size(Ts,1)-4, 1:size(Ts,2)-4, 1:size(Ts,3)-4) &
             :: Teff,Wsj
-  
-  
+
+
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
   lx3=size(Ts,3)-4
-  
+
   if (isp==isp2) then
   !! zero out all self collision terms (would need to be changed if non-Maxwellian distribution used).
     nusj = 0
@@ -188,7 +188,7 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   !! COMPUTE THERMAL CONDUCTIVITY.
   !! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
   !! Note that it is done on a per species basis
-  
+
   integer, intent(in) :: isp
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
   real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -197,12 +197,12 @@ pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
   !! intent(out)
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: Tstmp1, Tstmp2, Teaux1, Teaux2
   integer :: lx1,lx2,lx3
-  
-  
+
+
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
   lx3=size(Ts,3)-4
-  
+
   if (isp<lsp) then
     ! Tstmp=Ts(1:lx1,1:lx2,1:lx3)
 
@@ -231,7 +231,7 @@ pure subroutine thermal_conduct_new(isp,Ts,ns,nn,J1,lambda,beta)
   !! COMPUTE THERMAL CONDUCTIVITY.
   !! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
   !! Note that it is done on a per species basis
-  
+
   integer, intent(in) :: isp
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
   real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -240,12 +240,12 @@ pure subroutine thermal_conduct_new(isp,Ts,ns,nn,J1,lambda,beta)
   !! intent(out)
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: Tstmp1, Tstmp2, Teaux1, Teaux2
   integer :: lx1,lx2,lx3
-  
-  
+
+
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
   lx3=size(Ts,3)-4
-  
+
   if (isp<lsp) then
     ! Tstmp=Ts(1:lx1,1:lx2,1:lx3)
 
@@ -260,13 +260,13 @@ pure subroutine thermal_conduct_new(isp,Ts,ns,nn,J1,lambda,beta)
     beta=0.0
   else                  !electrons
     Tstmp1=Ts(1:lx1,1:lx2,1:lx3)
-    Teaux1=(1/1.21e-4_wp)-100._wp ! Find the point where goes -, substract 1000. 
+    Teaux1=(1/1.21e-4_wp)-100._wp ! Find the point where goes -, substract 1000.
     where (Ts(1:lx1,1:lx2,1:lx3) > Teaux1)
       Tstmp1=Teaux1
     end where
 
     Tstmp2=Ts(1:lx1,1:lx2,1:lx3)
-    Teaux2=(1/1.35e-4_wp)-100._wp ! Find the point where goes -, substract 1000. 
+    Teaux2=(1/1.35e-4_wp)-100._wp ! Find the point where goes -, substract 1000.
     where (Ts(1:lx1,1:lx2,1:lx3) > Teaux2)
       Tstmp2=Teaux2
     end where
@@ -286,7 +286,7 @@ end subroutine thermal_conduct_new
 subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
   !! COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
   !! VARS. INCLUDE GHOST CELLS
-  
+
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: Tn
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
@@ -300,17 +300,17 @@ subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgra
   !! defined for each ion species, summed over neutral species
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: sigPgrav,sigHgrav
   !! intent(out)
-  
+
   integer :: isp,isp2,lx1,lx2,lx3
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: nuej,Phisj,Psisj,nutmp,mupar,mubase,rho
-  
+
   lx1=size(Ts,1)-4
   lx2=size(Ts,2)-4
   lx3=size(Ts,3)-4
-  
+
   !> Refactor this code so that it outputs nusn instead of the two "neutral mobilities", this also facilitates pressure terms...
-  
+
   !MOBILITIES
   do isp=1,lsp
   !      OMs=qs(isp)*abs(B1)/ms(isp)
@@ -319,13 +319,13 @@ subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgra
     OMs=qs(isp)*B1(1:lx1,1:lx2,1:lx3)/ms(isp)
     !! cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude
     !! since the magnetic field is *assumed* to be along the x1-direction
-  
+
     nusn(:,:,:,isp) = 0
     do isp2=1,ln
       call maxwell_colln(isp,isp2,nn,Tn,Ts,nutmp)
       nusn(:,:,:,isp)=nusn(:,:,:,isp)+nutmp
     end do
-  
+
     if (isp<lsp) then
       mubase=qs(isp)/ms(isp)/nusn(:,:,:,isp)      !parallel mobility
     else
@@ -334,16 +334,16 @@ subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgra
         call coulomb_colln(isp,isp2,ns,Ts,vs1,nutmp,Phisj,Psisj)
         nuej=nuej+nutmp
       end do
-  
+
       mupar=qs(lsp)/ms(lsp)/(nusn(:,:,:,isp)+nuej)
       mubase=qs(lsp)/ms(lsp)/nusn(:,:,:,isp)
     end if
-  
+
     !! modified mobilities for neutral wind calculations.
     !! these are deprecated since we output collision freq.
   !  muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
   !  muHvn(:,:,:,isp)= -nu*OMs/(nu**2+OMs**2)
-  
+
     !electrical mobilities
     muP(:,:,:,isp)=mubase*nusn(:,:,:,isp)**2/(nusn(:,:,:,isp)**2+OMs**2)                !Pederson
   !  if (isp==lsp) then
@@ -353,15 +353,15 @@ subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgra
   !    print*, minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
   !  end if
     muH(:,:,:,isp) = mubase*-1*nusn(:,:,:,isp)*OMs/(nusn(:,:,:,isp)**2+OMs**2)       !Hall
-  
+
     !gravity mobilities???
   end do
-  
-  
+
+
   !> CONDUCTIVITIES
   sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar
   !! parallel includes only electrons...
-  
+
   sigP = 0
   sigH = 0
   do isp=1,lsp
@@ -370,12 +370,12 @@ subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgra
     sigP=sigP+rho*muP(:,:,:,isp)
     sigH=sigH+rho*muH(:,:,:,isp)
   end do
-  
+
   !    sigH=max(sigH,0.0_wp)
   !! to deal with precision issues.
   !! This actually causes errors in Cartesian northern hemisphere grids...
-  
-  
+
+
   !Gravitational "conductivities"
   sigPgrav = 0
   sigHgrav = 0
@@ -396,29 +396,38 @@ subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts !Plasma density and temperature
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: E2,E3 !Electric Field
   class(curvmesh), intent(in) :: x !Grid, doing this because BMAG is stored here, added at the top of the file too
-  
+
   !! intent(out)
-  real(wp), dimension(:,:,:), intent(inout) :: sigNCP,sigNCH  
-  
+  real(wp), dimension(:,:,:), intent(inout) :: sigNCP,sigNCH
+
   !!Internal Arrays
   integer :: isp,isp2,lx1,lx2,lx3
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg 
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW 
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW 
-  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg  
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp) :: nsuAvg
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp-1) :: niW
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,ln) :: nuW
+  real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,2) :: nuAvg, msAvg, TsAvg
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Bmagnitude, nu, nsAvg, omegae, omegai, ki, ke, phi
   real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: Eth0, Ethreshold, Emagnitude, commonfactor
   integer, dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: FBIbinary
-  
-  
+
+  real(wp), allocatable :: Bmag_temp(:,:,:)
+  !! this is for GCC 8.5 bug. We observed it on Dartmouth Polaris cluster. It makes a PMIX error immediately on run.
+
+
   !!Start
   lx1=x%lx1
   lx2=x%lx2
   lx3=x%lx3
+
 !  Bmagnitude=x%Bmag(1:lx1,1:lx2,1:lx3)
-  Bmagnitude=abs(x%Bmag(1:lx1,1:lx2,1:lx3))
+  allocate(Bmag_temp(1:lx1,1:lx2,1:lx3))
+  Bmag_temp = x%Bmag(1:lx1,1:lx2,1:lx3)
+  Bmagnitude=abs(Bmag_temp)
+  deallocate(Bmag_temp)
+  !! this is for GCC 8.5 bug. We observed it on Dartmouth Polaris cluster. It makes a PMIX error immediately on run.
+
   Emagnitude=sqrt(E2(1:lx1,1:lx2,1:lx3)**2+E3(1:lx1,1:lx2,1:lx3)**2) !!Already evaluated with no ghost cells
-  
+
   !!Initialize arrays as 0s
   nuAvg=0.0_wp
   nsuAvg=0.0_wp
@@ -428,18 +437,18 @@ subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
   sigNCH=0.0_wp
   sigNCP=0.0_wp
   FBIbinary=1
-  
-  
+
+
   !MassDensity Weight of Neutrals
   do isp2=1,ln
       nuW(:,:,:,isp2)=nn(:,:,:,isp2)*mn(isp2) !Weight of the neutrals
   end do
-  
+
   !!MassDensity Weight of all ions
   do isp=1,lsp-1
     niW(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
   end do
-  
+
   !! Average Collisuons frequencies: first averaging over neutrals
   do isp=1,lsp
     do isp2=1,ln
@@ -448,54 +457,54 @@ subroutine NLConductivity(nn,Tn,ns,Ts,E2,E3,x,sigP,sigH,sigNCP,sigNCH)
     end do
     nsuAvg(:,:,:,isp)=nsuAvg(:,:,:,isp)/sum(nuW, dim=4) !! Average over all neutrals weighted by MassDensity
   end do
-  
+
   !Final ion neutral collision frequency using only NO+ and O2+
   !Store summation of collision frequencies weighted by MassDensity
   nuAvg(:,:,:,1)=(nsuAvg(:,:,:,2)*niW(:,:,:,2)+nsuAvg(:,:,:,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
-  
+
   !!Electrons do not need averaging
   nuAvg(:,:,:,2)=nsuAvg(:,:,:,lsp)
-  
+
   !! Average mass of ions, also weighted by MassDensity
   msAvg(:,:,:,1)=(ms(2)*niW(:,:,:,2)+ms(4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
-  
+
   msAvg(:,:,:,2)=ms(lsp) !! Electron mass
-  
+
   !! Average density
   !! Average just O2+ and NO+
   nsAvg=(ns(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+ns(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
-  
+
   !! ki value
   omegai=elchrg*Bmagnitude/msAvg(:,:,:,1) !! Would this work?, it will, I defined Bmagnitude above
   ki=abs(omegai/nuAvg(:,:,:,1)) !! Could do ABS to be sure of the sign
   !! ke value
-  omegae=elchrg*Bmagnitude/msAvg(:,:,:,2) 
+  omegae=elchrg*Bmagnitude/msAvg(:,:,:,2)
   ke=abs(omegae/nuAvg(:,:,:,2)) !!Not sure anymore about the ABS, have to ask Meers
-  
+
   !!Phi value 1/(ki*ke)
   phi=1.0_wp/(ke*ki)
-  
+
   !!Average ion temperature
   TsAvg(:,:,:,1)=(Ts(1:lx1,1:lx2,1:lx3,2)*niW(:,:,:,2)+Ts(1:lx1,1:lx2,1:lx3,4)*niW(:,:,:,4))/(niW(:,:,:,2)+niW(:,:,:,4))
   TsAvg(:,:,:,2)=Ts(1:lx1,1:lx2,1:lx3,lsp)
-  
+
   !!Ethreshold
   !Ethresholdnum=(1+phi)*Bmagnitude*SQRT(kB*(1+ki**2)*(TsAvg(:,:,:,1)+TsAvg(:,:,:,2)))
-  !Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1)) 
-  
+  !Ethresholdden=SQRT((1-ki**2)*msAvg(:,:,:,1))
+
   !doi:10.1029/2011JA016649
   Eth0=20.0_wp*SQRT((TsAvg(:,:,:,1)+TsAvg(:,:,:,2))/600.0_wp)*(Bmagnitude/5.0e-5_wp) !B is written as 5e4nT, to T
   Ethreshold=(1.0_wp+phi)*SQRT((1.0_wp+ki**2)/(1.0_wp-ki**2))*Eth0*1.0e-3_wp !the 1e-3 is needed since this eq gives mV/m, not V/m
-  
+
   !Create matrix of 1 and 0s where FBI is possible, FBIbinary starts with all 1's meaning FBI everywhere
   where (Emagnitude<=Ethreshold) !Anything without a sufficiente E field gets back to normal.
     FBIbinary=0
   end where
-  
+
   where (ki>1.0_wp) !Anything where ions are magnetized also goes back to normal
     FBIbinary=0
   end where
-  
+
   !Calculate conductivity term only where FBI is possible
   where (FBIbinary==1)
     commonfactor=(Emagnitude/Ethreshold-1)*(1-Ethreshold/Emagnitude)
@@ -508,25 +517,25 @@ end subroutine NLConductivity
 subroutine capacitance(ns,B1,cfg,incap)
   !! COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.
   !! DENSITY/MAG FIELD STATE VARIABLE INCLUDES GHOST CELLS.
-  
+
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: incap
   !! intent(out)
   integer :: lx1,lx2,lx3,isp
-  
+
   lx1=size(ns,1)-4
   lx2=size(ns,2)-4
   lx3=size(ns,3)-4
-  
+
   incap = 0
   do isp=1,lsp
     incap=incap+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
   end do
-  
+
   incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
-  
+
   if (cfg%flagcap==2) then
     if (debug) print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
     incap=incap + cfg%magcap / 980e3_wp
