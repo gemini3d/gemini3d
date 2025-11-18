@@ -25,8 +25,8 @@ add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
 add_executable(gemini_mpi_standalone test_mpi.f90)
 target_link_libraries(gemini_mpi_standalone PRIVATE MPI::MPI_Fortran)
 
-add_test(NAME GeminiMPIstandalone COMMAND gemini_mpi_standalone ${Ncpu})
-test_mpi_launcher(gemini_mpi_standalone GeminiMPIstandalone ${Ncpu})
+add_test(NAME GeminiMPIstandalone COMMAND gemini_mpi_standalone 2)
+test_mpi_launcher(gemini_mpi_standalone GeminiMPIstandalone 2)
 
 set_tests_properties(GeminiMPIstandalone PROPERTIES
 FIXTURES_SETUP mpi_fxt
