@@ -212,6 +212,13 @@ flagevibcool = 0
 &magpole
 flagmagpole=.false.
 /
+
+! getting background neutral atmospheric info from a file
+&neutralBG_file
+dtneulBGfile=900.0
+neutralBGdir=./inputs/neutralBG/
+/
+
 ```
 
 <a name="grid_input_files"></a>

@@ -29,6 +29,8 @@ type, extends(inputdata) :: neutraldataBG
   real(wp), dimension(:,:,:), allocatable :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3
   real(wp), dimension(:,:,:), allocatable :: proj_exp_e1,proj_exp_e2,proj_exp_e3
 
+  ! store max alt for any code that may do extrapolation
+  real(wp) :: altpmax
   contains
     ! deferred bindings
     procedure :: init=>init_neutralBG
@@ -85,6 +87,8 @@ contains
 
     ! set local pointers grid pointers and assign input data grid
     self%altp=>self%coord1
+    self%glonp=>self%coord2
+    self%glatp=>self%coord3
     call self%load_grid()
 
     ! Set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
@@ -133,6 +137,9 @@ contains
 
     ! read grid data
     call get_grid3(self%sourcedir // "/simgrid.h5", self%altp, self%glonp, self%glatp)
+
+    ! store the maximum altitude limit based on the input grid so we know from where to extrapolate
+    self%altpmax=maxval(self%altp)
 
     if(.not. all(ieee_is_finite(self%altp))) error stop 'neutralBGBCs_fileinput: alt must be finite'
     if(.not. all(ieee_is_finite(self%glonp))) error stop 'neutralBGBCs_fileinput: glon must be finite'
@@ -265,7 +272,8 @@ contains
             self%natmp(:,:,:,5),self%natmp(:,:,:,7),self%natmp(:,:,:,8), &
             self%natmp(:,:,:,9) )
     self%natmp(:,:,:,6)=0._wp    ! vertical drift
-    !print*, 'min/max data:  ',  minval(self%Iinfp),maxval(self%Iinfp)
+
+!    print*, 'min/max data:  ',  minval(self%natmp(:,:,:,1)),maxval(self%natmp(:,:,:,1))
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   end subroutine load_data_neutralBG
 

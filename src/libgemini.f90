@@ -152,7 +152,7 @@ type gemini_work
   type(neutraldataBG), pointer :: atmosbackground=>null()   ! background file file input
 
   !> user output data
-  integer :: lparms=4   ! number of 3D arrays to be output to hdf5 files
+  integer :: lparms=9   ! number of 3D arrays to be output to hdf5 files
   !integer :: lparms=0
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
 end type gemini_work
@@ -478,17 +478,34 @@ contains
     !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
     !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
     !   this information.  
-    i1start=lbound(intvars%energyneut,1)+2
-    i1end=i1start+lx1-1
-    i2start=lbound(intvars%energyneut,2)+2
-    i2end=i2start+lx2-1
-    i3start=lbound(intvars%energyneut,3)+2
-    i3end=i3start+lx3-1
+!    i1start=lbound(intvars%energyneut,1)+2
+!    i1end=i1start+lx1-1
+!    i2start=lbound(intvars%energyneut,2)+2
+!    i2end=i2start+lx2-1
+!    i3start=lbound(intvars%energyneut,3)+2
+!    i3end=i3start+lx3-1
 
-    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%energyneut(i1start:i1end,i2start:i2end,i3start:i3end)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,1)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,2)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,3)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%energyneut(i1start:i1end,i2start:i2end,i3start:i3end)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,1)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,2)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,3)
+
+    i1start=1
+    i1end=lx1
+    i2start=1
+    i2end=lx2
+    i3start=1
+    i3end=lx3
+
+    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,1)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,2)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,3)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,4)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,5)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,5)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,6)=intvars%atmos%TnBG(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,7)=intvars%atmos%vn1BG(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,8)=intvars%atmos%vn2BG(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,9)=intvars%atmos%vn3BG(i1start:i1end,i2start:i2end,i3start:i3end)   
   end subroutine user_populate
 
 

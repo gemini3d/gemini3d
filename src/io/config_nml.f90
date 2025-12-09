@@ -66,6 +66,8 @@ contains
     ! user flag to enable calculation of magnetic pole based on year
     logical :: flagmagpole=.false.
 
+
+
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
     namelist /files/ file_format, indat_size, indat_grid, indat_file
     namelist /flags/ potsolve, flagperiodic, flagoutput
@@ -192,7 +194,7 @@ contains
     if (namelist_exists(u, "neutralBG_file", verbose)) then
       cfg%flagneutralBGfile = 1
       rewind(u)
-      read(u, nml=solflux, iostat=i)
+      read(u, nml=neutralBG_file, iostat=i)
       call check_nml_io(i, cfg%infile, "neutralBG_file")
       cfg%neutralBGdir = absolute(expand_envvar(neutralBGdir), cfg%outdir)
       cfg%dtneuBGfile = dtneuBGfile

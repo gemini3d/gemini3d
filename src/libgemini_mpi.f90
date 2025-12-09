@@ -532,7 +532,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     if (cfg%flagneutralBGfile==1) then
-      print*, 'Empty stub for file-based neutral background perturb'
+      !print*, 'File-based neutral background...'
       call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
       call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb) 
     else
