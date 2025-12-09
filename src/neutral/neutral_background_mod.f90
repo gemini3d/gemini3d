@@ -84,7 +84,6 @@ contains
 
     integer :: ix1,ix2,ix3,ineu,ix1ref1,ix1ref2,ix1apex
     integer :: lneu
-    logical :: flagnoninverted, flagtwosided
     real(wp) :: nref,Tnref,vn1ref,vn2ref,vn3ref
     real(wp) :: altimax1,altimax2,altapex,nrat
 
@@ -100,64 +99,55 @@ contains
             atmosbackground%natminow(:,:,:,8), &
             x,atmos,.true.)
 
-    flagnoninverted=x%alt(2,1,1)>x%alt(1,1,1)
-    flagtwosided=abs(x%alt(1,1,1)-x%alt(lx1,1,1))<1.0e3_wp
     lneu=size(atmos%nnBG,4)
 
-    ! FIXME: assumes monotonic altitude array and overwrites if not!!!
+    ! We need to extrapolate in altitude from the nearest hemisphere ionosphere in addition to dealing with
+    !   issues that arise from below-ground cells.  
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         ! for each field line we need to find the apex altitude and index (it possibly could be a different index
         !   on each field line???
-        altapex=maxval(x%alt(:,ix2,ix3))
         ix1apex=maxloc(x%alt(:,ix2,ix3),dim=1)
 
         ! find the reference altitude and index beyond which the input data need to be extrapolated
         ! Start at the min(x1) end
-        altimax1=0.0
-        ix1ref1=1
-        do ix1=1,ix1apex    ! we only iterate up to what we know is the apex altitude for this field line
-          if (x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. x%alt(ix1,ix2,ix3)>altimax1) then
-            altimax1=x%alt(ix1,ix2,ix3)
-            ix1ref1=ix1
-          end if
+        ix1=1
+        do while (x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. ix1<=ix1apex)
+          ix1=ix1+1
         end do
+        ix1ref1=ix1-1
+        altimax1=x%alt(ix1ref1,ix2,ix3)
 
         ! Now from the max(x1) end (in-case two-sided grid)
-        altimax2=0.0
-        ix1ref2=lx1
-        do ix1=lx1,ix1apex,-1
-          if (x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. x%alt(ix1,ix2,ix3)>altimax2) then
-            altimax2=x%alt(ix1,ix2,ix3)
-            ix1ref2=ix1
-          end if         
+        ix1=lx1
+        do while(x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. ix1>=ix1apex)
+          ix1=ix1-1
         end do
+        ix1ref2=ix1+1
+        altimax2=x%alt(ix1ref2,ix2,ix3)
 
         ! pull a reference density from the highest point on the simulation that exists below altitude limit 
         !   of the input data
         do ineu=1,lneu
           nref=atmos%nnBG(ix1ref1,ix2,ix3,ineu)
-          !if (flagnoninverted) then
-            nrat=nref/atmos%nnBG(ix1ref1-1,ix2,ix3,ineu)
-            do ix1=ix1ref1+1,ix1apex
-              if (ix1>1) then
-                atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1-1,ix2,ix3,ineu)
-              else
-                error stop 'problem extrapolating background neutral density profile:  index OOB'
-              end if
-            end do
-          !else
+          nrat=nref/atmos%nnBG(ix1ref1-1,ix2,ix3,ineu)
+          do ix1=ix1ref1+1,ix1apex
+            if (ix1>1) then
+              atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1-1,ix2,ix3,ineu)
+            else
+              error stop 'problem extrapolating background neutral density profile:  index OOB'
+            end if
+          end do
 
           nref=atmos%nnBG(ix1ref2,ix2,ix3,ineu)
-            nrat=nref/atmos%nnBG(ix1ref2+1,ix2,ix3,ineu)
-            do ix1=ix1ref2-1,ix1apex,-1
-              if (ix1<lx1) then
-                atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1+1,ix2,ix3,ineu)
-              else
-                error stop 'problem extrapolating background neutral density profile.  index OOB'               
-              end if
-            end do
-          !end if
+          nrat=nref/atmos%nnBG(ix1ref2+1,ix2,ix3,ineu)
+          do ix1=ix1ref2-1,ix1apex,-1
+            if (ix1<lx1) then
+              atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1+1,ix2,ix3,ineu)
+            else
+              error stop 'problem extrapolating background neutral density profile.  index OOB'               
+            end if
+          end do
         end do
 
         ! temperature and velocity profiles get a ZOH
@@ -165,43 +155,38 @@ contains
         vn1ref=atmos%vn1(ix1ref1,ix2,ix3)
         vn2ref=atmos%vn2(ix1ref1,ix2,ix3)
         vn3ref=atmos%vn3(ix1ref1,ix2,ix3)
-        !if (flagnoninverted) then
-          do ix1=ix1ref1+1,ix1apex
-            atmos%TnBG(ix1,ix2,ix3)=Tnref
-            atmos%vn1BG(ix1,ix2,ix3)=vn1ref
-            atmos%vn2BG(ix1,ix2,ix3)=vn2ref
-            atmos%vn3BG(ix1,ix2,ix3)=vn3ref
-          end do
-        !else
+        do ix1=ix1ref1+1,ix1apex
+          atmos%TnBG(ix1,ix2,ix3)=Tnref
+          atmos%vn1BG(ix1,ix2,ix3)=vn1ref
+          atmos%vn2BG(ix1,ix2,ix3)=vn2ref
+          atmos%vn3BG(ix1,ix2,ix3)=vn3ref
+        end do
         Tnref=atmos%TnBG(ix1ref2,ix2,ix3)
         vn1ref=atmos%vn1(ix1ref2,ix2,ix3)
         vn2ref=atmos%vn2(ix1ref2,ix2,ix3)
         vn3ref=atmos%vn3(ix1ref2,ix2,ix3)
-          do ix1=ix1ref2-1,ix1apex,-1
-            atmos%TnBG(ix1,ix2,ix3)=Tnref
-            atmos%vn1BG(ix1,ix2,ix3)=vn1ref
-            atmos%vn2BG(ix1,ix2,ix3)=vn2ref
-            atmos%vn3BG(ix1,ix2,ix3)=vn3ref
-          end do
-        !end if
+        do ix1=ix1ref2-1,ix1apex,-1
+          atmos%TnBG(ix1,ix2,ix3)=Tnref
+          atmos%vn1BG(ix1,ix2,ix3)=vn1ref
+          atmos%vn2BG(ix1,ix2,ix3)=vn2ref
+          atmos%vn3BG(ix1,ix2,ix3)=vn3ref
+        end do
 
         ! any addition 'fixing' that needs to be done on this field-line profile...
         atmos%vn1BG(1:lx1,ix2,ix3)=atmos%vn1BG(1:lx1,ix2,ix3)*(0.5 + 0.5*tanh((x%alt(1:lx1,ix2,ix3)-150e3)/10e3))
-!        atmos%vn2BG(1:lx1,ix2,ix3)=atmos%vn2BG(1:lx1,ix2,ix3)*(0.5 + 0.5*tanh((x%alt(1:lx1,ix2,ix3)-150e3)/10e3))
-!        atmos%vn3BG(1:lx1,ix2,ix3)=atmos%vn3BG(1:lx1,ix2,ix3)*(0.5 + 0.5*tanh((x%alt(1:lx1,ix2,ix3)-150e3)/10e3))
 
-        ix1ref1=1
-        do ix1=1,ix1apex    ! we only iterate up to what we know is the apex altitude for this field line
-          if (x%alt(ix1,ix2,ix3)<0) then
-            ix1ref1=ix1
-          end if
+        !! Now we need to find the below ground points and do something with them
+        ix1=1
+        do while (x%alt(ix1,ix2,ix3)<0 .and. ix1<=ix1apex)
+          ix1=ix1+1
         end do
-        ix1ref2=lx1
-        do ix1=lx1,ix1apex,-1
-          if (x%alt(ix1,ix2,ix3)<0) then
-            ix1ref2=ix1
-          end if         
+        ix1ref1=ix1-1
+
+        ix1=lx1
+        do while (x%alt(ix1,ix2,ix3)<0 .and. ix1>=ix1apex)
+          ix1=ix1-1
         end do
+        ix1ref2=ix1+1
 
         do ineu=1,lneu
           do ix1=1,ix1ref1
