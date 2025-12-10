@@ -107,7 +107,7 @@ contains
       do ix2=1,x%lx2
         ! for each field line we need to find the apex altitude and index (it possibly could be a different index
         !   on each field line???
-        ix1apex=maxloc(x%alt(:,ix2,ix3),dim=1)
+        ix1apex=maxloc(x%alt(1:lx1,ix2,ix3),dim=1)
 
         ! find the reference altitude and index beyond which the input data need to be extrapolated
         ! Start at the min(x1) end
@@ -125,6 +125,8 @@ contains
         end do
         ix1ref2=min(ix1+1,lx1)
         altimax2=x%alt(ix1ref2,ix2,ix3)
+
+        !print*, ix1apex,ix1ref1,ix1ref2
 
         ! pull a reference density from the highest point on the simulation that exists below altitude limit 
         !   of the input data
@@ -182,29 +184,39 @@ contains
         do while (x%alt(ix1,ix2,ix3)<0 .and. ix1<=ix1apex)
           ix1=ix1+1
         end do
-        ix1ref1=ix1-1
+        ix1ref1=max(ix1-1,1)
 
         ix1=lx1
         do while (x%alt(ix1,ix2,ix3)<0 .and. ix1>=ix1apex)
           ix1=ix1-1
         end do
-        ix1ref2=ix1+1
+        ix1ref2=min(ix1+1,lx1)
+
+        !print*,ix1ref1,ix1ref2
 
         do ineu=1,lneu
-          do ix1=1,ix1ref1
-            atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref1+1,ix2,ix3,ineu)
-          end do
-          do ix1=lx1,ix1ref2,-1
-            atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref2-1,ix2,ix3,ineu)           
-          end do
+          if (x%alt(1,ix2,ix3)<0) then
+            do ix1=1,ix1ref1
+              atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref1+1,ix2,ix3,ineu)
+            end do
+          end if
+          if (x%alt(lx1,ix2,ix3)<0) then
+            do ix1=lx1,ix1ref2,-1
+              atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref2-1,ix2,ix3,ineu)           
+            end do
+          end if
         end do
 
-        do ix1=1,ix1ref1
-          atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref1+1,ix2,ix3)
-        end do
-        do ix1=lx1,ix1ref2,-1
-          atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref2-1,ix2,ix3)           
-        end do
+        if (x%alt(1,ix2,ix3)<0) then       
+          do ix1=1,ix1ref1
+            atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref1+1,ix2,ix3)
+          end do
+        end if
+        if (x%alt(lx1,ix2,ix3)<0) then
+          do ix1=lx1,ix1ref2,-1
+            atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref2-1,ix2,ix3)           
+          end do
+        end if
       end do
     end do
 
