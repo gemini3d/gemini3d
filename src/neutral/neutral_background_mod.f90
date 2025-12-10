@@ -115,7 +115,7 @@ contains
         do while (x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. ix1<=ix1apex)
           ix1=ix1+1
         end do
-        ix1ref1=ix1-1
+        ix1ref1=max(ix1-1,1)
         altimax1=x%alt(ix1ref1,ix2,ix3)
 
         ! Now from the max(x1) end (in-case two-sided grid)
@@ -123,7 +123,7 @@ contains
         do while(x%alt(ix1,ix2,ix3)<atmosbackground%altpmax .and. ix1>=ix1apex)
           ix1=ix1-1
         end do
-        ix1ref2=ix1+1
+        ix1ref2=min(ix1+1,lx1)
         altimax2=x%alt(ix1ref2,ix2,ix3)
 
         ! pull a reference density from the highest point on the simulation that exists below altitude limit 
@@ -132,9 +132,10 @@ contains
           nref=atmos%nnBG(ix1ref1,ix2,ix3,ineu)
           nrat=nref/atmos%nnBG(ix1ref1-1,ix2,ix3,ineu)
           do ix1=ix1ref1+1,ix1apex
-            if (ix1>1) then
+            if (ix1>1) then    ! FIXME: always true?
               atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1-1,ix2,ix3,ineu)
             else
+              print*, 'ref1:  ',ix1apex,ix1ref1,ix1
               error stop 'problem extrapolating background neutral density profile:  index OOB'
             end if
           end do
@@ -142,9 +143,10 @@ contains
           nref=atmos%nnBG(ix1ref2,ix2,ix3,ineu)
           nrat=nref/atmos%nnBG(ix1ref2+1,ix2,ix3,ineu)
           do ix1=ix1ref2-1,ix1apex,-1
-            if (ix1<lx1) then
+            if (ix1<lx1) then    ! FIXME: always true?
               atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1+1,ix2,ix3,ineu)
             else
+              print*, 'ref2:  ',ix1apex,ix1ref2,ix1              
               error stop 'problem extrapolating background neutral density profile.  index OOB'               
             end if
           end do
