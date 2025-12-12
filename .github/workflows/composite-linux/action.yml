@@ -10,7 +10,7 @@ runs:
 
   - name: Upload log failure
     if: failure()
-    uses: actions/upload-artifact@v4
+    uses: actions/upload-artifact@v6
     with:
       name: ${{ env.CC }}-${{ env.FC }}-${{ runner.os }}-CMakeConfigureLog.yaml
       path: build/CMakeFiles/CMakeConfigureLog.yaml

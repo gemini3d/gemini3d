@@ -45,7 +45,7 @@ jobs:
 
     steps:
     - &checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - &pkg
       uses: ./.github/workflows/composite-pkg
@@ -106,4 +106,9 @@ jobs:
     steps:
     - *checkout
     - *pkg
+
+    - name: GCC APT
+      if: matrix.gcc < 11
+      run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
+
     - *linux-build
