@@ -170,7 +170,7 @@ endif()
 
 # --- Gemini.bin main Fortran program with alternative energy solution
 add_executable(gemini.altenergy.bin ${PROJECT_SOURCE_DIR}/app/main.altenergy.f90)
-set_target_properties(gemini.denspot.bin PROPERTIES
+set_target_properties(gemini.altenergy.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 RELWITHDEBINFO_POSTFIX .debug
 DEBUG_POSTFIX .debug
