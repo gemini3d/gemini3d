@@ -19,7 +19,6 @@ on:
 jobs:
 
   macos:
-    if: false
 
     timeout-minutes: 30
 
