@@ -26,7 +26,7 @@ module procedure potential_workers_mpi
   real(wp), dimension(1:lx2,1:lx3) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3 
 
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
-  perflag=.false.
+  perflag=.true.
 !  call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
 !                             cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
   call potential_sourceterms(incap,sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &

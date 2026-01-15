@@ -1976,6 +1976,10 @@ contains
     ! however this error may also mean there is a deeper problem with the code.
     !,mumps_par%ICNTL(14) = 50
     !end if
+
+    ! This will control iterative refinement
+    !mumps_par%ICNTL(10)=-3    ! force 3 total iterations
+    !mumps_par%CNTL(2)=-1.0    ! residual threshold
     
     
     !> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
@@ -2003,7 +2007,10 @@ contains
     else
       elliptic2D_cart=reshape(mumps_par%RHS,[lx1,1,l2nddim])
     end if
-    
+   
+    !print*, 'Iterative refinement parameters:  ',mumps_par%ICNTL(10), mumps_par%CNTL(2), mumps_par%INFOG(15)
+   
+
     if (debug) print *, 'Now attempting deallocations...'
     
     deallocate( mumps_par%IRN )
