@@ -36,8 +36,7 @@ jobs:
 
     strategy:
       matrix:
-        oneapi: [2025.3]
-    #     hwm14: [true, false]
+        hwm14: [false]
 
     steps:
 
@@ -50,7 +49,7 @@ jobs:
       with:
         path: |
           /opt/intel/oneapi
-        key: oneapi-${{ matrix.oneapi }}-apt
+        key: oneapi-apt
 
     - name: non-cache install oneAPI
       if: steps.cache-install.outputs.cache-hit != 'true'
@@ -59,12 +58,12 @@ jobs:
       run: |
         sh -c .github/workflows/oneapi_setup_apt_repo_linux.sh
         sudo apt install --no-install-recommends \
-          intel-oneapi-compiler-fortran-${{ matrix.oneapi }} \
-          intel-oneapi-compiler-dpcpp-cpp-${{ matrix.oneapi }} \
+          intel-oneapi-compiler-fortran \
+          intel-oneapi-compiler-dpcpp-cpp \
           intel-oneapi-mpi \
           intel-oneapi-mpi-devel \
-          intel-oneapi-mkl-${{ matrix.oneapi }} \
-          intel-oneapi-mkl-devel-${{ matrix.oneapi }}
+          intel-oneapi-mkl \
+          intel-oneapi-mkl-devel
 
     - name: Setup Intel oneAPI environment
       run: |
@@ -78,7 +77,7 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v6
       with:
-        name: oneapi-${{ matrix.oneapi }}-${{ runner.os }}-CMakeConfigureLog.yaml
+        name: oneapi-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
     - name: build
