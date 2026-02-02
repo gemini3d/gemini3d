@@ -4,9 +4,11 @@
 [submodule "h5fortran"]
     path = h5fortran
     url = https://github.com/ECLAIRWaveS/h5fortran
+	shallow = true
 [submodule "msis"]
 	path = msis
 	url = https://github.com/gemini3d/msis
+	shallow = true
 [submodule "glow"]
 	path = glow
 	url = https://github.com/gemini3d/glow
@@ -16,3 +18,4 @@
 [submodule "mumps"]
 	path = mumps
 	url = https://github.com/scivision/mumps
+	shallow = true

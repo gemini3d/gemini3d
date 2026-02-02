@@ -62,17 +62,21 @@ Requirements:
 
 ### Gemini3D setup
 
+Obtain the Gemini3D source code:
+
+```sh
+git clone --recurse-submodules https://github.com/gemini3d/gemini3d.git
+```
+
 Build the Gemini3D code
 
-    ```sh
-    git clone https://github.com/gemini3d/gemini3d.git
+```sh
+cd ./gemini3d
 
-    cd gemini3d
+cmake -B build
 
-    cmake -B build
-
-    cmake --build build --parallel
-    ```
+cmake --build build --parallel
+```
 
 Non-default [build options](./docs/Readme_cmake.md) may be used.
 Gemini3d [developer options](./docs/Readme_debug.md) allow things like array bounds checking.
@@ -82,6 +86,14 @@ To verify your GEMINI build, run the self-tests.
 
 ```sh
 ctest --test-dir build
+```
+
+To retrieve Git updates from other developers do:
+
+```sh
+git pull
+
+git submodule update --init --recursive
 ```
 
 ### Offline HPC batch CTest
