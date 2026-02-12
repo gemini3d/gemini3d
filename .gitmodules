@@ -17,5 +17,5 @@
 	url = https://github.com/gemini3d/hwm14
 [submodule "mumps"]
 	path = mumps
-	url = https://github.com/scivision/mumps
+	url = https://github.com/scivision/mumps-superbuild
 	shallow = true
