@@ -1,0 +1,65 @@
+name: ci_windows
+
+env:
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CMAKE_INSTALL_PREFIX: ~/libs
+  CMAKE_PREFIX_PATH: ~/libs
+  CMAKE_GENERATOR: Ninja
+
+on:
+  push:
+    paths-ignore:
+      - "cmake/intel.cmake"
+      - "cmake/cray.cmake"
+      - ".github/workflows/ci_macos.yml"
+      - ".github/workflows/oneapi-linux.yml"
+      - ".github/workflows/ci.yml"
+      - "docs/**"
+
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  wsl:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: wsl-bash {0}
+
+    steps:
+
+    - uses: Vampire/setup-wsl@v6
+      with:
+        distribution: Ubuntu-24.04
+        additional-packages:
+          cmake ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
+        use-cache: true
+        wsl-shell-user: tester
+
+    - name: tell OS release
+      run: cat /etc/os-release
+
+    - name: tell WSL version
+      run: wsl.exe -l -v
+      shell: pwsh
+
+    - name: Clone into WSL
+      run: git clone --recurse-submodules --depth 1 https://github.com/${{ github.repository }}
+
+    - name: CMake Configure
+      run: cmake --preset default -B /tmp/build
+
+    - run: cmake --build /tmp/build
+
+    - name: CTest Unit
+      run: ctest --test-dir /tmp/build -V -L unit
+
+    - name: Ctest simple simulation
+      run: ctest --test-dir /tmp/build -LE unit -R "(2dew_.*fang$|2dns_.*fang$)" --output-on-failure

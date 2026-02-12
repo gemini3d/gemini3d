@@ -12,6 +12,7 @@ on:
       - "cmake/intel.cmake"
       - "cmake/cray.cmake"
       - ".github/workflows/ci.yml"
+      - ".github/workflows/ci_windows.yml"
       - ".github/workflows/oneapi-linux.yml"
       - "docs/**"
 

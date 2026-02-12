@@ -16,6 +16,7 @@ env:
 on:
   push:
     paths-ignore:
+      - ".github/workflows/ci_windows.yml"
       - ".github/workflows/ci_macos.yml"
       - ".github/workflows/ci.yml"
       - "docs/**"

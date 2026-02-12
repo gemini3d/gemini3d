@@ -11,6 +11,7 @@ on:
     paths-ignore:
       - "cmake/intel.cmake"
       - "cmake/cray.cmake"
+      - ".github/workflows/ci_windows.yml"
       - ".github/workflows/ci_macos.yml"
       - ".github/workflows/oneapi-linux.yml"
       - "docs/**"
