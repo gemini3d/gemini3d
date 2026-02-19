@@ -50,8 +50,10 @@ jobs:
       run: wsl.exe -l -v
       shell: pwsh
 
-    - name: Clone into WSL
-      run: git clone --recurse-submodules --depth 1 https://github.com/${{ github.repository }}
+# need to do this here to avoid Git dubious ownership issues with the WSL filesystem
+    - uses: actions/checkout@v6
+      with:
+        submodules: recursive
 
     - name: CMake Configure
       run: cmake --preset default -B /tmp/build
