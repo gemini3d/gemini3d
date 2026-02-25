@@ -47,6 +47,9 @@ jobs:
       run: brew install flang
 
     - uses: actions/checkout@v6
+      with:
+        submodules: recursive
 
     - uses: ./.github/workflows/composite-pkg
-    - uses: ./.github/workflows/composite-linux
+
+    - uses: ./.github/workflows/composite-unix
