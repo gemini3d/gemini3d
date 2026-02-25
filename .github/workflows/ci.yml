@@ -94,7 +94,8 @@ jobs:
       matrix:
         hwm14: [false]
         os: [ubuntu-22.04]
-        gcc: [10, 11]
+        gcc: [11]
+# GCC 10 works, just saving CI testing time
 # GCC 9 segfaults on gemini:mini2dns_fang gemini:mini2dew_fang
 
     env:
