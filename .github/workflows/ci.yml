@@ -57,30 +57,20 @@ jobs:
       uses: ./.github/workflows/composite-unix
 
 
-  cmake-320:
+  cmake-oldest:
     timeout-minutes: 30
 
     runs-on: ubuntu-24.04
 
     strategy:
       matrix:
-        cmake_version: ["3.20.6"]
-        gcc: [12]
-
-    env:
-      CC: gcc-${{ matrix.gcc }}
-      CXX: g++-${{ matrix.gcc }}
-      FC: gfortran-${{ matrix.gcc }}
+        cmake_version: ["3.21.7"]
 
     steps:
 
     - *checkout
 
     - *pkg
-
-    - name: Install GCC-${{ matrix.gcc }}
-      timeout-minutes: 15
-      run: sudo apt install gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - uses: ./.github/workflows/composite-cmake
 
