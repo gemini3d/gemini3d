@@ -1,5 +1,8 @@
 module inputdataobj
 
+use, intrinsic :: iso_fortran_env, only : stderr => error_unit
+use, intrinsic :: ieee_arithmetic, only : ieee_value, ieee_quiet_nan
+
 use phys_consts, only : wp
 use gemini3d_config, only: gemini_cfg
 use meshobj, only : curvmesh
@@ -180,11 +183,11 @@ contains
     if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
             .or. self%lc3==1 .and. self%lc3i/=1) then
       if (self%flagforcenative) then
-        print*, '  Warning:  native array rank forced for interpolations...'
+        write(stderr, '(a)') '  Warning:  native array rank forced for interpolations...'
       else if (self%flagallow2D3D) then
-        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
+        write(stderr, '(a)') '  Warning:  allowing 2D to 3D spatial interpolations...'
       else
-        print*, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
+        print *, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
         error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
       end if
     end if
@@ -449,7 +452,7 @@ contains
   end subroutine update_simple
 
 
-  !> use data input arrays in order to 
+  !> use data input arrays in order to
   subroutine nospaceinterp(self)
     class(inputdata),intent(inout) :: self
     integer :: iparm
@@ -870,27 +873,25 @@ contains
     real(wp), dimension(:), pointer, intent(inout) :: zvals,xvals,yvals
     real(wp), dimension(:,:), pointer, intent(inout) :: datavals
 
-    print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
-    return
+    write(stderr, '(a)') 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
   end subroutine
 
 
   function get_datainow_ptr(self) result(datavals)
     class(inputdata), intent(inout) :: self
-    real(wp), dimension(:,:), pointer :: datavals 
+    real(wp), dimension(:,:), pointer :: datavals
 
-    print*, 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
-    return
+    write(stderr, '(a)') 'WARNING:  triggered no-op get_locationsi, use an extension with a full implementation'
+    datavals = ieee_value(0._wp, ieee_quiet_nan)
   end function get_datainow_ptr
 
 
   !> We assume that the get_locationsi will provide a memory space for the results which are stored in the object extension
-  !    so no additional inputs are needed to copy those data out into the proper object arrays.  
+  !    so no additional inputs are needed to copy those data out into the proper object arrays.
   subroutine set_datainow(self)
     class(inputdata), intent(inout) :: self
 
-    print*, 'WARNING:  triggered no-op set_datainow, use an extension with a full implementation'           
-    return
+    write(stderr, '(a)') 'WARNING:  triggered no-op set_datainow, use an extension with a full implementation'
   end subroutine set_datainow
 
 
