@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.20...4.2)
+# CMake >= 3.28 suggested
+# CMake >= 3.21 required for *_IS_TOP_LEVEL variable used to manage subproject dependencies
+cmake_minimum_required(VERSION 3.21...4.3)
 
 # --- CMAKE_BUILD_TYPE default
 # The simulations are 10x slower for default to Debug.
@@ -6,6 +8,17 @@ cmake_minimum_required(VERSION 3.20...4.2)
 get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
+endif()
+
+if(CMAKE_GENERATOR MATCHES "^Visual Studio")
+  message(FATAL_ERROR "${CMAKE_GENERATOR} is not supported. Use \"cmake -G Ninja\" option.")
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26.0 AND CMAKE_VERSION VERSION_LESS 3.28.0)
+  message(FATAL_ERROR "CMake 3.26.* and 3.27.* have known bugs causing build failures due to incorrectly graphing Fortran module dependencies, regardless of operating system or compiler.
+Suggest CMake 3.28 or newer https://github.com/Kitware/CMake/releases
+If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.
+  ")
 endif()
 
 # --- main Gemini3D build
