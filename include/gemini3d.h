@@ -140,7 +140,7 @@ extern void neutral_perturb_C(void**, void**, int*, void**, double*, double*, in
 extern void efield_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void inputdata_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void electrodynamics_C(void**, double**, double**, double**, void**, int*, void**, double*, double*, int*, double*);
-extern void get_gavg_Tinf_C(void**, double*, double*);
+extern void get_gavg_Tinf_C(void**);
 extern void clear_neutral_perturb_C(void**);
 extern void clear_neutral_background_C(void**);
 extern void halo_interface_vels_allspec_C(int*, void**, double**, int*);

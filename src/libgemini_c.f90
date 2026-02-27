@@ -465,7 +465,7 @@ contains
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
     call init_solfluxinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
-  end subroutine init_solfluxinput_C 
+  end subroutine init_solfluxinput_C
 
 
   !> set update cadence for printing out diagnostic information during simulation
@@ -934,7 +934,7 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
 
-    call c_f_pointer(cfgC, cfg)   
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
@@ -959,8 +959,8 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
     type(gemini_cfg), pointer :: cfg
-   
-    call c_f_pointer(cfgC, cfg)   
+
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
@@ -1053,10 +1053,10 @@ contains
   end subroutine source_neut_C
 
 
-  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec, & !f107a,f107, & !first,
-                  gavg,Tninf) &
+  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, UTsec) &
                   bind(C, name="impact_ionization_C")
+     !f107a,f107, & !first, !gavg,Tninf)
+
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -1067,7 +1067,7 @@ contains
     integer(C_INT), intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec
     !logical, intent(in) :: first
-    real(wp), intent(in) :: gavg,Tninf
+    !real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -1117,7 +1117,7 @@ contains
     type(c_ptr), intent(in) :: intvarsC
     type(gemini_work), pointer :: intvars
     logical :: flagrootonly=.true.
-    
+
     call c_f_pointer(intvarsC,intvars)
     flagrootonly=flagrootonlyC/=0
     call set_electrodynamics_commtype(flagrootonly, intvars)
