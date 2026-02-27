@@ -13,12 +13,18 @@ add_compile_options(${gemini3d_flags})
 
 # --- HDF5
 add_executable(test_hdf5_standalone_C test_hdf5.c)
-target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran )
+target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_C test_hdf5_standalone_C)
+if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+  target_link_libraries(test_hdf5_standalone_C PRIVATE shlwapi)
+endif()
 
 add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
 target_link_libraries(test_hdf5_standalone_Fortran PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
+if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+  target_link_libraries(test_hdf5_standalone_Fortran PRIVATE shlwapi)
+endif()
 
 # --- MPI
 
@@ -85,7 +91,7 @@ FIXTURES_SETUP gemini_exe_fxt
 add_subdirectory(compare)
 
 
-if(NOT ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT gemini3d_BUILD_TESTING)
   return()
 endif()
 
