@@ -83,7 +83,7 @@ extern void VNRicht_artvisc_C(double**, void**);
 extern void compression_C(double**, double**, void**, int*, void**, double*);
 extern void rhoe2T_C(double**, double**);
 extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**, double*);
-extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
+extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**,
                                       double*);
 extern void source_loss_mass_C(void**, double**,double**,double**,void**,int*,void**,double*);
 extern void source_loss_momentum_C(void**, double**,double**,double**,void**,int*,void**,double*);
@@ -138,7 +138,7 @@ extern void neutral_perturb_C(void**, void**, int*, void**, double*, double*, in
 extern void efield_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void inputdata_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void electrodynamics_C(void**, double**, double**, double**, void**, int*, void**, double*, double*, int*, double*);
-extern void get_gavg_Tinf_C(void**);
+extern void get_gavg_Tinf_C(void**, double*, double*);
 extern void clear_neutral_perturb_C(void**);
 extern void clear_neutral_background_C(void**);
 extern void halo_interface_vels_allspec_C(int*, void**, double**, int*);
