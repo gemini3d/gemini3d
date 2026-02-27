@@ -47,7 +47,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 $<TARGET_OBJECTS:exe_frontend>
 )
 target_include_directories(gemini3d PUBLIC
-"$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include;${MPI_Fortran_INCLUDE_DIRS}>"
+"$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include;${PROJECT_BINARY_DIR}/include;${MPI_Fortran_INCLUDE_DIRS}>"
 $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
