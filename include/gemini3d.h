@@ -1,8 +1,10 @@
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
-// needed when compiling C files???
+// needed when compiling C files
+#if __STDC_VERSION__ < 202311L
 #include <stdbool.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
