@@ -78,7 +78,7 @@ contains
         call c_f_pointer(xC,xdipole)
         x=>xdipole
       case default
-        write(stderr, '(a,i0)'), 'ERROR:libgemini_c:set_gridpointer_dyntype:  ' // &
+        write(stderr, '(a,i0)') 'ERROR:libgemini_c:set_gridpointer_dyntype:  ' // &
           'Unable to identify object type during conversion from C to Fortran class pointer:  ',xtype
         error stop
     end select
