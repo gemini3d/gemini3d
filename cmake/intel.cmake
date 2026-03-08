@@ -9,7 +9,9 @@ $<$<COMPILE_LANGUAGE:Fortran>:-traceback>
 # this flag needs to be applied EVERYWHERE incl. submodule projects
 # or runtime error / weird behavior with non-standard C_BOOL values.
 # -standard-semantics is no good because it breaks linkage within oneAPI itself e.g. oneMPI library!
-if(NOT WIN32)
+if(WIN32)
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:/fpscomp:logicals>")
+else()
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-fpscomp;logicals>")
 endif()
 

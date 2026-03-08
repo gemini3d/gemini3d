@@ -14,7 +14,7 @@
 
 program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
+use, intrinsic :: iso_c_binding, only : C_INT, C_NULL_CHAR
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
 use mpi_f08, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
