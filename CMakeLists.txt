@@ -78,15 +78,6 @@ message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
 
-# HDF5 bug #3663 for HDF5 1.14.2, ...?
-# https://github.com/HDFGroup/hdf5/issues/3663
-if(WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-if(HDF5_VERSION MATCHES "1.14.[2-4]")
-  message(VERBOSE "HDF5: applying workaround for HDF5 bug #3663 with Intel oneAPI on Windows")
-  set(oneapi_hdf5_bug3663 shlwapi)
-endif()
-endif()
-
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
@@ -129,14 +120,9 @@ add_subdirectory(msis)
 add_subdirectory(src)
 
 # --- Gemini3D self test
-include(cmake/test/mpi_launcher.cmake) # for MPI tests
+include(${CMAKE_CURRENT_SOURCE_DIR}/test/mpi_launcher.cmake) # for MPI tests
 
 add_subdirectory(test)
-# fundamental tests of MPI and numeric libraries essential for Gemini3D
-
-# self-test simulations -- after all targets for if(TARGET ...)
-include(cmake/test/config.cmake)
-include(cmake/test/sim.cmake)
 
 # summary print
 include(cmake/summary.cmake)

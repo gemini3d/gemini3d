@@ -28,7 +28,7 @@ else()
 endif()
 if(NOT EXISTS ${arc_json_file} OR _size EQUAL 0)
 
-  file(READ ${CMAKE_CURRENT_LIST_DIR}/../libraries.json _libj)
+  file(READ ${CMAKE_CURRENT_LIST_DIR}/test_urls.json _libj)
 
   string(JSON url GET ${_libj} ref_data url)
 

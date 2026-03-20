@@ -15,16 +15,10 @@ add_compile_options(${gemini3d_flags})
 add_executable(test_hdf5_standalone_C test_hdf5.c)
 target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_C test_hdf5_standalone_C)
-if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
-  target_link_libraries(test_hdf5_standalone_C PRIVATE shlwapi)
-endif()
 
 add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
 target_link_libraries(test_hdf5_standalone_Fortran PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
-if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
-  target_link_libraries(test_hdf5_standalone_Fortran PRIVATE shlwapi)
-endif()
 
 # --- MPI
 
@@ -91,10 +85,7 @@ FIXTURES_SETUP gemini_exe_fxt
 add_subdirectory(compare)
 
 
-if(NOT gemini3d_BUILD_TESTING)
-  return()
-endif()
-
+if(gemini3d_BUILD_TESTING)
 
 add_executable(echo_path echo_path.f90)
 add_test(NAME EchoEnvVar COMMAND echo_path)
@@ -121,3 +112,9 @@ add_subdirectory(mpi)
 add_subdirectory(neutral)
 add_subdirectory(potential)
 add_subdirectory(temporal)
+
+# self-test simulations -- after all targets for if(TARGET ...)
+include(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+
+endif()
