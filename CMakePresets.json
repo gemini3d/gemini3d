@@ -1,53 +1,54 @@
 {
-  "version": 2,
+  "version": 6,
 
 "configurePresets": [
 {
   "name": "default",
-  "binaryDir": "${sourceDir}/build",
-  "generator": "Ninja",
+  "binaryDir": "build",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
-    "CMAKE_COMPILE_WARNING_AS_ERROR": false
-  },
-  "environment": {
-    "CTEST_NO_TESTS_ACTION": "error",
-    "CTEST_PARALLEL_LEVEL": "0"
+    "CMAKE_COMPILE_WARNING_AS_ERROR": false,
+    "CMAKE_LINK_WARNING_AS_ERROR": true
+  }
+},
+{ "name": "release", "inherits": "default",
+  "displayName": "Release build",
+  "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Release"
   }
 },
 {
-  "name": "multi", "inherits": "default",
-  "displayName": "Ninja Multi-Config",
-  "generator": "Ninja Multi-Config"
-},
-{
   "name": "debug", "inherits": "default",
+  "displayName": "Debug build with bounds checking",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Debug"
+  }
+},
+{
+  "name": "reldebug", "inherits": "default",
+  "displayName": "Release with Debug Info",
+  "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "RelWithDebInfo"
   }
 }
 ],
 "buildPresets": [
   {
     "name": "default",
-    "configurePreset": "default"
+    "configurePreset": "default",
+    "jobs": 0
   },
   {
-    "name": "release",
-    "configurePreset": "multi",
-    "configuration": "Release"
+    "name": "release", "inherits": "default",
+    "configurePreset": "release"
   },
   {
-    "name": "reldebug",
-    "configurePreset": "multi",
-    "configuration": "RelWithDebInfo",
-    "displayName": "Release with Debug Info"
+    "name": "reldebug", "inherits": "default",
+    "configurePreset": "reldebug"
   },
   {
-    "name": "debug",
-    "configurePreset": "multi",
-    "configuration": "Debug",
-    "displayName": "Debug build with bounds checking"
+    "name": "debug", "inherits": "default",
+    "configurePreset": "debug"
   }
 ],
 "testPresets": [
@@ -61,7 +62,8 @@
   "execution": {
     "noTestsAction": "error",
     "scheduleRandom": true,
-    "stopOnFailure": false
+    "stopOnFailure": false,
+    "jobs": 0
   }
 },
 {
@@ -74,20 +76,108 @@
 },
 {
   "name": "release", "inherits": "default",
-  "configurePreset": "multi",
+  "configurePreset": "release",
   "configuration": "Release"
 },
 {
   "name": "reldebug", "inherits": "default",
-  "configurePreset": "multi",
+  "configurePreset": "reldebug",
   "configuration": "RelWithDebInfo",
   "displayName": "Release with Debug Info"
 },
 {
   "name": "debug", "inherits": "default",
-  "configurePreset": "multi",
+  "configurePreset": "debug",
   "configuration": "Debug",
   "displayName": "Debug test with bounds checking"
+},
+{
+  "name": "debug-unit", "inherits": "debug",
+  "displayName": "Debug unit tests",
+  "filter": {
+    "include": {"label": "unit"}
+  }
+},
+{
+  "name": "release-unit", "inherits": "release",
+  "displayName": "Release unit tests",
+  "filter": {
+    "include": {"label": "unit"}
+  }
+},
+{
+  "name": "debug-sim", "inherits": "debug",
+  "displayName": "Debug short simulations",
+  "filter": {
+    "include": {"name": "(2dew_.*fang$|2dns_.*fang$)"},
+    "exclude": {"label": "unit"}
+  }
+},
+{
+  "name": "release-sim", "inherits": "release",
+  "displayName": "Release short simulations",
+  "filter": {
+    "include": {"name": "(2dew_.*fang$|2dns_.*fang$)"},
+    "exclude": {"label": "unit"}
+  }
 }
+],
+"workflowPresets": [
+  {
+    "name": "default",
+    "steps": [
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" },
+      { "type": "test", "name": "default" }
+    ]
+  },
+  {
+    "name": "debug", "displayName": "Debug all tests",
+    "steps": [
+      { "type": "configure", "name": "debug" },
+      { "type": "build", "name": "debug" },
+      { "type": "test", "name": "debug" }
+    ]
+  },
+  {
+    "name": "debug-unit", "displayName": "Debug Unit tests",
+    "steps": [
+      { "type": "configure", "name": "debug" },
+      { "type": "build", "name": "debug" },
+      { "type": "test", "name": "debug-unit" }
+    ]
+  },
+  {
+    "name": "reldebug", "displayName": "Release with Debug Info workflow",
+    "steps": [
+      { "type": "configure", "name": "reldebug" },
+      { "type": "build", "name": "reldebug" },
+      { "type": "test", "name": "reldebug" }
+    ]
+  },
+  {
+    "name": "release", "displayName": "Release workflow",
+    "steps": [
+      { "type": "configure", "name": "release" },
+      { "type": "build", "name": "release" },
+      { "type": "test", "name": "release" }
+    ]
+  },
+  {
+    "name": "release-unit", "displayName": "Release Unit tests workflow",
+    "steps": [
+      { "type": "configure", "name": "release" },
+      { "type": "build", "name": "release" },
+      { "type": "test", "name": "release-unit" }
+    ]
+  },
+  {
+    "name": "release-sim", "displayName": "Release workflow short simulations",
+    "steps": [
+      { "type": "configure", "name": "release" },
+      { "type": "build", "name": "release" },
+      { "type": "test", "name": "release-sim"}
+    ]
+  }
 ]
 }

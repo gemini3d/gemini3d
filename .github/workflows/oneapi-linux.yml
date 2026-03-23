@@ -5,9 +5,7 @@ env:
   CXX: icpx
   FC: ifx
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
-  CTEST_NO_TESTS_ACTION: error
   CMAKE_BUILD_TYPE: Release
-  CTEST_PARALLEL_LEVEL: 0
   CMAKE_GENERATOR: Ninja
   # oneAPI Debug triggers asan errors on Linux in general on any project
   CMAKE_INSTALL_PREFIX: ~/libs
@@ -42,8 +40,7 @@ jobs:
     steps:
 
     - uses: actions/checkout@v6
-      with:
-        submodules: recursive
+
     # this must be before oneAPI script commands else the scripts do not exist on the image
 
     - name: cache install oneAPI
@@ -73,32 +70,17 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: CMake Configure
-      run: cmake --preset default
+    - name: CMake build and Unit test
+      run: cmake --workflow release-unit
 
     - name: Upload log failure
       if: failure()
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
+        archive: false
         name: oneapi-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
-    - name: build
-      run: cmake --build --preset default
-
-    - name: build failed
-      if: ${{ failure() && hashFiles('build/build.ninja') != '' }}
-      run: cmake --build --preset default -j1 -v
-
-    - name: unit test
-      run: ctest --preset default -L unit
-
-    # - name: RELEASE build
-    #   run: cmake --build --preset release
-    # - name: RELEASE unit test
-    #   run: ctest --preset release -L unit
-    # - name: RELEASE test core
-    #   run: ctest --preset release -LE unit -E 3d
 
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'

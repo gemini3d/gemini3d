@@ -1,6 +1,9 @@
+name: Install CMake
+description: Install CMake for Linux
+
 runs:
 
-  using: "composite"
+  using: composite
 
   steps:
   - name: Install CMake ${{ matrix.cmake_version }}
@@ -11,9 +14,7 @@ runs:
 
   - name: CMake path
     shell: bash
-    run: |
-      echo "CMAKE=$GITHUB_WORKSPACE/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake" >> $GITHUB_ENV
-      echo "CTEST=$GITHUB_WORKSPACE/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/ctest" >> $GITHUB_ENV
+    run: echo "CMAKE=$GITHUB_WORKSPACE/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake" >> $GITHUB_ENV
 
   - name: echo CMake version
     shell: bash

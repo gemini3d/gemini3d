@@ -1,6 +1,9 @@
+name: Install dependencies
+description: Install dependencies for Linux and macOS
+
 runs:
 
-  using: 'composite'
+  using: composite
 
   steps:
 

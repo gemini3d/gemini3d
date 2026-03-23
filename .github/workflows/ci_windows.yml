@@ -15,6 +15,7 @@ on:
       - ".github/workflows/oneapi-linux.yml"
       - ".github/workflows/ci.yml"
       - "docs/**"
+      - "scripts/**"
 
   workflow_dispatch:
 
@@ -52,8 +53,6 @@ jobs:
 
 # need to do this here to avoid Git dubious ownership issues with the WSL filesystem
     - uses: actions/checkout@v6
-      with:
-        submodules: recursive
 
     - name: CMake Configure
       run: cmake --preset default -B /tmp/build
@@ -61,7 +60,7 @@ jobs:
     - run: cmake --build /tmp/build
 
     - name: CTest Unit
-      run: ctest --test-dir /tmp/build -V -L unit
+      run: ctest --test-dir /tmp/build --preset release-unit
 
     - name: Ctest simple simulation
-      run: ctest --test-dir /tmp/build -LE unit -R "(2dew_.*fang$|2dns_.*fang$)" --output-on-failure
+      run: ctest --test-dir /tmp/build --preset release-sim

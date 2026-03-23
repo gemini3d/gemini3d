@@ -1,4 +1,4 @@
-# use this to build offline libraries like:
+# use this to build Gemini3D using offline libraries like:
 #
 #    cmake -P scripts/offline_libraries.cmake
 #

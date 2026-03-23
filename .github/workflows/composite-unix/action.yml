@@ -1,44 +1,28 @@
+name: Unix builds
+description: Build and test on Linux and macOS
+
 runs:
 
-  using: "composite"
+  using: composite
 
   steps:
 
-  - name: Configure multi
+  - name: Debug Unit Test
     shell: bash
-    run: $CMAKE --preset multi -Dhwm14:BOOL=${{ matrix.hwm14 }}
+    run: $CMAKE --workflow --preset debug-unit
 
   - name: Upload log failure
     if: failure()
-    uses: actions/upload-artifact@v6
+    uses: actions/upload-artifact@v7
     with:
+      archive: false
       name: ${{ env.CC }}-${{ env.FC }}-${{ runner.os }}-CMakeConfigureLog.yaml
       path: build/CMakeFiles/CMakeConfigureLog.yaml
 
-
-  - name: Debug build
+  - name: Release Unit Test
     shell: bash
-    run: $CMAKE --build --preset debug
+    run: $CMAKE --workflow --preset release-unit
 
-  - name: Debug unit test
+  - name: Release simulation test
     shell: bash
-    run: $CTEST --preset debug -L unit
-
-  # - name: Debug core test
-  #   shell: bash
-  #   run: $CTEST --preset debug -LE unit -R "(2dew_.*fang|2dns_.*fang)"
-
-
-  - name: Release build
-    shell: bash
-    run: $CMAKE --build --preset release
-
-  - name: Release unit test
-    shell: bash
-    run: $CTEST --preset release -L unit
-
-  - name: Release core test
-    shell: bash
-    run: $CTEST --preset release -LE unit -R "(2dew_.*fang$|2dns_.*fang$)"
-
-    # run: $CTEST --preset release -LE unit -E 3d
+    run: $CMAKE --workflow --preset release-sim
