@@ -1,4 +1,0 @@
-[submodule "ffilesystem"]
-	path = ffilesystem
-	url = https://github.com/ECLAIRWaveS/fortran-filesystem
-	shallow = true

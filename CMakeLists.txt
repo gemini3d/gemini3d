@@ -40,19 +40,20 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
 
 include(cmake/package/git_rev.cmake)
-include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
+
+file(READ cmake/libraries.json json)
 
 # Fortran filesystem library "ffilesystem"
 set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
 set(HAVE_F03TYPE false)
 # may need fallback for old or slightly broken compilers
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
-add_subdirectory(ffilesystem)
+string(JSON ffilesystem_url GET "${json}" "ffilesystem")
+FetchContent_Declare(ffilesystem URL ${ffilesystem_url})
+FetchContent_MakeAvailable(ffilesystem)
 
 # find python before excluding Anaconda
 include(cmake/python.cmake)
@@ -72,8 +73,6 @@ endif()
 include(cmake/mpi.cmake)
 
 # --- end MPI
-
-file(READ cmake/libraries.json json)
 
 string(JSON h5fortran_url GET "${json}" "h5fortran")
 FetchContent_Declare(h5fortran URL ${h5fortran_url})
