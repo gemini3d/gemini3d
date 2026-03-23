@@ -1,6 +1,8 @@
 # CMake >= 3.28 suggested
-# CMake >= 3.21 required for *_IS_TOP_LEVEL variable used to manage subproject dependencies
-cmake_minimum_required(VERSION 3.21...4.3)
+# CMake >= 3.25 required for fine-grained scope with block() and enabling configure time tests
+# CMake >= 3.24: find_package(... GLOBAL) and FetchContent_Declare(... FIND_PACKAGE_ARGS)
+# CMake >= 3.21:  *_IS_TOP_LEVEL variable used to manage subproject dependencies
+cmake_minimum_required(VERSION 3.25...4.3)
 
 # --- CMAKE_BUILD_TYPE default
 # The simulations are 10x slower for default to Debug.
@@ -86,9 +88,9 @@ include(cmake/compilers.cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
   # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
-  find_package(LAPACK REQUIRED)
+  find_package(LAPACK REQUIRED GLOBAL)
 else()
-  find_package(SCALAPACK REQUIRED)
+  find_package(SCALAPACK REQUIRED GLOBAL)
 endif()
 
 set(BUILD_SINGLE off)
