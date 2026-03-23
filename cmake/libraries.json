@@ -1,4 +1,5 @@
 {
     "h5fortran": "https://github.com/ECLAIRWaveS/h5fortran/archive/cb1d4bc0a3728c91b8f720afb65c8ec94040ea09.tar.gz",
+    "msis": "https://github.com/gemini3d/msis/archive/e6f7f93fbe4e5d3629b685369907e82d00ad9be0.tar.gz",
     "mumps": "https://github.com/scivision/mumps/archive/29f2d067673f519d52c585970991a1b5411d5dfa.tar.gz"
 }

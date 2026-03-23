@@ -2,10 +2,6 @@
 	path = ffilesystem
 	url = https://github.com/ECLAIRWaveS/fortran-filesystem
 	shallow = true
-[submodule "msis"]
-	path = msis
-	url = https://github.com/gemini3d/msis
-	shallow = true
 [submodule "glow"]
 	path = glow
 	url = https://github.com/gemini3d/glow

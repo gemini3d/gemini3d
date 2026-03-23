@@ -116,9 +116,9 @@ endif()
 
 # --- MSISE00 / MSIS 2.x
 set(msis_BUILD_UTILS on)
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
-add_subdirectory(msis)
+string(JSON msis_url GET "${json}" "msis")
+FetchContent_Declare(msis URL ${msis_url})
+FetchContent_MakeAvailable(msis)
 
 # --- Gemini3D library
 add_subdirectory(src)
