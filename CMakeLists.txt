@@ -34,6 +34,8 @@ VERSION 1.7.0
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
+include(FetchContent)
+
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
 
@@ -47,7 +49,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
 set(HAVE_F03TYPE false)
-# need fallback for old compilers like GCC-7
+# may need fallback for old or slightly broken compilers
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
 add_subdirectory(ffilesystem)
@@ -73,10 +75,9 @@ include(cmake/mpi.cmake)
 
 file(READ cmake/libraries.json json)
 
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
-add_subdirectory(h5fortran)
-message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
+string(JSON h5fortran_url GET "${json}" "h5fortran")
+FetchContent_Declare(h5fortran URL ${h5fortran_url})
+FetchContent_MakeAvailable(h5fortran)
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
 
