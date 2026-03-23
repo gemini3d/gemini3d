@@ -109,9 +109,9 @@ if(glow)
 endif()
 
 if(hwm14)
-  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
-  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
-  add_subdirectory(hwm14)
+  string(JSON hwm14_url GET "${json}" "hwm14")
+  FetchContent_Declare(hwm14 URL ${hwm14_url})
+  FetchContent_MakeAvailable(hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
