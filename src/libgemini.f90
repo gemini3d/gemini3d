@@ -71,7 +71,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
-            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                 
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, &
             source_loss_allparams_in, &
@@ -145,7 +145,7 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip=>null()              ! input precipitation information 
+  type(precipdata), pointer :: eprecip=>null()              ! input precipitation information
   type(efielddata), pointer :: efield=>null()               ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()       ! perturbations about atmospheric background; not associated by default and may never be associated
   type(solfluxdata), pointer :: solflux=>null()             ! perturbations to solar flux, e.g., from a flare or eclipse
@@ -341,7 +341,7 @@ contains
     intvars%energyneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,4)
     intvars%neutralrates(:,:,:,:)=0._wp
 
-    ! First check that our module-scope arrays are allocated before going on to calculations.  
+    ! First check that our module-scope arrays are allocated before going on to calculations.
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
     allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
     intvars%Prprecip(:,:,:,:)=0.0
@@ -474,10 +474,10 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.  
+    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.
     !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
     !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
-    !   this information.  
+    !   this information.
 !    i1start=lbound(intvars%energyneut,1)+2
 !    i1end=i1start+lx1-1
 !    i2start=lbound(intvars%energyneut,2)+2
@@ -505,7 +505,7 @@ contains
     intvars%user_output(1:lx1,1:lx2,1:lx3,6)=intvars%atmos%TnBG(i1start:i1end,i2start:i2end,i3start:i3end)
     intvars%user_output(1:lx1,1:lx2,1:lx3,7)=intvars%atmos%vn1BG(i1start:i1end,i2start:i2end,i3start:i3end)
     intvars%user_output(1:lx1,1:lx2,1:lx3,8)=intvars%atmos%vn2BG(i1start:i1end,i2start:i2end,i3start:i3end)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,9)=intvars%atmos%vn3BG(i1start:i1end,i2start:i2end,i3start:i3end)   
+    intvars%user_output(1:lx1,1:lx2,1:lx3,9)=intvars%atmos%vn3BG(i1start:i1end,i2start:i2end,i3start:i3end)
   end subroutine user_populate
 
 
@@ -1014,7 +1014,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)  
+    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
     call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -1076,7 +1076,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)   
+    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
     call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -1258,7 +1258,7 @@ contains
       call solfluxBCs(cfg,x,ymd,UTsec,intvars%Iinf)
     end if
   end subroutine solflux_perturb_in
-  
+
 
   !> compute boundary conditions for electric field solutions
   subroutine efield_perturb_nompi_in(cfg,intvars,x,dt,t,ymd,UTsec)
@@ -1394,7 +1394,7 @@ contains
 
   !> Ionization and heating rates must be re-accumulated each time so initialize to zero.  The precip arrays
   !    are not cleared here because these need to persist between time steps, e.g. glow only runs every N steps as
-  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of 
+  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of
   !    intvars%Prprecip and intvars%Qeprecip
   subroutine clear_ionization_arrays(intvars)
     type(gemini_work), intent(inout) :: intvars
@@ -1404,7 +1404,7 @@ contains
   end subroutine clear_ionization_arrays
 
 
-  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma 
+  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma
   subroutine source_neut_in(cfg,fluidvars,intvars,x)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
@@ -1424,7 +1424,7 @@ contains
 
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
-  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
+  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec)
     type(gemini_cfg), intent(in) :: cfg
@@ -1435,7 +1435,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     !real(wp), intent(in) :: gavg,Tninf
-    real(wp) :: f107a,f107   
+    real(wp) :: f107a,f107
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -1470,7 +1470,7 @@ contains
     real(wp), intent(in) :: UTsec
     !real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp) :: f107a,f107   
+    real(wp) :: f107a,f107
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call get_solar_indices(cfg,f107,f107a)
@@ -1479,7 +1479,7 @@ contains
   end subroutine solar_ionization_in
 
 
-  !> Manually set the root vs. worker data collection flag in the efielddata object to user-specified value.  
+  !> Manually set the root vs. worker data collection flag in the efielddata object to user-specified value.
   subroutine set_electrodynamics_commtype(flagrootonly, intvars)
     logical, intent(in) :: flagrootonly
     type(gemini_work), intent(inout) :: intvars
@@ -1492,9 +1492,9 @@ contains
   end subroutine set_electrodynamics_commtype
 
 
-  !> For purposes of testing we just want to set some values for the electric fields and compute drifts.  
+  !> For purposes of testing we just want to set some values for the electric fields and compute drifts.
   !    In principle this is useful for doing simulations where the potential (or background field) is
-  !    specified and a potential solution is not required.  
+  !    specified and a potential solution is not required.
   subroutine electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -1533,7 +1533,7 @@ contains
       E1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E01
       E2(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E02
       E3(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E03
-    else 
+    else
       E1=0._wp
       E2=0._wp
       E3=0._wp
@@ -1627,8 +1627,8 @@ contains
 
 
   ! getter and incrementer for it variable (number of time steps taken since this start or restart.  It seems
-  !   unavoidable to need almost trivial procedures for this because this must be controlled from top level 
-  !   program which could be C and will need fortran procedures to modify intvar fields.  
+  !   unavoidable to need almost trivial procedures for this because this must be controlled from top level
+  !   program which could be C and will need fortran procedures to modify intvar fields.
   integer function get_it()
     get_it=it
   end function get_it

@@ -50,15 +50,15 @@ contains
     real(wp) :: H
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
-    
-    
+
+
     !WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
     lambda1=[0.05, 0.4, 0.8, 1.8, 3.2, 7.0, 15.5, 22.4, 29.0, 32.0, 54.0, 65.0, 65.0, &
         79.8, 79.8, 79.8, 91.3, 91.3, 91.3, 97.5, 98.7, 102.7]*1e-9
     lambda2=[0.4, 0.8, 1.8, 3.2, 7.0, 15.5, 22.4, 29.0, 32.0, 54.0, 65.0, 79.8, 79.8, &
          91.3, 91.3, 91.3, 97.5, 97.5, 97.5, 98.7, 102.7, 105.0]*1e-9
-    
-    
+
+
     !TOTAL ABSORPTION CROSS SECTIONS
     sigmaO=[0.0023, 0.0170, 0.1125, 0.1050, 0.3247, 1.3190, 3.7832, 6.0239, &
          7.7205, 10.7175, 13.1253, 8.5159, 4.7889, 3.0031, 4.1048, 3.7947, &
@@ -69,8 +69,8 @@ contains
     sigmaO2=[0.0045, 0.034, 0.2251, 0.2101, 0.646, 2.6319, 7.6283, 13.2125, &
         16.8233, 20.3066, 27.0314, 23.5669, 24.9102, 10.4980, 10.9075, 13.3122, &
         13.3950, 14.4042, 32.5038, 18.7145, 1.6320, 1.15]*1e-18*1e-4
-    
-    
+
+
     !BRANCHING RATIOS
     brN2i=[0.040,0.040,0.040,0.040, 0.717, 0.751, 0.747, 0.754, 0.908, 0.996, 1.0, 0.679,  &
         0.429, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -80,8 +80,8 @@ contains
         0.549, 0.574, 0.534, 0.756, 0.786, 0.620, 0.830, 0.613, 0.0]
     brO2di=[1.0, 1.0, 1.0, 1.0, 0.892, 0.653, 0.447, 0.376, 0.351, 0.240, 0.108, 0.001, &
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
-    
+
+
     !PHOTOELECTRON TO DIRECT PRODUCTION RATIOS
     pepiO=[217.12, 50.593, 23.562, 71.378, 4.995, 2.192, 1.092, 0.694, 0.418, &
         0.127, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -93,8 +93,8 @@ contains
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.001, &
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    
-    
+
+
     !O COLUMN DENSITY
     H=kB*Tninf/mn(1)/gavg                         !scalar scale height
     bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H          !a reduced altitude
@@ -107,8 +107,8 @@ contains
       Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
     end where
     nOcol=nn(:,:,:,1)*H*Chfn
-    
-    
+
+
     !N2 COLUMN DENSITY
     H=kB*Tninf/mn(2)/gavg     !all of these temp quantities need to be recomputed for eacb neutral species being ionized
     bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H
@@ -120,8 +120,8 @@ contains
       Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
     end where
     nN2col=nn(:,:,:,2)*H*Chfn
-    
-    
+
+
     !O2 COLUMN DENSITY
     H=kB*Tninf/mn(3)/gavg
     bigX=(x%alt(1:lx1,1:lx2,1:lx3)+Re)/H
@@ -133,56 +133,56 @@ contains
       Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
     end where
     nO2col=nn(:,:,:,3)*H*Chfn
-     
-    
+
+
     !Solar flux at each point on the grid, i.e. the attenuated vacuum flux
     do il=1,ll
       do ix3=1,x%lx3
         do ix2=1,x%lx2
-          do ix1=1,x%lx1 
+          do ix1=1,x%lx1
           Iflux(ix1,ix2,ix3,il)=Iinf(ix1,ix2,ix3,il)*exp(-(sigmaO(il)*nOcol(ix1,ix2,ix3)+sigmaN2(il)*nN2col(ix1,ix2,ix3)+ &
                     sigmaO2(il)*nO2col(ix1,ix2,ix3)))
           end do
         end do
       end do
-    end do   
+    end do
 
 
     !PRIMARY AND SECONDARY IONIZATION RATES
     photoionization=0
-    
+
     !direct O+ production
     do il=1,ll
       photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1 + pepiO(il))
     end do
-    
+
     !direct NO+
     photoionization(:,:,:,2) = 0
-    
+
     !direct N2+
     do il=1,ll
       photoionization(:,:,:,3)=photoionization(:,:,:,3)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1 + pepiN2i(il))
     end do
-    
+
     !dissociative ionization of N2 leading to N+
     do il=1,ll
       photoionization(:,:,:,5)=photoionization(:,:,:,5)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1 + pepiN2di(il))
     end do
-    
+
     !direct O2+
     do il=1,ll
       photoionization(:,:,:,4)=photoionization(:,:,:,4)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1 + pepiO2i(il))
     end do
-    
+
     !dissociative ionization of O2 leading to O+
     do il=1,ll
       photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1 + pepiO2di(il))
     end do
-    
+
     !H+ production
     photoionization(:,:,:,6) = 0
-    
-    
+
+
     !THERE SHOULD BE SOME CODE HERE TO ZERO OUT THE BELOW-GROUND ALTITUDES.
     where (photoionization < 0)
       photoionization = 0
@@ -226,12 +226,12 @@ end function photoionization
           PhiW=PhiW/1e3_wp/1e4_wp    !to keV/cm^2/s
           W0keV=W0(ix2,ix3)/1e3_wp
           W0_char_keV=W0_char/1e3_wp
-    
+
           massden=mn(1)*nn(:,ix2,ix3,1)+mn(2)*nn(:,ix2,ix3,2)+mn(3)*nn(:,ix2,ix3,3)
           !! mass densities are [kg m^-3] as per neutral/neutral.f90 "call meters(.true.)" for MSIS.
           meanmass=massden/(nn(:,ix2,ix3,1)+nn(:,ix2,ix3,2)+nn(:,ix2,ix3,3))
           !! mean mass per particle [kg]
-    
+
           !> TOTAL IONIZATION RATE
           !! [cm^-3 s^-1] => [m^-3 s^-1]
           select case (flag_fang)
@@ -247,24 +247,24 @@ end function photoionization
           end select
         end do
       end do
-    
-  
+
+
       !NOW THAT TOTAL IONIZATION RATE HAS BEEN CALCULATED BREAK IT INTO DIFFERENT ION PRODUCTION RATES
       PO = 0
       PN2 = 0
       PO2 = 0
-    
+
       where (nn(:,:,:,1) + nn(:,:,:,2) + nn(:,:,:,3) > 1e-10_wp )
               PN2 = Ptot * 0.94_wp * nn(:,:,:,2) / &
                                (nn(:,:,:,3) + 0.94_wp*nn(:,:,:,2) + 0.55_wp * nn(:,:,:,1))
       endwhere
-    
+
       where (nn(:,:,:,2) > 1e-10_wp)
         PO2 = PN2 * 1.07_wp * nn(:,:,:,3) / nn(:,:,:,2)
         PO = PN2 * 0.59_wp * nn(:,:,:,1) / nn(:,:,:,2)
       endwhere
-    
-    
+
+
       !SPLIT TOTAL IONIZATION RATE PER VALLANCE JONES, 1973
       ionrate_fang(:,:,:,1) = PO + 0.33_wp * PO2
       ionrate_fang(:,:,:,2) = 0
@@ -276,73 +276,73 @@ end function photoionization
       ionrate_fang(:,:,:,:) = 0
     end if
   end function ionrate_fang
-  
-  
+
+
   pure function eheating(nn,ionrate,ns)
     !------------------------------------------------------------
     !-------COMPUTE SWARTZ AND NISBET, (1973) ELECTRON HEATING RATES.
     !-------ION ARRAYS (EXCEPT FOR RATES) ARE EXPECTED TO INCLUDE
     !-------GHOST CELLS.
     !------------------------------------------------------------
-    
+
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(in) :: ionrate
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns    !includes ghost cells
-    
+
     real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: totionrate,R,avgenergy
     integer :: lx1,lx2,lx3
-    
+
     real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: eheating
-    
+
     lx1=size(nn,1)
     lx2=size(nn,2)
     lx3=size(nn,3)
-    
+
     R=log(ns(1:lx1,1:lx2,1:lx3,lsp)/(nn(:,:,:,2)+nn(:,:,:,3)+0.1_wp*nn(:,:,:,1)))
     avgenergy=exp(-(12.75_wp+6.941_wp*R+1.166_wp*R**2+0.08034_wp*R**3+0.001996_wp*R**4))
     totionrate=sum(ionrate,4)
-    
+
     eheating=elchrg*avgenergy*totionrate
   end function eheating
-  
-  
+
+
   subroutine ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts, &
                                  eheating, iver, ionrate)
     !! COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
     !! X,Y METHOD.
-    
+
     real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
-    
+
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec, f107, f107a
     real(wp), dimension(:,:), intent(in) :: glat,glon
-    
+
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
     real(wp), dimension(:,:,:), intent(in) :: alt,Tn
-    
+
     real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(inout) :: eheating
     !! intent(out)
     real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(inout) :: iver
     !! intent(out)
     real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(inout) :: ionrate
     !! intent(out)
-    
+
     integer :: ix2,ix3,lx1,lx2,lx3,date_doy
-    
+
     lx1=size(nn,1)
     lx2=size(nn,2)
     lx3=size(nn,3)
-    
+
     !! zero flux should really be checked per field line
     if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
-    
+
       date_doy = modulo(ymd(1), 100)*1000 + ymd2doy(ymd(1), ymd(2), ymd(3))
       !! date in format needed by GLOW (yyddd)
       do ix3=1,lx3
         do ix2=1,lx2
           !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
-    
+
           if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0) then    !only compute rates if nonzero flux given *here* (i.e. at this location)
             ionrate(:,ix2,ix3,:) = 0
             eheating(:,ix2,ix3) = 0

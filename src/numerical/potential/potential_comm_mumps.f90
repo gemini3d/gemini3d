@@ -481,7 +481,7 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: J1pol,J2pol,J3pol
 
 
-    v2=vs2(1:lx1,1:lx2,1:lx3,1) 
+    v2=vs2(1:lx1,1:lx2,1:lx3,1)
     v3=vs3(1:lx1,1:lx2,1:lx3,1)
     E02ghost(1:lx1,1:lx2,1:lx3)=E02
     E03ghost(1:lx1,1:lx2,1:lx3)=E03

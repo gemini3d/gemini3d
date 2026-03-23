@@ -46,7 +46,7 @@ type, extends(inputdata) :: efielddata
   real(wp), dimension(:), pointer :: Vminx3isnow,Vmaxx3isnow
 
   logical :: flagrootonly=.true.                                 ! by default we assume that only root is creating/managing this object
-                                                                 !   some uses of ForestGEMINI will subvert this.  
+                                                                 !   some uses of ForestGEMINI will subvert this.
   contains
     ! overriding procedures
     procedure :: set_sizes=>set_sizes_efield
@@ -309,7 +309,7 @@ contains
       ix3offset=1-lbound(x%r,3)
 
       !! FIXME: This probably won't work well with dipole grids due to using different
-      !           reference locations for each patch.  
+      !           reference locations for each patch.
       if (x%lx2 > 1 .and. x%lx3>1) then ! 3D sim
         ix2ref = x%lx2/2      !note integer division
         ix3ref = x%lx3/2
@@ -340,7 +340,7 @@ contains
       if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
                                        minval(self%coord3iax23),maxval(self%coord3iax23)
       if (debug) print *, 'Grid has size:  ',iflat
-  
+
       if (self%flagdipmesh) then
         !! for electric field input data we also have some things that vary along axis 3 only
         do ix2=1,x%lx2all    ! note mangling ix2->ix3
@@ -373,7 +373,7 @@ contains
       if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
                                        minval(self%coord3iax23),maxval(self%coord3iax23)
       if (debug) print *, 'Grid has size:  ',iflat
-  
+
       if (self%flagdipmesh) then
         !! for electric field input data we also have some things that vary along axis 3 only
         do ix2=1,x%lx2    ! note mangling ix2->ix3

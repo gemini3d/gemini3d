@@ -51,4 +51,3 @@ target_link_libraries(solfluxBCs PRIVATE reader const meshobj interp timeutils g
 inputdata solfluxdata
 MPI::MPI_Fortran
 )
-

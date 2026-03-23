@@ -1,6 +1,6 @@
 # Publications Using GEMINI
 
-Since its first appearance in 2012, GEMINI has been used in over 15 publications, and 6 theses focusing on local-scale ionospheric dynamics.  
+Since its first appearance in 2012, GEMINI has been used in over 15 publications, and 6 theses focusing on local-scale ionospheric dynamics.
 
 ## Peer-reviewed journal articles
 
@@ -50,8 +50,7 @@ Clayton, R. E. (2019). Modeling and Reconstruction of in situ Ionospheric Plasma
 
 Fernandes, P. A. (2015). Measuring the seeds of thermal ion outflow. PhD thesis.  Dartmouth College.[https://search.proquest.com/openview/7f930a06109dfe5dbe519d70ac60e77a/1?pq-origsite=gscholar&cbl=18750&diss=y](https://search.proquest.com/openview/7f930a06109dfe5dbe519d70ac60e77a/1?pq-origsite=gscholar&cbl=18750&diss=y)
 
-Gutow, J. (2020).  Relating Flows and Currents in Auroral Arcs.  Undergraduate Honors Thesis.  Dartmouth College.  
+Gutow, J. (2020).  Relating Flows and Currents in Auroral Arcs.  Undergraduate Honors Thesis.  Dartmouth College.
 
 
 ## Other references
-

@@ -41,7 +41,7 @@ public :: init_procgrid, outdir_fullgridvaralloc, read_grid_in, get_initial_stat
             halo_interface_vels_allspec_in, halo_allparams_in, &
             RK2_prep_mpi_allspec_in,get_gavg_Tinf_in, clear_neutral_perturb_in, clear_neutral_background_in, &
             mpisetup_in, mpiparms, calc_subgrid_size_in, &
-            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in 
+            RK2_global_boundary_allspec_in, halo_fluidvars_in, efield_perturb_in, inputdata_perturb_in
 real(wp), parameter :: dtscale=2                     ! controls how rapidly the time step is allowed to change
 
 contains
@@ -127,7 +127,7 @@ contains
 !
 !      ! FIXME: instead keep tdur and just adjust the start time of the simulation to be closer to endtime
 !      tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-!      ! FIXME: need to feed in the t variable and overwrite it if we are restarting.  
+!      ! FIXME: need to feed in the t variable and overwrite it if we are restarting.
 !
 !      if (mpi_cfg%myid==0) then
 !        print*, 'Treating the following file as initial conditions:  ',filetmp
@@ -310,8 +310,8 @@ contains
       call setv2v3(v2gridtmp,v3gridtmp)
 
       ! must recompute wind data since we've adjust grid drift
-      call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.true.)   
-      
+      call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.true.)
+
       if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
     else                            ! stationary grid
       v2gridtmp=0._wp
@@ -534,11 +534,11 @@ contains
     if (cfg%flagneutralBGfile==1) then
       !print*, 'File-based neutral background...'
       call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
-      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb) 
+      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     else
       !> get neutral background
-!      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     
-      if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then     
+!      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then
+      if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
         call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
@@ -548,7 +548,7 @@ contains
         !  call cpu_time(tfin)
         !  print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
         !end if
-      end if      
+      end if
     end if
   end subroutine neutral_background_in
 
@@ -569,7 +569,7 @@ contains
       call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! extra step to tell GEMINI to agg the perturbations and BG
     end if
 
-    !> no default for neutral perturbations -- aggregate functions will ignore if not flagged.  
+    !> no default for neutral perturbations -- aggregate functions will ignore if not flagged.
   end subroutine neutral_perturb_in
 
 
@@ -591,7 +591,7 @@ contains
                                        intvars%flagdirich,intvars%Vminx1,intvars%Vmaxx1,intvars%Vminx2,intvars%Vmaxx2,&
                                        intvars%Vminx3,intvars%Vmaxx3,intvars%E01,intvars%E02,intvars%E03, &
                                        intvars%Vminx1slab,intvars%Vmaxx1slab)
-    end if    
+    end if
   end subroutine efield_perturb_in
 
 

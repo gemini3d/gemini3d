@@ -15,7 +15,7 @@ contains
     !-------
     !-------  for GEMINI:  A=SigP2, A'=SigP3, B=d/dx3(SigH), C=d/dx2(SigH)
     !------------------------------------------------------------
-    
+
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh2    !I'm too lazy to recode these as SigP2h2, etc.
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh3
     real(wp) :: coeff    !coefficient for calculating polarization terms
@@ -26,7 +26,7 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     type(MUMPS_STRUC) :: mumps_par
-    
+
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
     lx2=size(SigP2,1)                             !note that these are full-grid sizes since grid module globals are not in scope
     lx3=size(SigP2,2)
@@ -40,14 +40,14 @@ contains
 
     if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
     if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
-    
+
     !PREP INPUT DATA FOR SOLUTION OF SYSTEM
     SigPh2(1,:)= 0
     SigPh2(2:lx2,:)=0.5_wp*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))
     !! note the different conductiances here to be associated with derivatives in different directions
     SigPh3(:,1)= 0
     SigPh3(:,2:lx3)=0.5_wp*(SigP3(:,1:lx3-1)+SigP3(:,2:lx3))
-    
+
     !------------------------------------------------------------
     !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
     !-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
@@ -57,11 +57,11 @@ contains
     M(:)= 0
     b = pack(srcterm,.true.)           !boundaries overwritten later, polarization terms also added later.
     ient=1
-    
+
     loopx3: do ix3=1,lx3
       loopx2: do ix2=1,lx2
         iPhi=lx2*(ix3-1)+ix2           !linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
-    
+
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (ix3==1) then
             ! Neumann BC:  x2 current
@@ -105,7 +105,7 @@ contains
 !             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
 !             ient=ient+1
           else if (ix3==lx3) then
-            ! Neumann BC:  x2 current                 
+            ! Neumann BC:  x2 current
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi-lx2
 !            M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
@@ -121,7 +121,7 @@ contains
 !            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2+1)
 !            ient=ient+1
 
-            ! Neumann BC:  combined x2,3 current constraint                
+            ! Neumann BC:  combined x2,3 current constraint
             ir(ient)=iPhi
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
@@ -140,7 +140,7 @@ contains
             M(ient)=M(ient)+ SigHBC3(ix2,ix3)/dx2all(ix2+1)
             ient=ient+1
 
-            ! Dirichlet BC: set potential           
+            ! Dirichlet BC: set potential
 !             ir(ient)=iPhi
 !             ic(ient)=iPhi
 !             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
@@ -150,17 +150,17 @@ contains
             ic(ient)=iPhi-lx2
             M(ient)=SigHBC2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))
             ient=ient+1
-  
+
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=SigPBC2(ix2,ix3)/(dx2all(ix2+1))
             ient=ient+1
-  
+
             ir(ient)=iPhi
             ic(ient)=iPhi+1
             M(ient)=-SigPBC2(ix2,ix3)/(dx2all(ix2+1))
             ient=ient+1
-  
+
             ir(ient)=iPhi
             ic(ient)=iPhi+lx2
             M(ient)=-SigHBC2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))
@@ -171,7 +171,7 @@ contains
           cycle
         elseif (ix2==lx2) then    ! TOP GRID POINTS + CORNER
           if (ix3==1) then
-            ! Neumann BC:  x2 current                                  
+            ! Neumann BC:  x2 current
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi-1
 !            M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
@@ -203,7 +203,7 @@ contains
 !            M(ient)=-SigPBC3(ix2,ix3)/dx3all(ix3+1)
 !            ient=ient+1
 
-            ! Neumann BC:  combined x2,x3 current                                  
+            ! Neumann BC:  combined x2,x3 current
             ir(ient)=iPhi
             ic(ient)=iPhi-1
             M(ient)=SigPBC2(ix2,ix3)/dx2all(ix2)
@@ -228,7 +228,7 @@ contains
 !            M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
 !            ient=ient+1
           else if (ix3==lx3) then
-            ! Neumann BC:  x2 current                            
+            ! Neumann BC:  x2 current
 !            ir(ient)=iPhi
 !            ic(ient)=iPhi-lx2
 !            M(ient)=SigHBC2(ix2,ix3)/dx3all(ix3)
@@ -244,7 +244,7 @@ contains
 !            M(ient)=-SigPBC2(ix2,ix3)/dx2all(ix2)-SigHBC2(ix2,ix3)/dx3all(ix3)
 !            ient=ient+1
 
-            ! Dirichlet BC: set potential           
+            ! Dirichlet BC: set potential
             ir(ient)=iPhi
             ic(ient)=iPhi
             M(ient)=1._wp     ! doesn't really matter what user put in BC arrays since pot value is arbitrary
@@ -264,7 +264,7 @@ contains
             ic(ient)=iPhi
             M(ient)=-SigPBC2(ix2,ix3)/(dx2all(ix2))
             ient=ient+1
-   
+
             ir(ient)=iPhi
             ic(ient)=iPhi+lx2
             M(ient)=-SigHBC2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))
@@ -320,20 +320,20 @@ contains
           b(iPhi)=Vmaxx3(ix2)
           cycle
         endif
-    
+
         !! INTERIOR LOCATION
         !!!ix2,ix3-1 grid point in ix2,ix3 equation
         ir(ient)=iPhi
         ic(ient)=iPhi-lx2
         M(ient)=SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))+gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static terms
         ient=ient+1
-    
+
         !> ix2-1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi-1
         M(ient)=SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2))-gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
         ient=ient+1
-    
+
         !!!ix2,ix3 grid point (main diagonal)
         ir(ient)=iPhi
         ic(ient)=iPhi
@@ -342,13 +342,13 @@ contains
           -SigPh3(ix2,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
           -SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))    !static
         ient=ient+1
-    
+
         !!!ix2+1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+1
         M(ient)=SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1))+gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
         ient=ient+1
-    
+
         !!!ix2,ix3+1 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+lx2
@@ -365,10 +365,10 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    
+
     call MUMPS_exec(mumps_par)
     call quiet_mumps(mumps_par)
-    
+
     !LOAD OUR PROBLEM
     !if ( myid==0 ) then
     mumps_par%N=lPhi
@@ -382,24 +382,24 @@ contains
     mumps_par%A=M
     mumps_par%RHS=b
     deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-    
+
     if (perflag .and. it/=1) then       !used cached permutation
       allocate(mumps_par%PERM_IN(mumps_par%N))
       mumps_par%PERM_IN=mumps_perm
       mumps_par%ICNTL(7)=1
     end if
-    
+
     !may solve some memory allocation issues, uncomment if MUMPS throws errors
     !about not having enough memory
     !mumps_par%ICNTL(14)=50
-    
+
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call check_mumps_status(mumps_par, 'elliptic2D_static_J0')
-    
+
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
@@ -410,9 +410,9 @@ contains
       mumps_perm=mumps_par%SYM_PERM
     end if
     elliptic2D_static_J0=reshape(mumps_par%RHS,[lx2,lx3])
-    
+
     if (debug) print *, 'Now attempting deallocations...'
-    
+
     deallocate( mumps_par%IRN )
     deallocate( mumps_par%JCN )
     deallocate( mumps_par%A   )
@@ -420,7 +420,7 @@ contains
     if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
       deallocate(mumps_par%PERM_IN)
     end if
-    
+
     mumps_par%JOB = -2
     call MUMPS_exec(mumps_par)
   end procedure elliptic2D_static_J0
@@ -438,7 +438,7 @@ contains
     !-------
     !-------  for GEMINI:  A=SigP2, A'=SigP3, B=d/dx3(SigH), C=d/dx2(SigH)
     !------------------------------------------------------------
-    
+
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh2    !I'm too lazy to recode these as SigP2h2, etc.
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh3
     real(wp) :: coeff    !coefficient for calculating polarization terms
@@ -450,7 +450,7 @@ contains
     real(wp), dimension(:), allocatable :: b
     type(MUMPS_STRUC) :: mumps_par
     integer :: lneux2,ldirichx2,lneux3,ldirichx3,ibnd
-    
+
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
     lx2=size(SigP2,1)                             !note that these are full-grid sizes since grid module globals are not in scope
     lx3=size(SigP2,2)
@@ -474,14 +474,14 @@ contains
 
     if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
     if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
-    
+
     !PREP INPUT DATA FOR SOLUTION OF SYSTEM
     SigPh2(1,:)= 0
     SigPh2(2:lx2,:)=0.5_wp*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))
     !! note the different conductiances here to be associated with derivatives in different directions
     SigPh3(:,1)= 0
     SigPh3(:,2:lx3)=0.5_wp*(SigP3(:,1:lx3-1)+SigP3(:,2:lx3))
-    
+
     !------------------------------------------------------------
     !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
     !-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
@@ -491,11 +491,11 @@ contains
     M(:)= 0
     b = pack(srcterm,.true.)           !boundaries overwritten later, polarization terms also added later.
     ient=1
-    
+
     loopx3: do ix3=1,lx3
       loopx2: do ix2=1,lx2
         iPhi=lx2*(ix3-1)+ix2           !linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
-    
+
         if (ix2==1) then          ! BOTTOM GRID POINTS + CORNER
           if (flagsdirich(1)==1) then
             ir(ient)=iPhi
@@ -573,20 +573,20 @@ contains
           end if
           cycle
         endif
-    
+
         !! INTERIOR LOCATION
         !!!ix2,ix3-1 grid point in ix2,ix3 equation
         ir(ient)=iPhi
         ic(ient)=iPhi-lx2
         M(ient)=SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))+gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static terms
         ient=ient+1
-    
+
         !> ix2-1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi-1
         M(ient)=SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2))-gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
         ient=ient+1
-    
+
         !!!ix2,ix3 grid point (main diagonal)
         ir(ient)=iPhi
         ic(ient)=iPhi
@@ -595,13 +595,13 @@ contains
           -SigPh3(ix2,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
           -SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))    !static
         ient=ient+1
-    
+
         !!!ix2+1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+1
         M(ient)=SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1))+gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
         ient=ient+1
-    
+
         !!!ix2,ix3+1 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+lx2
@@ -609,7 +609,7 @@ contains
         ient=ient+1
       end do loopx2
     end do loopx3
-    
+
     !FIRE UP MUMPS
     !if (myid == 0) then
     if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
@@ -618,10 +618,10 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    
+
     call MUMPS_exec(mumps_par)
     call quiet_mumps(mumps_par)
-    
+
     !LOAD OUR PROBLEM
     !if ( myid==0 ) then
     mumps_par%N=lPhi
@@ -635,24 +635,24 @@ contains
     mumps_par%A=M
     mumps_par%RHS=b
     deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-    
+
     if (perflag .and. it/=1) then       !used cached permutation
       allocate(mumps_par%PERM_IN(mumps_par%N))
       mumps_par%PERM_IN=mumps_perm
       mumps_par%ICNTL(7)=1
     end if
-    
+
     !may solve some memory allocation issues, uncomment if MUMPS throws errors
     !about not having enough memory
     !mumps_par%ICNTL(14)=50
-    
+
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call check_mumps_status(mumps_par, 'elliptic2D_static')
-    
+
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
@@ -663,9 +663,9 @@ contains
       mumps_perm=mumps_par%SYM_PERM
     end if
     elliptic2D_static=reshape(mumps_par%RHS,[lx2,lx3])
-    
+
     if (debug) print *, 'Now attempting deallocations...'
-    
+
     deallocate( mumps_par%IRN )
     deallocate( mumps_par%JCN )
     deallocate( mumps_par%A   )
@@ -673,12 +673,12 @@ contains
     if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
       deallocate(mumps_par%PERM_IN)
     end if
-    
+
     mumps_par%JOB = -2
     call MUMPS_exec(mumps_par)
   end procedure elliptic2D_static
 
-      
+
   module procedure elliptic2D_polarization
     !------------------------------------------------------------
     !-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
@@ -701,12 +701,12 @@ contains
     !-------  for GEMINI:  A=SigP2, A'=SigP3, B=d/dx3(SigH), C=d/dx2(SigH),
     !-------               D=Cm
     !------------------------------------------------------------
-    
+
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh2    !I'm too lazy to recode these as SigP2h2, etc.
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh3
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh2
     real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh3
-    
+
     real(wp) :: coeff    !coefficient for calculating polarization terms
     integer :: ix2,ix3,lx2,lx3    !this overwrites the
     integer :: lPhi,lent
@@ -714,9 +714,9 @@ contains
     integer, dimension(:), allocatable :: ir,ic
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
-    
+
     type(MUMPS_STRUC) :: mumps_par
-    
+
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
     !if (myid==0) then
     lx2=size(SigP2,1)    !note that these are full-grid sizes since grid module globals are not in scope
@@ -728,8 +728,8 @@ contains
     allocate(ir(lent),ic(lent),M(lent),b(lPhi))
     if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
     if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
-    
-    
+
+
     !PREP INPUT DATA FOR SOLUTION OF SYSTEM
     SigPh2(1,:)= 0
     SigPh2(2:lx2,:)=0.5_wp*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))
@@ -740,8 +740,8 @@ contains
     Cmh2(2:lx2,:)=0.5_wp*(Cm(1:lx2-1,:)+Cm(2:lx2,:))
     Cmh3(:,1)= 0
     Cmh3(:,2:lx3)=0.5_wp*(Cm(:,1:lx3-1)+Cm(:,2:lx3))
-    
-    
+
+
     !------------------------------------------------------------
     !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
     !-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
@@ -751,11 +751,11 @@ contains
     M(:)= 0
     b = pack(srcterm,.true.)           !boundaries overwritten later, polarization terms also added later.
     ient=1
-    
+
     loopx3: do ix3=1,lx3
       loopx2: do ix2=1,lx2
         iPhi=lx2*(ix3-1)+ix2     !linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
-    
+
         if (ix2==1) then
           !! BOTTOM GRID POINTS + CORNER
           ir(ient)=iPhi
@@ -789,7 +789,7 @@ contains
           ient=ient+1
           cycle
         endif
-    
+
         !! INTERIOR LOCATION
         !> ix2-1,ix3-2 grid point
         !>>  because we are one interior point in for x3, ix3-2 is "before" the boundary; we'll assume it's at the
@@ -801,13 +801,13 @@ contains
         else    !in bounds, add to matrix
           ir(ient)=iPhi
           ic(ient)=iPhi-2*lx2-1
-    
+
           M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !> ix2,ix3-2 grid point
         coeff=-Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)*dx3iall(ix3-1)) )
         if (ix3==2) then
@@ -816,13 +816,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-2*lx2
-    
+
           M(ient)=coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !> ix2+1,ix3-2 grid point
         coeff=Cm(ix2,ix3-1)*v2(ix2,ix3-1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -831,13 +831,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-2*lx2+1
-    
+
           M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !> ix2-2,ix3-1
         coeff=-Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -846,37 +846,37 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-lx2-2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !!!ix2,ix3-1 grid point in ix2,ix3 equation
         ir(ient)=iPhi
         ic(ient)=iPhi-lx2
-    
+
         M(ient)=SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))+gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static terms
-    
+
         coeff=Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff   !polarization time derivative terms
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3-1)
         !! add in polarziation terms that include previous time step potential at this grid point
-    
+
         coeff=Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(ix3-1)) )+ &
         Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)*dx3iall(ix3-1)) )
         M(ient)=M(ient)+coeff   !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         coeff=Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) )+ &
         Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
         M(ient)=M(ient)+coeff   !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !> ix2+2,ix3-1 grid point
         coeff=-Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2+1)+dx2all(ix2+2))*(dx2all(ix2)+dx2all(ix2+1))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -885,13 +885,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-lx2+2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !> ix2-2,ix3 grid point
         coeff=-Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)*dx2iall(ix2-1)) )
         if (ix2==2) then
@@ -899,87 +899,87 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-2
-    
+
           M(ient)=coeff
           !! d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !> ix2-1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi-1
-    
+
         M(ient)=SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2))-gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
-    
+
         coeff=Cmh2(ix2,ix3)/(dt*dx2iall(ix2)*dx2all(ix2))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2-1,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2)*dx2iall(ix2-1)) )+ &
         Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)*dx2iall(ix2-1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) )+ &
         Cm(ix2,ix3-1)*v2(ix2,ix3-1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
         M(ient)=M(ient)+coeff     !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !!!ix2,ix3 grid point (main diagonal)
         ir(ient)=iPhi
         ic(ient)=iPhi
-    
+
         M(ient)=-SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1)) &
         -SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2)) &
         -SigPh3(ix2,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
         -SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))    !static
-    
+
         coeff=-Cmh2(ix2+1,ix3)/(dt*dx2iall(ix2)*dx2all(ix2+1)) &
         -Cmh2(ix2,ix3)/(dt*dx2iall(ix2)*dx2all(ix2)) &
         -Cmh3(ix2,ix3+1)/(dt*dx3iall(ix3)*dx3all(ix3+1)) &
         -Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)*dx2iall(ix2+1)) ) &
         -Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2)*dx2iall(ix2-1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)*dx3all(ix3+1)) ) &
         -Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(ix3-1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         ient=ient+1
-    
-    
+
+
         !!!ix2+1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+1
-    
+
         M(ient)=SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1))+gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
-    
+
         coeff=Cmh2(ix2+1,ix3)/(dt*dx2iall(ix2)*dx2all(ix2+1))
         M(ient)=M(ient)+coeff    !pol. time deriv. terms
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=-Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+2)*dx2iall(ix2+1)) ) &
         -Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)*dx2iall(ix2+1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=-Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) ) &
         -Cm(ix2,ix3-1)*v2(ix2,ix3-1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+2,ix3 grid point
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+2)*dx2iall(ix2+1)) )
         if (ix2==lx2-1) then
@@ -987,13 +987,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-2,ix3+1 grid point
         coeff=Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1002,36 +1002,36 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+lx2-2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !!!ix2,ix3+1 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+lx2
-    
+
         M(ient)=SigPh3(ix2,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1))-gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static
-    
+
         coeff=Cmh3(ix2,ix3+1)/(dt*dx3iall(ix3)*dx3all(ix3+1))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3+1)    !BC's and pol. time deriv.
-    
+
         coeff=-Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+2)*dx3iall(ix3+1)) ) &
         -Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)*dx3iall(ix3+1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         coeff=-Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) ) &
         -Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+2,ix3+1 grid point
         coeff=Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1040,13 +1040,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+lx2+2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-1,ix3+2 grid point
         coeff=-Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         ( (dx3all(ix3+1)+dx3all(ix3+2))*(dx3all(ix3)+dx3all(ix3+1))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1055,13 +1055,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2-1
-    
+
           M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2,ix3+2 grid point
         coeff=Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+2)*dx3iall(ix3+1)) )
         if (ix3==lx3-1) then
@@ -1069,13 +1069,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2+1,ix3+2 grid point
         coeff=Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1084,17 +1084,17 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2+1
-    
+
           M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
           ient=ient+1
         end if
-    
+
       end do loopx2
     end do loopx3
     !end if
-    
-    
+
+
     !FIRE UP MUMPS
     !if (myid == 0) then
     if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
@@ -1103,12 +1103,12 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call quiet_mumps(mumps_par)
-    
-    
+
+
     !LOAD OUR PROBLEM
     !if ( myid==0 ) then
     mumps_par%N=lPhi
@@ -1122,57 +1122,57 @@ contains
     mumps_par%A=M
     mumps_par%RHS=b
     deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-    
+
     if (perflag .and. it/=1) then       !used cached permutation
       allocate(mumps_par%PERM_IN(mumps_par%N))
       mumps_par%PERM_IN=mumps_perm
       mumps_par%ICNTL(7)=1
     end if
-    
+
     !may solve some memory allocation issues, uncomment if MUMPS throws errors
     !about not having enough memory
     !mumps_par%ICNTL(14)=50
     !end if
-    
-    
+
+
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call check_mumps_status(mumps_par, 'elliptic2D_polarization')
-    
+
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
     !if ( myid==0 ) then
     if (debug) print *, 'Now organizing results...'
-    
+
     if (perflag .and. it==1) then
       allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
       mumps_perm=mumps_par%SYM_PERM
     end if
-    
+
     elliptic2D_polarization=reshape(mumps_par%RHS,[lx2,lx3])
-    
+
     if (debug) print *, 'Now attempting deallocations...'
-    
+
     deallocate( mumps_par%IRN )
     deallocate( mumps_par%JCN )
     deallocate( mumps_par%A   )
     deallocate( mumps_par%RHS )
     !end if
-    
+
     if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
       deallocate(mumps_par%PERM_IN)
     end if
-    
+
     mumps_par%JOB = -2
-    
+
     call MUMPS_exec(mumps_par)
   end procedure elliptic2D_polarization
-  
-  
+
+
   module procedure elliptic2D_polarization_periodic
     !------------------------------------------------------------
     !-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
@@ -1194,12 +1194,12 @@ contains
     !-------  d/dx2( D*v2 d^V/dx2^2 + D*v3*d^2V/dx3/dx2 ) + ...
     !-------  d/dx3( D*v2 d^2V/dx2/dx3 + D*v3 d^2V/dx3^2 ) = srcterm
     !------------------------------------------------------------
-    
+
     real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh2
     real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh3
     real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh2
     real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh3
-    
+
     real(wp) :: coeff    !coefficient for calculating polarization terms
     integer :: ix2,ix3,lx2,lx3    !this overwrites the values stored in the grid module, which is fine, but perhaps redundant
     integer :: lPhi,lent
@@ -1207,14 +1207,14 @@ contains
     integer, dimension(:), allocatable :: ir,ic
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
-    
+
     type(MUMPS_STRUC) :: mumps_par
-    
+
     integer :: lcount,ix2tmp,ix3tmp
-    
+
     real(wp), dimension(size(SigP,1),size(SigP,2)) :: tmpresults
-    
-    
+
+
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
     !if (myid==0) then
     lx2=size(SigP,1)    !these are full-grid sizes since grid module globals are not in scope
@@ -1236,11 +1236,11 @@ contains
     !! + add x2 boundaries (note that these are now size lx3+1) + x3 edge cells (treated here as interior)
     !! - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
     allocate(ir(lent),ic(lent),M(lent),b(lPhi))
-    
+
     if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
     if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
-    
-    
+
+
     !NOTE THAT THESE NEED TO BE PERIODIC IN X3
     SigPh2(1,:)= 0
     SigPh2(2:lx2,:)=0.5_wp*(SigP(1:lx2-1,:)+SigP(2:lx2,:))
@@ -1250,15 +1250,15 @@ contains
     Cmh2(2:lx2,:)=0.5_wp*(Cm(1:lx2-1,:)+Cm(2:lx2,:))
     Cmh3(:,1)=0.5_wp*(Cm(:,lx3)+Cm(:,1))
     Cmh3(:,2:lx3)=0.5_wp*(Cm(:,1:lx3-1)+Cm(:,2:lx3))
-    
-    
+
+
     !------------------------------------------------------------
     !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
     !-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
     !-------GUIDE).
     !------------------------------------------------------------
     if (debug) print *, 'Loading up matrix entries...'
-    
+
     !LOAD UP MATRIX ELEMENTS
     lcount=0
     M(:)= 0
@@ -1269,7 +1269,7 @@ contains
       do ix2=1,lx2
         iPhi=lx2*(ix3-1)+ix2
         !! linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
-    
+
         if (ix2==1) then
           !! BOTTOM GRID POINTS + CORNER
           ir(ient)=iPhi
@@ -1287,11 +1287,11 @@ contains
           ient=ient+1
           cycle
         endif
-    
+
         !! TREAT AS AN INTERIOR LOCATION, THIS INCLUDE X3 EDGES NOW SINCE PERIODIC,CIRCULANT
         !! ZZZ - NEED TO WRAP INDICES AROUND:  X 1)
         !! matrix row/column entries; 2) references to dx3i*(anything but ix3);  3) references to conductances/bcs/etc.
-    
+
         !ix2-1,ix3-2 grid point
         coeff=-Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v2(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1307,8 +1307,8 @@ contains
         !            end if
         M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
         ient=ient+1
-    
-    
+
+
         !ix2,ix3-2 grid point
         coeff=-Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v3(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)* &
@@ -1323,8 +1323,8 @@ contains
         !            end if
         M(ient)=coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
         ient=ient+1
-    
-    
+
+
         !ix2+1,ix3-2 grid point
         coeff=Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v2(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1334,8 +1334,8 @@ contains
         ic(ient)=lx2*(ix3tmp-1)+ix2tmp
         M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
         ient=ient+1
-    
-    
+
+
         !ix2-2,ix3-1
         coeff=-Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1347,42 +1347,42 @@ contains
           ix2tmp=ix2-2
           ic(ient)=lx2*(ix3tmp-1)+ix2tmp
           !              ic(ient)=iPhi-lx2-2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2,ix3-1 grid point in ix2,ix3 equation
         ir(ient)=iPhi
         !            ic(ient)=iPhi-lx2
         ix3tmp=mod(ix3-1-1+lx3,lx3)+1
         ix2tmp=ix2
         ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    
+
         M(ient)=SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))+gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static terms
-    
+
         coeff=Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff   !polarization time derivative terms
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3-1-1+lx3,lx3)+1)
         !! add in polarziation terms that include previous time step potential at this grid point
-    
+
         coeff=Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v3(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(mod(ix3-1-1+lx3,lx3)+1)) )+ &
         Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v3(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)*dx3iall(mod(ix3-1-1+lx3,lx3)+1)) )
         M(ient)=M(ient)+coeff   !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         coeff=Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) )+ &
         Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
         M(ient)=M(ient)+coeff   !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+2,ix3-1 grid point
         coeff=-Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2+1)+dx2all(ix2+2))*(dx2all(ix2)+dx2all(ix2+1))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1394,13 +1394,13 @@ contains
           ix3tmp=mod(ix3-1-1+lx3,lx3)+1
           ix2tmp=ix2+2
           ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-2,ix3 grid point
         coeff=-Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)*dx2iall(ix2-1)) )
         if (ix2==2) then
@@ -1408,88 +1408,88 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi-1
-    
+
         M(ient)=SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2))-gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
-    
+
         coeff=Cmh2(ix2,ix3)/(dt*dx2iall(ix2)*dx2all(ix2))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2-1,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2)*dx2iall(ix2-1)) )+ &
         Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)*dx2iall(ix2-1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=Cm(ix2,mod(ix3+1-1,lx3)+1)*v2(ix2,mod(ix3+1-1,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) )+ &
         Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v2(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
         M(ient)=M(ient)+coeff     !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2,ix3 grid point (main diagonal)
         ir(ient)=iPhi
         ic(ient)=iPhi
-    
+
         M(ient)=-SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1)) &
         -SigPh2(ix2,ix3)/(dx2iall(ix2)*dx2all(ix2)) &
         -SigPh3(ix2,mod(ix3+1-1,lx3)+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
         -SigPh3(ix2,ix3)/(dx3iall(ix3)*dx3all(ix3))    !static
-    
+
         coeff=-Cmh2(ix2+1,ix3)/(dt*dx2iall(ix2)*dx2all(ix2+1)) &
         -Cmh2(ix2,ix3)/(dt*dx2iall(ix2)*dx2all(ix2)) &
         -Cmh3(ix2,mod(ix3+1-1,lx3)+1)/(dt*dx3iall(ix3)*dx3all(ix3+1)) &
         -Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)*dx2iall(ix2+1)) ) &
         -Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2)*dx2iall(ix2-1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=Cm(ix2,mod(ix3+1-1,lx3)+1)*v3(ix2,mod(ix3+1-1,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)*dx3all(ix3+1)) ) &
         -Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v3(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(mod(ix3-1-1+lx3,lx3)+1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+1,ix3 grid point
         ir(ient)=iPhi
         ic(ient)=iPhi+1
-    
+
         M(ient)=SigPh2(ix2+1,ix3)/(dx2iall(ix2)*dx2all(ix2+1))+gradSigH3(ix2,ix3)/(dx2all(ix2)+dx2all(ix2+1))    !static
-    
+
         coeff=Cmh2(ix2+1,ix3)/(dt*dx2iall(ix2)*dx2all(ix2+1))
         M(ient)=M(ient)+coeff    !pol. time deriv. terms
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.
-    
+
         coeff=-Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+2)*dx2iall(ix2+1)) ) &
         -Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)*dx2iall(ix2+1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
         coeff=-Cm(ix2,mod(ix3+1-1,lx3)+1)*v2(ix2,mod(ix3+1-1,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) ) &
         -Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v2(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+2,ix3 grid point
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+2)*dx2iall(ix2+1)) )
         if (ix2==lx2-1) then
@@ -1497,13 +1497,13 @@ contains
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2
-    
+
           M(ient)=coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-2,ix3+1 grid point
         coeff=Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1515,42 +1515,42 @@ contains
           ix3tmp=mod(ix3+1-1,lx3)+1
           ix2tmp=ix2-2
           ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2,ix3+1 grid point
         ir(ient)=iPhi
         !            ic(ient)=iPhi+lx2
         ix3tmp=mod(ix3+1-1,lx3)+1
         ix2tmp=ix2
         ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    
+
         M(ient)=SigPh3(ix2,mod(ix3+1-1,lx3)+1)/ &
         (dx3iall(ix3)*dx3all(ix3+1))-gradSigH2(ix2,ix3)/(dx3all(ix3)+dx3all(ix3+1))    !static
-    
+
         coeff=Cmh3(ix2,mod(ix3+1-1,lx3)+1)/(dt*dx3iall(ix3)*dx3all(ix3+1))
         M(ient)=M(ient)+coeff    !pol. time deriv.
         b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3+1-1,lx3)+1)    !BC's and pol. time deriv.
-    
+
         coeff=-Cm(ix2,mod(ix3+1-1,lx3)+1)*v3(ix2,mod(ix3+1-1,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+2)*dx3iall(mod(ix3+1-1,lx3)+1)) ) &
         -Cm(ix2,mod(ix3+1-1,lx3)+1)*v3(ix2,mod(ix3+1-1,lx3)+1)/ &
         ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)*dx3iall(mod(ix3+1-1,lx3)+1)) )
         M(ient)=M(ient)+coeff    !d/dx3( Cm*v3*d^2/dx3^2(Phi) ) term
-    
+
         coeff=-Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) ) &
         -Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2-1)+dx2all(ix2))*(dx3all(ix3)+dx3all(ix3+1)) )
         M(ient)=M(ient)+coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
         ient=ient+1
-    
-    
+
+
         !ix2+2,ix3+1 grid point
         coeff=Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
         ( (dx2all(ix2)+dx2all(ix2+1))*(dx2all(ix2+1)+dx2all(ix2+2))*(dx3all(ix3)+dx3all(ix3+1)) )
@@ -1562,13 +1562,13 @@ contains
           ix3tmp=mod(ix3+1-1,lx3)+1
           ix2tmp=ix2+2
           ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    
+
           M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
-    
+
           ient=ient+1
         end if
-    
-    
+
+
         !ix2-1,ix3+2 grid point
         !            coeff=-Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         !                  ( (dx3all(ix3+1)+dx3all(ix3+2))*(dx3all(ix3)+dx3all(ix3+1))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1585,8 +1585,8 @@ contains
         !            end if
         M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
         ient=ient+1
-    
-    
+
+
         !ix2,ix3+2 grid point
         !            coeff=Cm(ix2,ix3+1)*v3(ix2,ix3+1)/ &
         !                  ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+2)*dx3iall(ix3+1)) )
@@ -1603,8 +1603,8 @@ contains
         !            end if
         M(ient)=coeff    !d/dx2( Cm*v3*d^2/dx2dx3(Phi) )
         ient=ient+1
-    
-    
+
+
         !ix2+1,ix3+2 grid point
         !            coeff=Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
         !                  ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3+1)+dx3all(ix3+2))*(dx2all(ix2)+dx2all(ix2+1)) )
@@ -1624,26 +1624,26 @@ contains
       end do
     end do
     !end if
-    
-    
+
+
     !FIRE UP MUMPS
     !if (myid == 0) then
     if (debug) print *,  'Debug count:  ',lcount
     if (debug) print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solving ',iPhi,' of ',lPhi, &
     ' unknowns.  Initializing MUMPS...'
     if (ient-1 /= lent) error stop 'Incorrect number of matrix entries filled in potential solve!!!'
-    
+
     !end if
     mumps_par%COMM = MPI_COMM_WORLD%mpi_val
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call quiet_mumps(mumps_par)
-    
-    
+
+
     !LOAD OUR PROBLEM
     !if ( myid==0 ) then
     mumps_par%N=lPhi
@@ -1657,58 +1657,58 @@ contains
     mumps_par%A=M
     mumps_par%RHS=b
     deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-    
+
     if (perflag .and. it/=1) then       !used cached permutation
       allocate(mumps_par%PERM_IN(mumps_par%N))
       mumps_par%PERM_IN=mumps_perm
       mumps_par%ICNTL(7)=1
     end if
-    
+
     !mumps_par%ICNTL(14)=50
     !end if
-    
-    
+
+
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call check_mumps_status(mumps_par, 'elliptic2D_polarization_periodic')
-    
+
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
     !if ( myid==0 ) then
     if (debug) print *, 'Now organizing results...'
-    
+
     if (perflag .and. it==1) then
       allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
       mumps_perm=mumps_par%SYM_PERM
     end if
-    
+
     !IF WE HAVE DONE A PERIODIC SOLVE, THE LAST GRID POINT NEEDS TO BE IGNORED WHEN WE RESHAPE THE POTENTIAL ARRAY.
-    
+
     tmpresults=reshape(mumps_par%RHS,[lx2,lx3])
     elliptic2D_polarization_periodic=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that the solve size is the same as the grid
-    
+
     if (debug) print *, 'Now attempting deallocations...'
-    
+
     deallocate( mumps_par%IRN )
     deallocate( mumps_par%JCN )
     deallocate( mumps_par%A   )
     deallocate( mumps_par%RHS )
     !end if
-    
+
     if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
       deallocate(mumps_par%PERM_IN)
     end if
-    
+
     mumps_par%JOB = -2
-    
+
     call MUMPS_exec(mumps_par)
   end procedure elliptic2D_polarization_periodic
-  
-  
+
+
   ! FIXME:  x3 below really refers to whatever the second non-singleton dimension is...
   module procedure elliptic2D_cart
     !! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS.
@@ -1727,7 +1727,7 @@ contains
     !! The boundary conditions arrays provided to this procedure are assumed to be
     !! in units of Volts (dirichlet) or V/m (Neumann), meaning any currents need
     !! to be converted into potential normal derivatives prior to calling this.
-    
+
     real(wp), dimension(:,:), allocatable :: sig0h1
     real(wp), dimension(:,:), allocatable :: sigPh3
     integer :: ix1,ix3,lx1,lx3
@@ -1740,13 +1740,13 @@ contains
     integer :: ibnd,ldirichx1,lneux1,ldirichx3,lneux3
     logical :: flag2
     type(MUMPS_STRUC) :: mumps_par
-    
-    
+
+
     ! system size
     lx1=size(sig0,1)
     lx2=size(sig0,2)
     lx3=size(sig0,3)
-    
+
     if (lx2==1) then
       flag2=.false.
       l2nddim=lx3
@@ -1756,7 +1756,7 @@ contains
     else
       error stop ' elliptic2d_cart -> could not determine which dimensions of arrays to use!!!'
     end if
-    
+
     !number of neumann boundaries (x1 and x3) used in this solve
     lneux1=0
     do ibnd=1,2
@@ -1768,7 +1768,7 @@ contains
       if (flagsdirich(ibnd)==0) lneux3=lneux3+1
     end do
     ldirichx3=2-lneux3
-    
+
     ! count the number of matrix entries we need to fill (will depend on type of boundary conditions chosen
     lPhi=lx1*l2nddim
     !if (flagsdirich==0) then
@@ -1777,19 +1777,19 @@ contains
     !  !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
     !  lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
     !end if
-    
+
     ! count matrix entries as follows:  interior points (5 entries each) + # dirich x1 * size + # neumann x1 * size + # dirich x3 * size sans corners + # neumann * size sans corners
     lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*2*l2nddim + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
-    
-    
+
+
     ! allocate space for our problem
     allocate(ir(lent),ic(lent),M(lent),b(lPhi))
     if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,l2nddim
     if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
     if (debug) print*, 'Number of Neumann boundaries:  ', lneux1,lneux3
     if (debug) print*, 'Number of Dirichlet boundaries:  ', ldirichx1,ldirichx3
-    
-    
+
+
     ! conductivities need to be averaged to the cell interfaces for the FDE we use
     allocate(sig0h1(lx1,l2nddim),sigPh3(lx1,l2nddim))
     sig0h1(1,:)=0
@@ -1801,7 +1801,7 @@ contains
       sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1,1:l2nddim-1)+sigP(:,1,2:l2nddim))
       sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
     end if
-  
+
     ! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
     ! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
     ! math procedure with no specific knowledgeo of the ionospheric problem.
@@ -1811,7 +1811,7 @@ contains
     do ix3=1,l2nddim
       do ix1=1,lx1
         iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
-    
+
         if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS
           if (flagsdirich(1)/=0) then
             ir(ient)=iPhi
@@ -1906,13 +1906,13 @@ contains
           ic(ient)=iPhi-lx1
           M(ient)=sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
           ient=ient+1
-    
+
           !ix1-1,ix3 grid point
           ir(ient)=iPhi
           ic(ient)=iPhi-1
           M(ient)=sig0h1(ix1,ix3)/(dx1i(ix1)*dx1(ix1))
           ient=ient+1
-    
+
           !ix1,ix3 grid point
           ir(ient)=iPhi
           ic(ient)=iPhi
@@ -1921,13 +1921,13 @@ contains
           -sigPh3(ix1,ix3+1)/(dx3iall(ix3)*dx3all(ix3+1)) &
           -sigPh3(ix1,ix3)/(dx3iall(ix3)*dx3all(ix3))
           ient=ient+1
-    
+
           !ix1+1,ix3 grid point
           ir(ient)=iPhi
           ic(ient)=iPhi+1
           M(ient)=sig0h1(ix1+1,ix3)/(dx1i(ix1)*dx1(ix1+1))
           ient=ient+1
-    
+
           !ix1,ix3+1 grid point
           ir(ient)=iPhi
           ic(ient)=iPhi+lx1
@@ -1937,19 +1937,19 @@ contains
       end do
     end do
     if (debug) print *, 'Number of entries used:  ',ient-1
-    
-    
+
+
     !FIRE UP MUMPS
     mumps_par%COMM = MPI_COMM_WORLD%mpi_val
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call quiet_mumps(mumps_par)
-    
-    
+
+
     !LOAD OUR PROBLEM
     mumps_par%N=lPhi
     mumps_par%NZ=lent
@@ -1962,14 +1962,14 @@ contains
     mumps_par%A=M
     mumps_par%RHS=b
     deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
-    
+
     if (perflag .and. it/=1) then       !used cached permutation
       if (debug) print *, 'Using a previously stored permutation'
       allocate(mumps_par%PERM_IN(mumps_par%N))
       mumps_par%PERM_IN = mumps_perm
       mumps_par%ICNTL(7) = 1
     end if
-    
+
     !may solve some memory allocation issues, uncomment if MUMPS throws errors
     !about not having enough memory
     ! e.g. INFO(1) = -9
@@ -1980,52 +1980,52 @@ contains
     ! This will control iterative refinement
     !mumps_par%ICNTL(10)=-3    ! force 3 total iterations
     !mumps_par%CNTL(2)=-1.0    ! residual threshold
-    
-    
+
+
     !> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     call check_mumps_status(mumps_par, 'elliptic2D_cart')
-    
+
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors).  WOW - this halves execution
     ! time on some big 2048*2048 solves!!!
     !if ( myid==0 ) then
     if (debug) print *, 'Now organizing results...'
-    
+
     if (perflag .and. it==1) then
       if (debug) print *, 'Storing ordering for future time step use...'
       allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
       mumps_perm=mumps_par%SYM_PERM
     end if
-    
+
     if (flag2) then
       elliptic2D_cart=reshape(mumps_par%RHS,[lx1,l2nddim,1])
     else
       elliptic2D_cart=reshape(mumps_par%RHS,[lx1,1,l2nddim])
     end if
-   
+
     !print*, 'Iterative refinement parameters:  ',mumps_par%ICNTL(10), mumps_par%CNTL(2), mumps_par%INFOG(15)
-   
+
 
     if (debug) print *, 'Now attempting deallocations...'
-    
+
     deallocate( mumps_par%IRN )
     deallocate( mumps_par%JCN )
     deallocate( mumps_par%A   )
     deallocate( mumps_par%RHS )
-    
+
     if (perflag .and. it/=1) then       ! must deallocate cached permutation (it's a pointer!)
       deallocate(mumps_par%PERM_IN)
     end if
-    
+
     mumps_par%JOB = -2
-    
+
     call MUMPS_exec(mumps_par)
-    
+
     deallocate(sig0h1,sigPh3)
   end procedure elliptic2D_cart
 end submodule elliptic2d

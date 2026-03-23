@@ -89,7 +89,7 @@ contains
     integer :: xtype
 
 !    if (maxval(abs(x2))<1000) then
-    if (maxval(abs(x2))<1000 .and. maxval(abs(x3))<1000) then           
+    if (maxval(abs(x2))<1000 .and. maxval(abs(x3))<1000) then
       !print '(a)', 'Detected dipole grid...'
       xtype=2
     else
@@ -450,7 +450,7 @@ contains
   function isglobalx1min(x)
     class(curvmesh), intent(in) :: x
     logical :: isglobalx1min
-    
+
     if ( abs(x%x1(1)-x1lims(1)) < abs(x%x1(2)-x%x1(1)) ) then     ! we are closer to global edge than next nearest cell
       isglobalx1min=.true.
     else
@@ -460,12 +460,12 @@ contains
   function isglobalx1max(x)
     class(curvmesh), intent(in) :: x
     logical :: isglobalx1max
-    
+
     if ( abs(x%x1(lx1)-x1lims(2)) < abs(x%x1(lx1)-x%x1(lx1-1)) ) then
       isglobalx1max=.true.
     else
       isglobalx1max=.false.
-    end if  
+    end if
   end function isglobalx1max
   function isglobalx2min(x)
     class(curvmesh), intent(in) :: x

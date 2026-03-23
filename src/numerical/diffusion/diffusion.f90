@@ -38,11 +38,11 @@ contains
     real(wp), intent(in) :: Teinf
     real(wp) :: Tn0
     integer :: lx1,lx2,lx3,ix2,ix3
-    
+
     lx1=size(ns,1)-4
     lx2=size(ns,2)-4
     lx3=size(ns,3)-4
-    
+
     !COEFFICIENTS OF PARABOLIC EQUAITON
     A(:,:,:)=0._wp
      C(:,:,:)=(gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
@@ -53,7 +53,7 @@ contains
 
     ! Determine what type of boundary conditions we are trying to use
     call set_BCtype(Teinf,gridflag)
-    
+
     !SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
     ! if Neumann need to scale heat flux by thermal conductivity and metric factor...
     if (gridflag==0) then    !closed dipole grid, both ends are thermalized against neutrals
@@ -76,7 +76,7 @@ contains
             if (isp==7) then
               T(0,ix2,ix3)=-Teinf*x%h1(1,ix2,ix3)*x%dx1(2)/lambda(1,ix2,ix3)
             else
-              T(0,ix2,ix3)=0._wp         
+              T(0,ix2,ix3)=0._wp
             end if
           end if
         end do
@@ -89,7 +89,7 @@ contains
           if (BCtype(2)==0) then      ! Dirichlet on 'top'
             T(lx1+1,ix2,ix3)=Teinf
           else                        ! Neumann
-            if (isp==7) then 
+            if (isp==7) then
               T(lx1+1,ix2,ix3)=-Teinf*x%h1(lx1,ix2,ix3)*x%dx1(lx1)/lambda(lx1,ix2,ix3) !top for neumman
             else
               T(lx1+1,ix2,ix3)=0._wp
@@ -112,7 +112,7 @@ contains
         BCtype=[0,0]
       end if
     else if (gridflag==2) then
-      if (Teinf<1.0) then           
+      if (Teinf<1.0) then
         BCtype=[0,1]
       else
         BCtype=[0,0]
@@ -121,27 +121,27 @@ contains
       BCtype=[0,0]
     end if
   end subroutine set_BCtype
-  
-  
+
+
   function backEuler3D_curv(f,A,B,C,D,E,dt,x)
     !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
     !! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
     !! A CONVENIENT MEMORY SPACE FOR BOUNDARY CONDITIONS.
-    
+
     real(wp), dimension(:,:,:), intent(in) :: A,B,C,D,E   !trimmed to grid size
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !expected to include ghosts
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
-    
+
     integer :: ix2,ix3,lx1,lx2,lx3
     real(wp),dimension(size(f,1)-4) :: fx1slice
-    
+
     real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: backEuler3D_curv
-    
+
     lx1=size(f,1)-4
     lx2=size(f,2)-4
     lx3=size(f,3)-4
-    
+
     do ix3=1,lx3
       do ix2=1,lx2
         fx1slice=f(1:lx1,ix2,ix3)
@@ -153,8 +153,8 @@ contains
       end do
     end do
   end function backEuler3D_curv
-  
-  
+
+
   function TRBDF23D_curv(f,A,B,C,D,E,dt,x)
     !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
     !! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
@@ -163,25 +163,25 @@ contains
     !! Note that this function also plays the role of abstracting
     !! away the grid structure so that the individual 1D lines are
     !! solved using arrays for differences instead of structure members
-    
+
     !> trimmed to grid size
     real(wp), dimension(:,:,:), intent(in) :: A,B,C,D,E
-    
+
     !> expected to include ghosts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: f
-    
+
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
-    
+
     integer :: ix2,ix3,lx1,lx2,lx3
     real(wp),dimension(size(f,1)-4) :: fx1slice
-    
+
     real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: TRBDF23D_curv
-    
+
     lx1=size(f,1)-4
     lx2=size(f,2)-4
     lx3=size(f,3)-4
-    
+
     do ix3=1,lx3
       do ix2=1,lx2
         fx1slice=f(1:lx1,ix2,ix3)

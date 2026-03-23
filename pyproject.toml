@@ -13,6 +13,4 @@ msis
 files = ["."]
 
 ignore_missing_imports = true
-strict_optional = false
-allow_redefinition = true
 exclude = ["msis/", "h5fortran/", "hwm14/", "ffilesystem/", "glow/"]

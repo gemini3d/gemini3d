@@ -146,7 +146,7 @@ if (mpi_cfg%myid==0) then
   else
     print*, 'Two-way coupling disabled.'
   end if
-  
+
   if (cfg%flaglagrangian) then
     print*, 'Lagrangian grid enabled.'
   else

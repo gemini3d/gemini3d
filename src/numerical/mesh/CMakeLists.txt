@@ -3,7 +3,7 @@ set_property(DIRECTORY PROPERTY  LABELS mesh)
 add_library(meshobj OBJECT meshobj.f90)
 target_link_libraries(meshobj PRIVATE const geomagnetic spherical h5fortran::h5fortran)
 
-add_library(meshobj_dipole OBJECT meshobj_dipole.f90 
+add_library(meshobj_dipole OBJECT meshobj_dipole.f90
 $<TARGET_OBJECTS:meshobj>
 )
 target_link_libraries(meshobj_dipole PRIVATE const newton spherical geomagnetic dipole)
