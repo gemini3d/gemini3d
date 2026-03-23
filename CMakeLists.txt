@@ -103,9 +103,9 @@ FetchContent_MakeAvailable(mumps)
 
 # --- climate models
 if(glow)
-  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
-  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
-  add_subdirectory(glow)
+  string(JSON glow_url GET "${json}" "glow")
+  FetchContent_Declare(glow URL ${glow_url})
+  FetchContent_MakeAvailable(glow)
 endif()
 
 if(hwm14)

@@ -2,7 +2,3 @@
 	path = ffilesystem
 	url = https://github.com/ECLAIRWaveS/fortran-filesystem
 	shallow = true
-[submodule "glow"]
-	path = glow
-	url = https://github.com/gemini3d/glow
-	shallow = true
