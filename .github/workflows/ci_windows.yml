@@ -55,7 +55,7 @@ jobs:
     - uses: actions/checkout@v6
 
     - name: CMake Configure
-      run: cmake --preset default -B /tmp/build
+      run: cmake --preset default -B /tmp/build -G Ninja
 
     - run: cmake --build /tmp/build
 
