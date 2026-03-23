@@ -71,6 +71,8 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
+file(READ cmake/libraries.json json)
+
 git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
 report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
 add_subdirectory(h5fortran)
@@ -93,9 +95,10 @@ set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
 set(BUILD_COMPLEX off)
 set(BUILD_COMPLEX16 off)
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
-add_subdirectory(mumps)
+
+string(JSON mumps_url GET "${json}" "mumps")
+FetchContent_Declare(mumps URL ${mumps_url})
+FetchContent_MakeAvailable(mumps)
 
 # --- climate models
 if(glow)
