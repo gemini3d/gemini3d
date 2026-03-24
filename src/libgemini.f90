@@ -1417,19 +1417,19 @@ contains
     if (cfg%flagtwoway) then
       call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
 
-      !call source_neut(intvars%atmos,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
-      !       intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
-      !       intvars%Prprecip,intvars%momentneut,intvars%energyneut)
+      call source_neut(intvars%atmos,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
+             intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
+             intvars%Prprecip,intvars%momentneut,intvars%energyneut)
 
       ! To leading order we need to only compute deviation of these source terms from the background state
-      dvn1=intvars%atmos%vn1-intvars%atmos%vn1BG
-      dvn2=intvars%atmos%vn2-intvars%atmos%vn2BG
-      dvn3=intvars%atmos%vn3-intvars%atmos%vn3BG
-      dTn=intvars%atmos%Tn-intvars%atmos%TnBG
+      !dvn1=intvars%atmos%vn1-intvars%atmos%vn1BG
+      !dvn2=intvars%atmos%vn2-intvars%atmos%vn2BG
+      !dvn3=intvars%atmos%vn3-intvars%atmos%vn3BG
+      !dTn=intvars%atmos%Tn-intvars%atmos%TnBG
 
-      call source_neut(intvars%atmos,intvars%atmos%nn,dvn1,dvn2,dvn3,&
-             dTn,ns,vs1,vs2,vs3,Ts,x,&
-             intvars%Prprecip,intvars%momentneut,intvars%energyneut)
+      !call source_neut(intvars%atmos,intvars%atmos%nn,dvn1,dvn2,dvn3,&
+      !       dTn,ns,vs1,vs2,vs3,Ts,x,&
+      !       intvars%Prprecip,intvars%momentneut,intvars%energyneut)
     end if
   end subroutine source_neut_in
 

@@ -181,6 +181,7 @@ end subroutine source_loss_energy
 
 
 !> Energy and momnetum inputs into the neutral atmopshere from the plasma
+!  FIXME: superfluous array inputs for neutrals (also stored in atmos)
 subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
   type(neutral_info), intent(inout) :: atmos
   class(curvmesh), intent(in) :: x
@@ -201,7 +202,9 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: altkm
 
   !! Momentum source (and rotation into geographic)
-  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn, &
+    atmos%nnBG,atmos%vn1BG,atmos%vn2BG,atmos%vn3BG,atmos%TnBG, &
+    ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
   ! Need to create temp space here for distinct arguments
   allocate(momalt(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2))
   allocate(momlon, momlat, mold=momalt)
@@ -213,7 +216,9 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   deallocate(momalt, momlon, momlat)
 
   !! Energy sources from elastic collisions
-  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn, &
+    atmos%nnBG,atmos%vn1BG,atmos%vn2BG,atmos%vn3BG,atmos%TnBG, &
+    ns,vs1,vs2,vs3,Ts,energyneut_source)
 
 
   !! Energy sources from inelastic collisions
