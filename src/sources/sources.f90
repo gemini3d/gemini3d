@@ -1035,13 +1035,13 @@ contains
 
         momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * ((vn1(1:lx1,1:lx2,1:lx3)-vn1BG(1:lx1,1:lx2,1:lx3)))
+          nuneut * (-(vn1(1:lx1,1:lx2,1:lx3)-vn1BG(1:lx1,1:lx2,1:lx3)))
         momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * ((vn2(1:lx1,1:lx2,1:lx3)-vn2BG(1:lx1,1:lx2,1:lx3)))
+          nuneut * (-(vn2(1:lx1,1:lx2,1:lx3)-vn2BG(1:lx1,1:lx2,1:lx3)))
         momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * ((vn3(1:lx1,1:lx2,1:lx3)-vn3BG(1:lx1,1:lx2,1:lx3)))
+          nuneut * (-(vn3(1:lx1,1:lx2,1:lx3)-vn3BG(1:lx1,1:lx2,1:lx3)))
       end do
     end do
   end subroutine srcsMomentum_neut
@@ -1101,7 +1101,7 @@ contains
         fact=2*nuneut/(ms(isp)+mn(isp2))
         energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3)+ &
           nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman(isp2)-1)*fact* &
-          ( (Tn(1:lx1,1:lx2,1:lx3)-TnBG(1:lx1,1:lx2,1:lx3)))
+          ( -(Tn(1:lx1,1:lx2,1:lx3)-TnBG(1:lx1,1:lx2,1:lx3)))
 
         !FRICTION
         fact=fact*mn(isp2)/3
