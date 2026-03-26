@@ -17,10 +17,9 @@ if(CMAKE_GENERATOR MATCHES "^Visual Studio")
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26.0 AND CMAKE_VERSION VERSION_LESS 3.28.0)
-  message(FATAL_ERROR "CMake 3.26.* and 3.27.* have known bugs causing build failures due to incorrectly graphing Fortran module dependencies, regardless of operating system or compiler.
+  message(WARNING "CMake 3.26.* and 3.27.* have known bugs causing build failures due to incorrectly graphing Fortran module dependencies, regardless of operating system or compiler.
 Suggest CMake 3.28 or newer https://github.com/Kitware/CMake/releases
-If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.
-  ")
+If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.")
 endif()
 
 # --- main Gemini3D build
