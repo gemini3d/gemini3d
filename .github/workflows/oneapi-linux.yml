@@ -8,8 +8,7 @@ env:
   CMAKE_BUILD_TYPE: Release
   CMAKE_GENERATOR: Ninja
   # oneAPI Debug triggers asan errors on Linux in general on any project
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
+
 
 on:
   push:

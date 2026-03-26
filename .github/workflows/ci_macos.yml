@@ -2,8 +2,6 @@ name: ci_macos
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
   CMAKE_GENERATOR: Ninja
 
 on:
