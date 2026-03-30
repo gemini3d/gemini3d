@@ -22,7 +22,7 @@
 module gemini3d_C
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: iso_c_binding, only : c_int, c_bool, c_loc, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
+use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
 
 use phys_consts, only: lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3, detect_gridtype
@@ -98,7 +98,7 @@ contains
     type(gemini_cfg), pointer :: cfg
 
     call c_f_pointer(cfgC,cfg)
-    call cli_in(p,lid2in,lid3in,cfg)
+    call cli_in(p, lid2in,lid3in,cfg)
   end subroutine cli_in_C
 
 
@@ -108,8 +108,8 @@ contains
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
-    call c_f_pointer(cfgC,cfg)
-    call read_config_in(p,cfg)
+    call c_f_pointer(cfgC, cfg)
+    call read_config_in(p, cfg)
   end subroutine read_config_in_C
 
 
@@ -157,19 +157,19 @@ contains
   !> return some data from cfg that is needed in the main program
   subroutine get_config_vars_C(cfgC,flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name='get_config_vars_C')
     type(c_ptr), intent(in) :: cfgC
-    logical(C_BOOL), intent(inout) :: flagneuBG
+    integer(C_INT), intent(inout) :: flagneuBG
     integer(C_INT), intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
 
     type(gemini_cfg), pointer :: cfg
     logical :: neuBG
 
-    neuBG = flagneuBG
+    neuBG = flagneuBG /= 0
 
     call c_f_pointer(cfgC,cfg)
     call get_config_vars(cfg, neuBG, flagdneu,dtneuBG,dtneu)
 
-    flagneuBG = neuBG
+    flagneuBG = merge(1, 0, neuBG)
   end subroutine get_config_vars_C
 
 

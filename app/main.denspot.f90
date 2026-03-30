@@ -62,13 +62,13 @@ integer :: myid
 
 !> initialize mpi
 call mpi_init()
-p%fortran_cli = .true.
-p%fortran_nml = .true.
+p%fortran_cli = 1
+p%fortran_nml = 1
 p%out_dir(1) = c_null_char
 lid2in = -1
 lid3in = -1
 
-!! out_dir, lid2in, lid3in, are ignored when fortran_cli=.true.
+!! out_dir, lid2in, lid3in, are ignored when fortran_cli=1
 call gemini_main(p, lid2in, lid3in)
 
 !> shut down mpi

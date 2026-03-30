@@ -13,7 +13,7 @@ contains
     integer :: i
 
     !> command line interface
-    if(p%fortran_cli) then
+    if(p%fortran_cli == 1) then
       call cli(cfg, lid2in, lid3in, debug)
     else
       buf = "" !< ensure buf has no garbage characters
@@ -25,7 +25,7 @@ contains
       cfg%outdir = expanduser(buf)
 
       cfg%dryrun = p%dryrun
-      debug = p%debug
+      debug = p%debug /= 0
     endif
 
     !> read the config input file

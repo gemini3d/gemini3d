@@ -18,7 +18,7 @@
 !!   For the most part this is a bunch of "getter" routines.
 module gemini3d
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, C_INT, C_FLOAT, C_LOC, c_null_ptr, c_ptr, c_f_pointer
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp,pi
@@ -161,11 +161,11 @@ end type gemini_work
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
   !! this MUST match gemini3d.h and libgemini.f90 exactly including order
-  logical(c_bool) :: fortran_nml, fortran_cli, debug, dryrun
+  integer(C_INT) :: fortran_nml, fortran_cli, debug, dryrun
   character(kind=c_char) :: out_dir(1000)
   !! .ini [base]
-  integer(c_int) :: ymd(3)
-  real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
+  integer(C_INT) :: ymd(3)
+  real(C_FLOAT) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
   !! .ini
 end type c_params
 
@@ -188,7 +188,7 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-    if(p%fortran_cli) then
+    if(p%fortran_cli /= 0) then
       call cli(cfg, lid2in, lid3in, debug)
     else
       buf = "" !< ensure buf has no garbage characters
@@ -199,8 +199,8 @@ contains
       enddo
       cfg%outdir = expanduser(buf)
 
-      cfg%dryrun = p%dryrun
-      debug = p%debug
+      cfg%dryrun = p%dryrun /= 0
+      debug = p%debug /= 0
     endif
   end subroutine cli_in
 
@@ -211,7 +211,7 @@ contains
     type(gemini_cfg), intent(inout) :: cfg
 
     !> read the config input file, if not passed .ini info from C++ frontend
-    if(p%fortran_nml) then
+    if(p%fortran_nml /= 0) then
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
       call check_input_files(cfg)

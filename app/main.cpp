@@ -58,24 +58,24 @@ int main(int argc, char **argv) {
 
   // we don't have a C++ parser for Fortran namelist files,
   // so read the namelist file directly in Fortran as usual.
-  s.fortran_nml = true;
+  s.fortran_nml = 1;
 
   // Prepare Gemini3D struct
   std::strcpy(s.out_dir, out_dir.data());
 
-  s.fortran_cli = false;
-  s.debug = false;
-  s.dryrun = false;
+  s.fortran_cli = 0;
+  s.debug = 0;
+  s.dryrun = 0;
   int lid2in = -1, lid3in = -1;
   MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
   for (int i = 2; i < argc; i++) {
     std::string_view arg(argv[i]);
     if (arg == "-d" || arg == "-debug")
-      s.debug = true;
+      s.debug = 1;
 
     if (arg == "-dryrun")
-      s.dryrun = true;
+      s.dryrun = 1;
 
     if (arg == "-h" || arg == "-help") {
       help_gemini_bin();
