@@ -16,3 +16,9 @@ integer(C_INT) :: flag_c
 flag_c = merge(1, 0, flag_fortran)
 ```
 * examples of these interfaces are in src/libgemini_c.f90 `get_config_vars_C()` subroutine, where we convert the `flagneuBG` from `integer(C_INT)` to `logical` for use in Fortran, and then convert it back to `integer(C_INT)` before returning to C.
+
+
+For reference, there were only a couple places that used `logical(C_BOOL)` in the original code.
+
+* src/libgemini.f90:`type(c_params)` has members of type `integer(C_INT)` that represent boolean flags: `fortran_nml, fortran_cli, debug, dryrun`.
+* src/libgemini_c.f90:`get_config_vars_C()` has a parameter `integer(C_INT) :: flagneuBG` used to receive the value from C.
