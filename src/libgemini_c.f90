@@ -348,14 +348,20 @@ contains
                       bind(C, name='get_cfg_timevars_C')
     type(C_PTR), intent(in) :: cfgC
     real(wp), intent(inout) :: tmilestone
-    logical, intent(inout) :: flagneuBG
+    integer(C_INT), intent(inout) :: flagneuBG
     real(wp), intent(inout) :: dtneuBG
-    integer, intent(inout) :: flagdneu
-    integer, intent(inout) :: flagoutput
+    integer(C_INT), intent(inout) :: flagdneu
+    integer(C_INT), intent(inout) :: flagoutput
     type(gemini_cfg), pointer :: cfg
 
+    logical :: flagneuBG_f
+
+    flagneuBG_f = flagneuBG /= 0
+
     call c_f_pointer(cfgC,cfg)
-    call get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu,flagoutput)
+    call get_cfg_timevars(cfg,tmilestone, flagneuBG_f, dtneuBG,flagdneu,flagoutput)
+
+    flagneuBG = merge(1, 0, flagneuBG_f)
   end subroutine get_cfg_timevars_C
 
 
@@ -1066,7 +1072,7 @@ contains
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec
-    !logical, intent(in) :: first
+    !integer(C_INT), intent(in) :: first
     !real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
@@ -1119,7 +1125,7 @@ contains
     logical :: flagrootonly=.true.
 
     call c_f_pointer(intvarsC,intvars)
-    flagrootonly=flagrootonlyC/=0
+    flagrootonly = flagrootonlyC /= 0
     call set_electrodynamics_commtype(flagrootonly, intvars)
   end subroutine set_electrodynamics_commtype_C
 
