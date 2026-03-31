@@ -27,6 +27,10 @@ jobs:
   wsl:
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      CMAKE: /tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake
+      CTEST: /tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/ctest
+
     strategy:
       matrix:
         cmake_version: [3.30.5]
@@ -61,18 +65,13 @@ jobs:
         curl -o /tmp/cmake.tar.gz -L "https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake_version }}/cmake-${{ matrix.cmake_version }}-linux-x86_64.tar.gz"
         tar -xf /tmp/cmake.tar.gz -C /tmp --exclude=doc/ --exclude=man/
 
-    - name: CMake path
-      run: |
-        echo "CMAKE=/tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake" >> $GITHUB_ENV
-        echo "CTEST=/tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/ctest" >> $GITHUB_ENV
-
     - name: CMake Configure
-      run: $CMAKE --preset default -B /tmp/build -G Ninja
+      run: ${{ env.CMAKE }} --preset default -B /tmp/build -G Ninja
 
-    - run: $CMAKE --build /tmp/build
+    - run: ${{ env.CMAKE }} --build /tmp/build
 
     - name: CTest Unit
-      run: $CTEST --test-dir /tmp/build --preset release-unit
+      run: ${{ env.CTEST }} --test-dir /tmp/build --preset release-unit
 
     - name: Ctest simple simulation
-      run: $CTEST --test-dir /tmp/build --preset release-sim
+      run: ${{ env.CTEST }} --test-dir /tmp/build --preset release-sim
