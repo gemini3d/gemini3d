@@ -15,7 +15,6 @@ runs:
     if: failure()
     uses: actions/upload-artifact@v7
     with:
-      archive: false
       name: ${{ env.CC }}-${{ env.FC }}-${{ runner.os }}-CMakeConfigureLog.yaml
       path: build/CMakeFiles/CMakeConfigureLog.yaml
 
