@@ -5,6 +5,7 @@
 {
   "name": "default",
   "binaryDir": "build",
+  "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_COMPILE_WARNING_AS_ERROR": false,
@@ -35,8 +36,7 @@
 "buildPresets": [
   {
     "name": "default",
-    "configurePreset": "default",
-    "jobs": 0
+    "configurePreset": "default"
   },
   {
     "name": "release", "inherits": "default",
@@ -62,8 +62,7 @@
   "execution": {
     "noTestsAction": "error",
     "scheduleRandom": true,
-    "stopOnFailure": false,
-    "jobs": 0
+    "stopOnFailure": false
   }
 },
 {
