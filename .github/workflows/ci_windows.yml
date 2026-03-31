@@ -2,7 +2,6 @@ name: ci_windows
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -14,6 +13,7 @@ on:
       - ".github/workflows/ci.yml"
       - "docs/**"
       - "scripts/**"
+      - "**.md"
 
   workflow_dispatch:
 
@@ -27,6 +27,10 @@ jobs:
   wsl:
     runs-on: windows-latest
     timeout-minutes: 30
+    strategy:
+      matrix:
+        cmake_version: [3.30.5]
+# need cmake >= 3.30 to set binary dir with ctest --test-dir <> --preset <>
 
     defaults:
       run:
@@ -38,7 +42,7 @@ jobs:
       with:
         distribution: Ubuntu-24.04
         additional-packages:
-          cmake ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
+          ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
         use-cache: true
         wsl-shell-user: tester
 
@@ -52,13 +56,23 @@ jobs:
 # need to do this here to avoid Git dubious ownership issues with the WSL filesystem
     - uses: actions/checkout@v6
 
-    - name: CMake Configure
-      run: cmake --preset default -B /tmp/build -G Ninja
+    - name: install CMake
+      run: |
+        curl -o /tmp/cmake.tar.gz -L "https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake_version }}/cmake-${{ matrix.cmake_version }}-linux-x86_64.tar.gz"
+        tar -xf /tmp/cmake.tar.gz -C /tmp --exclude=doc/ --exclude=man/
 
-    - run: cmake --build /tmp/build
+    - name: CMake path
+      run: |
+        echo "CMAKE=/tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake" >> $GITHUB_ENV
+        echo "CTEST=/tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/ctest" >> $GITHUB_ENV
+
+    - name: CMake Configure
+      run: $CMAKE --preset default -B /tmp/build -G Ninja
+
+    - run: $CMAKE --build /tmp/build
 
     - name: CTest Unit
-      run: ctest --test-dir /tmp/build --preset release-unit
+      run: $CTEST --test-dir /tmp/build --preset release-unit
 
     - name: Ctest simple simulation
-      run: ctest --test-dir /tmp/build --preset release-sim
+      run: $CTEST --test-dir /tmp/build --preset release-sim
