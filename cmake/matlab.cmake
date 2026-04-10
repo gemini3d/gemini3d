@@ -1,7 +1,7 @@
 find_package(Matlab COMPONENTS MAIN_PROGRAM REQUIRED)
 
 find_path(matgemini_SOURCE_DIR
-NAMES setup_gemini3d.m
+NAMES buildfile.m
 PATHS ${PROJECT_SOURCE_DIR}/../mat_gemini/
 HINTS ${MATGEMINI_ROOT} ENV MATGEMINI ENV MATGEMINI_ROOT
 REQUIRED
@@ -13,7 +13,7 @@ if(MATGEMINI_FOUND)
   return()
 endif()
 
-execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${matgemini_SOURCE_DIR}/setup.m'), stdlib.fileio.expanduser('~');"
+execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -sd ${matgemini_SOURCE_DIR} -batch "buildtool('setup'), assert(strlength(stdlib.expanduser('~')) > 0);"
 RESULT_VARIABLE ret
 ERROR_VARIABLE err
 )
