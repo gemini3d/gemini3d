@@ -5,9 +5,6 @@ env:
   CXX: icpx
   FC: ifx
 # https://github.com/oneapi-src/oneapi-ci/blob/master/.github/workflows/build_all.yml
-  CMAKE_BUILD_TYPE: Release
-  # oneAPI Debug triggers asan errors on Linux in general on any project
-
 
 on:
   push:
@@ -76,7 +73,6 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v7
       with:
-        archive: false
         name: oneapi-${{ runner.os }}-CMakeConfigureLog.yaml
         path: build/CMakeFiles/CMakeConfigureLog.yaml
 
