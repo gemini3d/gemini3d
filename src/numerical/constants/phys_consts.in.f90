@@ -1,6 +1,6 @@
 module phys_consts
 
-use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
+use, intrinsic:: iso_fortran_env, only: wp=>real@gemini3d_realbits@
 
 implicit none (type, external)
 public

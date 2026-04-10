@@ -53,8 +53,8 @@ $<INSTALL_INTERFACE:include>
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
 ${MPI_Fortran_LIBRARIES}
-$<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 msis::msis
 ffilesystem::filesystem
 )
@@ -136,8 +136,8 @@ gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
-$<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
@@ -158,8 +158,8 @@ gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
-$<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
@@ -180,8 +180,8 @@ gemini3d_mpi
 gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
-$<$<BOOL:${glow}>:glow::glow>
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
@@ -190,7 +190,7 @@ else()
   set_target_properties(gemini.altenergy.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
 
-if(hwm14)
+if(gemini3d_hwm14)
   # HWM14 data files
   # due to legacy coding style, HWM14 files need to be in binary directory
   set(hwm14_data_dir "${hwm14_SOURCE_DIR}/data/")
@@ -214,7 +214,7 @@ if(hwm14)
   # somewhere other than HWM14 directory tree
   install(FILES ${hwm14_RESOURCE_FILES} TYPE BIN)
 
-endif(hwm14)
+endif()
 
 # same link logic applied to test/test_mumps
 
@@ -267,7 +267,7 @@ gemini3d
 h5fortran::h5fortran
 MUMPS::MUMPS
 MPI::MPI_CXX
-$<$<BOOL:${glow}>:glow::glow>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
 ffilesystem::filesystem
 )
 

@@ -1,8 +1,8 @@
 set_property(DIRECTORY PROPERTY LABELS standalone_libraries)
 
-if(matlab)
+if(gemini3d_matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
-endif(matlab)
+endif()
 
 add_compile_options(${gemini3d_flags})
 # scope is this directory on down

@@ -83,11 +83,11 @@ endfunction(fortran_compare)
 
 function(compare_gemini_output name outdir refdir)
 
-if(matlab)
+if(gemini3d_matlab)
   matlab_compare(${outdir} ${refdir} ${name})
 endif()
 
-if(python)
+if(gemini3d_python)
   python_compare(${outdir} ${refdir} ${name})
 endif()
 

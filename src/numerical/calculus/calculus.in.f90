@@ -3,7 +3,7 @@ module calculus
 !NEED TO MORE APPROPRIATELY NAME THE "ALT" DERIVATIVES...
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
-use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
+use, intrinsic:: iso_fortran_env, only: wp=>real@gemini3d_realbits@
 use meshobj, only : curvmesh
 !! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 

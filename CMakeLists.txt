@@ -102,13 +102,13 @@ FetchContent_Declare(mumps URL ${mumps_url})
 FetchContent_MakeAvailable(mumps)
 
 # --- climate models
-if(glow)
+if(gemini3d_glow)
   string(JSON glow_url GET "${json}" "glow")
   FetchContent_Declare(glow URL ${glow_url})
   FetchContent_MakeAvailable(glow)
 endif()
 
-if(hwm14)
+if(gemini3d_hwm14)
   string(JSON hwm14_url GET "${json}" "hwm14")
   FetchContent_Declare(hwm14 URL ${hwm14_url})
   FetchContent_MakeAvailable(hwm14)

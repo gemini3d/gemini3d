@@ -11,7 +11,7 @@ neutraldata
 
 
 add_library(neutral_background OBJECT neutral_background_mod.f90 atmos.f90 wind.f90
-$<$<NOT:$<BOOL:${hwm14}>>:${PROJECT_SOURCE_DIR}/src/vendor/hwm14_dummy.f90>
+$<$<NOT:$<BOOL:${gemini3d_hwm14}>>:${PROJECT_SOURCE_DIR}/src/vendor/hwm14_dummy.f90>
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(neutral_background PRIVATE gemini3d_config const reader meshobj interp mpimod grid
@@ -22,7 +22,7 @@ neutral
 h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )
 
@@ -38,6 +38,6 @@ neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 ffilesystem::filesystem
 )

@@ -13,24 +13,22 @@ if(host_ramGB LESS 2)
 endif()
 
 
-if(realbits EQUAL 32)
+if(gemini3d_realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
-  set(arith s)
+  set(gemini3d_arith s)
 else()
   message(VERBOSE " 64-bit real precision")
-  set(realbits 64)
-  set(arith d)
+  set(gemini3d_realbits 64)
+  set(gemini3d_arith d)
 endif()
 
-option(dev "developer mode: extra compile warnings")
+option(gemini3d_glow "use NCAR GLOW airglow / aurora model" on)
 
-option(glow "use NCAR GLOW airglow / aurora model" on)
+option(gemini3d_hwm14 "use HWM14 neutral winds model")
 
-option(hwm14 "use HWM14 neutral winds model")
-
-option(python "Python-based self-checks")
+option(gemini3d_python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
-option(matlab "Matlab-based self-checks")
+option(gemini3d_matlab "Matlab-based self-checks")
 
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)

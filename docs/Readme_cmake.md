@@ -64,7 +64,7 @@ Auroral emissions use GLOW.
 Disable GLOW by:
 
 ```sh
-cmake -B build -Dglow=off
+cmake -B build -Dgemini3d_glow=off
 ```
 
 ### MSIS 2.x
@@ -85,5 +85,5 @@ Omitting this namelist variable or specifying `msis_version=0` uses MSISE00.
 Gemini3D may use the HWM14 horizontal wind model by:
 
 ```sh
-cmake -B build -Dhwm14=on
+cmake -B build -Dgemini3d_hwm14=on
 ```

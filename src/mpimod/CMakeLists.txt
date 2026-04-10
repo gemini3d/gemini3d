@@ -1,6 +1,6 @@
 add_library(autogrid OBJECT autogrid.f90)
 
-if(realbits EQUAL 32)
+if(gemini3d_realbits EQUAL 32)
   set(mpi_realprec mpi_real)
 else()
   set(mpi_realprec mpi_double_precision)
