@@ -12,6 +12,13 @@ h5fortran::h5fortran MUMPS::MUMPS MPI::MPI_Fortran
 target_include_directories(gemini_potential2d PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
 # this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
+add_executable(gemini_potential2d_auroral test_potential2d_auroral.f90 $<TARGET_OBJECTS:PDEelliptic>)
+set_target_properties(gemini_potential2d_auroral PROPERTIES LABELS "unit")
+target_link_libraries(gemini_potential2d_auroral PRIVATE const
+h5fortran::h5fortran MUMPS::MUMPS MPI::MPI_Fortran
+)
+target_include_directories(gemini_potential2d_auroral PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
+
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
 # nor did adding them in mumps.cmake
