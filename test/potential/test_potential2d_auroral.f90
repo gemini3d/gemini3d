@@ -178,15 +178,16 @@ contains
       do ix2=1,lx2
         !! This is Pedersen conductance
         A(ix2,ix3)=0.1 + 10.0*(  exp(-(x2(ix2)-1.5*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) )
+        !A(ix2,ix3)=0.1    ! for sanity checking...
         Ap(ix2,ix3)=A(ix2,ix3)
         
         !! RHS
-        srcterm(ix2,ix3)=-1e-6*( exp(-(x2(ix2)-1.5*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) - &
+        srcterm(ix2,ix3)=1e-6*( exp(-(x2(ix2)-1.5*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) - &
                 exp(-(x2(ix2)+1.5*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) )
       end do
     end do
     SigH(1:lx2,1:lx3)=-3.0*A(1:lx2,1:lx3)
-    call grad2D(x2,x3,SigH,C,B)
+    call grad2D(x2,x3,SigH,B,C)
 
     Vminx2(1:lx3)=0.0; Vmaxx2(1:lx2)=0.0; Vminx3(1:lx2)=0.0; Vmaxx3(1:lx2)=0.0
     flagsdirich=[1,1,1,1]
@@ -211,7 +212,7 @@ contains
     do ix2=1,lx2
       fx3(ix2,1) = (f(ix2,2)-f(ix2,1))/(x3(2)-x3(1))
       fx3(ix2,2:lx3-1) = (f(ix2,3:lx3)-f(ix2,1:lx3-2))/(x3(3:lx3)-x3(1:lx3-2))
-      fx2(lx2,lx3) = (f(ix2,lx3)-f(ix2,lx3-1))/(x3(lx3)-x3(lx3-1))     
+      fx3(lx2,lx3) = (f(ix2,lx3)-f(ix2,lx3-1))/(x3(lx3)-x3(lx3-1))     
     end do
   end subroutine grad2D
 end program test_potential2d_auroral

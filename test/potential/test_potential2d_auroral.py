@@ -12,7 +12,7 @@ Created on Mon Apr 20 18:13:14 2026
 import sys
 import typing
 
-#import numpy as np
+import numpy as np
 import h5py
 
 from matplotlib.pyplot import figure,pcolormesh,xlabel,ylabel,title,colorbar
@@ -52,26 +52,64 @@ ylabel("distance [m]")
 xlabel("distance [m]")
 title("2D potential (numerical)")
 
-figure()
-pcolormesh(x2,x3,A)
-colorbar()
+# figure()
+# pcolormesh(x2,x3,A)
+# colorbar()
+
+# figure()
+# pcolormesh(x2,x3,Ap)
+# colorbar()
+
+# figure()
+# pcolormesh(x2,x3,SigH)
+# colorbar()
+
+# figure()
+# pcolormesh(x2,x3,B)
+# colorbar()
+
+# figure()
+# pcolormesh(x2,x3,C)
+# colorbar()
 
 figure()
-pcolormesh(x2,x3,Ap)
+pcolormesh(x2,x3,srcterm)   # srcterm is -Jpar
 colorbar()
+title("Jpar")
+
+## Apparently hdf5 mangles array axes???
+Ex,Ey = np.gradient(-1*Phi.transpose(),x2,x3)   # WHYYYYY
+SigP=A.transpose()
+SigH=SigH.transpose()
+Jx=SigP*Ex-SigH*Ey
+Jy=SigH*Ex+SigP*Ey
+Jxx,_ = np.gradient(Jx,x2,x3)
+_,Jyy = np.gradient(Jy,x2,x3)
+divJ=Jxx+Jyy
+Jpartest=-divJ
+errterm=Jpartest-srcterm
 
 figure()
-pcolormesh(x2,x3,SigH)
+pcolormesh(x2,x3,Ex.transpose())
 colorbar()
+title("Ex")
 
 figure()
-pcolormesh(x2,x3,B)
+pcolormesh(x2,x3,Ey.transpose())
 colorbar()
+title("Ey")
 
 figure()
-pcolormesh(x2,x3,C)
+pcolormesh(x2,x3,Jx.transpose())
 colorbar()
+title("Jx")
 
 figure()
-pcolormesh(x2,x3,srcterm)
+pcolormesh(x2,x3,Jy.transpose())
 colorbar()
+title("Jy")
+
+figure()
+pcolormesh(x2,x3,Jpartest.transpose())
+colorbar()
+title("div J")
