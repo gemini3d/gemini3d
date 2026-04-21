@@ -13,8 +13,11 @@ implicit none (type, external)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! VARIABLES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 type(hdf5_file) :: hout
 
+!! which example to run
+integer, parameter :: flagexample=3    ! 1 - one-sided aurora; 2 - two-sided aurora; 3 -  gradient-drift scenario
+
 !! system size
-integer, parameter :: lx1=256,lx2=256,lx3=256
+integer, parameter :: lx1=96,lx2=512,lx3=512
 integer :: ix1,ix2,ix3
 real(wp), parameter :: x2dist=400e3, x3dist=1000e3
 
@@ -80,7 +83,16 @@ call set_coordinates(x2dist, x3dist, &
                      x3,dx3,x3i,dx3i)
 
 !! get coefficients and source terms
-call set_parameters(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+select case (flagexample)
+  case (1)
+    call set_parameters(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+  case (2) 
+    call set_parameters_dipolar(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+  case (3)
+    call set_parameters_GDI(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+  case default
+    error stop 'Unknown example selected!'
+end select
 
 !! Make the call to GEMINI wrapper for PDE elliptic solver library, note the separate calls for root vs. workers
 if (myid==0) then
@@ -160,7 +172,7 @@ contains
     dx3i=x3i(2:lx3+1)-x3i(1:lx3)
   end subroutine set_coordinates
 
-  !! populate coefficient arrays
+  !! populate coefficient arrays; this is an auroral arc-like feature
   subroutine set_parameters(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
     real(wp), dimension(-1:) :: x2
     real(wp), dimension(-1:) :: x3
@@ -192,6 +204,91 @@ contains
     Vminx2(1:lx3)=0.0; Vmaxx2(1:lx2)=0.0; Vminx3(1:lx2)=0.0; Vmaxx3(1:lx2)=0.0
     flagsdirich=[1,1,1,1]
   end subroutine set_parameters
+
+  !! populate coefficient arrays; this is a bipolar auroral arc-like feature
+  subroutine set_parameters_dipolar(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+    real(wp), dimension(-1:) :: x2
+    real(wp), dimension(-1:) :: x3
+    real(wp), dimension(:,:) :: A, Ap, B, C, srcterm, SigH
+    real(wp), dimension(:) :: Vminx2,Vmaxx2
+    real(wp), dimension(:) :: Vminx3,Vmaxx3
+    integer, dimension(4) :: flagsdirich
+    integer :: lx2,lx3
+    real(wp), parameter :: ell2=15e3
+    real(wp), parameter :: ell3=100e3
+    
+    lx2=size(A,1); lx3=size(A,2);
+
+    do ix3=1,lx3
+      do ix2=1,lx2
+        !! This is Pedersen conductance
+        A(ix2,ix3)=0.1 + 10.0*(  exp(-(x2(ix2))**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) )
+        !A(ix2,ix3)=0.1    ! for sanity checking...
+        Ap(ix2,ix3)=A(ix2,ix3)
+        
+        !! RHS
+        srcterm(ix2,ix3)=1e-6*( exp(-(x2(ix2))**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) - &
+                0.5*exp(-(x2(ix2)-3.0*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2) - &
+                0.5*exp(-(x2(ix2)+3.0*ell2)**2/2/ell2**2)*exp(-x3(ix3)**2/2/ell3**2))
+      end do
+    end do
+    SigH(1:lx2,1:lx3)=-3.0*A(1:lx2,1:lx3)
+    call grad2D(x2,x3,SigH,B,C)
+
+    Vminx2(1:lx3)=0.0; Vmaxx2(1:lx2)=0.0; Vminx3(1:lx2)=0.0; Vmaxx3(1:lx2)=0.0
+    flagsdirich=[1,1,1,1]
+  end subroutine set_parameters_dipolar
+
+  !! populate coefficient arrays; this is a bipolar auroral arc-like feature
+  subroutine set_parameters_GDI(x2,x3,A,Ap,SigH,B,C,srcterm,Vminx2,Vmaxx2,Vminx3,Vmaxx3,flagsdirich)
+    real(wp), dimension(-1:) :: x2
+    real(wp), dimension(-1:) :: x3
+    real(wp), dimension(:,:) :: A, Ap, B, C, srcterm, SigH
+    real(wp), dimension(:) :: Vminx2,Vmaxx2
+    real(wp), dimension(:) :: Vminx3,Vmaxx3
+    integer, dimension(4) :: flagsdirich
+    integer :: lx2,lx3
+    real(wp), parameter :: ellgrad=15e3
+    !real(wp), parameter :: ell3=100e3
+    real(wp), parameter :: x30=100e3
+    real(wp) :: x2dist
+    integer :: n,nharm=20    ! harmonic mode number
+    real(wp), dimension(size(A,1),size(A,2)) :: SigP2,SigP3,SigH2,SigH3
+    real(wp), parameter :: E2=-25e-3, E3=0.0
+
+    lx2=size(A,1); lx3=size(A,2);
+    x2dist=x2(lx2)-x2(1)
+
+    do ix3=1,lx3
+      do ix2=1,lx2
+        !! This is Pedersen conductance; background 'patch' structure
+        A(ix2,ix3)=0.2 + 0.2*( &
+        (0.5 + 0.5*tanh((x3(ix3)+x30)/ellgrad) )  - &
+        (0.5 + 0.5*tanh((x3(ix3)-x30)/ellgrad) ) & 
+        )
+
+        ! include a sinusoidal, windowed perturbation on the trailing edge of the patch
+        do n=20,nharm
+          A(ix2,ix3) = A(ix2,ix3) + 0.25*A(ix2,ix3)* &
+                  sin(real(n)*pi/x2dist*x2(ix2))* &
+                  exp(-(x3(ix3)+x30)**2/2.0/(ellgrad)**2)
+        end do
+
+        Ap(ix2,ix3)=A(ix2,ix3)
+      end do
+    end do
+    SigH(1:lx2,1:lx3)=0.0    ! assume small enough to not matter
+    call grad2D(x2,x3,SigH,SigH2,SigH3)
+    B=SigH2
+    C=SigH3
+
+    !! RHS, this corresponds to a constant field applied over a gradient in conductance
+    call grad2D(x2,x3,A,SigP2,SigP3)
+    srcterm=-E2*(SigP2+SigH3)-E3*(-SigH2+SigP3)
+
+    Vminx2(1:lx3)=0.0; Vmaxx2(1:lx2)=0.0; Vminx3(1:lx2)=0.0; Vmaxx3(1:lx2)=0.0
+    flagsdirich=[1,1,1,1]
+  end subroutine set_parameters_GDI
 
   !! compute a simple spatial gradient (5 point stencil)
   subroutine grad2D(x2,x3,f,fx2,fx3)

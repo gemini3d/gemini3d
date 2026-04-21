@@ -52,9 +52,10 @@ ylabel("distance [m]")
 xlabel("distance [m]")
 title("2D potential (numerical)")
 
-# figure()
-# pcolormesh(x2,x3,A)
-# colorbar()
+#figure()
+#pcolormesh(x2,x3,A)
+#colorbar()
+#title("Pedersen")
 
 # figure()
 # pcolormesh(x2,x3,Ap)
