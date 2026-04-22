@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-Check GH Actions status of last run and get last commit hash for each subproject.
-Compare to the last commit hash in libraries.json. If they differ, print a warning.
+Check GitHub Actions status of last run and get last commit hash for each subproject.
+Compare to the last commit hash in libraries.json.
+If the commit hashes differ or the CI status is not successful, print a warning.
+
+Uses the "gh" GitHub CLI tool, which must be installed and authenticated.
+
+* macos: `brew install gh`
+* linux: `sudo apt install gh` or `sudo dnf install gh`
+* windows: `winget install --id GitHub.cli`
 """
 
 import subprocess
