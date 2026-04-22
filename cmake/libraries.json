@@ -1,8 +1,8 @@
 {
-  "ffilesystem": "https://github.com/ECLAIRWaveS/ffilesystem/archive/4ab4abb85bf0724f4d4d194258842613772b9da8.tar.gz",
-  "glow": "https://github.com/gemini3d/glow/archive/dc130133aa97f80d2921cbac81d322439d624da8.tar.gz",
-  "h5fortran": "https://github.com/ECLAIRWaveS/h5fortran/archive/cb1d4bc0a3728c91b8f720afb65c8ec94040ea09.tar.gz",
-  "hwm14": "https://github.com/gemini3d/hwm14/archive/f53a35ecb9d27b2df3bc67709e718509b668b83a.tar.gz",
-  "msis": "https://github.com/gemini3d/msis/archive/e6f7f93fbe4e5d3629b685369907e82d00ad9be0.tar.gz",
-  "mumps": "https://github.com/scivision/mumps/archive/bf27bf626fd7900b48c84142724ab5204cea2beb.tar.gz"
+  "ffilesystem": "https://github.com/ECLAIRWaveS/ffilesystem/archive/767cc8408fd745a8f67e3954944d0ea1aa982ebc.tar.gz",
+  "glow": "https://github.com/gemini3d/glow/archive/f91807a8f16d547b6d9fd21a7399ebedad96b4c4.tar.gz",
+  "h5fortran": "https://github.com/ECLAIRWaveS/h5fortran/archive/020b857018871bba3e5e4b1ab2993df523bb6804.tar.gz",
+  "hwm14": "https://github.com/gemini3d/hwm14/archive/19e222dbc0e219869b8cdf4e22fc1d4ab969b51a.tar.gz",
+  "msis": "https://github.com/gemini3d/msis/archive/1577d765f86f4bb180e589236be3336d1dbbc26f.tar.gz",
+  "mumps": "https://github.com/scivision/mumps/archive/620a6ab028034f38bfc1d19aa81ec2141967fed8.tar.gz"
 }
