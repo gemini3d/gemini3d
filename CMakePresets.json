@@ -4,6 +4,7 @@
 "configurePresets": [
 {
   "name": "default",
+  "displayName": "Default configure preset: Release optimized build",
   "binaryDir": "build",
   "generator": "Ninja",
   "cacheVariables": {
@@ -11,6 +12,14 @@
     "CMAKE_COMPILE_WARNING_AS_ERROR": false,
     "CMAKE_LINK_WARNING_AS_ERROR": true
   }
+},
+{ "name": "build", "inherits": "default", "displayName": "Build only" },
+{
+  "name": "linux", "inherits": "default",
+  "displayName": "Linux build (for WSL on GHA)",
+  "generator": "Ninja",
+  "binaryDir": "/tmp/build",
+  "installDir": "/tmp/build/local"
 },
 { "name": "release", "inherits": "default",
   "displayName": "Release build",
@@ -34,27 +43,18 @@
 }
 ],
 "buildPresets": [
-  {
-    "name": "default",
-    "configurePreset": "default"
-  },
-  {
-    "name": "release", "inherits": "default",
-    "configurePreset": "release"
-  },
-  {
-    "name": "reldebug", "inherits": "default",
-    "configurePreset": "reldebug"
-  },
-  {
-    "name": "debug", "inherits": "default",
-    "configurePreset": "debug"
-  }
+  { "name": "default", "configurePreset": "default", "configuration": "Release" },
+  { "name": "build", "inherits": "default", "configurePreset": "build" },
+  { "name": "linux", "configurePreset": "linux", "inherits": "default" },
+  { "name": "release", "inherits": "default", "configurePreset": "release" },
+  { "name": "reldebug", "inherits": "default", "configurePreset": "reldebug", "configuration": "RelWithDebInfo" },
+  { "name": "debug", "inherits": "default", "configurePreset": "debug", "configuration": "Debug" }
 ],
 "testPresets": [
 {
   "name": "default",
   "configurePreset": "default",
+  "configuration": "Release",
   "output": {
     "outputOnFailure": true,
     "verbosity": "verbose"
@@ -73,6 +73,7 @@
     "include": {"name": "download"}
   }
 },
+{ "name": "linux-unit", "configurePreset": "linux", "inherits": "release-unit" },
 {
   "name": "release", "inherits": "default",
   "configurePreset": "release",
@@ -123,11 +124,18 @@
 ],
 "workflowPresets": [
   {
-    "name": "default",
+    "name": "default", "displayName": "Default workflow: configure, optimized build, and test",
     "steps": [
       { "type": "configure", "name": "default" },
       { "type": "build", "name": "default" },
       { "type": "test", "name": "default" }
+    ]
+  },
+  {
+    "name": "build", "displayName": "Optimized build only",
+    "steps": [
+      { "type": "configure", "name": "build" },
+      { "type": "build", "name": "build" }
     ]
   },
   {
@@ -144,6 +152,21 @@
       { "type": "configure", "name": "debug" },
       { "type": "build", "name": "debug" },
       { "type": "test", "name": "debug-unit" }
+    ]
+  },
+  {
+    "name": "linux", "displayName": "Linux build workflow (for WSL on GHA)",
+    "steps": [
+      { "type": "configure", "name": "linux" },
+      { "type": "build", "name": "linux" }
+    ]
+  },
+  {
+    "name": "linux-unit", "displayName": "Linux Unit tests workflow (for WSL on GHA)",
+    "steps": [
+      { "type": "configure", "name": "linux" },
+      { "type": "build", "name": "linux" },
+      { "type": "test", "name": "linux-unit" }
     ]
   },
   {

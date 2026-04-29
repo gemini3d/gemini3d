@@ -63,15 +63,7 @@ jobs:
     - name: install CMake
       run: |
         curl -o /tmp/cmake.tar.gz -L "https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake_version }}/cmake-${{ matrix.cmake_version }}-linux-x86_64.tar.gz"
-        tar -xf /tmp/cmake.tar.gz -C /tmp --exclude=doc/ --exclude=man/
+        tar -xf /tmp/cmake.tar.gz -C /tmp --exclude=doc/ --exclude=man/ --exclude=Help/
 
-    - name: CMake Configure
-      run: ${{ env.CMAKE }} --preset default -B /tmp/build -G Ninja
-
-    - run: ${{ env.CMAKE }} --build /tmp/build
-
-    - name: CTest Unit
-      run: ${{ env.CTEST }} --test-dir /tmp/build --preset release-unit
-
-    - name: Ctest simple simulation
-      run: ${{ env.CTEST }} --test-dir /tmp/build --preset release-sim
+    - name: CMake Build and Unit Test
+      run: ${{ env.CMAKE }} --workflow linux-unit
