@@ -33,8 +33,9 @@ jobs:
 
     strategy:
       matrix:
-        cmake_version: [3.30.5]
+        cmake_version: [3.31.12]
 # need cmake >= 3.30 to set binary dir with ctest --test-dir <> --preset <>
+# Cmake 3.31 added cmake --workflow <preset> syntax
 
     defaults:
       run:
@@ -42,7 +43,7 @@ jobs:
 
     steps:
 
-    - uses: Vampire/setup-wsl@v6
+    - uses: Vampire/setup-wsl@v7
       with:
         distribution: Ubuntu-24.04
         additional-packages:
