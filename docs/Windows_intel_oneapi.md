@@ -12,15 +12,10 @@ Install latest no cost [Visual Studio Community](https://visualstudio.microsoft.
 No particular options are needed -- a minimal install is fine.
 
 Install
-[oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
+[oneAPI Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneapi-toolkit-download.html)
 with these options:
 
 * Math Kernel Library (oneMKL)
-
-Install
-[oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
-with these options:
-
 * Intel MPI library
 * Intel C++ compiler
 * Intel Fortran compiler
