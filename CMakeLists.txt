@@ -83,13 +83,16 @@ FetchContent_MakeAvailable(h5fortran)
 
 include(cmake/compilers.cmake)
 
-# --- linear algebra libraries
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
-  # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
-  find_package(LAPACK REQUIRED GLOBAL)
+# --- linear algebra libraries LAPACK and MUMPS
+if(DEFINED ENV{MKLROOT} AND IS_DIRECTORY "$ENV{MKLROOT}")
+  set(MKL_INTERFACE "lp64")
+  # MKL_THREADING default: "intel_thread" which is Intel OpenMP
+  # some systems have messed up OpenMP, so we use "sequential"
+  set(MKL_THREADING "sequential")
+  find_package(MKL CONFIG REQUIRED)
+  add_library(LAPACK::LAPACK ALIAS MKL::MKL)
 else()
-  find_package(SCALAPACK REQUIRED GLOBAL)
+  find_package(LAPACK REQUIRED)
 endif()
 
 set(BUILD_SINGLE off)
