@@ -5,7 +5,7 @@ set_property(DIRECTORY PROPERTY LABELS potential)
 set(_potential2d_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(gemini_potential2d test_potential2d.f90 $<TARGET_OBJECTS:PDEelliptic>)
-set_target_properties(gemini_potential2d PROPERTIES LABELS "unit")
+set_target_properties(gemini_potential2d PROPERTIES LABELS "gemini3d:unit")
 target_link_libraries(gemini_potential2d PRIVATE const
 h5fortran::h5fortran MUMPS::MUMPS MPI::MPI_Fortran
 )
@@ -13,7 +13,7 @@ target_include_directories(gemini_potential2d PRIVATE ${MPI_Fortran_INCLUDE_DIRS
 # this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
 add_executable(gemini_potential2d_auroral test_potential2d_auroral.f90 $<TARGET_OBJECTS:PDEelliptic>)
-set_target_properties(gemini_potential2d_auroral PROPERTIES LABELS "unit")
+set_target_properties(gemini_potential2d_auroral PROPERTIES LABELS "gemini3d:unit")
 target_link_libraries(gemini_potential2d_auroral PRIVATE const
 h5fortran::h5fortran MUMPS::MUMPS MPI::MPI_Fortran
 )
@@ -31,11 +31,11 @@ add_test(NAME GeminiPotential2d COMMAND gemini_potential2d ${_potential2d_testfi
 test_mpi_launcher(gemini_potential2d GeminiPotential2d ${Ncpu})
 
 add_test(NAME potential2d:python
-COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential2d_testfile}
+COMMAND Python::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential2d_testfile}
 )
 set_tests_properties(potential2d:python PROPERTIES
 REQUIRED_FILES ${_potential2d_testfile}
-LABELS "unit;python"
+LABELS "gemini3d:unit;gemini3d:python"
 FIXTURES_REQUIRED gemini_potential_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 )
@@ -46,7 +46,7 @@ DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 set(_potential3d_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential3d.h5)
 
 add_executable(gemini_potential3d test_potential3d.f90 $<TARGET_OBJECTS:PDEelliptic>)
-set_target_properties(gemini_potential3d PROPERTIES LABELS "unit")
+set_target_properties(gemini_potential3d PROPERTIES LABELS "gemini3d:unit")
 target_link_libraries(gemini_potential3d PRIVATE const
 h5fortran::h5fortran MUMPS::MUMPS MPI::MPI_Fortran
 )
@@ -60,5 +60,5 @@ set_tests_properties(GeminiPotential2d GeminiPotential3d PROPERTIES
 FIXTURES_SETUP gemini_potential_fxt
 FIXTURES_REQUIRED mpi_fxt
 RESOURCE_LOCK cpu_mpi
-LABELS "unit"
+LABELS "gemini3d:unit"
 )

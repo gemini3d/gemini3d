@@ -5,7 +5,7 @@ add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
 add_test(NAME interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(interp1 PROPERTIES
-LABELS unit
+LABELS "gemini3d:unit"
 FIXTURES_SETUP GemInterp1
 )
 
@@ -52,7 +52,7 @@ COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfi
 )
 set_tests_properties(interp2:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
-LABELS "unit;python"
+LABELS "gemini3d:unit;gemini3d:python"
 FIXTURES_REQUIRED gemini_interp2_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 )
@@ -62,7 +62,7 @@ COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testf
 )
 set_tests_properties(interp3:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
-LABELS "unit;python"
+LABELS "gemini3d:unit;gemini3d:python"
 RESOURCE_LOCK cpu_ram
 FIXTURES_REQUIRED gemini_interp3_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>

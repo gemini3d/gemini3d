@@ -24,7 +24,7 @@ add_test(NAME diffusion1:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
 )
 set_tests_properties(diffusion1:python PROPERTIES
-LABELS "unit;python"
+LABELS "gemini3d:unit;gemini3d:python"
 REQUIRED_FILES ${_tmpdifffn}
 FIXTURES_REQUIRED gemini_diffusion_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>

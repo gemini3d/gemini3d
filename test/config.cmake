@@ -58,7 +58,7 @@ LABELS core
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
 )
 if(name MATCHES "_cpp$")
-  set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY LABELS "core;Cpp")
+  set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY LABELS "gemini3d:core")
 endif()
 if(DEFINED mpi_tmpdir)
   set_property(TEST gemini:${name}:dryrun gemini:${name} PROPERTY ENVIRONMENT "TMPDIR=${mpi_tmpdir}")
