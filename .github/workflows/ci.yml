@@ -103,3 +103,13 @@ jobs:
       run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - *linux-build
+
+  gnu_make:
+    timeout-minutes: 15
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - *checkout
+    - *pkg
+    - run: cmake --workflow gmake

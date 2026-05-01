@@ -14,6 +14,10 @@
   }
 },
 { "name": "build", "inherits": "default", "displayName": "Build only" },
+{ "name": "gmake", "inherits": "default", "generator": "Unix Makefiles",
+  "binaryDir": "build-${presetName}",
+  "displayName": "GNU generator",
+  "description": "this helps catch GNU Make-specific bugs that might not appear with Ninja" },
 {
   "name": "linux", "inherits": "default",
   "displayName": "Linux build (for WSL on GHA)",
@@ -45,6 +49,7 @@
 "buildPresets": [
   { "name": "default", "configurePreset": "default", "configuration": "Release" },
   { "name": "build", "inherits": "default", "configurePreset": "build" },
+  { "name": "gmake", "inherits": "default", "configurePreset": "gmake", "jobs": 4 },
   { "name": "linux", "configurePreset": "linux", "inherits": "default" },
   { "name": "release", "inherits": "default", "configurePreset": "release" },
   { "name": "reldebug", "inherits": "default", "configurePreset": "reldebug", "configuration": "RelWithDebInfo" },
@@ -136,6 +141,12 @@
     "steps": [
       { "type": "configure", "name": "build" },
       { "type": "build", "name": "build" }
+    ]
+  },
+  { "name": "gmake", "displayName": "GNU Make build",
+    "steps": [
+      { "type": "configure", "name": "gmake" },
+      { "type": "build", "name": "gmake" }
     ]
   },
   {

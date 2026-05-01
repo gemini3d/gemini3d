@@ -45,8 +45,25 @@ jobs:
       if: ${{ matrix.compiler.fc == 'flang-new' }}
       run: brew install flang
 
-    - uses: actions/checkout@v6
+    - &checkout
+      uses: actions/checkout@v6
 
-    - uses: ./.github/workflows/composite-pkg
+    - &pkg
+      uses: ./.github/workflows/composite-pkg
 
     - uses: ./.github/workflows/composite-unix
+
+  gnu_make:
+    timeout-minutes: 15
+
+    runs-on: macos-latest
+
+    env:
+      CC: gcc-15
+      CXX: g++-15
+      FC: gfortran-15
+
+    steps:
+    - *checkout
+    - *pkg
+    - run: cmake --workflow gmake
