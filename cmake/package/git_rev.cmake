@@ -19,8 +19,7 @@ endif()
 set(git_version ${GIT_VERSION_STRING})
 string(SUBSTRING ${git_version} 0 ${_max_len} git_version)
 # git branch --show-current requires Git >= 2.22, June 2019
-execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} rev-parse --abbrev-ref HEAD
 OUTPUT_VARIABLE git_branch
 OUTPUT_STRIP_TRAILING_WHITESPACE
 RESULT_VARIABLE _err
@@ -32,22 +31,11 @@ else()
 endif()
 
 
-# git describe --tags can make CI error fatal: No names found, cannot describe anything.
-execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
-WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} describe --tags
 OUTPUT_VARIABLE git_rev
 OUTPUT_STRIP_TRAILING_WHITESPACE
 RESULT_VARIABLE _err
 )
-if(NOT _err EQUAL 0)
-  # old Git
-  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  OUTPUT_VARIABLE git_rev
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE _err
-  )
-endif()
 if(_err EQUAL 0)
   string(SUBSTRING ${git_rev} 0 ${_max_len} git_rev)
 else()
@@ -55,8 +43,7 @@ else()
 endif()
 string(APPEND git_rev " ${PROJECT_VERSION}")
 
-execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
-WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} status --porcelain
 OUTPUT_VARIABLE _porcelain
 OUTPUT_STRIP_TRAILING_WHITESPACE
 RESULT_VARIABLE _err
@@ -71,8 +58,7 @@ endif()
 set(git_origin "origin")
 # Git default remote name
 
-execute_process(COMMAND ${GIT_EXECUTABLE} remote get-url ${git_origin}
-WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} remote get-url ${git_origin}
 OUTPUT_VARIABLE git_remote
 OUTPUT_STRIP_TRAILING_WHITESPACE
 )

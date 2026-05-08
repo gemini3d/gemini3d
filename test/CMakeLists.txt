@@ -1,8 +1,8 @@
 set_property(DIRECTORY PROPERTY LABELS standalone_libraries)
 
-if(matlab)
+if(gemini3d_matlab)
   include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
-endif(matlab)
+endif()
 
 add_compile_options(${gemini3d_flags})
 # scope is this directory on down
@@ -13,7 +13,7 @@ add_compile_options(${gemini3d_flags})
 
 # --- HDF5
 add_executable(test_hdf5_standalone_C test_hdf5.c)
-target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran )
+target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_C test_hdf5_standalone_C)
 
 add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
@@ -71,7 +71,7 @@ set_tests_properties(gemini_cpp PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
-LABELS "unit;Cpp"
+LABELS "gemni3d:unit"
 )
 
 endif()
@@ -85,10 +85,7 @@ FIXTURES_SETUP gemini_exe_fxt
 add_subdirectory(compare)
 
 
-if(NOT ${PROJECT_NAME}_BUILD_TESTING)
-  return()
-endif()
-
+if(gemini3d_BUILD_TESTING)
 
 add_executable(echo_path echo_path.f90)
 add_test(NAME EchoEnvVar COMMAND echo_path)
@@ -115,3 +112,9 @@ add_subdirectory(mpi)
 add_subdirectory(neutral)
 add_subdirectory(potential)
 add_subdirectory(temporal)
+
+# self-test simulations -- after all targets for if(TARGET ...)
+include(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+
+endif()

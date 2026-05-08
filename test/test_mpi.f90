@@ -38,4 +38,3 @@ if(mrank == 0) then
 endif
 
 end program
-

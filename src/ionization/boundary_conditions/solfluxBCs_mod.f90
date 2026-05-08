@@ -58,12 +58,12 @@ contains
 
     !print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)
     !print*, 'min/max Iinfiprev:  ',minval(solflux%Iinfiprev),maxval(solflux%Iinfiprev)
-    !print*, 'min/max Iinfinext:  ',minval(solflux%Iinfinext),maxval(solflux%Iinfinext)   
+    !print*, 'min/max Iinfinext:  ',minval(solflux%Iinfinext),maxval(solflux%Iinfinext)
     !print*, 'min/max Iinfp:  ',minval(solflux%Iinfp),maxval(solflux%Iinfp)
   end subroutine solfluxBCs_fileinput
 
 
-  !> This is the default subroutine that is called for *vacuum* (large altitude limit) solar flux values above each position on the grid 
+  !> This is the default subroutine that is called for *vacuum* (large altitude limit) solar flux values above each position on the grid
   subroutine solfluxBCs(cfg,x,ymd,UTsec,Iinf)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -71,8 +71,8 @@ contains
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:,:), intent(inout) :: Iinf
     !! intent(out)
-    integer, parameter :: ll=22     !number of wavelength bins   
-    real(wp), dimension(ll) :: fref,Aeuv   
+    integer, parameter :: ll=22     !number of wavelength bins
+    real(wp), dimension(ll) :: fref,Aeuv
     !> 2D mask below
     !real(wp), parameter :: ecglat =33.0, ecglong=255.0, ecwidth=5.0, ectime=63000.0, ecdtime=1800.0, maskmax=0.9
     real(wp), dimension(2), parameter :: ecglat=[49.0,-5.0], ecglon=[213,331], ectime=[56700.0,69183.33]
@@ -101,10 +101,10 @@ contains
     !PHOTON FLUX
     do il=1,ll
       ! if applying an eclipse mask we need to loop over the positions and determine the mask value for each before
-      !   computing photon fluxes. 
+      !   computing photon fluxes.
       do ix3=1,x%lx3
         do ix2=1,x%lx2
-          do ix1=1,x%lx1 
+          do ix1=1,x%lx1
             if (flagmask) then
               ecglatnow=ecglat(1)+(ecglat(2)-ecglat(1))/(ectime(2)-ectime(1))
               ecglonnow=ecglon(1)+(ecglon(2)-ecglon(1))/(ectime(2)-ectime(1))
@@ -112,7 +112,7 @@ contains
     !          maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglat)**2/2/ecwidth**2)* &
     !                    !exp(-(x%glon(ix1,ix2,ix3)-ecglong)**2/2/ecwidth**2)* &
     !                    exp(-(UTsec-ectime)**2/2/ecdtime**2)
-    
+
               if (UTsec>ectime(1) .and. UTsec<ectime(2)) then
                 maskval=maskmax*exp(-(x%glat(ix1,ix2,ix3)-ecglatnow)**2/2/ecwidth**2)* &
                           exp(-(x%glon(ix1,ix2,ix3)-ecglonnow)**2/2/ecwidth**2)
@@ -126,8 +126,8 @@ contains
           end do
         end do
       end do
-    end do   
+    end do
 
-    !print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)    
+    !print*, 'min/max Iinf:  ',minval(Iinf), maxval(Iinf)
   end subroutine solfluxBCs
 end module solfluxBCs_mod

@@ -19,7 +19,7 @@ $<TARGET_OBJECTS:grid>
 target_link_libraries(efielddata PRIVATE const gemini3d_config meshobj interp timeutils inputdata)
 
 add_library(neutraldataBG OBJECT neutraldataBGobj.f90)
-target_link_libraries(neutraldataBG PRIVATE const gemini3d_config meshobj interp timeutils inputdata  
+target_link_libraries(neutraldataBG PRIVATE const gemini3d_config meshobj interp timeutils inputdata
 MPI::MPI_Fortran
 )
 

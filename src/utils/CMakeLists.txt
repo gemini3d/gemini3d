@@ -22,14 +22,14 @@ target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
 # --- gemini3d.run Fortran front end
 
 string(JOIN " " gemini_features
-REALBITS:${realbits}
+REALBITS:${gemini3d_realbits}
 MPI
 MSIS2
 )
-if(glow)
+if(gemini3d_glow)
   string(APPEND gemini_features " GLOW")
 endif()
-if(hwm14)
+if(gemini3d_hwm14)
   string(APPEND gemini_features " HWM14")
 endif()
 configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)

@@ -96,7 +96,7 @@ contains
 !      ynrange(1)=yitmp(ix1,lx2,ix3)
 !    else    !things are swapped around in NH, min L-shell is lowest latitude
 !            !  southern edge is dictated by high altitudes in NH; this is ix1=1 in dipole indices
-!      zitmpslice=zitmp(:,1,:)          
+!      zitmpslice=zitmp(:,1,:)
 !      if (any(zitmpslice - maxzn > 0)) then
 !        ixs13 = minloc(zitmpslice-maxzn, mask=zitmpslice - maxzn > 0)
 !        ix1=ixs13(1); ix3=ixs13(2);
@@ -248,12 +248,12 @@ contains
         ! default to lowest possible altitude
         if (flagSH) then
           ix1=1
-        else 
+        else
           ix1=lx1
         end if
       end if
-      xrange0(icorner)=xi(ix1,ix2,ix3) 
-      yrange0(icorner)=yi(ix1,ix2,ix3) 
+      xrange0(icorner)=xi(ix1,ix2,ix3)
+      yrange0(icorner)=yi(ix1,ix2,ix3)
     end do
   end subroutine find_corners
 

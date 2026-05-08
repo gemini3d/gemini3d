@@ -2,18 +2,18 @@ name: ci
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
     paths-ignore:
       - "cmake/intel.cmake"
       - "cmake/cray.cmake"
+      - ".github/workflows/ci_windows.yml"
       - ".github/workflows/ci_macos.yml"
       - ".github/workflows/oneapi-linux.yml"
       - "docs/**"
+      - "scripts/**"
+      - "**.md"
 
   workflow_dispatch:
 
@@ -51,33 +51,23 @@ jobs:
       uses: ./.github/workflows/composite-pkg
 
     - &linux-build
-      uses: ./.github/workflows/composite-linux
+      uses: ./.github/workflows/composite-unix
 
 
-  cmake-320:
+  cmake-oldest:
     timeout-minutes: 30
 
     runs-on: ubuntu-24.04
 
     strategy:
       matrix:
-        cmake_version: ["3.20.6"]
-        gcc: [12]
-
-    env:
-      CC: gcc-${{ matrix.gcc }}
-      CXX: g++-${{ matrix.gcc }}
-      FC: gfortran-${{ matrix.gcc }}
+        cmake_version: ["3.25.3"]
 
     steps:
 
     - *checkout
 
     - *pkg
-
-    - name: Install GCC-${{ matrix.gcc }}
-      timeout-minutes: 15
-      run: sudo apt install gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - uses: ./.github/workflows/composite-cmake
 
@@ -91,7 +81,8 @@ jobs:
       matrix:
         hwm14: [false]
         os: [ubuntu-22.04]
-        gcc: [10, 11]
+        gcc: [11]
+# GCC 10 works, just saving CI testing time
 # GCC 9 segfaults on gemini:mini2dns_fang gemini:mini2dew_fang
 
     env:
@@ -112,3 +103,13 @@ jobs:
       run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - *linux-build
+
+  gnu_make:
+    timeout-minutes: 15
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - *checkout
+    - *pkg
+    - run: cmake --workflow gmake

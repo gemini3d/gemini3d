@@ -7,15 +7,10 @@ Having too old GCC/libc/libstdc++ will fail to build.
 Ensure your system has GCC 8 or newer to work with Intel oneAPI on Linux.
 
 Install
-[oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html)
+[oneAPI Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/oneapi-toolkit-download.html)
 with these options:
 
 * Math Kernel Library (oneMKL)
-
-Install
-[oneAPI HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
-with these options:
-
 * Intel MPI library
 * Intel C++ compiler
 * Intel Fortran compiler

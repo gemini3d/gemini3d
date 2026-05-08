@@ -37,7 +37,7 @@ else()
 endif()
 
 
-if(NOT python)
+if(NOT gemini3d_python)
   return()
 endif()
 

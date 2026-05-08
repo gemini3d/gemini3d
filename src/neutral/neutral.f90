@@ -1,6 +1,6 @@
 module neutral
 
-!> This module performs and organizes top-level operations on neutral data used in the GEMINI model.  
+!> This module performs and organizes top-level operations on neutral data used in the GEMINI model.
 !    Calls to MSIS, HWM etc. for background states and file- or p4est-based inputs for perturbations
 !    are handled in separate modules
 
@@ -148,7 +148,7 @@ contains
 
   !> rotate winds from model native coordinate system (x1,x2,x3) to geographic coordinates.
   !    In this function we do not necessarily want to assume a location for input or output
-  !    wind components; they should instead be provided as array inputs.  
+  !    wind components; they should instead be provided as array inputs.
   subroutine rotate_native2geo(vn1,vn2,vn3,vnalt,vnglat,vnglon,x,atmos)
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: vn1,vn2,vn3
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: vnalt,vnglat,vnglon

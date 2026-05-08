@@ -2,7 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
 [![ci](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml)
-[![ci_macos](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml)
+[![macOS CI](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml)
+[![Windows CI](https://github.com/gemini3d/gemini3d/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci_windows.yml)
 [![oneapi-linux](https://github.com/gemini3d/gemini3d/actions/workflows/oneapi-linux.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/oneapi-linux.yml)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model written (mostly) in object-oriented fortran (2008+ standard).  GEMINI is used for various scientific studies including:
@@ -62,17 +63,21 @@ Requirements:
 
 ### Gemini3D setup
 
+Obtain the Gemini3D source code:
+
+```sh
+git clone --recurse-submodules https://github.com/gemini3d/gemini3d.git
+```
+
 Build the Gemini3D code
 
-    ```sh
-    git clone https://github.com/gemini3d/gemini3d.git
+```sh
+cd ./gemini3d
 
-    cd gemini3d
+cmake -B build
 
-    cmake -B build
-
-    cmake --build build --parallel
-    ```
+cmake --build build --parallel
+```
 
 Non-default [build options](./docs/Readme_cmake.md) may be used.
 Gemini3d [developer options](./docs/Readme_debug.md) allow things like array bounds checking.
@@ -82,6 +87,14 @@ To verify your GEMINI build, run the self-tests.
 
 ```sh
 ctest --test-dir build
+```
+
+To retrieve Git updates from other developers do:
+
+```sh
+git pull
+
+git submodule update --init --recursive
 ```
 
 ### Offline HPC batch CTest

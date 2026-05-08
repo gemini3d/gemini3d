@@ -93,7 +93,7 @@ contains
 
     ! Set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
     self%natmp=>self%data3D(:,:,:,:)   !contiguous in memory since only one element in x2,3
-    self%natmiprev=>self%data3Di(:,:,:,:,1)     
+    self%natmiprev=>self%data3Di(:,:,:,:,1)
     self%natminext=>self%data3Di(:,:,:,:,2)
     self%natminow=>self%data3Dinow(:,:,:,:)
 
@@ -154,7 +154,7 @@ contains
     class(curvmesh), intent(in) :: x
     integer :: ix1,ix2,ix3
     real(wp), dimension(:,:,:), allocatable :: altimat,glonimat,glatimat
-    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon   
+    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
     real(wp) :: tmpsca
     real(wp), dimension(3) :: tmpvec, exprm, eyp, ezp
 
@@ -186,7 +186,7 @@ contains
     allocate(self%proj_eyp_e1(x%lx1,x%lx2,x%lx3),self%proj_eyp_e2(x%lx1,x%lx2,x%lx3),self%proj_eyp_e3(x%lx1,x%lx2,x%lx3))
     allocate(self%proj_exp_e1(x%lx1,x%lx2,x%lx3),self%proj_exp_e2(x%lx1,x%lx2,x%lx3),self%proj_exp_e3(x%lx1,x%lx2,x%lx3))
 
-    call x%calc_unitvec_geo(ealt,eglon,eglat)   
+    call x%calc_unitvec_geo(ealt,eglon,eglat)
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         do ix1=1,x%lx1

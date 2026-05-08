@@ -13,24 +13,22 @@ if(host_ramGB LESS 2)
 endif()
 
 
-if(realbits EQUAL 32)
+if(gemini3d_realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
-  set(arith s)
+  set(gemini3d_arith s)
 else()
   message(VERBOSE " 64-bit real precision")
-  set(realbits 64)
-  set(arith d)
+  set(gemini3d_realbits 64)
+  set(gemini3d_arith d)
 endif()
 
-option(dev "developer mode: extra compile warnings")
+option(gemini3d_glow "use NCAR GLOW airglow / aurora model" on)
 
-option(glow "use NCAR GLOW airglow / aurora model" on)
+option(gemini3d_hwm14 "use HWM14 neutral winds model")
 
-option(hwm14 "use HWM14 neutral winds model")
-
-option(python "Python-based self-checks")
+option(gemini3d_python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
-option(matlab "Matlab-based self-checks")
+option(gemini3d_matlab "Matlab-based self-checks")
 
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)
@@ -43,19 +41,9 @@ file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 # Necessary for shared library with Visual Studio / Windows oneAPI
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
-# CMake < 3.21 will error on configure without this
-if(CMAKE_VERSION VERSION_LESS 3.21)
-  get_property(not_top DIRECTORY PROPERTY PARENT_DIRECTORY)
-  if(not_top)
-    set(${PROJECT_NAME}_IS_TOP_LEVEL false)
-  else()
-    set(${PROJECT_NAME}_IS_TOP_LEVEL true)
-  endif()
-endif()
+option(gemini3d_BUILD_TESTING "build Gemini3D tests" ${gemini3d_IS_TOP_LEVEL})
 
-option(${PROJECT_NAME}_BUILD_TESTING "build Gemini3D tests" ${${PROJECT_NAME}_IS_TOP_LEVEL})
-
-if(${${PROJECT_NAME}_IS_TOP_LEVEL} AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+if(gemini3d_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")
 endif()
 

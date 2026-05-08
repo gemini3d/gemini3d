@@ -31,7 +31,7 @@ function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i)
 !! We assume the user is providing the type of boundary conditions and that
 !! any Neumann boundary conditions are interpreted as diffs in state variable
 !! to be solved (this avoids needing solvers to have to do additional calculations
-!! using auxiliary variables not in scope.  
+!! using auxiliary variables not in scope.
 
 real(wp), dimension(:), intent(in) :: A,B,C,D,E
 real(wp), dimension(:), intent(in) :: Ts
@@ -72,7 +72,7 @@ else
   M(ll+3,ix1)=1
   M(ll+2,ix1+1)=-1
   M(ll+1,ix1+2)=0
-  TR(ix1)=Tsminx1 !used to be 0, but we change it since we are doing the difference. 
+  TR(ix1)=Tsminx1 !used to be 0, but we change it since we are doing the difference.
 end if
 
 

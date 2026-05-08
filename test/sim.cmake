@@ -6,29 +6,29 @@
 
 set(gemini_test_sim_names)
 
-if(hwm14)
+if(gemini3d_hwm14)
   list(APPEND gemini_test_sim_names mini2dns_hwm14_fang mini2dew_hwm14_fang mini3d_hwm14_fang
      mini2dns_hwm14_fang_cpp)
 
-  if(glow)
+  if(gemini3d_glow)
     list(APPEND gemini_test_sim_names mini2dns_hwm14_glow mini2dew_hwm14_glow mini3d_hwm14_glow
       mini2dns_hwm14_glow_cpp)
-  endif(glow)
+  endif()
 else()
   list(APPEND gemini_test_sim_names mini2dns_fang mini2dew_fang mini3d_fang
     mini2dns_fang_cpp)
 
-  if(glow)
+  if(gemini3d_glow)
     list(APPEND gemini_test_sim_names mini2dns_glow mini2dew_glow mini3d_glow
       mini2dns_glow_cpp)
-  endif(glow)
+  endif()
 endif()
 
 
 foreach(_s IN LISTS gemini_test_sim_names)
   setup_gemini_test(${_s})
 
-  if(python)
+  if(gemini3d_python)
     setup_magcalc_test(${_s})
   endif()
 endforeach()

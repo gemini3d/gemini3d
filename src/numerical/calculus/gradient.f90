@@ -23,9 +23,9 @@ contains
     !-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOULD
     !-------SHOULD BE USED FOR THE METRIC FACTORS...
     !------------------------------------------------------------
-    
+
     integer :: ix2,ix3,lx1,lx2,lx3
-    
+
     !    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3
     !! local references to the metric factors to be used in the derivative
     !    real(wp), dimension(1:size(f,1)) :: dx1
@@ -34,17 +34,17 @@ contains
     !! local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx1
     !! local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     !! ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
     if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
       error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'
       !! just bail on it and let the user figure it out
     end if
-    
+
     !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
     !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
     !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
@@ -58,7 +58,7 @@ contains
       error stop '!!!  Array size is larger full mesh.'
     end if
     dx1=>x%dx1(lbnd1:ubnd1)
-    
+
     !! NOW EXECUTE THE FINITE DIFFERENCES -
     !! NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE,
     !! WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
@@ -74,8 +74,8 @@ contains
       end do
     end do
   end procedure grad3D1_curv_3
-  
-  
+
+
   module procedure grad3D1_curv_23
     ! grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     !------------------------------------------------------------
@@ -96,9 +96,9 @@ contains
     !-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOULD
     !-------SHOULD BE USED FOR THE METRIC FACTORS...
     !------------------------------------------------------------
-    
+
     integer :: ix2,ix3,lx1,lx2,lx3
-    
+
     !    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3
     !! local references to the metric factors to be used in the derivative
     !    real(wp), dimension(1:size(f,1)) :: dx1
@@ -107,17 +107,17 @@ contains
     !! local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx1
     !! local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
     if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
       error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'
       !! just bail on it and let the user figure it out
     end if
-    
+
     !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
     !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
     !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
@@ -131,7 +131,7 @@ contains
       error stop '!!!  Array size is larger full mesh.'
     end if
     dx1=>x%dx1(lbnd1:ubnd1)
-    
+
     !! NOW EXECUTE THE FINITE DIFFERENCES
     !! NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE,
     !! WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
@@ -147,8 +147,8 @@ contains
       end do
     end do
   end procedure grad3D1_curv_23
-  
-  
+
+
   module procedure grad3D2_curv_3
     ! grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     !------------------------------------------------------------
@@ -156,22 +156,22 @@ contains
     !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
-    
+
     integer :: ix1,ix3,lx1,lx2,lx3
     real(wp), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx2    !local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
-    
+
       !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
       if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
         error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
       end if
-    
+
       !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
       !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
       if (lx3<=x%lx3+4) then
@@ -183,7 +183,7 @@ contains
         error stop '!!!  Array size is larger full mesh.'
       end if
       dx2=>x%dx2(lbnd2:ubnd2)
-    
+
       !DIFFERENCING
       do ix3=1,lx3
         do ix1=1,lx1
@@ -197,8 +197,8 @@ contains
       grad3D2_curv_3=0._wp
     end if
   end procedure grad3D2_curv_3
-  
-  
+
+
   module procedure grad3D2_curv_23
     ! grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     !------------------------------------------------------------
@@ -206,23 +206,23 @@ contains
     !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
-    
+
     integer :: ix1,ix3,lx1,lx2,lx3
     real(wp), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx2    !local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     if (x%lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
-    
+
       !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
       if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
         error stop '!!!  Inconsistent array and mesh sizes in gradient function.'
         !! just bail on it and let the user figure it out
       end if
-    
+
       !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
       !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
       if (lx3<=x%lx3+4) then     !this is a derivative over a slab region (subgrid)
@@ -236,7 +236,7 @@ contains
       else
         error stop '!!!  Array size is larger full mesh.'
       end if
-    
+
       !DIFFERENCING
       do ix3=1,lx3
         do ix1=1,lx1
@@ -250,8 +250,8 @@ contains
       grad3D2_curv_23=0._wp
     end if
   end procedure grad3D2_curv_23
-  
-  
+
+
   module procedure grad3D3_curv_3
     ! grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     !------------------------------------------------------------
@@ -263,20 +263,20 @@ contains
     !-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
     !-------DERIVATIVE.
     !------------------------------------------------------------
-    
+
     integer :: ix1,ix2,lx1,lx2,lx3
     real(wp), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
     if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
       error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
     end if
-    
+
     !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
     !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
     !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
@@ -291,7 +291,7 @@ contains
     else
       error stop '!!!  Array size is larger than full mesh.'
     end if
-    
+
     !FINITE DIFFERENCING
     do ix2=1,lx2
       do ix1=1,lx1
@@ -302,8 +302,8 @@ contains
       end do
     end do
   end procedure grad3D3_curv_3
-  
-  
+
+
   module procedure grad3D3_curv_23
     ! grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     !------------------------------------------------------------
@@ -315,21 +315,21 @@ contains
     !-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
     !-------DERIVATIVE.
     !------------------------------------------------------------
-    
+
     integer :: ix1,ix2,lx1,lx2,lx3
     real(wp), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
     real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-    
+
     lx1=size(f,1)
     lx2=size(f,2)
     lx3=size(f,3)
-    
+
     if (x%lx3>1) then    !only differentiate if we have non-singleton dimension, otherwise set to zero
       !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
       if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
         error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
       end if
-    
+
       !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
       !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
       !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
@@ -344,7 +344,7 @@ contains
       else
         error stop '!!!  Array size is larger than full mesh.'
       end if
-    
+
       !FINITE DIFFERENCING
       do ix2=1,lx2
         do ix1=1,lx1

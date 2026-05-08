@@ -64,7 +64,7 @@ subroutine sweep3_allspec_momentum(dt,x,vs3i,rhovs1)
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
-  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)        
+  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
 end subroutine sweep3_allspec_momentum
 subroutine sweep3_allspec_energy(dt,x,vs3i,rhoes)
   real(wp), intent(in) :: dt
@@ -181,7 +181,8 @@ subroutine source_loss_energy(dt,x,cfg,ns,Ts,nn,Tn,Prionize,Qeionize,vn1,vn2,vn3
 end subroutine source_loss_energy
 
 
-!> Energy and momnetum inputs into the neutral atmopshere from the plasma 
+!> Energy and momnetum inputs into the neutral atmopshere from the plasma
+!  FIXME: superfluous array inputs for neutrals (also stored in atmos)
 subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,momentumneut_source,energyneut_source)
   type(neutral_info), intent(inout) :: atmos
   class(curvmesh), intent(in) :: x
@@ -202,7 +203,9 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3) :: altkm
 
   !! Momentum source (and rotation into geographic)
-  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  call srcsMomentum_neut(nn,vn1,vn2,vn3,Tn, &
+    atmos%nnBG,atmos%vn1BG,atmos%vn2BG,atmos%vn3BG,atmos%TnBG, &
+    ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
   ! Need to create temp space here for distinct arguments
   allocate(momalt(-1:x%lx1+2,-1:x%lx2+2,-1:x%lx3+2))
   allocate(momlon, momlat, mold=momalt)
@@ -214,7 +217,9 @@ subroutine source_neut(atmos,nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,Prprecip,mome
   deallocate(momalt, momlon, momlat)
 
   !! Energy sources from elastic collisions
-  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+  call srcsEnergy_neut(nn,vn1,vn2,vn3,Tn, &
+    atmos%nnBG,atmos%vn1BG,atmos%vn2BG,atmos%vn3BG,atmos%TnBG, &
+    ns,vs1,vs2,vs3,Ts,energyneut_source)
 
 
   !! Energy sources from inelastic collisions
@@ -491,7 +496,7 @@ subroutine impact_ionization(cfg,t,dt,x,ymd,UTsec,f107a,f107,Prprecip,Qeprecip,W
         if (iprec==1) then ! background precipitation is hard-coded Fang et al. 2008 maxwellian
           Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, x%g1 &
             , 2008, cfg%diff_num_flux, cfg%kappa, cfg%bimax_frac, cfg%W0_char)
-        else ! any additional precipitation populations parameters are chosen by the user 
+        else ! any additional precipitation populations parameters are chosen by the user
           Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, x%g1 &
             , cfg%flag_fang, cfg%diff_num_flux, cfg%kappa, cfg%bimax_frac, cfg%W0_char)
         end if
@@ -600,7 +605,7 @@ subroutine diffusion_source_loss_energy(cfg,dt,x,J1,nn,vn1,vn2,vn3,Tn,flagdiffso
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
   real(wp), dimension(:,:,:,:), intent(inout) :: Lo
   real(wp), dimension(:,:,:), intent(in) :: Qeprecip
-  real(wp), dimension(-1:,-1:,-1:) :: E2,E3 
+  real(wp), dimension(-1:,-1:,-1:) :: E2,E3
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,vs2,vs3,Ts
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
   integer :: isp, lsp
@@ -613,14 +618,14 @@ subroutine diffusion_source_loss_energy(cfg,dt,x,J1,nn,vn1,vn2,vn3,Tn,flagdiffso
   do isp=1,lsp
     param=Ts(:,:,:,isp)     !temperature for this species
     if (cfg%flagevibcool /= 0) then
-      call thermal_conduct_new(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)           
+      call thermal_conduct_new(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
     else
       call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
     end if
 
     call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
 
-    ! go ahead and just put the source terms in with the diffusion solve so they can be resolved simultaneously.  
+    ! go ahead and just put the source terms in with the diffusion solve so they can be resolved simultaneously.
     A=A-Lo(:,:,:,isp)
     E=E+Pr(:,:,:,isp)*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
     if (isp==lsp) E=E+Qeprecip*(gammas(isp)-1)/max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)/kB
@@ -880,11 +885,11 @@ subroutine clean_param_after_regrid(x,paramflag,param,Tn)
   real(wp), dimension(:,:,:), intent(in) :: Tn
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end,ix2beg
   integer :: ibuf
-  integer, parameter :: lbuf=3     
+  integer, parameter :: lbuf=3
   !^ controls how far from null cells we want to forcibly replace data after a refine.  What is effectively being done here
   !    is that we are copying data from some specified location into the buffer region.  This is likely acceptable because
   !    the regions where we do this are very close to equilibrium so they will "snap" back to that state rather than generating
-  !    some weird transient from the forcibly replacement.  
+  !    some weird transient from the forcibly replacement.
 
   select case (paramflag)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

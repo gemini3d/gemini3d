@@ -16,7 +16,7 @@ target_link_libraries(gemini_projection PRIVATE
 gemini3d_config const reader inputdata timeutils mpimod gemini3d_sysinfo
 MPI::MPI_Fortran
 msis::msis
-$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+$<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
 )
 set_property(TARGET gemini_projection PROPERTY LINKER_LANGUAGE Fortran)
 # for oneAPI

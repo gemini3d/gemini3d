@@ -11,7 +11,7 @@ The next step is to map the GEMINI output as an input to the SIGMA using a MATLA
 Open the MATLAB file and edit the path of the directory to the location of GEMINI output files that user wants to map.
 
 ```PowerShell
-Example: 
+Example:
 direc = ('~/Projects/GEMINI/arcs/');
 ```
 #### Read the configuration and grid data
@@ -34,11 +34,10 @@ x1 = xg.x1                         % grid dimension in x1 direction (Similarly f
 
 #### Load the simulation data
 
-Here the plasma paramters are read and loaded into the function. User can choose to load either all the GEMINI plasma parameters or the required parameter. 
+Here the plasma paramters are read and loaded into the function. User can choose to load either all the GEMINI plasma parameters or the required parameter.
 ```PowerShell
 Example:
 datplasma = gemini3d.read.frame(direc,"time",dateval,"vars","ne")
 ```
 
 Once the plasma data is read into the interface function, it interpolates the data in time and sends out the interpolated plasma data to the main SIGMA function.
-

@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 3.19...3.29)
+# CMake >= 3.28 strongly suggested for CMake build graph reliability.
+# CMake >= 3.25 required for fine-grained scope with block() and enabling configure time tests
+# CMake >= 3.24: find_package(... GLOBAL) and FetchContent_Declare(... FIND_PACKAGE_ARGS)
+# CMake >= 3.21:  *_IS_TOP_LEVEL variable used to manage subproject dependencies
+cmake_minimum_required(VERSION 3.25...4.3)
 
 # --- CMAKE_BUILD_TYPE default
 # The simulations are 10x slower for default to Debug.
@@ -8,6 +12,16 @@ if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
 endif()
 
+if(CMAKE_GENERATOR MATCHES "^Visual Studio")
+  message(FATAL_ERROR "${CMAKE_GENERATOR} is not supported. Use \"cmake -G Ninja\" option.")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.28.0)
+  message(WARNING "CMake 3.25, 3.26, 3.27 have known bugs causing build failures due to incorrectly graphing Fortran module dependencies, regardless of operating system or compiler.
+Suggest CMake 3.28 or newer https://github.com/Kitware/CMake/releases
+If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.")
+endif()
+
 # --- main Gemini3D build
 
 project(gemini3d
@@ -15,29 +29,32 @@ LANGUAGES C CXX Fortran
 # Gemini3D is Fortran, but external libraries use C, and some find_package need C.
 DESCRIPTION "3-D ionospheric model"
 HOMEPAGE_URL https://github.com/gemini3d/gemini
-VERSION 1.7.0
+VERSION 2.0.0
 )
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest)
 
+include(FetchContent)
+
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 # This project isn't using C++ modules; avoid bugs in module scanning CMake 3.28, 3.29 with GCC >= 14.
 
 include(cmake/package/git_rev.cmake)
-include(cmake/GitSubmodule.cmake)
 include(options.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
+
+file(READ cmake/libraries.json json)
 
 # Fortran filesystem library "ffilesystem"
 set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
 set(HAVE_F03TYPE false)
-# need fallback for old compilers like GCC-7
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/ffilesystem)
-add_subdirectory(ffilesystem)
+# may need fallback for old or slightly broken compilers
+string(JSON ffilesystem_url GET "${json}" "ffilesystem")
+FetchContent_Declare(ffilesystem URL ${ffilesystem_url})
+FetchContent_MakeAvailable(ffilesystem)
 
 # find python before excluding Anaconda
 include(cmake/python.cmake)
@@ -58,21 +75,11 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/h5fortran)
-add_subdirectory(h5fortran)
-message(STATUS "${PROJECT_NAME}: HDF5 ${HDF5_VERSION}")
+string(JSON h5fortran_url GET "${json}" "h5fortran")
+FetchContent_Declare(h5fortran URL ${h5fortran_url})
+FetchContent_MakeAvailable(h5fortran)
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
-
-# HDF5 bug #3663 for HDF5 1.14.2, ...?
-# https://github.com/HDFGroup/hdf5/issues/3663
-if(WIN32 AND CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-if(HDF5_VERSION MATCHES "1.14.[2-4]")
-  message(VERBOSE "HDF5: applying workaround for HDF5 bug #3663 with Intel oneAPI on Windows")
-  set(oneapi_hdf5_bug3663 shlwapi)
-endif()
-endif()
 
 include(cmake/compilers.cmake)
 
@@ -80,50 +87,46 @@ include(cmake/compilers.cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
   # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
-  find_package(LAPACK REQUIRED)
+  find_package(LAPACK REQUIRED GLOBAL)
 else()
-  find_package(SCALAPACK REQUIRED)
+  find_package(SCALAPACK REQUIRED GLOBAL)
 endif()
 
 set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
 set(BUILD_COMPLEX off)
 set(BUILD_COMPLEX16 off)
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/mumps)
-add_subdirectory(mumps)
+
+string(JSON mumps_url GET "${json}" "mumps")
+FetchContent_Declare(mumps URL ${mumps_url})
+FetchContent_MakeAvailable(mumps)
 
 # --- climate models
-if(glow)
-  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
-  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/glow)
-  add_subdirectory(glow)
+if(gemini3d_glow)
+  string(JSON glow_url GET "${json}" "glow")
+  FetchContent_Declare(glow URL ${glow_url})
+  FetchContent_MakeAvailable(glow)
 endif()
 
-if(hwm14)
-  git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
-  report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/hwm14)
-  add_subdirectory(hwm14)
+if(gemini3d_hwm14)
+  string(JSON hwm14_url GET "${json}" "hwm14")
+  FetchContent_Declare(hwm14 URL ${hwm14_url})
+  FetchContent_MakeAvailable(hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
 set(msis_BUILD_UTILS on)
-git_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
-report_submodule(${CMAKE_CURRENT_SOURCE_DIR}/msis)
-add_subdirectory(msis)
+string(JSON msis_url GET "${json}" "msis")
+FetchContent_Declare(msis URL ${msis_url})
+FetchContent_MakeAvailable(msis)
 
 # --- Gemini3D library
 add_subdirectory(src)
 
 # --- Gemini3D self test
-include(cmake/test/mpi_launcher.cmake) # for MPI tests
+include(${CMAKE_CURRENT_SOURCE_DIR}/test/mpi_launcher.cmake) # for MPI tests
 
 add_subdirectory(test)
-# fundamental tests of MPI and numeric libraries essential for Gemini3D
-
-# self-test simulations -- after all targets for if(TARGET ...)
-include(cmake/test/config.cmake)
-include(cmake/test/sim.cmake)
 
 # summary print
 include(cmake/summary.cmake)

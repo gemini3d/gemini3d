@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 #include "ffilesystem.h"
 
 int gemini_main(struct params*, int*, int*);
-void fluid_adv(double*, double*, int*, double*, int*, int*, double*, double*, double*, int*, 
+void fluid_adv(double*, double*, int*, double*, int*, int*, double*, double*, double*, int*,
 		void*, void*, void*);
 
 
@@ -58,24 +58,24 @@ int main(int argc, char **argv) {
 
   // we don't have a C++ parser for Fortran namelist files,
   // so read the namelist file directly in Fortran as usual.
-  s.fortran_nml = true;
+  s.fortran_nml = 1;
 
   // Prepare Gemini3D struct
   std::strcpy(s.out_dir, out_dir.data());
 
-  s.fortran_cli = false;
-  s.debug = false;
-  s.dryrun = false;
+  s.fortran_cli = 0;
+  s.debug = 0;
+  s.dryrun = 0;
   int lid2in = -1, lid3in = -1;
   MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
   for (int i = 2; i < argc; i++) {
     std::string_view arg(argv[i]);
     if (arg == "-d" || arg == "-debug")
-      s.debug = true;
+      s.debug = 1;
 
     if (arg == "-dryrun")
-      s.dryrun = true;
+      s.dryrun = 1;
 
     if (arg == "-h" || arg == "-help") {
       help_gemini_bin();
@@ -292,7 +292,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   VNRicht_artvisc_C(&fluidvars,&intvars);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // This old haloing code does have benefit since it doesn't automatically halo everything.  
+  // This old haloing code does have benefit since it doesn't automatically halo everything.
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // RK2_prep_mpi_allspec_C(pxtype, &xC, &fluidvars);
 
@@ -323,7 +323,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
 //  source_loss_allparams_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt,pt,pymd,pUTsec,&f107a,&f107,pfirst,&gavg,&Tninf);    // note that this includes and conversion of internal energy density and momentum density back to temp and veloc...
   set_global_boundaries_allspec_C(pxtype,&xC,&fluidvars,&fluidauxvars,&intvars,plsp);    // for source derivatives...
   //source_loss_allparams_C(&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
-  source_loss_energy_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt); 
+  source_loss_energy_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
   source_loss_momentum_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
   source_loss_mass_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars,&intvars,pxtype,&xC,pdt);
 
@@ -334,4 +334,3 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   source_neut_C(&cfgC,&fluidvars,&intvars,pxtype,&xC);
   // Fix electron veloc???
 }
-

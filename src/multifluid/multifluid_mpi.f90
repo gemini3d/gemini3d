@@ -12,7 +12,7 @@ contains
   subroutine halo_allparams(ns,rhovs1,rhoes,flagperiodic)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,rhoes
     logical, intent(in) :: flagperiodic
-  
+
     call halo(ns,2,tag%ns,flagperiodic)
     call halo(rhovs1,2,tag%vs1,flagperiodic)
     call halo(rhoes,2,tag%Ts,flagperiodic)

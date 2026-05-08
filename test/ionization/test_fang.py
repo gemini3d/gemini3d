@@ -57,8 +57,12 @@ def checker(exe: str, doplot: bool, params: dict | None = None):
         assert np.isclose(ionization_rates08[89, 0], 2214.052, atol=0.001), "E0: 100eV"
         assert np.isclose(ionization_rates08[17, 4], 9579.046, atol=0.001), "E0: 1MeV"
 
-        assert np.isclose(ionization_rates10[89, 0], 1192.002, atol=0.001), "Emono: 100eV"
-        assert np.isclose(ionization_rates10[17, 4], 778.655, atol=0.001, rtol=0.001), "Emono: 1MeV"
+        assert np.isclose(ionization_rates10[89, 0], 1192.002, atol=0.001), (
+            "Emono: 100eV"
+        )
+        assert np.isclose(ionization_rates10[17, 4], 778.655, atol=0.001, rtol=0.001), (
+            "Emono: 1MeV"
+        )
 
     if not doplot:
         return
@@ -89,7 +93,9 @@ def checker(exe: str, doplot: bool, params: dict | None = None):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("exe", help="path to test_fang executable (as called by CMake)", nargs="?")
+    p.add_argument(
+        "exe", help="path to test_fang executable (as called by CMake)", nargs="?"
+    )
     p.add_argument("-p", "--plot", help="make plots", action="store_true")
     P = p.parse_args()
 

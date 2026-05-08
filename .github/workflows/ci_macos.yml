@@ -2,9 +2,6 @@ name: ci_macos
 
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
-  CMAKE_INSTALL_PREFIX: ~/libs
-  CMAKE_PREFIX_PATH: ~/libs
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -12,8 +9,11 @@ on:
       - "cmake/intel.cmake"
       - "cmake/cray.cmake"
       - ".github/workflows/ci.yml"
+      - ".github/workflows/ci_windows.yml"
       - ".github/workflows/oneapi-linux.yml"
       - "docs/**"
+      - "scripts/**"
+      - "**.md"
 
 
 jobs:
@@ -45,7 +45,25 @@ jobs:
       if: ${{ matrix.compiler.fc == 'flang-new' }}
       run: brew install flang
 
-    - uses: actions/checkout@v6
+    - &checkout
+      uses: actions/checkout@v6
 
-    - uses: ./.github/workflows/composite-pkg
-    - uses: ./.github/workflows/composite-linux
+    - &pkg
+      uses: ./.github/workflows/composite-pkg
+
+    - uses: ./.github/workflows/composite-unix
+
+  gnu_make:
+    timeout-minutes: 15
+
+    runs-on: macos-latest
+
+    env:
+      CC: gcc-15
+      CXX: g++-15
+      FC: gfortran-15
+
+    steps:
+    - *checkout
+    - *pkg
+    - run: cmake --workflow gmake

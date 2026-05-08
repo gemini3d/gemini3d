@@ -10,7 +10,7 @@ add_library(ionization OBJECT ionization.f90
 $<TARGET_OBJECTS:grid>
 )
 
-if(glow)
+if(gemini3d_glow)
   # must have trailing slash in path
   set(glow_data_dir "${glow_SOURCE_DIR}/data/")
   if(NOT EXISTS ${glow_data_dir}/ssflux_hint.dat)
@@ -25,7 +25,7 @@ else()
 endif()
 
 target_link_libraries(ionization PRIVATE const meshobj timeutils fang
-$<$<BOOL:${glow}>:glow::glow>
+$<$<BOOL:${gemini3d_glow}>:glow::glow>
 )
 
 add_library(ionization_mpi OBJECT ionization_mpi.f90
@@ -51,4 +51,3 @@ target_link_libraries(solfluxBCs PRIVATE reader const meshobj interp timeutils g
 inputdata solfluxdata
 MPI::MPI_Fortran
 )
-

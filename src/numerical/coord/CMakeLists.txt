@@ -11,4 +11,3 @@ target_link_libraries(dipole PRIVATE newton)
 
 add_library(geomagnetic OBJECT geomagnetic.f90)
 target_link_libraries(geomagnetic PRIVATE const)
-

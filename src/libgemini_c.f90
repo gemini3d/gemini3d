@@ -22,7 +22,7 @@
 module gemini3d_C
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: iso_c_binding, only : c_int, c_bool, c_loc, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
+use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
 
 use phys_consts, only: lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3, detect_gridtype
@@ -78,7 +78,7 @@ contains
         call c_f_pointer(xC,xdipole)
         x=>xdipole
       case default
-        write(stderr, '(a,i0)'), 'ERROR:libgemini_c:set_gridpointer_dyntype:  ' // &
+        write(stderr, '(a,i0)') 'ERROR:libgemini_c:set_gridpointer_dyntype:  ' // &
           'Unable to identify object type during conversion from C to Fortran class pointer:  ',xtype
         error stop
     end select
@@ -98,7 +98,7 @@ contains
     type(gemini_cfg), pointer :: cfg
 
     call c_f_pointer(cfgC,cfg)
-    call cli_in(p,lid2in,lid3in,cfg)
+    call cli_in(p, lid2in,lid3in,cfg)
   end subroutine cli_in_C
 
 
@@ -108,8 +108,8 @@ contains
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
-    call c_f_pointer(cfgC,cfg)
-    call read_config_in(p,cfg)
+    call c_f_pointer(cfgC, cfg)
+    call read_config_in(p, cfg)
   end subroutine read_config_in_C
 
 
@@ -157,19 +157,19 @@ contains
   !> return some data from cfg that is needed in the main program
   subroutine get_config_vars_C(cfgC,flagneuBG,flagdneu,dtneuBG,dtneu) bind(C, name='get_config_vars_C')
     type(c_ptr), intent(in) :: cfgC
-    logical(C_BOOL), intent(inout) :: flagneuBG
+    integer(C_INT), intent(inout) :: flagneuBG
     integer(C_INT), intent(inout) :: flagdneu
     real(wp), intent(inout) :: dtneuBG,dtneu
 
     type(gemini_cfg), pointer :: cfg
     logical :: neuBG
 
-    neuBG = flagneuBG
+    neuBG = flagneuBG /= 0
 
     call c_f_pointer(cfgC,cfg)
     call get_config_vars(cfg, neuBG, flagdneu,dtneuBG,dtneu)
 
-    flagneuBG = neuBG
+    flagneuBG = merge(1, 0, neuBG)
   end subroutine get_config_vars_C
 
 
@@ -348,14 +348,20 @@ contains
                       bind(C, name='get_cfg_timevars_C')
     type(C_PTR), intent(in) :: cfgC
     real(wp), intent(inout) :: tmilestone
-    logical, intent(inout) :: flagneuBG
+    integer(C_INT), intent(inout) :: flagneuBG
     real(wp), intent(inout) :: dtneuBG
-    integer, intent(inout) :: flagdneu
-    integer, intent(inout) :: flagoutput
+    integer(C_INT), intent(inout) :: flagdneu
+    integer(C_INT), intent(inout) :: flagoutput
     type(gemini_cfg), pointer :: cfg
 
+    logical :: flagneuBG_f
+
+    flagneuBG_f = flagneuBG /= 0
+
     call c_f_pointer(cfgC,cfg)
-    call get_cfg_timevars(cfg,tmilestone,flagneuBG,dtneuBG,flagdneu,flagoutput)
+    call get_cfg_timevars(cfg,tmilestone, flagneuBG_f, dtneuBG,flagdneu,flagoutput)
+
+    flagneuBG = merge(1, 0, flagneuBG_f)
   end subroutine get_cfg_timevars_C
 
 
@@ -465,7 +471,7 @@ contains
     x=>set_gridpointer_dyntype(xtype,xC)
     call c_f_pointer(intvarsC,intvars)
     call init_solfluxinput_in(cfg,x,dt,t,ymd,UTsec,intvars)
-  end subroutine init_solfluxinput_C 
+  end subroutine init_solfluxinput_C
 
 
   !> set update cadence for printing out diagnostic information during simulation
@@ -948,7 +954,7 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
 
-    call c_f_pointer(cfgC, cfg)   
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
@@ -973,8 +979,8 @@ contains
     type(gemini_work), pointer :: intvars
     class(curvmesh), pointer :: x
     type(gemini_cfg), pointer :: cfg
-   
-    call c_f_pointer(cfgC, cfg)   
+
+    call c_f_pointer(cfgC, cfg)
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp)+9])
@@ -1067,10 +1073,10 @@ contains
   end subroutine source_neut_C
 
 
-  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, &
-                  UTsec, & !f107a,f107, & !first,
-                  gavg,Tninf) &
+  subroutine impact_ionization_C(cfgC,fluidvarsC,intvarsC,xtype,xC,dt,t,ymd, UTsec) &
                   bind(C, name="impact_ionization_C")
+     !f107a,f107, & !first, !gavg,Tninf)
+
     type(c_ptr), intent(in) :: cfgC
     integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(in) :: xC
@@ -1080,8 +1086,8 @@ contains
     real(wp), intent(in) :: t
     integer(C_INT), intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec
-    !logical, intent(in) :: first
-    real(wp), intent(in) :: gavg,Tninf
+    !integer(C_INT), intent(in) :: first
+    !real(wp), intent(in) :: gavg,Tninf
 
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -1131,9 +1137,9 @@ contains
     type(c_ptr), intent(in) :: intvarsC
     type(gemini_work), pointer :: intvars
     logical :: flagrootonly=.true.
-    
+
     call c_f_pointer(intvarsC,intvars)
-    flagrootonly=flagrootonlyC/=0
+    flagrootonly = flagrootonlyC /= 0
     call set_electrodynamics_commtype(flagrootonly, intvars)
   end subroutine set_electrodynamics_commtype_C
 

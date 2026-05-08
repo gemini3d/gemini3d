@@ -14,7 +14,7 @@
 
 program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
+use, intrinsic :: iso_c_binding, only : C_INT, C_NULL_CHAR
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
 use mpi_f08, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
@@ -63,13 +63,13 @@ integer :: myid
 
 !> initialize mpi
 call mpi_init()
-p%fortran_cli = .true.
-p%fortran_nml = .true.
+p%fortran_cli = 1
+p%fortran_nml = 1
 p%out_dir(1) = c_null_char
 lid2in = -1
 lid3in = -1
 
-!! out_dir, lid2in, lid3in, are ignored when fortran_cli=.true.
+!! out_dir, lid2in, lid3in, are ignored when fortran_cli=1
 call gemini_main(p, lid2in, lid3in)
 
 !> shut down mpi
@@ -197,7 +197,7 @@ contains
     if(myid==0) print*, 'Priming inputdata'
     call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
-    if(myid==0) print*, 'Setting Lagrangian-ness'   
+    if(myid==0) print*, 'Setting Lagrangian-ness'
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(cfg,x,electrovars,intvars)
 
@@ -361,21 +361,21 @@ contains
       if (myid==0 .and. debug) then
         print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
       end if
-  
+
       ! cleanup and convert to specific internal energy density for sources substeps
       call clean_param_in(3,x,fluidvars)
       call T2rhoe_in(fluidvars,fluidauxvars)
-  
+
       !> all workers need to "agree" on a gravity and exospheric temperature
       call get_gavg_Tinf_in(intvars)
-  
-  
+
+
       !> Compute ionization sources for the present time step
       call clear_ionization_arrays(intvars)
       call impact_ionization_in(cfg,fluidvars,intvars,x,dt/lsub,t,ymd, &
                                           UTsec)
       call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec)
-  
+
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !> solve all source/loss processes
       call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)     ! reassert x1 boundary since derivatives (dx1) done for momentum sources

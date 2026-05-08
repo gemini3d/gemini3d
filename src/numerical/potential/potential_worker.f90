@@ -23,7 +23,7 @@ module procedure potential_workers_mpi
   real(wp), dimension(1:lx2,1:lx3) :: v2slab,v3slab
   integer :: flagsolve
   logical :: flagstatic
-  real(wp), dimension(1:lx2,1:lx3) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3 
+  real(wp), dimension(1:lx2,1:lx3) :: SigPBC2,SigPBC3,SigHBC2,SigHBC3
 
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
   perflag=.true.
@@ -104,7 +104,7 @@ module procedure potential_workers_mpi
             call gather_send(SigPBC2,tag%SigPBC2)
             call gather_send(SigPBC3,tag%SigPBC3)
             call gather_send(SigHBC2,tag%SigHBC2)
-            call gather_send(SigHBC3,tag%SigHBC3)            
+            call gather_send(SigHBC3,tag%SigHBC3)
           end if
         end if
 

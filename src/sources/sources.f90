@@ -983,12 +983,16 @@ contains
 
 
   !> Compute momnetum input rates to the neutral atmosphere
-  subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
+  subroutine srcsMomentum_neut(nn,vn1,vn2,vn3,Tn, &
+          nnBG,vn1BG,vn2BG,vn3BG,TnBG, &
+          ns,vs1,vs2,vs3,Ts,x,momentumneut_source)
     ! Neutrals. 1 - O, 2- N2, 3 - O2, 4 - H
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     ! Neutral velocities and temperature (without ghost cells?)
     real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
     ! Ions/Elecgtrons density, velcities and temperature
+    real(wp), dimension(:,:,:,:), intent(in) :: nnBG
+    real(wp), dimension(:,:,:), intent(in) :: vn1BG,vn2BG,vn3BG,TnBG    ! background state values
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
     class(curvmesh), intent(in) :: x
     ! I need momentum in each direction, so 4-dimension variable
@@ -1023,24 +1027,38 @@ contains
         end where
 
         ! Accumulate momentum rate over all neutrals and ions
+!        momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + &
+!          nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+!          nuneut * (vs1(1:lx1,1:lx2,1:lx3,isp) - vn1(1:lx1,1:lx2,1:lx3))
+!        momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + &
+!          nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+!          nuneut * (vs2(1:lx1,1:lx2,1:lx3,isp) - vn2(1:lx1,1:lx2,1:lx3))
+!        momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + &
+!          nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
+!          nuneut * (vs3(1:lx1,1:lx2,1:lx3,isp) - vn3(1:lx1,1:lx2,1:lx3))
+
         momentumneut_source(1:lx1,1:lx2,1:lx3,1) = momentumneut_source(1:lx1,1:lx2,1:lx3,1) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * (vs1(1:lx1,1:lx2,1:lx3,isp) - vn1(1:lx1,1:lx2,1:lx3))
+          nuneut * (-(vn1(1:lx1,1:lx2,1:lx3)-vn1BG(1:lx1,1:lx2,1:lx3)))
         momentumneut_source(1:lx1,1:lx2,1:lx3,2) = momentumneut_source(1:lx1,1:lx2,1:lx3,2) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * (vs2(1:lx1,1:lx2,1:lx3,isp) - vn2(1:lx1,1:lx2,1:lx3))
+          nuneut * (-(vn2(1:lx1,1:lx2,1:lx3)-vn2BG(1:lx1,1:lx2,1:lx3)))
         momentumneut_source(1:lx1,1:lx2,1:lx3,3) = momentumneut_source(1:lx1,1:lx2,1:lx3,3) + &
           nn(1:lx1,1:lx2,1:lx3,isp2) * mn(isp2) * &
-          nuneut * (vs3(1:lx1,1:lx2,1:lx3,isp) - vn3(1:lx1,1:lx2,1:lx3))
+          nuneut * (-(vn3(1:lx1,1:lx2,1:lx3)-vn3BG(1:lx1,1:lx2,1:lx3)))
       end do
     end do
   end subroutine srcsMomentum_neut
 
 
   !> energy inputs into neutrals from NEUTRAL-ION COLLISIONS
-  subroutine srcsEnergy_neut(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,energyneut_source)
+  subroutine srcsEnergy_neut(nn,vn1,vn2,vn3,Tn, &
+          nnBG,vn1BG,vn2BG,vn3BG,TnBG, &
+          ns,vs1,vs2,vs3,Ts,energyneut_source)
     real(wp), dimension(:,:,:,:), intent(in) :: nn
     real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), dimension(:,:,:,:), intent(in) :: nnBG
+    real(wp), dimension(:,:,:), intent(in) :: vn1BG,vn2BG,vn3BG,TnBG    ! background state values   
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2), intent(out) :: energyneut_source
     !! intent(out)
@@ -1071,16 +1089,31 @@ contains
         end where
 
         !HEAT TRANSFER
+!        fact=2*nuneut/(ms(isp)+mn(isp2))
+!        energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3)+ &
+!          nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman(isp2)-1)*fact* &
+!          (Ts(1:lx1,1:lx2,1:lx3,isp) - Tn)
+!
+!        !FRICTION
+!        fact=fact*mn(isp2)/3
+!        energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3) + &
+!          nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman(isp2)-1) &
+!          *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
+!          +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
+
+        !HEAT TRANSFER
         fact=2*nuneut/(ms(isp)+mn(isp2))
         energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3)+ &
-          nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman(isp2)-1)*fact*(Ts(1:lx1,1:lx2,1:lx3,isp) - Tn)
+          nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)*kB/(gamman(isp2)-1)*fact* &
+          ( -(Tn(1:lx1,1:lx2,1:lx3)-TnBG(1:lx1,1:lx2,1:lx3)))
 
         !FRICTION
         fact=fact*mn(isp2)/3
         energyneut_source(1:lx1,1:lx2,1:lx3)=energyneut_source(1:lx1,1:lx2,1:lx3) + &
           nn(1:lx1,1:lx2,1:lx3,isp2)*mn(isp2)/(gamman(isp2)-1) &
-          *((vn1-vs1(1:lx1,1:lx2,1:lx3,isp))**2+(vn2-vs2(1:lx1,1:lx2,1:lx3,isp))**2 &
-          +(vn3-vs3(1:lx1,1:lx2,1:lx3,isp))**2)*fact
+          *( (vn1(1:lx1,1:lx2,1:lx3)-vn1BG(1:lx1,1:lx2,1:lx3))**2 &
+          + (vn2(1:lx1,1:lx2,1:lx3)-vn2BG(1:lx1,1:lx2,1:lx3))**2 &
+          +(vn3(1:lx1,1:lx2,1:lx3)-vn3BG(1:lx1,1:lx2,1:lx3))**2)*fact
       end do
     end do
     !INELASTIC COLLISIONS FOR ELECTRONS, ROTATIONAL - excluded for now

@@ -118,7 +118,7 @@ unset __conda_setup
 If your system runs .bash_profile on login (as is common in many systems, including VEGA), you can include a line in your .bash_profile to source .bashrc. This ensures that the settings and environment variables in .bashrc are applied during login.
 ```
 # .bash_profile
-  
+
 # Get the aliases and functions
 if [ -r ~/.bashrc ]; then
         source ~/.bashrc
@@ -139,7 +139,7 @@ For longer or more expensive simulations, you will need to use the queueing syst
 #PBS -l walltime=120:00:00
 #PBS -l nodes=1:ppn=192
 #PBS -N GEMINI_mooreOK
-# Not necessary to set wall time, 
+# Not necessary to set wall time,
 # longq: 120 hours, 42 nodes (each with 2x AMD 96-core processors)
 # normalq: 24 hours, 42 nodes
 

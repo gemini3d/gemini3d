@@ -157,7 +157,7 @@ type, abstract :: curvmesh
   !! coordinates
   real(wp) :: glonctr,glatctr
 
-  
+
   !> contains information about where to assign null cells, most uses will assume default value
   real(wp) :: altnull=0 !80e3
 
@@ -575,9 +575,9 @@ contains
   end subroutine calc_gridflag
 
 
-  !> Setter routine for controlling altitude below which points are considered non-computational.  
+  !> Setter routine for controlling altitude below which points are considered non-computational.
   !   This isn't strictly necessary since the type data can be directly manipulated -- unless
-  !   members are later made private.  
+  !   members are later made private.
   subroutine set_altnull(self,altnull_in)
     class(curvmesh), intent(inout) :: self
     real(wp), intent(in) :: altnull_in
@@ -656,14 +656,14 @@ contains
     class(curvmesh), intent(inout) :: self
     real(wp), dimension(:,:,:), allocatable :: ri,thetai,phispheri
 
-    if (.not. self%geogi_set_status) then 
+    if (.not. self%geogi_set_status) then
       allocate(self%alti(1:self%lx1+1,1:self%lx2+1,1:self%lx3+1))
-      allocate(self%gloni,self%glati, mold=self%alti) 
+      allocate(self%gloni,self%glati, mold=self%alti)
 
       allocate(ri,thetai,phispheri, mold=self%alti)
 
       call self%native2ECEFspher(self%glonctr,self%glatctr,self%x1i,self%x2i,self%x3i,ri,thetai,phispheri)
-      !call geomag2geog(phispheri,thetai,self%gloni,self%glati) 
+      !call geomag2geog(phispheri,thetai,self%gloni,self%glati)
       !self%alti=r2alt(ri)
 
       self%alti(:,:,:)=ri(:,:,:)*cos(thetai(:,:,:))    ! z
@@ -724,7 +724,7 @@ contains
   end subroutine calc_unitvec_geo
 
 
-  !> units vectors in the magnetic mlon,mlat directions (ECEF magnetic Cartesian 
+  !> units vectors in the magnetic mlon,mlat directions (ECEF magnetic Cartesian
   !    components)
   subroutine calc_unitvec_mag(self,ealt,emlon,emlat)
     class(curvmesh), intent(in) :: self

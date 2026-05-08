@@ -36,7 +36,7 @@ type, abstract, extends(neutraldata) :: neutraldata3D
   contains
     ! unique to this class
     procedure :: rotate_winds
-    
+
     ! overriding procedures
     procedure :: init_storage
 

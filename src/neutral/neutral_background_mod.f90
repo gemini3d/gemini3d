@@ -92,7 +92,7 @@ contains
     atmos%nnBG(:,:,:,1:5)=atmosbackground%natminow(:,:,:,1:5)
     atmos%TnBG=atmosbackground%natminow(:,:,:,9)
     call NO_calc(atmos%nnBG,atmos%TnBG)
-    
+
     ! rotate winds to model native and place into wind background arrays in the atmos object
     call rotate_geo2native(atmosbackground%natminow(:,:,:,6), &
             atmosbackground%natminow(:,:,:,7), &
@@ -102,7 +102,7 @@ contains
     lneu=size(atmos%nnBG,4)
 
     ! We need to extrapolate in altitude from the nearest hemisphere ionosphere in addition to dealing with
-    !   issues that arise from below-ground cells.  
+    !   issues that arise from below-ground cells.
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         ! for each field line we need to find the apex altitude and index (it possibly could be a different index
@@ -128,7 +128,7 @@ contains
 
         !print*, ix1apex,ix1ref1,ix1ref2
 
-        ! pull a reference density from the highest point on the simulation that exists below altitude limit 
+        ! pull a reference density from the highest point on the simulation that exists below altitude limit
         !   of the input data
         do ineu=1,lneu
           nref=atmos%nnBG(ix1ref1,ix2,ix3,ineu)
@@ -148,8 +148,8 @@ contains
             if (ix1<lx1) then    ! FIXME: always true?
               atmos%nnBG(ix1,ix2,ix3,ineu)=nrat*atmos%nnBG(ix1+1,ix2,ix3,ineu)
             else
-              print*, 'ref2:  ',ix1apex,ix1ref2,ix1              
-              error stop 'problem extrapolating background neutral density profile.  index OOB'               
+              print*, 'ref2:  ',ix1apex,ix1ref2,ix1
+              error stop 'problem extrapolating background neutral density profile.  index OOB'
             end if
           end do
         end do
@@ -202,19 +202,19 @@ contains
           end if
           if (x%alt(lx1,ix2,ix3)<0) then
             do ix1=lx1,ix1ref2,-1
-              atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref2-1,ix2,ix3,ineu)           
+              atmos%nnBG(ix1,ix2,ix3,ineu)=atmos%nnBG(ix1ref2-1,ix2,ix3,ineu)
             end do
           end if
         end do
 
-        if (x%alt(1,ix2,ix3)<0) then       
+        if (x%alt(1,ix2,ix3)<0) then
           do ix1=1,ix1ref1
             atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref1+1,ix2,ix3)
           end do
         end if
         if (x%alt(lx1,ix2,ix3)<0) then
           do ix1=lx1,ix1ref2,-1
-            atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref2-1,ix2,ix3)           
+            atmos%TnBG(ix1,ix2,ix3)=atmos%TnBG(ix1ref2-1,ix2,ix3)
           end do
         end if
       end do

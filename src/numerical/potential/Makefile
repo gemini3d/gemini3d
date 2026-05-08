@@ -17,4 +17,3 @@ all:
 	$(FL) test_potential3D.o -o test_potential3D -L$(MUMPSDIR) -ldmumps -lmumps_common -L$(SCALDIR) -lscalapack -L$(BLASDIR) -lblas -L$(BLACSDIR) -lblacs -lpord -llapack
 #	$(FC) -I$(INCDIR) -I$(INCDIR2) -c test_potential2D.f90 -o test_potential2D.o
 #	$(FL) test_potential2D.o -o test_potential2D -L$(PDEDIR) -lPDEelliptic -L$(MUMPSDIR) -ldmumps -lmumps_common -L$(SCALDIR) -lscalapack -L$(BLASDIR) -lblas -L$(CONSTDIR) -lconst
-

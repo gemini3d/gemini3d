@@ -7,7 +7,7 @@ implicit none (type, external)
 interface ! plasma_output_*.f90
   module subroutine output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
                                                 Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall, &
-                                                user_outputall,production_rateall)
+                                                user_outputall)
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
@@ -17,7 +17,7 @@ interface ! plasma_output_*.f90
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall   ! okay to have ghost cells b/c already resides on root.
     real(wp), dimension(1:,1:,1:), intent(in) :: J1all,J2all,J3all   ! tricky/confusing - J1,2,3 have ghost cells but these do not!
     real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
-    real(wp), dimension(:,:,:,:), intent(in) :: user_outputall,production_rateall
+    real(wp), dimension(:,:,:,:), intent(in) :: user_outputall
   end subroutine
 end interface
 
@@ -27,16 +27,16 @@ contains
     !! A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
     !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
     !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
-    
+
     if (mpi_cfg%myid == 0) then
-      call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,user_output,production_rate)
+      call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,user_output)
     else
-      call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,user_output,production_rate)
+      call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,user_output)
     end if
   end procedure output_plasma
 
 
-  subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,user_output,production_rate)
+  subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3,user_output)
     !------------------------------------------------------------
     !-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
     !-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
@@ -46,26 +46,25 @@ contains
         real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
     real(wp), dimension(:,:,:,:), intent(in) :: user_output
-    real(wp), dimension(:,:,:,:), intent(in) :: production_rate
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmp
-    integer :: iparm,lparms,nparms
-    
+    integer :: iparm,lparms
+
     !ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
     v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
     v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
     v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
     v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
-    
-    
+
+
     !SEND MY GRID DATA TO THE ROOT PROCESS
     call gather_send(v2avg,tag%v2)
     call gather_send(v3avg,tag%v3)
     call gather_send(ns,tag%ns)
     call gather_send(vs1,tag%vs1)
     call gather_send(Ts,tag%Ts)
-    
-    
+
+
     !------- SEND ELECTRODYNAMIC PARAMETERS TO ROOT
     tmp=J1(1:lx1,1:lx2,1:lx3)
     call gather_send(tmp,tag%J1)
@@ -80,15 +79,15 @@ contains
       call gather_send(tmp,tag%uservar)
     end do
     
-    nparms=size(production_rate,4)    
-    do iparm = 1,nparms
-      tmp = production_rate(:,:,:,iparm)
-      call gather_send(tmp, tag%uservar)   ! or define a new tag e.g., tag%prod_rate
-    end do
+    !nparms=size(production_rate,4)    
+    !do iparm = 1,nparms
+    !  tmp = production_rate(:,:,:,iparm)
+    !  call gather_send(tmp, tag%uservar)   ! or define a new tag e.g., tag%prod_rate
+    !end do
   end subroutine output_workers_mpi
-  
-  
-  subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,user_output,production_rate)
+
+
+  subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format,user_output)
     !------------------------------------------------------------
     !------- Root needs to gather data and pass to subroutine to
     !------- write to disk in the appropriate format.
@@ -102,7 +101,6 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
     real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output   
-    real(wp), dimension(:,:,:,:), intent(in) :: production_rate
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
     real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
@@ -111,13 +109,12 @@ contains
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: tmpall
     integer :: iparm,lparms,nparms
     real(wp), dimension(:,:,:,:), allocatable :: user_outputall
-    real(wp), dimension(:,:,:,:), allocatable :: production_rateall
-    
+
     ! to deal with user output
     lparms=size(user_output,4)
-    nparms=size(production_rate,4)
+    !nparms=size(production_rate,4)
     allocate(user_outputall(1:lx1,1:lx2all,1:lx3all,1:lparms))
-    allocate(production_rateall(1:lx1,1:lx2all,1:lx3all,1:nparms))
+    !allocate(production_rateall(1:lx1,1:lx2all,1:lx3all,1:nparms))
 
     print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
     !ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
@@ -125,14 +122,14 @@ contains
     v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
     v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
     v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
-    
+
     !GET THE SUBGRID DATA FORM THE WORKERS
     call gather_recv(v2avg,tag%v2,v2avgall)
     call gather_recv(v3avg,tag%v3,v3avgall)
     call gather_recv(ns,tag%ns,nsall)
     call gather_recv(vs1,tag%vs1,vs1all)
     call gather_recv(Ts,tag%Ts,Tsall)
-    
+
     !> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMETERS FROM WORKERS
     tmp=J1(1:lx1,1:lx2,1:lx3)
     call gather_recv(tmp,tag%J1,J1all)
@@ -148,11 +145,11 @@ contains
       user_outputall(:,:,:,iparm)=tmpall
     end do
 
-    do iparm = 1, nparms
-      tmp = production_rate(:,:,:,iparm)
-      call gather_recv(tmp, tag%uservar, tmpall)
-      production_rateall(:,:,:,iparm) = tmpall
-    end do
+    !do iparm = 1, nparms
+    !  tmp = production_rate(:,:,:,iparm)
+    !  call gather_recv(tmp, tag%uservar, tmpall)
+    !  production_rateall(:,:,:,iparm) = tmpall
+    !end do
 
    ! print *, '  -->Number of user-defined output variables:  ',lparms, minval(user_outputall(:,:,:,4)), maxval(user_outputall(:,:,:,4))
 
@@ -175,12 +172,12 @@ contains
     select case (out_format)
       case ('h5')
         call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,v2avgall,v3avgall,nsall,vs1all,Tsall, &
-                                           Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,user_outputall,production_rateall)
+                                           Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall,user_outputall)
       case default
         error stop 'plasma_output:output_root_stream_api: unknown format' // out_format
     end select
 
     deallocate(user_outputall)
-    deallocate(production_rateall)
+    !deallocate(production_rateall)
   end subroutine output_root_stream_mpi
 end submodule plasma_output

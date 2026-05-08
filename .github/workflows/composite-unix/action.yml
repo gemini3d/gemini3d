@@ -1,0 +1,27 @@
+name: Unix builds
+description: Build and test on Linux and macOS
+
+runs:
+
+  using: composite
+
+  steps:
+
+  - name: Debug Unit Test
+    shell: bash
+    run: $CMAKE --workflow --preset debug-unit
+
+  - name: Upload log failure
+    if: failure()
+    uses: actions/upload-artifact@v7
+    with:
+      name: ${{ env.CC }}-${{ env.FC }}-${{ runner.os }}-CMakeConfigureLog.yaml
+      path: build/CMakeFiles/CMakeConfigureLog.yaml
+
+  - name: Release Unit Test
+    shell: bash
+    run: $CMAKE --workflow --preset release-unit
+
+  - name: Release simulation test
+    shell: bash
+    run: $CMAKE --workflow --preset release-sim

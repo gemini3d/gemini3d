@@ -1,0 +1,70 @@
+name: ci_windows
+
+env:
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+on:
+  push:
+    paths-ignore:
+      - "cmake/intel.cmake"
+      - "cmake/cray.cmake"
+      - ".github/workflows/ci_macos.yml"
+      - ".github/workflows/oneapi-linux.yml"
+      - ".github/workflows/ci.yml"
+      - "docs/**"
+      - "scripts/**"
+      - "**.md"
+
+  workflow_dispatch:
+
+# avoid wasted runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  wsl:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CMAKE: /tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/cmake
+      CTEST: /tmp/cmake-${{ matrix.cmake_version }}-linux-x86_64/bin/ctest
+
+    strategy:
+      matrix:
+        cmake_version: [3.31.12]
+# need cmake >= 3.30 to set binary dir with ctest --test-dir <> --preset <>
+# Cmake 3.31 added cmake --workflow <preset> syntax
+
+    defaults:
+      run:
+        shell: wsl-bash {0}
+
+    steps:
+
+    - uses: Vampire/setup-wsl@v7
+      with:
+        distribution: Ubuntu-24.04
+        additional-packages:
+          ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev
+        use-cache: true
+        wsl-shell-user: tester
+
+    - name: tell OS release
+      run: cat /etc/os-release
+
+    - name: tell WSL version
+      run: wsl.exe -l -v
+      shell: pwsh
+
+# need to do this here to avoid Git dubious ownership issues with the WSL filesystem
+    - uses: actions/checkout@v6
+
+    - name: install CMake
+      run: |
+        curl -o /tmp/cmake.tar.gz -L "https://github.com/Kitware/CMake/releases/download/v${{ matrix.cmake_version }}/cmake-${{ matrix.cmake_version }}-linux-x86_64.tar.gz"
+        tar -xf /tmp/cmake.tar.gz -C /tmp --exclude=doc/ --exclude=man/ --exclude=Help/
+
+    - name: CMake Build and Unit Test
+      run: ${{ env.CMAKE }} --workflow linux-unit

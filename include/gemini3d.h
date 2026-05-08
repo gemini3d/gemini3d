@@ -1,8 +1,10 @@
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
-// needed when compiling C files???
+// needed when compiling C files
+#if __STDC_VERSION__ < 202311L
 #include <stdbool.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,10 +15,10 @@ enum { LMAX = 1000 };
 struct params {
   // order and lengths must match in Fortran and C
   // see gemini_main.f90 "cparams"
-  bool fortran_nml;
-  bool fortran_cli;
-  bool debug;
-  bool dryrun;
+  int fortran_nml;
+  int fortran_cli;
+  int debug;
+  int dryrun;
   char out_dir[LMAX];
   // .ini [base]
   int ymd[3];
@@ -55,7 +57,7 @@ extern void gemini_work_dealloc_C(void**, void**);
 extern void set_start_values_auxtimevars_C(double*, double*, double*);
 extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
-extern void get_cfg_timevars_C(void**,double*,bool*,double*,int*,int*);
+extern void get_cfg_timevars_C(void**,double*,int*,double*,int*,int*);
 extern void msisinit_C(void**);
 extern void init_neutralBG_input_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void set_update_cadence_C(int*);
@@ -83,7 +85,7 @@ extern void VNRicht_artvisc_C(double**, void**);
 extern void compression_C(double**, double**, void**, int*, void**, double*);
 extern void rhoe2T_C(double**, double**);
 extern void energy_diffusion_C(void**, int*, void**, double**, double**, void**, double*);
-extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**, 
+extern void source_loss_allparams_C(void**, double**, double**, double**, void**, int*, void**,
                                       double*);
 extern void source_loss_mass_C(void**, double**,double**,double**,void**,int*,void**,double*);
 extern void source_loss_momentum_C(void**, double**,double**,double**,void**,int*,void**,double*);

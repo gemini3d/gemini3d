@@ -487,9 +487,8 @@ contains
    end subroutine RK2_global_boundary_allspec_C
 
 
-  subroutine get_gavg_Tinf_C(intvarsC, gavg,Tninf) bind(C, name='get_gavg_Tinf_C')
+  subroutine get_gavg_Tinf_C(intvarsC) bind(C, name='get_gavg_Tinf_C')
     type(C_PTR), intent(in) :: intvarsC
-    real(wp), intent(inout) :: gavg,Tninf
 
     type(gemini_work), pointer :: intvars
 

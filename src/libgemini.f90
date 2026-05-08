@@ -18,7 +18,7 @@
 !!   For the most part this is a bunch of "getter" routines.
 module gemini3d
 
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_loc, c_null_ptr, c_ptr, c_f_pointer
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, C_INT, C_FLOAT, C_LOC, c_null_ptr, c_ptr, c_f_pointer
 use gemini_cli, only : cli
 use gemini_init, only : find_config, check_input_files
 use phys_consts, only: wp,debug,lnchem,lwave,lsp,pi
@@ -71,7 +71,7 @@ public :: c_params, gemini_alloc, gemini_dealloc, init_precipinput_in, &
             sweep3_allparams_in, sweep1_allparams_in, sweep2_allparams_in, &
             sweep3_allspec_mass_in,sweep3_allspec_momentum_in,sweep3_allspec_energy_in, &
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
-            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &                 
+            sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
             energy_diffusion_in, &
             source_loss_allparams_in, &
@@ -145,29 +145,28 @@ type gemini_work
   real(wp), dimension(:,:,:), pointer :: energyneut=>null()
 
   !> Inputdata objects that are needed for each subgrid
-  type(precipdata), pointer :: eprecip=>null()              ! input precipitation information 
+  type(precipdata), pointer :: eprecip=>null()              ! input precipitation information
   type(efielddata), pointer :: efield=>null()               ! contains input electric field data
   class(neutraldata), pointer :: atmosperturb=>null()       ! perturbations about atmospheric background; not associated by default and may never be associated
   type(solfluxdata), pointer :: solflux=>null()             ! perturbations to solar flux, e.g., from a flare or eclipse
   type(neutraldataBG), pointer :: atmosbackground=>null()   ! background file file input
 
   !> user output data
-  integer :: lparms=5   ! number of 3D arrays to be output to hdf5 files
-  integer :: nparms=5
+  integer :: lparms=10   ! number of 3D arrays to be output to hdf5 files
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
   !> photoionization production rates
-  real(wp), dimension(:,:,:,:), pointer :: production_rate =>null()
+  !real(wp), dimension(:,:,:,:), pointer :: production_rate =>null()
 end type gemini_work
 
 
 !> type for passing C-like parameters between program units
 type, bind(C) :: c_params
   !! this MUST match gemini3d.h and libgemini.f90 exactly including order
-  logical(c_bool) :: fortran_nml, fortran_cli, debug, dryrun
+  integer(C_INT) :: fortran_nml, fortran_cli, debug, dryrun
   character(kind=c_char) :: out_dir(1000)
   !! .ini [base]
-  integer(c_int) :: ymd(3)
-  real(kind=c_float) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
+  integer(C_INT) :: ymd(3)
+  real(C_FLOAT) :: UTsec0, tdur, dtout, activ(3), tcfl, Teinf
   !! .ini
 end type c_params
 
@@ -190,7 +189,7 @@ contains
     character(size(p%out_dir)) :: buf
     integer :: i
 
-    if(p%fortran_cli) then
+    if(p%fortran_cli /= 0) then
       call cli(cfg, lid2in, lid3in, debug)
     else
       buf = "" !< ensure buf has no garbage characters
@@ -201,8 +200,8 @@ contains
       enddo
       cfg%outdir = expanduser(buf)
 
-      cfg%dryrun = p%dryrun
-      debug = p%debug
+      cfg%dryrun = p%dryrun /= 0
+      debug = p%debug /= 0
     endif
   end subroutine cli_in
 
@@ -213,7 +212,7 @@ contains
     type(gemini_cfg), intent(inout) :: cfg
 
     !> read the config input file, if not passed .ini info from C++ frontend
-    if(p%fortran_nml) then
+    if(p%fortran_nml /= 0) then
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
       call check_input_files(cfg)
@@ -343,7 +342,7 @@ contains
     intvars%energyneut=>intvars%neutralrates(-1:lx1+2,-1:lx2+2,-1:lx3+2,4)
     intvars%neutralrates(:,:,:,:)=0._wp
 
-    ! First check that our module-scope arrays are allocated before going on to calculations.  
+    ! First check that our module-scope arrays are allocated before going on to calculations.
     ! This may need to be passed in as arguments for compatibility with trees-GEMINI
     allocate(intvars%Prprecip(1:lx1,1:lx2,1:lx3,1:lsp-1))
     intvars%Prprecip(:,:,:,:)=0.0
@@ -462,12 +461,11 @@ contains
       error stop 'attempting to allocate user_output when already in use.'
     end if
 
-    if (.not. associated(intvars%production_rate)) then
-      allocate(intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms))
-    else
-      error stop 'attempting to allocate production_rate when already in use.'
-    end if 
-
+    !if (.not. associated(intvars%production_rate)) then
+    !  allocate(intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms))
+    !else
+    !  error stop 'attempting to allocate production_rate when already in use.'
+    !end if 
   end subroutine user_allocate
 
 
@@ -483,7 +481,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.  
+    ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.
     !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
     !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
     !   this information.  
@@ -493,6 +491,18 @@ contains
 !     i2end=i2start+lx2-1
 !     i3start=lbound(intvars%sig0,3)+2
 !     i3end=i3start+lx3-1
+     ! OR like this:  
+!    i1start=lbound(intvars%energyneut,1)+2
+!    i1end=i1start+lx1-1
+!    i2start=lbound(intvars%energyneut,2)+2
+!    i2end=i2start+lx2-1
+!    i3start=lbound(intvars%energyneut,3)+2
+!    i3end=i3start+lx3-1
+
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%energyneut(i1start:i1end,i2start:i2end,i3start:i3end)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,1)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,2)
+!    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%momentneut(i1start:i1end,i2start:i2end,i3start:i3end,3)
 
     i1start=1
     i1end=lx1
@@ -507,9 +517,10 @@ contains
     intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%sigNCP(i1start:i1end,i2start:i2end,i3start:i3end)
     intvars%user_output(1:lx1,1:lx2,1:lx3,5)=intvars%sigNCH(i1start:i1end,i2start:i2end,i3start:i3end)
 
-    !print*, minval(intvars%user_output(1:lx1,1:lx2,1:lx3,2)), maxval(intvars%user_output(1:lx1,1:lx2,1:lx3,2))
-    !print*, minval(intvars%user_output(1:lx1,1:lx2,1:lx3,4)), maxval(intvars%user_output(1:lx1,1:lx2,1:lx3,4))
-    intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms) = intvars%Prionize(i1start:i1end,i2start:i2end,i3start:i3end,1:intvars%nparms)
+    !! MZ -- I'm going to move these to the user_output array so you'll need to adjust your scripts to accommodate this...
+    !intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms) = intvars%Prionize(i1start:i1end,i2start:i2end,i3start:i3end,1:intvars%nparms)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,6:10) = &
+            intvars%Prionize(i1start:i1end,i2start:i2end,i3start:i3end,1:5)    
   end subroutine user_populate
 
 
@@ -518,7 +529,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     if (associated(intvars%user_output)) deallocate(intvars%user_output)
-    if (associated(intvars%production_rate)) deallocate(intvars%production_rate)
+    !if (associated(intvars%production_rate)) deallocate(intvars%production_rate)
   end subroutine user_deallocate
 
 
@@ -1024,7 +1035,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)  
+    !call sweep1_allparams(dt,x,intvars%vs1i,ns,rhovs1,rhoes)
     call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -1086,7 +1097,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
-    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)   
+    !call sweep2_allparams(dt,x,intvars%vs2i,ns,rhovs1,rhoes)
     call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
@@ -1273,7 +1284,7 @@ contains
       call solfluxBCs(cfg,x,ymd,UTsec,intvars%Iinf)
     end if
   end subroutine solflux_perturb_in
-  
+
 
   !> compute boundary conditions for electric field solutions
   subroutine efield_perturb_nompi_in(cfg,intvars,x,dt,t,ymd,UTsec)
@@ -1409,7 +1420,7 @@ contains
 
   !> Ionization and heating rates must be re-accumulated each time so initialize to zero.  The precip arrays
   !    are not cleared here because these need to persist between time steps, e.g. glow only runs every N steps as
-  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of 
+  !    specified by the user.  As a consequence the impact_ionization procedures need to manage initialization of
   !    intvars%Prprecip and intvars%Qeprecip
   subroutine clear_ionization_arrays(intvars)
     type(gemini_work), intent(inout) :: intvars
@@ -1419,13 +1430,14 @@ contains
   end subroutine clear_ionization_arrays
 
 
-  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma 
+  !> Compute neutral heating from precipitation and forces+heating from collisions with plasma
   subroutine source_neut_in(cfg,fluidvars,intvars,x)
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     type(gemini_work), intent(inout) :: intvars
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: dvn1,dvn2,dvn3,dTn
 
     !> check if the user wants these rates before computing
     if (cfg%flagtwoway) then
@@ -1434,12 +1446,22 @@ contains
       call source_neut(intvars%atmos,intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%vn2,intvars%atmos%vn3,&
              intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,x,&
              intvars%Prprecip,intvars%momentneut,intvars%energyneut)
+
+      ! To leading order we need to only compute deviation of these source terms from the background state
+      !dvn1=intvars%atmos%vn1-intvars%atmos%vn1BG
+      !dvn2=intvars%atmos%vn2-intvars%atmos%vn2BG
+      !dvn3=intvars%atmos%vn3-intvars%atmos%vn3BG
+      !dTn=intvars%atmos%Tn-intvars%atmos%TnBG
+
+      !call source_neut(intvars%atmos,intvars%atmos%nn,dvn1,dvn2,dvn3,&
+      !       dTn,ns,vs1,vs2,vs3,Ts,x,&
+      !       intvars%Prprecip,intvars%momentneut,intvars%energyneut)
     end if
   end subroutine source_neut_in
 
 
   !> compute impact ionization and add results to total ionization and heating rate arrays.  Results are accumulated into
-  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.  
+  !   intvars%Prionize and intvars%Qeprecip so these must be intialized elsewhere.
   subroutine impact_ionization_in(cfg,fluidvars,intvars,x,dt,t,ymd, &
                                         UTsec)
     type(gemini_cfg), intent(in) :: cfg
@@ -1450,7 +1472,7 @@ contains
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     !real(wp), intent(in) :: gavg,Tninf
-    real(wp) :: f107a,f107   
+    real(wp) :: f107a,f107
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
@@ -1485,7 +1507,7 @@ contains
     real(wp), intent(in) :: UTsec
     !real(wp), intent(in) :: gavg,Tninf
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
-    real(wp) :: f107a,f107   
+    real(wp) :: f107a,f107
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call get_solar_indices(cfg,f107,f107a)
@@ -1494,7 +1516,7 @@ contains
   end subroutine solar_ionization_in
 
 
-  !> Manually set the root vs. worker data collection flag in the efielddata object to user-specified value.  
+  !> Manually set the root vs. worker data collection flag in the efielddata object to user-specified value.
   subroutine set_electrodynamics_commtype(flagrootonly, intvars)
     logical, intent(in) :: flagrootonly
     type(gemini_work), intent(inout) :: intvars
@@ -1507,9 +1529,9 @@ contains
   end subroutine set_electrodynamics_commtype
 
 
-  !> For purposes of testing we just want to set some values for the electric fields and compute drifts.  
+  !> For purposes of testing we just want to set some values for the electric fields and compute drifts.
   !    In principle this is useful for doing simulations where the potential (or background field) is
-  !    specified and a potential solution is not required.  
+  !    specified and a potential solution is not required.
   subroutine electrodynamics_test(cfg,x,fluidvars,fluidauxvars,electrovars,intvars)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -1548,7 +1570,7 @@ contains
       E1(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E01
       E2(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E02
       E3(ix1min:ix1max,ix2min:ix2max,ix3min:ix3max)=intvars%E03
-    else 
+    else
       E1=0._wp
       E2=0._wp
       E3=0._wp
@@ -1642,8 +1664,8 @@ contains
 
 
   ! getter and incrementer for it variable (number of time steps taken since this start or restart.  It seems
-  !   unavoidable to need almost trivial procedures for this because this must be controlled from top level 
-  !   program which could be C and will need fortran procedures to modify intvar fields.  
+  !   unavoidable to need almost trivial procedures for this because this must be controlled from top level
+  !   program which could be C and will need fortran procedures to modify intvar fields.
   integer function get_it()
     get_it=it
   end function get_it
