@@ -71,7 +71,7 @@ set_tests_properties(gemini_cpp PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
 FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
-LABELS "unit;Cpp"
+LABELS "gemni3d:unit"
 )
 
 endif()
