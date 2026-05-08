@@ -6,6 +6,7 @@ include(CheckCompilerFlag)
 set(gemini3d_flags
 $<$<CONFIG:Debug,RelWithDebInfo>:-Wall>
 $<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>
+$<$<COMPILE_LANGUAGE:Fortran>:-Werror=line-truncation>
 $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<VERSION_LESS:$<Fortran_COMPILER_VERSION>,10>>:-Wno-conversion>
 $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_VERSION:9.3.0>>:-Wno-maybe-uninitialized>
 )
