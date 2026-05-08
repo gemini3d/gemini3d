@@ -219,6 +219,20 @@ dtneulBGfile=900.0
 neutralBGdir=./inputs/neutralBG/
 /
 
+! (optional - off by default)
+&evibcool
+flagevibcool=.true.        ! use updated inelastic cooling rates for electron energy
+/
+
+! (optional - off by default)
+&J1ve
+flagJ1ve=.true.        ! use parallel current density in calculation of parallel electron drift
+/
+
+! (optional - off by default)
+&nightQ
+  flagnightQ=.true.    ! use newer photoionization calculation including nighttime Q
+/
 ```
 
 <a name="grid_input_files"></a>

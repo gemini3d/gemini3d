@@ -74,6 +74,7 @@ contains
             T(0,ix2,ix3)=Teinf
           else                      ! Neumann
             if (isp==7) then
+              ! Note this is delta T at the boundary
               T(0,ix2,ix3)=-Teinf*x%h1(1,ix2,ix3)*x%dx1(2)/lambda(1,ix2,ix3)
             else
               T(0,ix2,ix3)=0._wp
@@ -89,7 +90,8 @@ contains
           if (BCtype(2)==0) then      ! Dirichlet on 'top'
             T(lx1+1,ix2,ix3)=Teinf
           else                        ! Neumann
-            if (isp==7) then
+            if (isp==7) then 
+              ! dT at boundary
               T(lx1+1,ix2,ix3)=-Teinf*x%h1(lx1,ix2,ix3)*x%dx1(lx1)/lambda(lx1,ix2,ix3) !top for neumman
             else
               T(lx1+1,ix2,ix3)=0._wp
@@ -112,7 +114,7 @@ contains
         BCtype=[0,0]
       end if
     else if (gridflag==2) then
-      if (Teinf<1.0) then
+      if (Teinf<1.0) then     
         BCtype=[0,1]
       else
         BCtype=[0,0]

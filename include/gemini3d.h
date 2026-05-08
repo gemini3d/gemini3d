@@ -64,7 +64,7 @@ extern void set_update_cadence_C(int*);
 extern void neutral_atmos_winds_C(void**, int*, void**, int*, double*, void**);
 extern void check_finite_output_C(void**, double**, double**, double*);
 extern void get_solar_indices_C(void**, double*, double*);
-extern void v12rhov1_C(double**, double**);
+extern void v12rhov1_C(void**, double**, double**, double**);
 extern void T2rhoe_C(double**, double**);
 extern void interface_vels_allspec_C(int*, void**, double**, void**, int*);
 extern void sweep3_allparams_C(double**, double**, void**, int*, void**, double*);
@@ -79,7 +79,7 @@ extern void sweep2_allparams_C(double**, double**, void**, int*, void**, double*
 extern void sweep2_allspec_mass_C(double**, double**, void**, int*, void**, double*);
 extern void sweep2_allspec_momentum_C(double**, double**, void**, int*, void**, double*);
 extern void sweep2_allspec_energy_C(double**, double**, void**, int*, void**, double*);
-extern void rhov12v1_C(double**, double**);
+extern void rhov12v1_C(void**, double**, double**, double**);
 extern void clean_param_C(int*, int*, void**, double**);
 extern void VNRicht_artvisc_C(double**, void**);
 extern void compression_C(double**, double**, void**, int*, void**, double*);

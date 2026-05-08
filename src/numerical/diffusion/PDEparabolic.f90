@@ -300,7 +300,8 @@ else
   M(ll+3,ix1)=1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
   M(ll+2,ix1+1)=-1    !1st super diagonal
   M(ll+1,ix1+2)=0     !2nd super diagonal
-  backEuler1D(ix1)=0
+!  backEuler1D(ix1)=0
+  backEuler1D(ix1)=Tsminx1
 end if
 
 !> FIRST INTERIOR GRID POINT
@@ -355,7 +356,8 @@ else
   M(ll+5,ix1-2)=0
   M(ll+4,ix1-1)=-1
   M(ll+3,ix1)=1
-  backEuler1D(ix1)=0
+!  backEuler1D(ix1)=0
+  backEuler1D(ix1)=Tsmaxx1
 end if
 
 !> in case we want to output the right-hand side of the system; has to be done here before

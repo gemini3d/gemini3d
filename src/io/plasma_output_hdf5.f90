@@ -55,6 +55,10 @@ module procedure output_root_stream_mpi_hdf5
         call hout%write('user_outputall', real(user_outputall(1:lx1,1:lx2all,1:lx3all,:)))
         !print*, 'Min/max user var written:  ',minval(real(user_outputall)),maxval(real(user_outputall))
       end if
+
+      !if (size(production_rateall,4)>0) then
+      !   call hout%write('production_rateall', real(production_rateall(1:lx1,1:lx2all,1:lx3all,:)))
+      !end if
   end select
 
   if (gridflag==1) then

@@ -144,19 +144,20 @@ subroutine source_loss_mass(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo,dt,Prioniz
 end subroutine source_loss_mass
 
 
-subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo,dt,rhovs1)
+subroutine source_loss_momentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,J1,Q,x,Pr,Lo,dt,rhovs1,flagJ1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: E1,J1
   real(wp), dimension(:,:,:,:), intent(in) :: Q
   real(wp), dimension(:,:,:,:), intent(in) :: nn
   real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,Ts
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr,Lo
+  logical, intent(in) :: flagJ1
 
   !ALL VELOCITY SOURCES
   call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
-  call momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1)
+  call momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1,J1,flagJ1)
 end subroutine source_loss_momentum
 
 
@@ -295,33 +296,52 @@ end subroutine T2rhoe
 
 
 !> Convert velocity to momentum
-subroutine v12rhov1(ns,vs1,rhovs1)
+subroutine v12rhov1(ns,vs1,rhovs1,J1,flagJ1)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,rhovs1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
+  logical, intent(in) :: flagJ1
   integer :: isp,lsp
+  real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
 
+  chrgflux=0._wp
   lsp=size(vs1,4)
-  do isp=1,lsp
+  do isp=1,lsp-1
     rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
+    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
   end do
+
+  if (flagJ1) then    ! properly incorporate J1 into the parallel electron drift calculation
+    rhovs1(1:lx1,1:lx2,1:lx3,lsp)=ms(lsp)/qs(lsp) * (J1(1:lx1,1:lx2,1:lx3) - chrgflux(1:lx1,1:lx2,1:lx3))
+  else                ! ignore J1
+    rhovs1(1:lx1,1:lx2,1:lx3,lsp)=ms(lsp)/qs(lsp) * (chrgflux(1:lx1,1:lx2,1:lx3))
+    !rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)
+  end if
 end subroutine v12rhov1
 
 
 !> Compute electron density and velocity given ion momenta, compute ion velocities as well
-subroutine rhov12v1(ns,rhovs1,vs1)
+subroutine rhov12v1(ns,rhovs1,vs1,J1,flagJ1)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhovs1,vs1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
+  logical, intent(in) :: flagJ1
   integer :: isp,lsp
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
 
   lsp=size(ns,4)
 
-  chrgflux=0.0
+  chrgflux=0._wp
   do isp=1,lsp-1
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
     chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
   end do
   ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-!!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-  vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+
+  if (flagJ1) then   ! account for J1
+    vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)* &
+                   (J1(1:lx1,1:lx2,1:lx3)-chrgflux(1:lx1,1:lx2,1:lx3))
+  else               ! ignore J1
+    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+  end if
 end subroutine rhov12v1
 
 
@@ -521,7 +541,8 @@ end subroutine impact_ionization
 !> Ionization from solar radiation, *accumulates* rates, so initialize to zero if you want solely solar sources :)
 !  Upon entry:  we assume any photoinization has already been computed and placed in results arrays
 !  Upson exit:  intvars%Prionize and intvars%Qeionize include added solar sources
-subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf,Iinf)
+subroutine solar_ionization(cfg,t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,gavg,Tninf,Iinf)
+  type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: t
   class(curvmesh), intent(in) :: x
   integer, dimension(3), intent(in) :: ymd
@@ -547,7 +568,7 @@ subroutine solar_ionization(t,x,ymd,UTsec,f107a,f107,Prionize,Qeionize,ns,nn,Tn,
   end if
 
   ! solar fluxes and resulting ionization rates
-  Prionizetmp=photoionization(t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
+  Prionizetmp=photoionization(cfg,t,ymd,UTsec,x,nn,chi,f107,f107a,gavg,Tninf,Iinf)
   !if (mpi_cfg%myid==0 .and. debug) then
   if (debug) then
     print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
@@ -653,13 +674,15 @@ end subroutine energy_source_loss_solve
 
 !>  Momentum source/loss processes.  Upon entry the momentum density should be updated to most recent; upon exit
 !     both momentum density and velocity will be updated.
-subroutine momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1)
+subroutine momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1,J1,flagJ1)
   real(wp), intent(in) :: dt
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:,:), intent(in) :: Pr
   real(wp), dimension(:,:,:,:), intent(in) :: Lo
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1,vs1
+  real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1
+  logical, intent(in) :: flagJ1
   real(wp), dimension(1:size(rhovs1,1)-4,1:size(rhovs1,2)-4,1:size(rhovs1,3)-4) :: paramtrim
   real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
   integer :: isp,lsp
@@ -678,8 +701,12 @@ subroutine momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1)
   do isp=1,lsp-1
     chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
   end do
-  !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-  vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+  if (flagJ1) then
+    vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)* &
+                   (J1(1:lx1,1:lx2,1:lx3)-chrgflux(1:lx1,1:lx2,1:lx3))
+  else
+    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+  end if
   rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)              ! update electron momentum in case it is ever used
 end subroutine momentum_source_loss_solve
 

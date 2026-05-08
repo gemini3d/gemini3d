@@ -78,6 +78,12 @@ contains
       tmp=user_output(:,:,:,iparm)
       call gather_send(tmp,tag%uservar)
     end do
+    
+    !nparms=size(production_rate,4)    
+    !do iparm = 1,nparms
+    !  tmp = production_rate(:,:,:,iparm)
+    !  call gather_send(tmp, tag%uservar)   ! or define a new tag e.g., tag%prod_rate
+    !end do
   end subroutine output_workers_mpi
 
 
@@ -94,22 +100,23 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output
+    real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output   
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
     real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmp
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: tmpall
-    integer :: iparm,lparms
+    integer :: iparm,lparms,nparms
     real(wp), dimension(:,:,:,:), allocatable :: user_outputall
 
     ! to deal with user output
     lparms=size(user_output,4)
+    !nparms=size(production_rate,4)
     allocate(user_outputall(1:lx1,1:lx2all,1:lx3all,1:lparms))
+    !allocate(production_rateall(1:lx1,1:lx2all,1:lx3all,1:nparms))
 
     print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
-    print *, '  -->Number of user-defined output variables:  ',lparms
     !ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
     v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
     v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
@@ -138,6 +145,15 @@ contains
       user_outputall(:,:,:,iparm)=tmpall
     end do
 
+    !do iparm = 1, nparms
+    !  tmp = production_rate(:,:,:,iparm)
+    !  call gather_recv(tmp, tag%uservar, tmpall)
+    !  production_rateall(:,:,:,iparm) = tmpall
+    !end do
+
+   ! print *, '  -->Number of user-defined output variables:  ',lparms, minval(user_outputall(:,:,:,4)), maxval(user_outputall(:,:,:,4))
+
+
     !COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
     !> possible bottleneck; should have workers help?
     !> also only compute these if they are actually being output
@@ -162,5 +178,6 @@ contains
     end select
 
     deallocate(user_outputall)
+    !deallocate(production_rateall)
   end subroutine output_root_stream_mpi
 end submodule plasma_output

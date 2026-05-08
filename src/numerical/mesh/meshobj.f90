@@ -159,7 +159,7 @@ type, abstract :: curvmesh
 
 
   !> contains information about where to assign null cells, most uses will assume default value
-  real(wp) :: altnull=80e3
+  real(wp) :: altnull=0 !80e3
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   contains

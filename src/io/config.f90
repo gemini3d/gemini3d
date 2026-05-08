@@ -118,6 +118,12 @@ type :: gemini_cfg
 
   !> whether or not to compute magnetic pole location based on year (.false.=use default; .true.=compute based on year)
   logical :: flagmagpole=.false.
+  
+  !> whether to incorporate parallel currents into calculations of parallel electron drift
+  logical :: flagJ1ve=.false.
+
+  !> whether to use the newer photoionization calculation with nighttime Q
+  logical :: flagnightQ = .false.
 end type gemini_cfg
 
 

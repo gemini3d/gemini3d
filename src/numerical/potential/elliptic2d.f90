@@ -2,6 +2,8 @@ submodule (PDEelliptic) elliptic2d
 
 implicit none (type, external)
 
+integer :: cartsolvetype=1      ! 2-use second order fwd/bwd diff at edge; anything else-use first order
+
 contains
   !>  A static solver that support J=0 boundary conditions with anisotropic conductance
   module procedure elliptic2D_static_J0
@@ -1779,7 +1781,11 @@ contains
     !end if
 
     ! count matrix entries as follows:  interior points (5 entries each) + # dirich x1 * size + # neumann x1 * size + # dirich x3 * size sans corners + # neumann * size sans corners
-    lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*2*l2nddim + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
+    if (cartsolvetype/=2) then
+      lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*2*l2nddim + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
+    else
+      lent=5*(lx1-2)*(l2nddim-2) + ldirichx1*l2nddim + lneux1*3*l2nddim + ldirichx3*(lx1-2) + lneux3*3*(lx1-2)
+    end if
 
 
     ! allocate space for our problem
@@ -1801,6 +1807,7 @@ contains
       sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1,1:l2nddim-1)+sigP(:,1,2:l2nddim))
       sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
     end if
+
 
     ! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
     ! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
@@ -1824,13 +1831,31 @@ contains
             end if
             ient=ient+1
           else
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=-1/dx1(2)
-            ient=ient+1
-            ir(ient)=iPhi
-            ic(ient)=iPhi+1
-            M(ient)=1/dx1(2)
+            if (cartsolvetype/=2) then
+               ! First order forward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=-1/dx1(2)
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi+1
+              M(ient)=1/dx1(2)
+            else
+              ! Second order forward difference; these could cause problems if grid step size is changing
+              !   near boundary
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=-3._wp/(dx1(2)+dx1(3))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi+1
+              M(ient)=4._wp/(dx1(2)+dx1(3))
+              ient=ient+1           
+              ir(ient)=iPhi
+              ic(ient)=iPhi+2
+              M(ient)=-1._wp/(dx1(2)+dx1(3))
+            end if
+           
             if (flag2) then
               b(iPhi)=Vminx1(ix3,1)
             else
@@ -1850,13 +1875,30 @@ contains
             end if
             ient=ient+1
           else
-            ir(ient)=iPhi
-            ic(ient)=iPhi-1
-            M(ient)=-1/dx1(lx1)
-            ient=ient+1
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=1/dx1(lx1)
+            if (cartsolvetype/=2) then
+              ! First order backward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi-1
+              M(ient)=-1/dx1(lx1)
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=1/dx1(lx1)
+            else
+              ! Second order backward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi-2
+              M(ient)=1._wp/(dx1(lx1)+dx1(lx1-1))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi-1
+              M(ient)=-4._wp/(dx1(lx1)+dx1(lx1-1))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=3._wp/(dx1(lx1)+dx1(lx1-1))
+            end if
+
             if (flag2) then
               b(iPhi)=Vmaxx1(ix3,1)
             else
@@ -1872,13 +1914,30 @@ contains
             b(iPhi)=Vminx3(ix1,1)
             ient=ient+1
           else
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=-1/dx3all(2)
-            ient=ient+1
-            ir(ient)=iPhi
-            ic(ient)=iPhi+lx1
-            M(ient)=1/dx3all(2)
+            if (cartsolvetype/=2) then
+              ! First order forward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=-1/dx3all(2)
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi+lx1
+              M(ient)=1/dx3all(2)
+            else
+              ! Second order forward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=-3._wp/(dx3all(2)+dx3all(3))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi+lx1
+              M(ient)=4._wp/(dx3all(2)+dx3all(3))
+              ient=ient+1           
+              ir(ient)=iPhi
+              ic(ient)=iPhi+2*lx1
+              M(ient)=-1._wp/(dx3all(2)+dx3all(3))
+            end if
+
             b(iPhi)=Vminx3(ix1,1)
             ient=ient+1
           end if
@@ -1890,13 +1949,30 @@ contains
             b(iPhi)=Vmaxx3(ix1,1)
             ient=ient+1
           else
-            ir(ient)=iPhi
-            ic(ient)=iPhi-lx1
-            M(ient)=-1/dx3all(l2nddim)
-            ient=ient+1
-            ir(ient)=iPhi
-            ic(ient)=iPhi
-            M(ient)=1/dx3all(l2nddim)
+            if (cartsolvetype/=2) then
+              ! First order backward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi-lx1
+              M(ient)=-1/dx3all(l2nddim)
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=1/dx3all(l2nddim)
+            else
+              ! Second order backward difference
+              ir(ient)=iPhi
+              ic(ient)=iPhi-2*lx1
+              M(ient)=1._wp/(dx3all(lx3)+dx3all(lx3-1))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi-lx1
+              M(ient)=-4._wp/(dx3all(lx3)+dx3all(lx3-1))
+              ient=ient+1
+              ir(ient)=iPhi
+              ic(ient)=iPhi
+              M(ient)=3._wp/(dx3all(lx3)+dx3all(lx3-1))
+            end if
+
             b(iPhi)=Vmaxx3(ix1,1)
             ient=ient+1
           end if

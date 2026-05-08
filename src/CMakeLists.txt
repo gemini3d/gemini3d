@@ -189,6 +189,28 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
 else()
   set_target_properties(gemini.altenergy.bin PROPERTIES LINKER_LANGUAGE CXX)
 endif()
+#
+## --- Gemini.bin main Fortran program with no energy solution
+#add_executable(gemini.noenergy.bin ${PROJECT_SOURCE_DIR}/app/main.noenergy.f90)
+#set_target_properties(gemini.noenergy.bin PROPERTIES
+#RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+#RELWITHDEBINFO_POSTFIX .debug
+#DEBUG_POSTFIX .debug
+#)
+#target_link_libraries(gemini.noenergy.bin PRIVATE
+#gemini3d_mpi
+#gemini3d
+#h5fortran::h5fortran
+#MUMPS::MUMPS
+#$<$<BOOL:${glow}>:glow::glow>
+#$<$<BOOL:${hwm14}>:hwm14::hwm_ifc>
+#ffilesystem::filesystem
+#)
+#if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+#  set_target_properties(gemini.noenergy.bin PROPERTIES LINKER_LANGUAGE Fortran)
+#else()
+#  set_target_properties(gemini.noenergy.bin PROPERTIES LINKER_LANGUAGE CXX)
+#endif()
 
 if(gemini3d_hwm14)
   # HWM14 data files

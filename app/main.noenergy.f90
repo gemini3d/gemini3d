@@ -14,7 +14,7 @@
 
 program Gemini3D_main
 !! a main program illustrating use of gemini library to conduct an ionospheric simulation
-use, intrinsic :: iso_c_binding, only : C_INT, C_NULL_CHAR
+use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool, c_float, c_ptr
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
 use mpi_f08, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
@@ -41,15 +41,14 @@ use gemini3d, only: c_params,gemini_alloc,gemini_dealloc,init_precipinput_in, &
                       get_config_vars, get_species_size, gemini_work, gemini_cfg_alloc, cli_in, read_config_in, &
                       gemini_cfg_dealloc, grid_size_in, gemini_double_alloc, gemini_work_alloc, gemini_double_dealloc, &
                       gemini_work_dealloc, set_global_boundaries_allspec_in, precip_perturb_in, check_finite_output_in, &
-                      init_neutralBG_input_in, get_it, itinc, set_magnetic_pole_in
+                      init_neutralBG_input_in, get_it, itinc
 use gemini3d_mpi, only: init_procgrid,outdir_fullgridvaralloc,read_grid_in,get_initial_state,BGfield_Lagrangian, &
                           check_dryrun,check_fileoutput,get_initial_drifts,init_inputdata_in,init_Efieldinput_in, &
                           pot2perpfield_in, &
-                          init_neutralperturb_in, dt_select, neutral_perturb_in, &
+                          init_neutralperturb_in, dt_select, neutral_atmos_wind_update, neutral_perturb_in, &
                           electrodynamics_in, halo_interface_vels_allspec_in, &
                           halo_allparams_in, RK2_prep_mpi_allspec_in, get_gavg_Tinf_in, &
-                          clear_neutral_perturb_in,clear_neutral_background_in, &
-                          mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
+                          clear_dneu_in,mpisetup_in,mpiparms, calc_subgrid_size_in, halo_fluidvars_in, &
                           RK2_global_boundary_allspec_in, efield_perturb_in, inputdata_perturb_in
 
 implicit none (type, external)
@@ -63,13 +62,13 @@ integer :: myid
 
 !> initialize mpi
 call mpi_init()
-p%fortran_cli = 1
-p%fortran_nml = 1
+p%fortran_cli = .true.
+p%fortran_nml = .true.
 p%out_dir(1) = c_null_char
 lid2in = -1
 lid3in = -1
 
-!! out_dir, lid2in, lid3in, are ignored when fortran_cli=1
+!! out_dir, lid2in, lid3in, are ignored when fortran_cli=.true.
 call gemini_main(p, lid2in, lid3in)
 
 !> shut down mpi
@@ -148,9 +147,6 @@ contains
     !> read in config file and add contents to cfg
     call read_config_in(p,cfg)           ! read configuration file and add information to cfg
 
-    !> set the magnetic pole based on year if the user specified to do so
-     call set_magnetic_pole_in(cfg)
-
     !> allocations depend on grid size so read that into our module variables
     call grid_size_in(cfg)               ! retrieve the total grid size form the input filename stored in cfg
 
@@ -197,7 +193,6 @@ contains
     if(myid==0) print*, 'Priming inputdata'
     call init_inputdata_in(cfg,x,dt,t,ymd,UTsec,intvars)
 
-    if(myid==0) print*, 'Setting Lagrangian-ness'
     !> Get the background electric fields and compute the grid drift speed if user selected lagrangian grid, add to total field
     call BGfield_Lagrangian(cfg,x,electrovars,intvars)
 
@@ -206,8 +201,6 @@ contains
 
     !> control rate of console printing
     call set_update_cadence(iupdate)
-
-    if(myid==0) print*, 'Starting main loop'
 
     !> Main time loop
     main : do while (t < tdur)
@@ -254,11 +247,10 @@ contains
     end do main
 
     !> deallocate variables and module data
-    call clear_neutral_perturb_in(intvars)
-    call clear_neutral_background_in(intvars)
-    call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
-    !call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
-    !call gemini_work_dealloc(cfg,intvars)
+    call clear_dneu_in(intvars)
+    !call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)
+    call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
+    call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 
@@ -279,12 +271,12 @@ contains
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
     real(wp) :: tstart,tfin
-    !real(wp) :: f107,f107a
-    !real(wp) :: gavg,Tninf
+    real(wp) :: f107,f107a
+    real(wp) :: gavg,Tninf
     integer :: isub,lsub=1   ! variables for controlling subcycling of terms
 
     ! pull solar indices from module type
-    !call get_solar_indices(cfg,f107,f107a)
+    call get_solar_indices(cfg,f107,f107a)
 
     ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
     call v12rhov1_in(cfg,fluidvars,fluidauxvars,electrovars)
@@ -310,16 +302,16 @@ contains
     !call sweep3_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep3_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep3_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep3_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
     !call sweep1_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep1_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep1_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
     call halo_allparams_in(x,fluidvars,fluidauxvars)
     !call sweep2_allparams_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_mass_in(fluidvars,fluidauxvars,intvars,x,dt)
     call sweep2_allspec_momentum_in(fluidvars,fluidauxvars,intvars,x,dt)
-    call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
+    !call sweep2_allspec_energy_in(fluidvars,fluidauxvars,intvars,x,dt)
     call rhov12v1_in(cfg,fluidvars,fluidauxvars,electrovars)
     call cpu_time(tfin)
     if (myid==0 .and. debug) then
@@ -344,7 +336,8 @@ contains
     call RK2_global_boundary_allspec_in(x,fluidvars)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    call compression_in(fluidvars,fluidauxvars,intvars,x,dt)   ! this applies compression substep and then converts back to temperature
+    call T2rhoe_in(fluidvars,fluidauxvars)    
+    !call compression_in(fluidvars,fluidauxvars,intvars,x,dt)   ! this applies compression substep and then converts back to temperature
     call rhoe2T_in(fluidvars,fluidauxvars)
     call clean_param_in(3,x,fluidvars)
     call cpu_time(tfin)
@@ -355,32 +348,32 @@ contains
     ! Energy diffusion (thermal conduction) substep, not that we don't change items that depend on date, etc. for subcycling
     do isub=1,lsub
       ! FIXME: try to handle diffusion and sources together in call below
-      call cpu_time(tstart)
-      call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
-      call cpu_time(tfin)
-      if (myid==0 .and. debug) then
-        print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-      end if
-
+      !call cpu_time(tstart)
+      !call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt/lsub)
+      !call cpu_time(tfin)
+      !if (myid==0 .and. debug) then
+      !  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      !end if
+  
       ! cleanup and convert to specific internal energy density for sources substeps
       call clean_param_in(3,x,fluidvars)
       call T2rhoe_in(fluidvars,fluidauxvars)
-
+  
       !> all workers need to "agree" on a gravity and exospheric temperature
-      call get_gavg_Tinf_in(intvars)
-
-
+      call get_gavg_Tinf_in(intvars,gavg,Tninf)
+  
+  
       !> Compute ionization sources for the present time step
       call clear_ionization_arrays(intvars)
       call impact_ionization_in(cfg,fluidvars,intvars,x,dt/lsub,t,ymd, &
-                                          UTsec)
-      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec)
-
+                                          UTsec,f107a,f107,gavg,Tninf)
+      call solar_ionization_in(cfg,fluidvars,intvars,x,t,ymd,UTsec,f107a,f107,gavg,Tninf)
+  
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !> solve all source/loss processes
       call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)     ! reassert x1 boundary since derivatives (dx1) done for momentum sources
       !call source_loss_allparams_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt)
-      call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
+      !call source_loss_energy_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
       call source_loss_momentum_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
       call source_loss_mass_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,dt/lsub)
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

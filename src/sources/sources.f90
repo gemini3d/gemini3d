@@ -559,6 +559,11 @@ contains
     !This would be the place to include FBI heating probably just add to iePT
     if (cfg%flagFBI>0) then
       call FBIheating(nn,Tn,ns,Ts,E2,E3,x,FBIproduction,FBIlossfactor)
+
+      !print*, minval(FBIproduction),maxval(FBIproduction),minval(FBIlossfactor),maxval(FBIlossfactor)
+      !print*, FBIproduction
+      !error stop
+
       Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+FBIproduction+(iePT*FBIlossfactor)*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
       Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+(ieLT*FBIlossfactor)
     else
@@ -613,7 +618,6 @@ contains
     !Because the loss factor is a fitting of the logarithmic base 10 value of it. Multiply by LOG10 to change to natural log
     QTe = EXP(LogQTe*LOG(10.0_wp)) !Make it linear
     O2VibrationalLoss=nn(:,:,:,3)*1.0e-6_wp*QTe*(1-EXP(2239.0_wp*((Tn-Te)/(Te*Tn))))
-    !print*,nn(:,:,:,3)
   end subroutine O2vib
 
 

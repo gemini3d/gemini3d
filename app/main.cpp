@@ -253,7 +253,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
 
   /* Set up variables for the time step */
   //get_solar_indices_C(&cfgC, &f107,&f107a);   // FIXME: do we really need to return the indices???
-  v12rhov1_C(&fluidvars,&fluidauxvars);
+  v12rhov1_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars);
   T2rhoe_C(&fluidvars,&fluidauxvars);
 
   /* Advection substep */
@@ -284,7 +284,7 @@ void fluid_adv(double* pt, double* pdt, int* pymd, double* pUTsec, int* plsp, in
   sweep2_allspec_mass_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   sweep2_allspec_momentum_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
   sweep2_allspec_energy_C(&fluidvars,&fluidauxvars,&intvars,pxtype,&xC,pdt);
-  rhov12v1_C(&fluidvars,&fluidauxvars);
+  rhov12v1_C(&cfgC,&fluidvars,&fluidauxvars,&electrovars);
   clean_param_C(&one, pxtype, &xC, &fluidvars);
   clean_param_C(&two, pxtype, &xC, &fluidvars);
 

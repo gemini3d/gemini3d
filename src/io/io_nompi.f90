@@ -284,6 +284,8 @@ contains
         call hout%write('v3avgall', real(v3avg(1:lx1,1:lx2,1:lx3)))
     end select
 
+
+    
     if (gridflag==1) then
       print *, 'Writing topside boundary conditions for inverted-type grid...'
       call hout%write('Phiall',       real(Phi(1,1:lx2,1:lx3)))

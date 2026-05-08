@@ -152,9 +152,10 @@ type gemini_work
   type(neutraldataBG), pointer :: atmosbackground=>null()   ! background file file input
 
   !> user output data
-  integer :: lparms=9   ! number of 3D arrays to be output to hdf5 files
-  !integer :: lparms=0
+  integer :: lparms=10   ! number of 3D arrays to be output to hdf5 files
   real(wp), dimension(:,:,:,:), pointer :: user_output=>null()     ! pointer to user output data
+  !> photoionization production rates
+  !real(wp), dimension(:,:,:,:), pointer :: production_rate =>null()
 end type gemini_work
 
 
@@ -459,6 +460,12 @@ contains
     else
       error stop 'attempting to allocate user_output when already in use.'
     end if
+
+    !if (.not. associated(intvars%production_rate)) then
+    !  allocate(intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms))
+    !else
+    !  error stop 'attempting to allocate production_rate when already in use.'
+    !end if 
   end subroutine user_allocate
 
 
@@ -477,7 +484,14 @@ contains
     ! For source arrays not inside a derived type (e.g. intvars) we need to compute lower bound and advance past ghost cells.
     !   An additional, more subtle issue occurs because of how we are allocating a contiguous array and then pointing
     !   intvars%energyneut, etc. to those arrays.  The allocated array has lbound=-1 but the pointer does not carry
-    !   this information.
+    !   this information.  
+!     i1start=lbound(intvars%sig0,1)+2
+!     i1end=i1start+lx1-1
+!     i2start=lbound(intvars%sig0,2)+2
+!     i2end=i2start+lx2-1
+!     i3start=lbound(intvars%sig0,3)+2
+!     i3end=i3start+lx3-1
+     ! OR like this:  
 !    i1start=lbound(intvars%energyneut,1)+2
 !    i1end=i1start+lx1-1
 !    i2start=lbound(intvars%energyneut,2)+2
@@ -497,15 +511,16 @@ contains
     i3start=1
     i3end=lx3
 
-    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,1)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,2)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,3)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,4)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,5)=intvars%atmos%nnBG(i1start:i1end,i2start:i2end,i3start:i3end,5)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,6)=intvars%atmos%TnBG(i1start:i1end,i2start:i2end,i3start:i3end)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,7)=intvars%atmos%vn1BG(i1start:i1end,i2start:i2end,i3start:i3end)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,8)=intvars%atmos%vn2BG(i1start:i1end,i2start:i2end,i3start:i3end)
-    intvars%user_output(1:lx1,1:lx2,1:lx3,9)=intvars%atmos%vn3BG(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,1)=intvars%sig0(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,2)=intvars%sigP(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,3)=intvars%sigH(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,4)=intvars%sigNCP(i1start:i1end,i2start:i2end,i3start:i3end)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,5)=intvars%sigNCH(i1start:i1end,i2start:i2end,i3start:i3end)
+
+    !! MZ -- I'm going to move these to the user_output array so you'll need to adjust your scripts to accommodate this...
+    !intvars%production_rate(1:lx1,1:lx2,1:lx3,1:intvars%nparms) = intvars%Prionize(i1start:i1end,i2start:i2end,i3start:i3end,1:intvars%nparms)
+    intvars%user_output(1:lx1,1:lx2,1:lx3,6:10) = &
+            intvars%Prionize(i1start:i1end,i2start:i2end,i3start:i3end,1:5)    
   end subroutine user_populate
 
 
@@ -514,6 +529,7 @@ contains
     type(gemini_work), intent(inout) :: intvars
 
     if (associated(intvars%user_output)) deallocate(intvars%user_output)
+    !if (associated(intvars%production_rate)) deallocate(intvars%production_rate)
   end subroutine user_deallocate
 
 
@@ -877,16 +893,21 @@ contains
 
 
   !> convert velocity to momentum density
-  subroutine v12rhov1_in(fluidvars,fluidauxvars)
+  subroutine v12rhov1_in(cfg,fluidvars,fluidauxvars,electrovars)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi   
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call v12rhov1(ns,vs1,rhovs1)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+   
+    call v12rhov1(ns,vs1,rhovs1,J1,cfg%flagJ1ve)
   end subroutine v12rhov1_in
 
 
@@ -1126,16 +1147,21 @@ contains
 
 
   !> conversion of momentum density to velocity
-  subroutine rhov12v1_in(fluidvars,fluidauxvars)
+  subroutine rhov12v1_in(cfg,fluidvars,fluidauxvars,electrovars)
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
     real(wp), dimension(:,:,:,:), pointer, intent(in) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
+    real(wp), dimension(:,:,:), pointer :: E1,E2,E3,J1,J2,J3,Phi
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
-    call rhov12v1(ns,rhovs1,vs1)
+    call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+
+    call rhov12v1(ns,rhovs1,vs1,J1,cfg%flagJ1ve)
   end subroutine rhov12v1_in
 
 
@@ -1342,8 +1368,8 @@ contains
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
-    call source_loss_momentum(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,E1, &
-            intvars%Q,x,intvars%Pr,intvars%Lo,dt,rhovs1)
+    call source_loss_momentum(intvars%atmos%nn,intvars%atmos%vn1,intvars%atmos%Tn,ns,vs1,vs2,vs3,Ts,E1,J1, &
+            intvars%Q,x,intvars%Pr,intvars%Lo,dt,rhovs1,cfg%flagJ1ve)
   end subroutine source_loss_momentum_in
 
 
@@ -1485,7 +1511,7 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call get_solar_indices(cfg,f107,f107a)
-    call solar_ionization(t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
+    call solar_ionization(cfg,t,x,ymd,UTsec,f107a,f107,intvars%Prionize,intvars%Qeionize,ns, &
             intvars%atmos%nn,intvars%atmos%Tn,intvars%gavg,intvars%Tninf,intvars%Iinf)     ! solar and impact ionization sources
   end subroutine solar_ionization_in
 
