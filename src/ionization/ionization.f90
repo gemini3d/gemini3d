@@ -221,10 +221,14 @@ contains
 
    do il=1,ll
      photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1 + pepiO(il))
-     photoionization(:,:,:,3) = photoionization(:,:,:,3) + nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1 + pepiN2i(il))
-     photoionization(:,:,:,5) = photoionization(:,:,:,5) + nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1 + pepiN2di(il))
-     photoionization(:,:,:,4) = photoionization(:,:,:,4) + nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1 + pepiO2i(il))
-     photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1 + pepiO2di(il))
+     photoionization(:,:,:,3) = photoionization(:,:,:,3) + nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1 + &
+             pepiN2i(il))
+     photoionization(:,:,:,5) = photoionization(:,:,:,5) + nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1 + &
+             pepiN2di(il))
+     photoionization(:,:,:,4) = photoionization(:,:,:,4) + nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1 + &
+             pepiO2i(il))
+     photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1 + &
+             pepiO2di(il))
    end do
     
     ! Only add nighttime terms if flag is ON
@@ -258,10 +262,14 @@ contains
  
      do il = 1, llnight
        photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,1) * Iflux_night(:,:,:,il) * sigiO_night(il)
-       photoionization(:,:,:,3) = photoionization(:,:,:,3) + nn(:,:,:,2) * Iflux_night(:,:,:,il) * sigiN2_night(il) * brN2i_night(il)
-       photoionization(:,:,:,5) = photoionization(:,:,:,5) + nn(:,:,:,2) * Iflux_night(:,:,:,il) * sigiN2_night(il) * brN2di_night(il)
-       photoionization(:,:,:,4) = photoionization(:,:,:,4) + nn(:,:,:,3) * Iflux_night(:,:,:,il) * sigiO2_night(il) * brO2i_night(il)
-       photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,3) * Iflux_night(:,:,:,il) * sigiO2_night(il) * brO2di_night(il)
+       photoionization(:,:,:,3) = photoionization(:,:,:,3) + nn(:,:,:,2) * Iflux_night(:,:,:,il) * sigiN2_night(il) * &
+               brN2i_night(il)
+       photoionization(:,:,:,5) = photoionization(:,:,:,5) + nn(:,:,:,2) * Iflux_night(:,:,:,il) * sigiN2_night(il) * &
+               brN2di_night(il)
+       photoionization(:,:,:,4) = photoionization(:,:,:,4) + nn(:,:,:,3) * Iflux_night(:,:,:,il) * sigiO2_night(il) * &
+               brO2i_night(il)
+       photoionization(:,:,:,1) = photoionization(:,:,:,1) + nn(:,:,:,3) * Iflux_night(:,:,:,il) * sigiO2_night(il) * &
+               brO2di_night(il)
      end do
    end if
 

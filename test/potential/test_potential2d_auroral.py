@@ -17,7 +17,7 @@ import h5py
 
 from matplotlib.pyplot import figure,pcolormesh,xlabel,ylabel,title,colorbar
 
-fn = "/Users/zettergm/Projects/gemini3d/build/test/potential/outdata.h5"
+fn = "/Users/zettergm/Projects/gemini3d/build/test/potential/output.h5"
 doplot = True
 
 # if not fn.is_file():
