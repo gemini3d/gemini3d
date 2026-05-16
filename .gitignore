@@ -1,4 +1,5 @@
 *.job
 *.job.*
+.DS_Store
 
 CMakeUserPresets.json
