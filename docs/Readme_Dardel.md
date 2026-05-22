@@ -20,7 +20,6 @@ Clone the latest gemini3d repository
 
 ```bash
 git clone https://github.com/gemini3d/gemini3d.git
-
 cd gemini3d
 ```
 ### 2. Check and load softwares present in environment
@@ -32,27 +31,22 @@ module list
 
 Usually the following modules will already by installed in your environment i.e. the **Cray programming environment** 
 <br>
-gcc, gfortran, mpich, cmake, libsci<br>
-<br>
-
-incase any module is missing, check its availability by  
+gcc, gfortran, mpich, cmake, libsci<br>. 
+Incase any module is missing, check its availability by  
 
 ```bash
 module avail *insert name of module*
 module avail gcc #example
 ```
-and then, choose accordingly before moving to the next step.
-
-If any package is missing, after seeing if the model needed is available. You can load using
+Then, load using
 
 ```bash
 module load cpe/24.11
-module load nano # this might have to be done everytime you enter the system 
+module load nano # this module will have to be loaded everytime you enter the system 
 ```
-it should ensure all libraries are loaded if not, individually load them. The cpe loads all necessar default compilers and environments and nano module is used to modify scripts.
+The cpe/24.11 loads all necessary default compilers and environments. Nano module is used to modify scripts.
 
 ### 3. Setting variables and building
-
 To ensure the system uses the correct compilers from the loaded environment, set the following variables:
 
 ```bash
@@ -67,13 +61,12 @@ module swap PrgEnv-cray PrgEnv-gnu
 cmake -B build -DFETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER
 cmake --build build -j16
 ```
-the **-B build*** generates necessary executing files in the build directory. This takes some time and if any error occurs during that check for discrepancy/unavailability in modules. The following cmake flag forces that our system to build all dependencies needed from scratch, and not let our exisiting local system to take any precedence in packages needed for building. 
+the **-B build*** generates necessary executing files in the build directory. This takes some time, if any error,check for discrepancy/unavailability in modules. The following cmake flag forces that our system to build all dependencies needed from scratch, and not let our exisiting local system to take any precedence in packages needed for building. 
 
-
-### 4. Testing
+### 4. Testing built
 
 It is recommended to test the build, however running ctest --test-dir build  on login node causes some failures with standalone MPI test which leads to failure of a few following dependent tests as well. 
-However, if the compilation has been successful. It is alright and we can move to running extensive jobs through queuing system.
+However, we can move to running extensive jobs through queuing system if the compilation has been successful. 
 
 ## Installing PyGEMINI on KTH's Dardel with Bash
 
@@ -83,11 +76,11 @@ The default python is 2.7.9 thus, to load a higher version of python
 module load python3.11
 ```
 
-### 1. Create GEMINI Pygemini 
+### 1. Create Pygemini 
 
-as per information on the pygemini readme.md
+as per information on the https://github.com/gemini3d/pygemini
 
-Pygemini plotting is independent of the gemini3d build, it is possible to directly clone it and plot outputs from simulation files. For other aspects, like running simulations, we will need to build gemini3d first for which **set the root** in python script to map to the built gemini3d. 
+Pygemini plotting is independent of the gemini3d build. One can directly clone it and plot outputs from simulation files. For other aspects, like running simulations, we will need to build gemini3d first for which **set the root** in python script to map to the built gemini3d. 
 
 ```python
 import os
@@ -98,13 +91,11 @@ The following steps are available: https://github.com/gemini3d/pygemini
 
 ## Submitting jobs
 
-Dardel uses the slurm workload manager. Post build, for generating simulation files, we will submit our job to that manager. 
-
-Make sure you are running the following in the directory where gemini3d is installed and not pygemini, as it needs to be able to internally map and find some directories to run without errors. 
+Dardel uses the slurm workload manager. Post build, for generating simulation files, we will submit our job to that manager. Run the following from the gemini3d source directory.
 
 ```bash
 module load nano
-nano gemini_example.slurm # your_file_name.slurm
+nano gemini_example.slurm # your_file_name.slurm or .sh
 ```
 ### slurm script 
 
