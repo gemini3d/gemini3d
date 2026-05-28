@@ -49,11 +49,24 @@ Those adding or modifying Gemini3D code itself may be interested in
 macOS can use the default AppleClang compilers with Gfortran.
 The GCC / Gfortran compilers are available from Homebrew, Macports, etc.
 
-When specifying GCC, macOS itself provides a "fake" `gcc` that is linked to Clang.
-In general, to specify the actual GNU GCC, set environment variables like:
+```sh
+# install GCC, G++, GFortran
+brew install gcc
+```
+
+Get Homebrew GCC version by symbolic links under
 
 ```sh
-export FC=gfortran-14 CC=gcc-14 CXX=g++-14
+ls $(brew --prefix gcc)/bin
+
+gfortran --version
+```
+
+When specifying GCC, macOS itself provides a `gcc` symbolic link to Clang, which is surprising at first.
+To specify GNU GCC, set environment variables adjusted for the current version of GCC on your Mac:
+
+```sh
+export FC=gfortran-15 CC=gcc-15 CXX=g++-15
 ```
 
 ### GLOW

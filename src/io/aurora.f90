@@ -1,3 +1,6 @@
+! Output auroral data to HDF5 files.
+! The root process writes the complete data, while the workers send their local data to the root for output.
+
 submodule (io) io_aurora
 
 use filesystem, only : mkdir, is_dir
