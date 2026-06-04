@@ -32,12 +32,6 @@ if(NOT WIN32)
   # undefined reference to `__kmpc_begin'
 endif()
 
-list(APPEND ${PROJECT_NAME}_flags $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>)
-# heap-arrays: avoid stack overflow, for both unit tests and actual simulations
-# it's needed on Linux and Windows
-# https://www.intel.com/content/www/us/en/develop/documentation/fortran-compiler-oneapi-dev-guide-and-reference/top/compiler-reference/compiler-options/advanced-optimization-options/heap-arrays.html
-
-
 # --- IMPORTANT: bounds checking
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-check>")
 # -check is an alias for -check all. However, MUMPS trips on -check, so we have to use a less stringent check.
