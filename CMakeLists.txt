@@ -45,6 +45,8 @@ include(options.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
 file(READ cmake/libraries.json json)
 
 # Fortran filesystem library "ffilesystem"
