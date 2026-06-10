@@ -13,7 +13,6 @@
     "CMAKE_LINK_WARNING_AS_ERROR": true
   }
 },
-{ "name": "build", "inherits": "default", "displayName": "Build only" },
 { "name": "gmake", "inherits": "default", "generator": "Unix Makefiles",
   "binaryDir": "build-${presetName}",
   "displayName": "GNU generator",
@@ -48,7 +47,6 @@
 ],
 "buildPresets": [
   { "name": "default", "configurePreset": "default", "configuration": "Release" },
-  { "name": "build", "inherits": "default", "configurePreset": "build" },
   { "name": "gmake", "inherits": "default", "configurePreset": "gmake", "jobs": 4 },
   { "name": "linux", "configurePreset": "linux", "inherits": "default" },
   { "name": "release", "inherits": "default", "configurePreset": "release" },
@@ -139,8 +137,8 @@
   {
     "name": "build", "displayName": "Optimized build only",
     "steps": [
-      { "type": "configure", "name": "build" },
-      { "type": "build", "name": "build" }
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" }
     ]
   },
   { "name": "gmake", "displayName": "GNU Make build",

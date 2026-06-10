@@ -52,7 +52,9 @@ set(ffilesystem_fallback true)
 set(ffilesystem_extra false)
 set(HAVE_F03TYPE false)
 # may need fallback for old or slightly broken compilers
-string(JSON ffilesystem_url GET "${json}" "ffilesystem")
+string(JSON _stem GET "${json}" "ffilesystem" "stem")
+string(JSON _archive GET "${json}" "ffilesystem" "archive")
+set(ffilesystem_url ${_stem}${_archive})
 FetchContent_Declare(ffilesystem URL ${ffilesystem_url})
 FetchContent_MakeAvailable(ffilesystem)
 
@@ -75,7 +77,9 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
-string(JSON h5fortran_url GET "${json}" "h5fortran")
+string(JSON _stem GET "${json}" "h5fortran" "stem")
+string(JSON _archive GET "${json}" "h5fortran" "archive")
+set(h5fortran_url "${_stem}${_archive}")
 FetchContent_Declare(h5fortran URL ${h5fortran_url})
 FetchContent_MakeAvailable(h5fortran)
 # this also implicitly finds HDF5.
@@ -97,26 +101,34 @@ set(BUILD_DOUBLE on)
 set(BUILD_COMPLEX off)
 set(BUILD_COMPLEX16 off)
 
-string(JSON mumps_url GET "${json}" "mumps")
+string(JSON _stem GET "${json}" "mumps" "stem")
+string(JSON _archive GET "${json}" "mumps" "archive")
+set(mumps_url "${_stem}${_archive}")
 FetchContent_Declare(mumps URL ${mumps_url})
 FetchContent_MakeAvailable(mumps)
 
 # --- climate models
 if(gemini3d_glow)
-  string(JSON glow_url GET "${json}" "glow")
+  string(JSON _stem GET "${json}" "glow" "stem")
+  string(JSON _archive GET "${json}" "glow" "archive")
+  set(glow_url "${_stem}${_archive}")
   FetchContent_Declare(glow URL ${glow_url})
   FetchContent_MakeAvailable(glow)
 endif()
 
 if(gemini3d_hwm14)
-  string(JSON hwm14_url GET "${json}" "hwm14")
+  string(JSON _stem GET "${json}" "hwm14" "stem")
+  string(JSON _archive GET "${json}" "hwm14" "archive")
+  set(hwm14_url "${_stem}${_archive}")
   FetchContent_Declare(hwm14 URL ${hwm14_url})
   FetchContent_MakeAvailable(hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
 set(msis_BUILD_UTILS on)
-string(JSON msis_url GET "${json}" "msis")
+string(JSON _stem GET "${json}" "msis" "stem")
+string(JSON _archive GET "${json}" "msis" "archive")
+set(msis_url "${_stem}${_archive}")
 FetchContent_Declare(msis URL ${msis_url})
 FetchContent_MakeAvailable(msis)
 
