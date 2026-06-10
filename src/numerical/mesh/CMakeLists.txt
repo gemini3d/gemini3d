@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS mesh)
+set_property(DIRECTORY PROPERTY LABELS mesh)
 
 add_library(meshobj OBJECT meshobj.f90)
 target_link_libraries(meshobj PRIVATE const geomagnetic spherical h5fortran::h5fortran)

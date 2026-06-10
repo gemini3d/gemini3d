@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY LABEL neutral)
+set_property(DIRECTORY PROPERTY LABELS neutral)
 
 add_executable(gemini_projection test_proj.f90
 )

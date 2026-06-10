@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABEL neutral)
+set_property(DIRECTORY PROPERTY LABELS neutral)
 
 
 add_library(neutral OBJECT neutral.f90

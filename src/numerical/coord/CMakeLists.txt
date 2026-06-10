@@ -1,4 +1,4 @@
-set_property(DIRECTORY PROPERTY  LABELS coord)
+set_property(DIRECTORY PROPERTY LABELS coord)
 
 add_library(newton OBJECT newton.f90)
 target_link_libraries(newton PRIVATE const)
