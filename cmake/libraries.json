@@ -1,7 +1,7 @@
 {
   "ffilesystem": {
     "stem": "https://github.com/ECLAIRWaveS/ffilesystem/archive/",
-    "archive": "a698e92ccd87eaae4241cbddddad11bcd4ebfbb4.tar.gz"
+    "archive": "6f3d5111da78fe44495e6328da0d7f2a58cd6d24.tar.gz"
   },
   "glow": {
     "stem": "https://github.com/gemini3d/glow/archive/",
