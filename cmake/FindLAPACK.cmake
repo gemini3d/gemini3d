@@ -6,19 +6,13 @@
 FindLapack
 ----------
 
-* Michael Hirsch, Ph.D. www.scivision.dev
-* David Eklund
-
-Let Michael know if there are more MKL / Lapack / compiler combination you want.
-Refer to https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
-
 Finds LAPACK libraries for C / C++ / Fortran.
 Works with Netlib Lapack / LapackE, AOCL, and Intel MKL.
 Intel MKL relies on having environment variable MKLROOT set, typically by sourcing
 mklvars.sh beforehand.
 
-Why not the FindLapack.cmake built into CMake? It has a lot of old code for
-infrequently used Lapack libraries and is unreliable for me.
+We use this FindLapack.cmake instead of the one built into CMake, which has old code for
+infrequently used Lapack libraries.
 
 Tested on Linux, MacOS and Windows with:
 * GCC / Gfortran
@@ -44,7 +38,7 @@ COMPONENTS
 ``AOCL``
   AMD LAPACK fork of Netlib LAPACK.
   Requires LAPACK AOCL
-  https://www.amd.com/en/developer/aocl/dense.html
+  https://www.amd.com/en/developer/aocl/dense.html#lapack
 
 ``LAPACKE``
   LapackE C / C++ interface
@@ -284,11 +278,6 @@ endfunction()
 
 function(lapack_aocl)
 
-set(_nodef_lapack)
-if(DEFINED LAPACK_ROOT)
-  set(_nodef_lapack NO_DEFAULT_PATH)
-endif()
-
 set(_names flame)
 if(WIN32)
   if(BUILD_SHARED_LIBS)
@@ -307,31 +296,26 @@ find_library(LAPACK_LIBRARY
 NAMES ${_names}
 NAMES_PER_DIR
 PATH_SUFFIXES lib/${_s}
-HINTS ${LAPACK_ROOT} $ENV{LAPACK_ROOT}
-${_nodef_lapack}
 DOC "AOCL Flame library"
 )
 
 cmake_path(GET LAPACK_LIBRARY PARENT_PATH _lapack_root)
 cmake_path(GET _lapack_root PARENT_PATH _lapack_root)
+cmake_path(GET _lapack_root PARENT_PATH _lapack_root)
+cmake_path(GET _lapack_root PARENT_PATH _aocl_root)
 
 find_path(LAPACK_INCLUDE_DIR
 NAMES FLAME.h
 PATH_SUFFIXES include/${_s}
-HINTS ${_lapack_root} ${LAPACK_ROOT} $ENV{LAPACK_ROOT}
-${_nodef_lapack}
-DOC "Flame header"
+HINTS ${_lapack_root}
+DOC "AOCL Flame header"
 )
 
-if(NOT LAPACK_LIBRARY AND LAPACK_INCLUDE_DIR)
+if(NOT LAPACK_LIBRARY OR NOT LAPACK_INCLUDE_DIR)
   return()
 endif()
 
 # --- BLIS
-set(_nodef_blas)
-if(DEFINED BLAS_ROOT)
-  set(_nodef_blas NO_DEFAULT_PATH)
-endif()
 
 set(_names blis-mt blis)
 if(WIN32)
@@ -342,12 +326,13 @@ if(WIN32)
   endif()
 endif()
 
+message(STATUS "_lapack_root: ${_lapack_root} _aocl_root: ${_aocl_root}")
+
 find_library(BLAS_LIBRARY
 NAMES ${_names}
 NAMES_PER_DIR
 PATH_SUFFIXES lib/${_s}
-HINTS ${_lapack_root} ${LAPACK_ROOT} $ENV{LAPACK_ROOT} ${BLAS_ROOT} $ENV{BLAS_ROOT}
-${_nodef_blas}
+HINTS ${_aocl_root}/amd-blis ${BLAS_ROOT} $ENV{BLAS_ROOT}
 VALIDATOR lapack_check
 DOC "AOCL Blis library"
 )
@@ -355,12 +340,11 @@ DOC "AOCL Blis library"
 find_path(BLAS_INCLUDE_DIR
 NAMES blis.h
 PATH_SUFFIXES include/${_s}
-HINTS ${_lapack_root} ${LAPACK_ROOT} $ENV{LAPACK_ROOT} ${BLAS_ROOT} $ENV{BLAS_ROOT}
-${_nodef_blas}
+HINTS ${_aocl_root}/amd-blis ${BLAS_ROOT} $ENV{BLAS_ROOT}
 DOC "Blis header"
 )
 
-if(NOT BLAS_LIBRARY AND BLAS_INCLUDE_DIR)
+if(NOT BLAS_LIBRARY OR NOT BLAS_INCLUDE_DIR)
   return()
 endif()
 
@@ -370,8 +354,7 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
   find_library(LAPACKE_LIBRARY
   NAMES lapacke
   PATH_SUFFIXES lib/${_s}
-  HINTS ${_lapack_root} ${LAPACK_ROOT} $ENV{LAPACK_ROOT}
-  ${_nodef_lapack}
+  HINTS ${_lapack_root} ${_aocl_root}/amd-libflame
   DOC "AOCL LAPACKE library"
   )
 
@@ -379,8 +362,7 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
   find_path(LAPACKE_INCLUDE_DIR
   NAMES lapacke.h
   PATH_SUFFIXES include/${_s}
-  HINTS ${_lapack_root} ${LAPACK_ROOT} $ENV{LAPACK_ROOT}
-  ${_nodef_lapack}
+  HINTS ${_lapack_root} ${_aocl_root}/amd-libflame
   DOC "AOCL LAPACKE include directory"
   )
 
@@ -438,11 +420,9 @@ if(NOT MKL_FOUND)
   return()
 endif()
 
-# get_property(LAPACK_COMPILE_OPTIONS TARGET MKL::MKL PROPERTY INTERFACE_COMPILE_OPTIONS)
-# flags are empty generator expressions that trip up check_source_compiles
-
-get_property(LAPACK_INCLUDE_DIR TARGET MKL::MKL PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(LAPACK_LIBRARY TARGET MKL::MKL PROPERTY INTERFACE_LINK_LIBRARIES)
+set(LAPACK_COMPILE_OPTIONS $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
+set(LAPACK_INCLUDE_DIR $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>)
+set(LAPACK_LIBRARY $<LINK_ONLY:MKL::MKL>)
 
 
 set(LAPACK_MKL_FOUND true)
