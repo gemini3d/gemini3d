@@ -146,5 +146,4 @@ add_subdirectory(test)
 include(cmake/summary.cmake)
 
 # packaging
-include(cmake/package/pkgconf.cmake)
 include(cmake/package/install.cmake)
