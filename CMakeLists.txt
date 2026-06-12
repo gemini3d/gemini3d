@@ -79,6 +79,7 @@ include(cmake/mpi.cmake)
 
 # --- end MPI
 
+# --- HDF5
 string(JSON _stem GET "${json}" "h5fortran" "stem")
 string(JSON _archive GET "${json}" "h5fortran" "archive")
 set(h5fortran_url "${_stem}${_archive}")
@@ -86,6 +87,16 @@ FetchContent_Declare(h5fortran URL ${h5fortran_url})
 FetchContent_MakeAvailable(h5fortran)
 # this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
+
+# HDF5 bug #3663 for HDF5 1.14.2..2.1
+# https://github.com/HDFGroup/hdf5/issues/3663
+# https://github.com/HDFGroup/hdf5/pull/4701
+if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+  message(DEBUG "HDF5: applying workaround for HDFGroup/HDF5 bug Issue 3663 with Intel oneAPI on Windows")
+  target_link_libraries(h5fortran INTERFACE shlwapi)
+endif()
+
+# --- end HDF5
 
 include(cmake/compilers.cmake)
 
