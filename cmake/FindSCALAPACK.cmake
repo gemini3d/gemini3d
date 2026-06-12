@@ -53,10 +53,7 @@ Result Variables
 References
 ^^^^^^^^^^
 
-* Pkg-Config and MKL:  https://software.intel.com/en-us/articles/intel-math-kernel-library-intel-mkl-and-pkg-config-tool
-* MKL for Windows: https://software.intel.com/en-us/mkl-windows-developer-guide-static-libraries-in-the-lib-intel64-win-directory
-* MKL Windows directories: https://software.intel.com/en-us/mkl-windows-developer-guide-high-level-directory-structure
-* MKL link-line advisor: https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+* MKL link-line advisor: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-link-line-advisor.html
 #]=======================================================================]
 
 include(CheckSourceCompiles)
@@ -175,11 +172,9 @@ if(NOT MKL_FOUND)
   return()
 endif()
 
-# get_property(SCALAPACK_COMPILE_OPTIONS TARGET MKL::MKL PROPERTY INTERFACE_COMPILE_OPTIONS)
-# flags are empty generator expressions that trip up check_source_compiles
-
-get_property(SCALAPACK_INCLUDE_DIR TARGET MKL::MKL PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(SCALAPACK_LIBRARY TARGET MKL::MKL PROPERTY INTERFACE_LINK_LIBRARIES)
+set(SCALAPACK_COMPILE_OPTIONS $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
+set(SCALAPACK_INCLUDE_DIR $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>)
+set(SCALAPACK_LIBRARY $<LINK_ONLY:MKL::MKL>)
 
 set(SCALAPACK_MKL_FOUND true)
 
