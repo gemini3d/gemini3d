@@ -27,11 +27,12 @@ lid = max_mpi(lx2all, lx3all, Ncpu)
 !> checks consistency
 call grid_auto(lx2all, lx3all, lid, lid2, lid3)
 
-print '(A,I0,A1,I0,A,I0,A1,I0)', 'MPI partition of lx2, lx3: ', lx2all, ' ',lx3all, &
-' is lid2, lid3: ',lid2,' ',lid3
-print '(A,I0)', 'MPI images: ', lid
+!> JSON format
+print '(a,I0,a,I0,a,I0,a,I0,a,I0,a,I0,a)', '{ "lx2": ', lx2all, ', "lx3": ', lx3all, ', "lid2": ', lid2, ', "lid3": ', lid3, &
+', "lid": ', lid, ', "Ncpu": ', Ncpu, ' }'
 
-if(plan) stop 'gemini3d.run: plan complete'
+if(.not. plan) then
+! we didn't use STOP because that prints "STOP" with Gfortran.
 
 !> remove old output files
 call clean_output(path)
@@ -48,5 +49,7 @@ print *, cmd
 call execute_command_line(cmd, exitstat=i)
 
 if (i/=0) error stop 'gemini.bin run failure'
+
+endif
 
 end program
