@@ -25,9 +25,9 @@ add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
 add_executable(gemini_mpi_standalone test_mpi.f90)
 target_link_libraries(gemini_mpi_standalone PRIVATE MPI::MPI_Fortran)
 
-add_test(NAME GeminiMPIstandalone COMMAND gemini_mpi_standalone ${Ncpu})
-test_mpi_launcher(gemini_mpi_standalone GeminiMPIstandalone ${Ncpu})
-
+# the MPIEXEC_MAX_NUMPROCS argument is to double-check that MPI launcher and MPI library are working correctly
+add_test(NAME GeminiMPIstandalone COMMAND gemini_mpi_standalone ${MPIEXEC_MAX_NUMPROCS})
+test_mpi_launcher(gemini_mpi_standalone GeminiMPIstandalone ${MPIEXEC_MAX_NUMPROCS})
 set_tests_properties(GeminiMPIstandalone PROPERTIES
 FIXTURES_SETUP mpi_fxt
 RESOURCE_LOCK cpu_mpi
@@ -42,16 +42,14 @@ MUMPS::MUMPS MPI::MPI_Fortran
 target_include_directories(gemini_mumps_standalone PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
 # this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
-add_test(NAME GeminiMUMPSstandalone COMMAND gemini_mumps_standalone)
-
+add_test(NAME GeminiMUMPSstandalone COMMAND gemini_mumps_standalone ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml)
+test_mpi_launcher(gemini_mumps_standalone GeminiMUMPSstandalone 2)
 set_tests_properties(GeminiMUMPSstandalone PROPERTIES
-WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 REQUIRED_FILES ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml
 FIXTURES_REQUIRED mpi_fxt
 FIXTURES_SETUP mumps_fxt
 RESOURCE_LOCK cpu_mpi
 )
-test_mpi_launcher(gemini_mumps_standalone GeminiMUMPSstandalone 2)
 
 
 
