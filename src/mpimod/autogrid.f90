@@ -185,10 +185,11 @@ integer :: i
 
 if (M < 1) error stop "autogrid:max_gcd CPU count must be at least one"
 
-max_gcd = 1
-do i = M, 2, -1
-  max_gcd = max(gcd(L, i), max_gcd)
-  if (i < max_gcd) exit
+do i = M, 1, -1
+  if (modulo(L, i) == 0) then
+    max_gcd = i
+    return
+  end if
 end do
 
 end function max_gcd
