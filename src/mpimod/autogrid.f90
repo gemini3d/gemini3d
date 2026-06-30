@@ -22,6 +22,8 @@ integer, intent(out) :: lid2, lid3
 integer :: i,j,N
 
 if(lid < 1) error stop "MPI image count must be positive"
+if(lx2all < 1 .or. lx3all < 1) error stop "MPI grid size must be positive"
+
 if(lid == 1) then
   lid2 = 1
   lid3 = 1
@@ -33,7 +35,7 @@ if (lx3all==1) then
 !  lid3 = gcd(lid, lx2all)
 !  lid2 = 1
   lid3 = 1
-  lid2 =  gcd(lid, lx2all)
+  lid2 = gcd(lid, lx2all)
 elseif (lx2all==1) then
   !! 2D simulation in x3
   lid3 = gcd(lid, lx3all)
@@ -41,29 +43,28 @@ elseif (lx2all==1) then
 else
   ! print *, 'lx2all,lx3all,lid', lx2all,lx3all,lid
   !! 3D simulation
-  !! in 3D sims, must have at least 2 images on each axis to avoid MPI/MUMPS memory / vader errors
+  !! in 3D sims, avoid singular local axes to prevent MPI/MUMPS memory / vader errors
   lid2 = 0
   lid3 = huge(0)
   N = 0
 
   do i = gcd(lid, lx2all), 1, -1
-    do j = gcd(lid, lx3all), 1, -1
-      if (i*j /= lid) cycle
-      if (i*j < N) cycle
-      if (modulo(lx2all, i) /= 0) cycle
-      if (modulo(lx3all, j) /= 0) cycle
-      ! print *, "trying ", i, j,  N
-      if (lx2all / i == 1 .or. lx3all / j == 1) cycle
-      if (abs(i-j) > abs(lid2-lid3)) cycle
+    if (modulo(lx2all, i) /= 0) cycle
+    if (modulo(lid, i) /= 0) cycle
+    j = lid / i
+    if (modulo(lx3all, j) /= 0) cycle
+    ! print *, "trying ", i, j,  N
+    if (lx2all / i == 1 .or. lx3all / j == 1) cycle
+    if (abs(i-j) > abs(lid2-lid3)) cycle
 
-      N = i*j
-      lid2 = i
-      lid3 = j
-      ! print *, "found ", i,j, " trying to find better"
-    enddo
+    N = lid
+    lid2 = i
+    lid3 = j
+    if (lid2 == lid3) exit
+    ! print *, "found ", i,j, " trying to find better"
   enddo
   if (N==0) then
-    write(stderr,'(A,3I4)') "grid_auto: no non-singular factorization found for MPI image partition. lx2all,lx3all,lid: ",&
+    write(stderr,'(A,3I4)') "ERROR:grid_auto: no non-singular factorization found for MPI image partition. lx2all,lx3all,lid: ",&
       lx2all,lx3all,lid
     error stop
   endif
@@ -78,23 +79,32 @@ subroutine check_partition(lx2all, lx3all, lid, lid2, lid3)
 !! checks grid partitioning for MPI
 integer, intent(in) :: lx2all,lx3all,lid, lid2, lid3
 
-character(6) :: s1,s2
 integer :: lx2, lx3
 
-if (lid < 1 .or. lid2 < 1 .or. lid3 < 1) error stop "MPI image count must be positive"
+!> for information
+lx2 = lx2all / lid2
+lx3 = lx3all / lid3
+
+if (lid < 1 .or. lid2 < 1 .or. lid3 < 1) then
+  write(stderr,'(a,i0,1x,i0,1x,i0)') "ERROR:autogrid:check_partition MPI image count must be strictly positive. lid,lid2,lid3: ", &
+    lid, lid2, lid3
+  error stop
+endif
 
 if (lid2*lid3 /= lid) then
-  write(s1, '(I6)') lid
-  write(s2, '(I6)') lid2*lid3
-  error stop "autogrid:check_partition MPI image count " // s1 // " not a factor of x2*x3 " // s2
+  write(stderr, '(a,i0,a,i0,a,i0)') "ERROR:autogrid:check_partition MPI image count ", lid, &
+                                    " not a factor of x2 ", lid2, " times x3 ", lid3
+  write(stderr,'(A,i0,1x,i0,1x,i0,1x,i0,1x,i0,1x,i0,1x,i0)') &
+    "lx2,lx3,lx2all,lx3all,lid2,lid3,lid: ", &
+     lx2,lx3,lx2all,lx3all,lid2,lid3,lid
+  error stop
 endif
 
 if (lx2all > 1 .and. lx3all > 1) then
-  lx2 = lx2all / lid2
-  lx3 = lx3all / lid3
   if(lx2 == 1 .or. lx3 == 1) then
-    write(stderr,'(A,/,A,8I4)') "ERROR: 3-D grid cannot have singular MPI axis:","lx2,lx3,lx2all,lx3all,lid2,lid3,lid: ", &
-      lx2, lx3,lx2all,lx3all,lid2,lid3,lid
+    write(stderr,'(A,/,A,i0,1x,i0,1x,i0,1x,i0,1x,i0,1x,i0,1x,i0)') "ERROR: 3-D grid cannot have singular MPI axis:",&
+    "lx2,lx3,lx2all,lx3all,lid2,lid3,lid: ", &
+     lx2,lx3,lx2all,lx3all,lid2,lid3,lid
     error stop
   endif
 endif
@@ -103,9 +113,8 @@ if (lx2all > 1) then
   if (lid2 > lx2all) error stop "lid2 cannot be greater than lx2"
 
   if (modulo(lx2all, lid2) /= 0) then
-    write(s1, '(I6)') lid2
-    write(s2, '(I6)') lx2all
-    error stop 'autogrid:check_partition MPI x2 image count ' // s1 // ' not a factor of lx2 ' // s2
+    write(stderr,'(a,i0,a,i0)') "ERROR:autogrid:check_partition MPI x2 image count ", lid2, " not a factor of lx2all ", lx2all
+    error stop
   endif
 endif
 
@@ -113,22 +122,19 @@ if (lx3all > 1) then
   if (lid3 > lx3all) error stop "lid3 cannot be greater than lx3"
 
   if (modulo(lx3all, lid3) /= 0) then
-    write(s1, '(I6)') lid3
-    write(s2, '(I6)') lx3all
-    error stop 'autogrid:check_partition MPI x3 image count ' // s1 // ' not a factor of lx3 ' // s2
+    write(stderr,'(a,i0,a,i0)') "ERROR:autogrid:check_partition MPI x3 image count ", lid3, " not a factor of lx3all ", lx3all
+    error stop
   endif
 endif
 
 if (modulo(lid, lid2) /= 0) then
-  write(s1, '(I6)') lid2
-  write(s2, '(I6)') lid
-  error stop "autogrid:check_partition MPI x2 image count " // s1 // " not a factor of lid " // s2
+  write(stderr,'(a,i0,a,i0)') "ERROR:autogrid:check_partition MPI x2 image count ", lid2, " not a factor of lid ", lid
+  error stop
 endif
 
 if (modulo(lid, lid3) /= 0)  then
-  write(s1, '(I6)') lid3
-  write(s2, '(I6)') lid
-  error stop "autogrid:check_partition MPI x3 image count " // s1 // " not a factor of lid " // s2
+  write(stderr,'(a,i0,a,i0)') "ERROR:autogrid:check_partition MPI x3 image count ", lid3, " not a factor of lid ", lid
+  error stop
 endif
 
 end subroutine check_partition
