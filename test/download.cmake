@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.15)
-# .zst requires CMake 3.15+
+cmake_minimum_required(VERSION 3.19)
+# .zst requires CMake 3.15+, JSON Cmake 3.19
 
 function(download_archive url archive exp_hash)
 
@@ -15,44 +15,16 @@ if(NOT stat EQUAL 0)
   ${log}")
 endif()
 
-endfunction(download_archive)
+endfunction()
 
 
 function(gemini_download_ref_data name refroot arc_json_file)
 
-# --- download reference data JSON file (for previously generated data)
-if(EXISTS ${arc_json_file})
-  file(SIZE ${arc_json_file} _size)
-else()
-  set(_size 0)
-endif()
-if(NOT EXISTS ${arc_json_file} OR _size EQUAL 0)
-
-  file(READ ${CMAKE_CURRENT_LIST_DIR}/test_urls.json _libj)
-
-  string(JSON url GET ${_libj} ref_data url)
-
-  file(DOWNLOAD ${url} ${arc_json_file}
-  STATUS ret LOG log
-  )
-  list(GET ret 0 stat)
-  if(NOT stat EQUAL 0)
-    list(GET ret 1 err)
-    message(FATAL_ERROR "${url} download failed: ${err}
-    ${log}")
-  endif()
-endif()
+include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/url_name.cmake)
 
 file(READ ${arc_json_file} _refj)
 
-# a priori test_name strips trailing _cpp
-if(name MATCHES "_cpp$")
-  string(LENGTH ${name} L)
-  math(EXPR M "${L}-4")
-  string(SUBSTRING ${name} 0 ${M} url_name)
-else()
-  set(url_name ${name})
-endif()
+get_url_name(${name} url_name)
 
 string(JSON url GET ${_refj} tests ${url_name} url)
 string(JSON archive_name GET ${_refj} tests ${url_name} archive)
@@ -95,7 +67,7 @@ endif()
 file(SHA256 ${archive} _hash)
 file(WRITE ${ref_dir}/sha256sum.txt ${_hash})
 
-endfunction(gemini_download_ref_data)
+endfunction()
 
 # scripted part, needs to be in this order
 

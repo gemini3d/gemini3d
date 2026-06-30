@@ -22,8 +22,8 @@ set_property(TARGET gemini_projection PROPERTY LINKER_LANGUAGE Fortran)
 # for oneAPI
 
 add_test(NAME GeminiProjection COMMAND gemini_projection)
+test_mpi_launcher(gemini_projection GeminiProjection 2)
 set_tests_properties(GeminiProjection PROPERTIES
 LABELS unit
 FIXTURES_REQUIRED mpi_fxt
 )
-test_mpi_launcher(gemini_projection GeminiProjection 2)
