@@ -24,6 +24,12 @@
   "binaryDir": "/tmp/build",
   "installDir": "/tmp/build/local"
 },
+{ "name": "no-build-hdf5", "inherits": "default",
+  "displayName": "Don't build HDF5 library from source if not found",
+  "cacheVariables": {
+    "h5fortran_hdf5_nobuild": true
+  }
+},
 { "name": "release", "inherits": "default",
   "displayName": "Release build",
   "cacheVariables": {
@@ -47,6 +53,7 @@
 ],
 "buildPresets": [
   { "name": "default", "configurePreset": "default", "configuration": "Release" },
+  { "name": "no-build-hdf5", "configurePreset": "no-build-hdf5", "inherits": "default" },
   { "name": "gmake", "inherits": "default", "configurePreset": "gmake", "jobs": 4 },
   { "name": "linux", "configurePreset": "linux", "inherits": "default" },
   { "name": "release", "inherits": "default", "configurePreset": "release" },
@@ -139,6 +146,13 @@
     "steps": [
       { "type": "configure", "name": "default" },
       { "type": "build", "name": "default" }
+    ]
+  },
+  {
+    "name": "no-build-hdf5", "displayName": "Only find, don't build HDF5 library from source if not found",
+    "steps": [
+      { "type": "configure", "name": "no-build-hdf5" },
+      { "type": "build", "name": "no-build-hdf5" }
     ]
   },
   { "name": "gmake", "displayName": "GNU Make build",
