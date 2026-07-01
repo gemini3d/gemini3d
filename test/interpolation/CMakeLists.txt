@@ -3,8 +3,8 @@ set_property(DIRECTORY PROPERTY LABELS interpolation)
 # --- tests
 add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
-add_test(NAME interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set_tests_properties(interp1 PROPERTIES
+add_test(NAME gemini:interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(gemini:interp1 PROPERTIES
 LABELS "gemini3d:unit"
 FIXTURES_SETUP GemInterp1
 )
@@ -20,11 +20,12 @@ add_executable(test_interp2 testinterp2.f90)
 target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran
 )
 
-add_test(NAME interp2
+add_test(NAME gemini:interp2
 COMMAND test_interp2 ${_testfile_interp2in} ${_testfile_interp2}
 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-set_tests_properties(interp2 PROPERTIES
+hdf5_dll(gemini:interp2)
+set_tests_properties(gemini:interp2 PROPERTIES
 LABELS unit
 FIXTURES_SETUP gemini_interp2_fxt
 )
@@ -35,11 +36,12 @@ add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran
 )
 
-add_test(NAME interp3
+add_test(NAME gemini:interp3
 COMMAND test_interp3 ${_testfile_interp3in} ${_testfile_interp3}
 WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-set_tests_properties(interp3 PROPERTIES
+hdf5_dll(gemini:interp3)
+set_tests_properties(gemini:interp3 PROPERTIES
 LABELS unit
 RESOURCE_LOCK cpu_ram
 FIXTURES_SETUP gemini_interp3_fxt
@@ -47,20 +49,20 @@ FIXTURES_SETUP gemini_interp3_fxt
 
 
 
-add_test(NAME interp2:python
+add_test(NAME gemini:interp2:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
 )
-set_tests_properties(interp2:python PROPERTIES
+set_tests_properties(gemini:interp2:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
 LABELS "gemini3d:unit;gemini3d:python"
 FIXTURES_REQUIRED gemini_interp2_fxt
 DISABLED $<NOT:$<BOOL:${H5PY_FOUND}>>
 )
 
-add_test(NAME interp3:python
+add_test(NAME gemini:interp3:python
 COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
 )
-set_tests_properties(interp3:python PROPERTIES
+set_tests_properties(gemini:interp3:python PROPERTIES
 REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
 LABELS "gemini3d:unit;gemini3d:python"
 RESOURCE_LOCK cpu_ram

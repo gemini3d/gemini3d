@@ -64,6 +64,7 @@ function(fortran_compare outdir refdir name)
 
 add_test(NAME gemini:compare:${name}
 COMMAND gemini3d.compare ${outdir} ${refdir})
+hdf5_dll(gemini:compare:${name})
 
 set_tests_properties(gemini:compare:${name} PROPERTIES
 FIXTURES_REQUIRED ${name}:run_fxt

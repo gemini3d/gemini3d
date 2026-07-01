@@ -215,6 +215,7 @@ FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini3d.run>
 PROCESSORS ${Nworker}
 )
+hdf5_dll(gemini_run:${name}:dryrun)
 
 # --- gemini.bin dryrun ---
 
@@ -233,6 +234,7 @@ set_tests_properties(gemini:${name}:dryrun PROPERTIES
 FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 )
+hdf5_dll(gemini:${name}:dryrun)
 
 # --- gemini.bin run ---
 
@@ -243,6 +245,7 @@ set_tests_properties(gemini:${name} PROPERTIES
 FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
 )
+hdf5_dll(gemini:${name})
 # WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
 set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
@@ -270,6 +273,7 @@ FIXTURES_REQUIRED ${name}:run_fxt
 FIXTURES_SETUP magcalc:${name}:setup
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
+hdf5_dll(magcalc:${name}:setup)
 
 add_test(NAME magcalc:${name} COMMAND magcalc.run ${out_dir})
 set_tests_properties(magcalc:${name} PROPERTIES
@@ -278,5 +282,6 @@ FIXTURES_REQUIRED magcalc:${name}:setup
 LABELS core
 DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
+hdf5_dll(magcalc:${name})
 
 endfunction(setup_magcalc_test)
