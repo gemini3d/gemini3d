@@ -103,7 +103,7 @@ interface ! potential2d.f90
     integer, intent(in) :: flagdirich
     logical, intent(in) :: perflag
     integer, intent(in) :: it
-    real(wp), dimension(size(sig0,1),size(sig0,2),size(sig0,3)) :: potential2D_fieldresolved
+    real(wp), dimension(:,:,:), allocatable :: potential2D_fieldresolved
   end function potential2D_fieldresolved
 end interface
 
@@ -313,19 +313,32 @@ contains
     integer, intent(in) :: flagdirich
     logical, intent(in) :: perflag
     integer, intent(in) :: it
-    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
-    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
-    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
-    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+    real(wp), dimension(:,:,:), allocatable :: gradsigP2,gradsigP3
+    real(wp), dimension(:,:,:), allocatable :: gradsigH2,gradsigH3
+    real(wp), dimension(:,:,:), allocatable :: gradsig01
+    real(wp), dimension(:,:,:), allocatable :: Ac,Bc,Cc,Dc,Ec,Fc
     integer :: lx1,lx2,lx3
     integer, parameter :: ldec=11
     real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1pot,Vmaxx1pot
-    real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: potential3D_fieldresolved
+    real(wp), dimension(:,:,:), allocatable :: potential3D_fieldresolved
 
     !SYSTEM SIZES
     lx1=x%lx1    !These will be full grid sizes if called from root (only acceptable thing)
     lx2=x%lx2all
     lx3=x%lx3all
+
+    allocate(gradsigP2(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)))
+    allocate(gradsigP3, mold=gradsigP2)
+    allocate(gradsigH2, mold=gradsigP2)
+    allocate(gradsigH3, mold=gradsigP2)
+    allocate(gradsig01, mold=gradsigP2)
+    allocate(Ac, mold=gradsigP2)
+    allocate(Bc, mold=gradsigP2)
+    allocate(Cc, mold=gradsigP2)
+    allocate(Dc, mold=gradsigP2)
+    allocate(Ec, mold=gradsigP2)
+    allocate(Fc, mold=gradsigP2)
+    allocate(potential3D_fieldresolved, mold=gradsigP2)
 
     !COMPUTE AUXILIARY COEFFICIENTS TO PASS TO CART SOLVER
     if (debug) print *, 'Prepping coefficients for elliptic equation...'

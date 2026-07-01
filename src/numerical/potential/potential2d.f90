@@ -158,6 +158,8 @@ contains
       end if
     end if
 
+    allocate(potential2D_fieldresolved(size(sig0,1),size(sig0,2),size(sig0,3)))
+
     ! FIXME: need to choose coordinates x2,x3 based on the grid size, note BC's already swapped
     if (x%lx2all==1) then
       potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
