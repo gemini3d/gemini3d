@@ -66,6 +66,7 @@ contains
 
     !> read in the full initial conditions files
     call getICs_hdf5(indatsize,indatfile,nsall,vs1all,Tsall,Phiall)
+    print '(a)', 'Initial conditions read from file: '// indatfile
 
     !> ROOT BROADCASTS IC DATA TO WORKERS
     call cpu_time(tstart)
@@ -107,8 +108,10 @@ contains
            '- use a script to interpolate up/down to the simulation grid'
     end if
 
-    call hf%open(indatfile, action='r')
-
+    !> we use debug=.true. here as this is the first HDF5 access in the program.
+    !> this helps users identify problems with their HDF5 library.
+    call hf%open(indatfile, action='r', debug=.true.)
+    print '(a)', "File handle opened for reading initial conditions: "//indatfile
     call hf%read('/nsall', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
     call hf%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
     call hf%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
