@@ -264,13 +264,17 @@ contains
       !-------
 
       !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
+      if (debug) print '(a)', 'Root is gathering sigPscaled from workers...'
       call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
+      if (debug) print '(a)', 'Root is gathering sig0scaled from workers...'
       call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
+      if (debug) print '(a)', 'Root is gathering srcterm from workers...'
       call gather_recv(srcterm,tag%src,srctermall)
+      if (debug) print '(a)', 'Root has gathered srcterm from workers...'
 
       !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
       ! Note that it is a little inefficient to have root do this calculation, but if we are in 2D it probably doesn't matter anyway...
-      !print*, 'set field aligned current'
+      if (debug) print '(a)', 'set field aligned current'
       if (flagdirich/=1) then  ! we have multiple Neumann configuration ==1 is the only way to detect Dirichlet, so /=1 is some type
         ! type of Neumann
         if (gridflag==1) then    !inverted

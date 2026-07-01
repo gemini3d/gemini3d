@@ -300,7 +300,7 @@ contains
     ! call interface_vels_allspec_in(fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     ! call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     ! call halo_allparams_in(x,fluidvars,fluidauxvars)
-
+    print '(a)', 'Haloing fluidvars and fluidauxvars for advection substep'
     ! New haloing code; probably very little performance penalty here
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     call halo_fluidvars_in(x,fluidvars,fluidauxvars)
