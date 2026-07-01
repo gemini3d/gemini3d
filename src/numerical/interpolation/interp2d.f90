@@ -23,6 +23,7 @@ lx1=size(x1,1)
 lx2=size(x2,1)
 lxi=size(x1i,1)    !only one size since this a flat list of grid points
 
+allocate(interp2(lxi))
 
 do ixi=1,lxi
   !find the x1 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
