@@ -53,8 +53,12 @@ contains
     !! THAT RECORD-BASED INPUT IS USED SO NO FILES > 2GB DUE
     !! TO GFORTRAN BUG WHICH DISALLOWS 8 BYTE INTEGER RECORD
     !! LENGTHS.
-    real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
+    real(wp), dimension(:,:,:,:), allocatable :: nsall, vs1all, Tsall
     real(wp) :: tstart,tfin
+
+    allocate(nsall(-1:size(x1,1)-2, -1:size(x2all,1)-2, -1:size(x3all,1)-2, 1:lsp))
+    allocate(vs1all, mold=nsall)
+    allocate(Tsall, mold=nsall)
 
     !> to avoid having garbage in ghost cells
     nsall = 0
