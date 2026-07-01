@@ -28,6 +28,7 @@ target_include_directories(gemini_potential2d_auroral PRIVATE ${MPI_Fortran_INCL
 # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
 
 add_test(NAME GeminiPotential2d COMMAND gemini_potential2d ${_potential2d_testfile})
+hdf5_dll(GeminiPotential2d)
 test_mpi_launcher(gemini_potential2d GeminiPotential2d ${MPIEXEC_MAX_NUMPROCS})
 
 add_test(NAME potential2d:python
@@ -54,6 +55,7 @@ target_include_directories(gemini_potential3d PRIVATE ${MPI_Fortran_INCLUDE_DIRS
 # this include is for robustness so mpi_f08.mod isn't missed e.g. on Linux systems
 
 add_test(NAME GeminiPotential3d COMMAND gemini_potential3d ${_potential3d_testfile})
+hdf5_dll(GeminiPotential3d)
 test_mpi_launcher(gemini_potential3d GeminiPotential3d ${MPIEXEC_MAX_NUMPROCS})
 
 set_tests_properties(GeminiPotential2d GeminiPotential3d PROPERTIES

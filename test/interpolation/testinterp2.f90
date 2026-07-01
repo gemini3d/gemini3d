@@ -60,7 +60,7 @@ do ix2=1,lx2i
     x2ilist(ik)=x2i(ix2)
   end do
 end do
-filist=interp2(x1,x2,f,x1ilist,x2ilist)
+filist = interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
 
 !> sanity check

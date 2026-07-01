@@ -11,14 +11,37 @@ add_compile_options(${gemini3d_flags})
 # we test each standalone to mitigate confusing build or runtime errors
 # if a particular library isn't working.
 
+function(hdf5_dll test)
+
+if(WIN32)
+  set(_h5fortran_dll_mdir "PATH=path_list_prepend:${CMAKE_INSTALL_FULL_BINDIR};PATH=path_list_prepend:${PROJECT_BINARY_DIR}")
+  FetchContent_GetProperties(hdf5_zlib)
+  if(IS_DIRECTORY "${hdf5_zlib_BINARY_DIR}")
+    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${hdf5_zlib_BINARY_DIR}")
+  endif()
+  if(IS_DIRECTORY "${CMAKE_PREFIX_PATH}/bin")
+    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${CMAKE_PREFIX_PATH}/bin")
+  endif()
+  if(IS_DIRECTORY "${ZLIB_INCLUDE_DIRS}/../bin")
+    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${ZLIB_INCLUDE_DIRS}/../bin")
+  endif()
+  set_property(TEST ${test} PROPERTY ENVIRONMENT_MODIFICATION "${_h5fortran_dll_mdir}")
+endif()
+
+endfunction()
+
+
 # --- HDF5
 add_executable(test_hdf5_standalone_C test_hdf5.c)
 target_link_libraries(test_hdf5_standalone_C PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_C test_hdf5_standalone_C)
+hdf5_dll(HDF5_standalone_C)
+
 
 add_executable(test_hdf5_standalone_Fortran test_hdf5.f90)
 target_link_libraries(test_hdf5_standalone_Fortran PRIVATE h5fortran::h5fortran)
 add_test(HDF5_standalone_Fortran test_hdf5_standalone_Fortran)
+hdf5_dll(HDF5_standalone_Fortran)
 
 # --- MPI
 
@@ -60,6 +83,7 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
 LABELS unit
 )
+hdf5_dll(gemini_fortran)
 
 
 if(TARGET gemini_c.bin)
@@ -71,7 +95,7 @@ FIXTURES_SETUP gemini_exe_fxt
 FIXTURES_REQUIRED "mumps_fxt"
 LABELS "gemni3d:unit"
 )
-
+hdf5_dll(gemini_cpp)
 endif()
 
 add_test(NAME gemini3d_run_ok COMMAND gemini3d.run)
@@ -79,6 +103,7 @@ set_tests_properties(gemini3d_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
 FIXTURES_SETUP gemini_exe_fxt
 )
+hdf5_dll(gemini3d_run_ok)
 
 add_subdirectory(compare)
 
@@ -94,11 +119,13 @@ set_tests_properties(magcalc_exe_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
 LABELS unit
 )
+hdf5_dll(magcalc_exe_ok)
 
 add_test(NAME magcalc_run_ok COMMAND magcalc.run)
 set_tests_properties(magcalc_run_ok PROPERTIES
 PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
 )
+hdf5_dll(magcalc_run_ok)
 
 
 add_subdirectory(coord)

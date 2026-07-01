@@ -28,6 +28,7 @@ foreach(t IN ITEMS root worker input)
   set(f ${CMAKE_CURRENT_BINARY_DIR}/dump_${t}.h5)
 
   add_test(NAME gemini:dump:${t} COMMAND test_dump_write ${t} ${f})
+  hdf5_dll(gemini:dump:${t})
   set_tests_properties(gemini:dump:${t} PROPERTIES
   FIXTURES_SETUP gemini:dump_fxt
   WILL_FAIL true
@@ -35,6 +36,7 @@ foreach(t IN ITEMS root worker input)
   )
 
   add_test(NAME gemini:dump:check:${t} COMMAND test_dump_read testing:${t} ${f})
+  hdf5_dll(gemini:dump:check:${t})
   set_tests_properties(gemini:dump:check:${t} PROPERTIES
   FIXTURES_REQUIRED gemini:dump_fxt
   REQUIRED_FILES ${f}
