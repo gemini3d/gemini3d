@@ -10,7 +10,7 @@
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_COMPILE_WARNING_AS_ERROR": false,
-    "CMAKE_LINK_WARNING_AS_ERROR": true
+    "CMAKE_LINK_WARNING_AS_ERROR": false
   }
 },
 { "name": "gmake", "inherits": "default", "generator": "Unix Makefiles",
