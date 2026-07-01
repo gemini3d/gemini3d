@@ -60,6 +60,9 @@ do ix2=1,lx2i
     x2ilist(ik)=x2i(ix2)
   end do
 end do
+
+print '(a,i0,a,i0,a,i0)', "test_interp2: lx1i=",lx1i," lx2i=",lx2i," lxi=",size(x1ilist,1)
+
 filist = interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
 

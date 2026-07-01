@@ -15,7 +15,7 @@ interface ! interp2d.f90
   module pure function interp2(x1,x2,f,x1i,x2i)
     real(wp), dimension(:), intent(in) :: x1, x2, x1i, x2i
     real(wp), dimension(:,:), intent(in) :: f
-    real(wp) :: interp2(1:size(x1i,1))
+    real(wp), allocatable :: interp2(:)
   end function interp2
 end interface
 
