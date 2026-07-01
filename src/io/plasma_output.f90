@@ -78,8 +78,8 @@ contains
       tmp=user_output(:,:,:,iparm)
       call gather_send(tmp,tag%uservar)
     end do
-    
-    !nparms=size(production_rate,4)    
+
+    !nparms=size(production_rate,4)
     !do iparm = 1,nparms
     !  tmp = production_rate(:,:,:,iparm)
     !  call gather_send(tmp, tag%uservar)   ! or define a new tag e.g., tag%prod_rate
@@ -100,9 +100,9 @@ contains
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: Phiall
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: J1,J2,J3
-    real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output   
+    real(wp), dimension(1:,1:,1:,1:), intent(in) :: user_output
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: v2avg,v3avg
-    real(wp), dimension(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp) :: nsall,vs1all,Tsall
+    real(wp), dimension(:,:,:,:), allocatable :: nsall,vs1all,Tsall
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmp
     real(wp), dimension(1:lx1,1:lx2all,1:lx3all) :: J1all,J2all,J3all
@@ -122,6 +122,10 @@ contains
     v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
     v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
     v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
+
+    allocate(nsall(-1:lx1+2,-1:lx2all+2,-1:lx3all+2,1:lsp))
+    allocate(vs1all, mold=nsall)
+    allocate(Tsall, mold=nsall)
 
     !GET THE SUBGRID DATA FORM THE WORKERS
     call gather_recv(v2avg,tag%v2,v2avgall)
