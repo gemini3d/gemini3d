@@ -59,7 +59,7 @@ jobs:
       shell: pwsh
 
 # need to do this here to avoid Git dubious ownership issues with the WSL filesystem
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: install CMake
       run: |
