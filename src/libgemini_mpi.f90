@@ -282,7 +282,8 @@ contains
       call date_and_time(date,time)
       print '(/,A)', 'DONE: ' // date(1:4) // '-' // date(5:6) // '-' // date(7:8) // 'T' &
         // time(1:2) // ':' // time(3:4) // ':' // time(5:)
-      stop "OK: Gemini dry run"
+      print '(/,a)', "OK: Gemini dry run"
+      stop !< print on previous line because we want the text on stdout not stderr. Stop prints to stderr.
     endif
   end subroutine check_dryrun
 
