@@ -24,15 +24,15 @@ concurrency:
 
 jobs:
 
-  gcc-new:
+  gcc:
     timeout-minutes: 30
 
     strategy:
       fail-fast: false
       matrix:
         hwm14: [false]
-        os: [ubuntu-24.04]
-        gcc: [12, 13, 14]
+        os: [ubuntu-latest]
+        gcc: [11, 12, 13, 14]
 
     env:
       CC: gcc-${{ matrix.gcc }}
@@ -46,6 +46,11 @@ jobs:
     steps:
     - &checkout
       uses: actions/checkout@v7
+
+    - name: Install GCC if needed (Linux)
+      shell: bash
+      if: ${{ runner.os == 'Linux' && matrix.gcc < 12 }}
+      run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - &pkg
       uses: ./.github/workflows/composite-pkg
@@ -70,37 +75,6 @@ jobs:
     - *pkg
 
     - uses: ./.github/workflows/composite-cmake
-
-    - *linux-build
-
-
-  gcc-old:
-    timeout-minutes: 30
-
-    strategy:
-      matrix:
-        hwm14: [false]
-        os: [ubuntu-22.04]
-        gcc: [11]
-# GCC 10 works, just saving CI testing time
-# GCC 9 segfaults on gemini:mini2dns_fang gemini:mini2dew_fang
-
-    env:
-      CC: gcc-${{ matrix.gcc }}
-      CXX: g++-${{ matrix.gcc }}
-      FC: gfortran-${{ matrix.gcc }}
-      CMAKE: cmake
-      CTEST: ctest
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-    - *checkout
-    - *pkg
-
-    - name: GCC APT
-      if: matrix.gcc < 11
-      run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - *linux-build
 
