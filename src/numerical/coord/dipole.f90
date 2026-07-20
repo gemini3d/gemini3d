@@ -1,10 +1,10 @@
 module dipole
 
-!> This submodule contains the functions for which we need to find roots in order to transform
-!   dipole to spherical coordinates.
+!> Dipole and spherical coordinate conversion helpers.
 
 use phys_consts, only: wp, Re
 use newton, only: newtopts, objfun, objfun_deriv, newton_exact
+use coordinate_transforms, only: magdip_to_spherical
 
 implicit none (type, external)
 
@@ -12,11 +12,21 @@ implicit none (type, external)
 type(newtopts) :: newtparms
 
 private
-public :: qp2rtheta, rtheta2qp
+public :: qp2rtheta, qp2rtheta_newton, rtheta2qp
 
 contains
-  !> convert a single q,p pair into r,theta
+  !> Convert a single q,p pair analytically into r,theta.
   subroutine qp2rtheta(q,p,r,theta)
+    real(wp), intent(in) :: q,p
+    real(wp), intent(out) :: r,theta
+    real(wp) :: phi
+
+    call magdip_to_spherical(q,p,0._wp,r,theta,phi)
+  end subroutine qp2rtheta
+
+
+  !> Legacy Newton inversion retained for reference and regression tests.
+  subroutine qp2rtheta_newton(q,p,r,theta)
     real(wp), intent(in) :: q,p
     real(wp), intent(out) :: r,theta
 
@@ -50,7 +60,7 @@ contains
 
     ! Once we have r can algebraically solve for theta
     theta=qr2theta(q,r)
-  end subroutine qp2rtheta
+  end subroutine qp2rtheta_newton
 
 
   !> convert a single point r,theta to q,p

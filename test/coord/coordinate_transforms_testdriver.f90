@@ -3,7 +3,7 @@ program coordinate_transforms_testdriver
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use phys_consts, only : wp, Re, pi
 use geomagnetic, only : set_magnetic_pole
-use dipole, only : qp2rtheta
+use dipole, only : qp2rtheta, qp2rtheta_newton
 use coordinate_transforms, only : geographic_to_ecef, ecef_to_geographic, &
   ecef_to_enu, enu_to_ecef, enu_to_aer, aer_to_enu, ecef_to_aer, aer_to_ecef, &
   geographic_to_geomagnetic, geomagnetic_to_geographic, &
@@ -97,7 +97,7 @@ subroutine test_scalar_roundtrips()
   real(wp) :: ref_lat, ref_lon, ref_alt, x, y, z
   real(wp) :: east, north, up, east_back, north_back, up_back
   real(wp) :: azimuth, elevation, slant_range, azimuth_back, elevation_back, range_back
-  real(wp) :: theta, phi, theta_back, phi_back, radius, radius_back, q, p
+  real(wp) :: theta, phi, theta_back, phi_back, phi_dipole, radius, radius_back, q, p
 
   lat = 0.37_wp
   lon = -1.24_wp
@@ -138,8 +138,8 @@ subroutine test_scalar_roundtrips()
   call assert_angle_close('scalar geomagnetic longitude', lon_back, lon, angle_tol)
 
   radius = Re + alt
-  call spherical_to_magdip(radius, theta, phi, q, p, phi_back)
-  call magdip_to_spherical(q, p, phi_back, radius_back, theta_back, phi_back)
+  call spherical_to_magdip(radius, theta, phi, q, p, phi_dipole)
+  call magdip_to_spherical(q, p, phi_dipole, radius_back, theta_back, phi_back)
   call assert_close('scalar spherical/dipole radius', radius_back, radius, linear_tol)
   call assert_close('scalar spherical/dipole theta', theta_back, theta, angle_tol)
   call assert_angle_close('scalar spherical/dipole phi', phi_back, phi, angle_tol)
@@ -339,7 +339,8 @@ subroutine compare_analytic_with_newton()
   integer, parameter :: nr=20, ntheta=40, nbench=100000
   integer :: i, j, n
   real(wp) :: radius, theta, q, p, phi
-  real(wp) :: analytic_r, analytic_theta, analytic_phi, newton_r, newton_theta
+  real(wp) :: analytic_r, analytic_theta, analytic_phi, production_r, production_theta
+  real(wp) :: newton_r, newton_theta
   real(wp) :: max_r_difference, max_theta_difference
   real(wp) :: q_back, p_back, start_time, analytic_time, newton_time
   real(wp), allocatable :: q_bench(:), p_bench(:), r_bench(:), theta_bench(:), phi_bench(:), phi_out_bench(:)
@@ -352,7 +353,10 @@ subroutine compare_analytic_with_newton()
       radius = Re*(0.9_wp + real(i-1,wp)*4.1_wp/real(nr-1,wp))
       call spherical_to_magdip(radius, theta, 0._wp, q, p, phi)
       call magdip_to_spherical(q, p, phi, analytic_r, analytic_theta, analytic_phi)
-      call qp2rtheta(q, p, newton_r, newton_theta)
+      call qp2rtheta(q, p, production_r, production_theta)
+      call qp2rtheta_newton(q, p, newton_r, newton_theta)
+      call assert_close('production/analytic radius parity', production_r, analytic_r, linear_tol)
+      call assert_close('production/analytic theta parity', production_theta, analytic_theta, angle_tol)
       max_r_difference = max(max_r_difference, abs(analytic_r-newton_r))
       max_theta_difference = max(max_theta_difference, abs(analytic_theta-newton_theta))
       call spherical_to_magdip(analytic_r, analytic_theta, 0._wp, q_back, p_back, phi)
@@ -378,7 +382,7 @@ subroutine compare_analytic_with_newton()
 
   call cpu_time(start_time)
   do n=1,nbench
-    call qp2rtheta(q_bench(n), p_bench(n), r_bench(n), theta_bench(n))
+    call qp2rtheta_newton(q_bench(n), p_bench(n), r_bench(n), theta_bench(n))
   end do
   call cpu_time(newton_time)
   newton_time = newton_time-start_time

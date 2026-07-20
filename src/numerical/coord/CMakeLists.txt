@@ -6,11 +6,11 @@ target_link_libraries(newton PRIVATE const)
 add_library(spherical OBJECT spherical.f90)
 target_link_libraries(spherical PRIVATE const)
 
-add_library(dipole OBJECT dipole.f90)
-target_link_libraries(dipole PRIVATE newton)
-
 add_library(geomagnetic OBJECT geomagnetic.f90)
 target_link_libraries(geomagnetic PRIVATE const)
 
 add_library(coordinate_transforms OBJECT coordinate_transforms.f90)
 target_link_libraries(coordinate_transforms PRIVATE geomagnetic const)
+
+add_library(dipole OBJECT dipole.f90)
+target_link_libraries(dipole PRIVATE newton coordinate_transforms)

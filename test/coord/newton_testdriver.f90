@@ -1,7 +1,7 @@
 program newton_testdriver
 
 use phys_consts, only: wp
-use meshobj_dipole, only : qp2rtheta
+use dipole, only : qp2rtheta_newton
 
 implicit none (type, external)
 
@@ -15,7 +15,7 @@ p(1)=1.2790947
 phi(1)=3.14
 rcorrect=6803179.761800971_wp
 thetacorrect=1.9891332403471418_wp
-call qp2rtheta(q(1),p(1),r,theta)
+call qp2rtheta_newton(q(1),p(1),r,theta)
 print*, 'solution:  r=',r,'; theta=',theta
 print*, 'known good solution:  r=',rcorrect,'; theta=',thetacorrect
 

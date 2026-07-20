@@ -3,7 +3,7 @@ set_property(DIRECTORY PROPERTY LABELS Gemini3d:coord)
 add_executable(newton_testdriver newton_testdriver.f90
 $<TARGET_OBJECTS:meshobj>
 )
-target_link_libraries(newton_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole dipole const
+target_link_libraries(newton_testdriver PRIVATE newton spherical geomagnetic coordinate_transforms meshobj_dipole dipole const
 h5fortran::h5fortran
 )
 add_test(NAME NewtonTest COMMAND newton_testdriver)
@@ -17,11 +17,11 @@ target_link_libraries(coordinate_transforms_testdriver PRIVATE coordinate_transf
 add_test(NAME CoordinateTransforms COMMAND coordinate_transforms_testdriver)
 
 add_executable(grid_testdriver grid_testdriver.f90)
-target_link_libraries(grid_testdriver PRIVATE newton spherical geomagnetic dipole meshobj_dipole meshobj const)
+target_link_libraries(grid_testdriver PRIVATE newton spherical geomagnetic coordinate_transforms dipole meshobj_dipole meshobj const)
 add_test(NAME GridTest COMMAND grid_testdriver)
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
-target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic dipole meshobj_dipole meshobj const
+target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic coordinate_transforms dipole meshobj_dipole meshobj const
 ffilesystem::filesystem
 )
 add_test(NAME FullgridDipole COMMAND fullgrid_dipole_testdriver)
@@ -29,7 +29,7 @@ add_test(NAME FullgridDipole COMMAND fullgrid_dipole_testdriver)
 add_executable(fullgrid_dipole_regen fullgrid_dipole_regen.f90
 $<TARGET_OBJECTS:grid>
 )
-target_link_libraries(fullgrid_dipole_regen PRIVATE reader newton spherical geomagnetic dipole meshobj_dipole meshobj_cart meshobj mpimod autogrid const
+target_link_libraries(fullgrid_dipole_regen PRIVATE reader newton spherical geomagnetic coordinate_transforms dipole meshobj_dipole meshobj_cart meshobj mpimod autogrid const
 h5fortran::h5fortran
 ffilesystem::filesystem
 )
@@ -42,7 +42,7 @@ ffilesystem::filesystem
 add_test(NAME FullgridCartesian COMMAND fullgrid_cartesian_testdriver)
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
-target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE newton spherical geomagnetic dipole meshobj_dipole meshobj const)
+target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE newton spherical geomagnetic coordinate_transforms dipole meshobj_dipole meshobj const)
 add_test(NAME FullgridDipoleRoot COMMAND fullgrid_dipole_testdriver_root)
 
 # --- test props
