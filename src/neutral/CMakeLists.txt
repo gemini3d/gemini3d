@@ -34,7 +34,8 @@ target_link_libraries(neutral_perturbations PRIVATE gemini3d_config const reader
 timeutils
 inputdata
 neutral neutraldata neutraldata3D neutraldata3D_fclaw neutraldata3D_mpi neutraldata3D_geog_mpi neutraldata3D_geom_mpi
-neutraldata2D neutraldata2Dcart neutraldata2Daxisymm
+neutraldata2D neutraldata2Dcart neutraldata2Daxisymm 
+neutraldata3D_fclaw neutraldata3D_fclaw_3Dx neutraldata3D_fclaw_axisymm
 h5fortran::h5fortran
 MPI::MPI_Fortran
 msis::msis
