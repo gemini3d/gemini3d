@@ -14,10 +14,11 @@ implicit none (type, external)
 type(hdf5_file) :: hout
 
 !! which example to run
-integer, parameter :: flagexample=3    ! 1 - one-sided aurora; 2 - two-sided aurora; 3 -  gradient-drift scenario
+integer, parameter :: flagexample=2    ! 1 - one-sided aurora; 2 - two-sided aurora; 3 -  gradient-drift scenario
 
 !! system size
-integer, parameter :: lx1=96,lx2=512,lx3=512
+!integer, parameter :: lx1=96,lx2=512,lx3=512
+integer, parameter :: lx1=96,lx2=2048,lx3=2048
 integer :: ix1,ix2,ix3
 real(wp), parameter :: x2dist=400e3, x3dist=1000e3
 
