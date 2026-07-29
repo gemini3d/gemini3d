@@ -712,17 +712,17 @@ end subroutine momentum_source_loss_solve
 
 
 !> Mass source and loss processes
-subroutine mass_source_loss_solve(dt,Pr,Lo,Prprecip,ns)
+subroutine mass_source_loss_solve(dt,Pr,Lo,Prionize,ns)
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:,:), intent(inout) :: Pr
   real(wp), dimension(:,:,:,:), intent(in) :: Lo
-  real(wp), dimension(:,:,:,:), intent(in) :: Prprecip
+  real(wp), dimension(:,:,:,:), intent(in) :: Prionize
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
   real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: paramtrim
   integer :: isp,lsp
 
   lsp=size(ns,4)
-  Pr(:,:,:,1:6)=Pr(:,:,:,1:6)+Prprecip
+  Pr(:,:,:,1:6)=Pr(:,:,:,1:6)+Prionize
   do isp=1,lsp-1
     paramtrim=ns(1:lx1,1:lx2,1:lx3,isp)
     paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
