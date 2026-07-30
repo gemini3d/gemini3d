@@ -17,10 +17,10 @@
   },
   "msis": {
     "stem": "https://github.com/gemini3d/msis/archive/",
-    "archive": "1577d765f86f4bb180e589236be3336d1dbbc26f.tar.gz"
+    "archive": "586c9b96931d80011db417bcb34140580258e786.tar.gz"
   },
   "mumps": {
-    "stem": "https://github.com/scivision/mumps/archive/",
+    "stem": "https://github.com/scivision/mumps-superbuild/archive/",
     "archive": "595ad9b758411da45a2cfd272e2164a55e7eae11.tar.gz"
   }
 }
