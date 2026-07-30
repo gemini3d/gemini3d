@@ -242,9 +242,9 @@ contains
      !   all of the theory of photoionization is done out in terms of chapman functhions because they provide a prediction
      !   of absorption above an arbitrary point.  
      chivert=0._wp
-     call compute_column_density(nn(:,:,:,1), chivert, x, Tninf, gavg, mn(1), nOcol)
-     call compute_column_density(nn(:,:,:,2), chivert, x, Tninf, gavg, mn(2), nN2col)
-     call compute_column_density(nn(:,:,:,3), chivert, x, Tninf, gavg, mn(3), nO2col)
+     call compute_column_density(nn(:,:,:,1), chivert, x, Tninf, gavg, mn(1), nOcol_vert)
+     call compute_column_density(nn(:,:,:,2), chivert, x, Tninf, gavg, mn(2), nN2col_vert)
+     call compute_column_density(nn(:,:,:,3), chivert, x, Tninf, gavg, mn(3), nO2col_vert)
 
 
      Iflux_night = 0._wp
