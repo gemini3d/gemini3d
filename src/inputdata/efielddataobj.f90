@@ -300,6 +300,9 @@ contains
       else if (x%lx2all>1 .and. x%lx3all==1) then
         ix2ref=x%lx2all/2
         ix3ref=1
+      else if (lx2all==1 .and. lx3all==1) then
+        ix2ref=1
+        ix3ref=1
       else
         error stop 'Unable to orient boundary conditions for electric potential'
       endif
@@ -318,6 +321,9 @@ contains
         ix3ref=x%lx3/2
       else if (x%lx2>1 .and. x%lx3==1) then
         ix2ref=x%lx2/2
+        ix3ref=1
+      else if (x%lx2==1 .and. x%lx3==1) then
+        ix2ref=1
         ix3ref=1
       else
         error stop 'Unable to orient boundary conditions for electric potential'

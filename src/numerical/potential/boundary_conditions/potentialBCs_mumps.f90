@@ -176,11 +176,14 @@ contains
     if (lx2all > 1 .and. lx3all>1) then ! 3D sim
       ix2ref = lx2all/2      !note integer division
       ix3ref = lx3all/2
-    else if (lx2all==1 .and. lx3all>1) then
+    else if (lx2all==1 .and. lx3all>1) then   ! 2D, 1-3
       ix2ref = 1
       ix3ref=lx3all/2
-    else if (lx2all>1 .and. lx3all==1) then
+    else if (lx2all>1 .and. lx3all==1) then   ! 2D 1-2
       ix2ref=lx2all/2
+      ix3ref=1
+    else if (lx2all==1 .and. lx3all==1) then  ! 1D
+      ix2ref=1
       ix3ref=1
     else
       error stop 'Unable to orient boundary conditions for electric potential'
