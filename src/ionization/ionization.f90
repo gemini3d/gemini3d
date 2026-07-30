@@ -112,6 +112,7 @@ contains
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
     real(wp) :: alt_km, sza
     real(wp) :: tau_night
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: chivert    ! dummy sza for doing vertical column density
     real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol_vert ,nN2col_vert ,nO2col_vert
     
 
@@ -233,9 +234,18 @@ contains
     
     ! Only add nighttime terms if flag is ON
    if (cfg%flagnightQ) then
-     call compute_column_density_vertical(nn(:,:,:,1), x, nOcol_vert)
-     call compute_column_density_vertical(nn(:,:,:,2), x, nN2col_vert)
-     call compute_column_density_vertical(nn(:,:,:,3), x, nO2col_vert)
+     !call compute_column_density_vertical(nn(:,:,:,1), x, nOcol_vert)
+     !call compute_column_density_vertical(nn(:,:,:,2), x, nN2col_vert)
+     !call compute_column_density_vertical(nn(:,:,:,3), x, nO2col_vert)
+
+     ! MZ - doing the integral numerically doesn't work when the x1-direction is not altitude alined -- that is why
+     !   all of the theory of photoionization is done out in terms of chapman functhions because they provide a prediction
+     !   of absorption above an arbitrary point.  
+     chivert=0._wp
+     call compute_column_density(nn(:,:,:,1), chivert, x, Tninf, gavg, mn(1), nOcol)
+     call compute_column_density(nn(:,:,:,2), chivert, x, Tninf, gavg, mn(2), nN2col)
+     call compute_column_density(nn(:,:,:,3), chivert, x, Tninf, gavg, mn(3), nO2col)
+
 
      Iflux_night = 0._wp
  
@@ -540,6 +550,7 @@ contains
       end subroutine compute_column_density
       
       !DEBUG
+      ! MZ Note -- may want to also use chapman function forms here in case the x1 direction is not vertical...
       subroutine compute_column_density_vertical(nn_species, x, n_col)
         real(wp), intent(in) :: nn_species(:,:,:)
         class(curvmesh), intent(in) :: x
