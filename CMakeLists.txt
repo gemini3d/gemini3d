@@ -147,6 +147,7 @@ string(JSON _archive GET "${json}" "msis" "archive")
 set(msis_url "${_stem}${_archive}")
 FetchContent_Declare(msis URL ${msis_url})
 FetchContent_MakeAvailable(msis)
+set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 # --- Gemini3D library
 add_subdirectory(src)
