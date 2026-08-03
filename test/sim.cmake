@@ -24,6 +24,9 @@ else()
   endif()
 endif()
 
+if(gemini3d_msis2)
+  list(APPEND gemini_test_sim_names mini2dns_msis2_fang)
+endif()
 
 foreach(_s IN LISTS gemini_test_sim_names)
   setup_gemini_test(${_s})

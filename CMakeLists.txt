@@ -148,6 +148,10 @@ set(msis_url "${_stem}${_archive}")
 FetchContent_Declare(msis URL ${msis_url})
 FetchContent_MakeAvailable(msis)
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+if(gemini3d_msis2)
+  set(msis2_parm_file ${msis_SOURCE_DIR}/src/msis2/msis21.parm)
+  configure_file(${msis2_parm_file} msis21.parm COPYONLY)
+endif()
 
 # --- Gemini3D library
 add_subdirectory(src)
