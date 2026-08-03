@@ -138,6 +138,9 @@ if(gemini3d_hwm14)
 endif()
 
 # --- MSISE00 / MSIS 2.x
+if(gemini3d_msis2)
+  set(msis2 on)
+endif()
 set(msis_BUILD_UTILS on)
 string(JSON _stem GET "${json}" "msis" "stem")
 string(JSON _archive GET "${json}" "msis" "archive")
