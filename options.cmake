@@ -30,6 +30,8 @@ option(gemini3d_python "Python-based self-checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(gemini3d_matlab "Matlab-based self-checks")
 
+option(gemini3d_msis2 "enable MSIS2 neutral atmosphere model (must specify in config.nml as well)" on)
+
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)
 
