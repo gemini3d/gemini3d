@@ -42,7 +42,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             sweep1_allspec_mass_in,sweep1_allspec_momentum_in,sweep1_allspec_energy_in, &
             sweep2_allspec_mass_in,sweep2_allspec_momentum_in,sweep2_allspec_energy_in, &
             rhov12v1_in, VNRicht_artvisc_in, compression_in, rhoe2T_in, clean_param_in, &
-            energy_diffusion_in, source_loss_allparams_in, &
+            energy_diffusion_in, diffusion_source_loss_energy_in, source_loss_allparams_in, &
             source_loss_mass_in, source_loss_momentum_in, source_loss_energy_in, &
             clear_ionization_arrays, impact_ionization_in, solar_ionization_in, &
             dateinc_in, get_subgrid_size,get_fullgrid_size,get_config_vars, get_species_size, fluidvar_pointers, &
@@ -933,6 +933,32 @@ contains
     call c_f_pointer(intvarsC,intvars)
     call energy_diffusion_in(cfg,x,fluidvars,electrovars,intvars,dt)
   end subroutine energy_diffusion_C
+
+
+  !> diffusion of energy
+  subroutine diffusion_source_loss_energy_C(cfgC,xtype,xC,fluidvarsC,electrovarsC,intvarsC,dt)  &
+                  bind(C,name="diffusion_source_loss_energy_C")
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    type(c_ptr), intent(inout) :: fluidvarsC
+    type(c_ptr), intent(in) :: electrovarsC
+    type(c_ptr), intent(in) :: intvarsC
+    real(wp), intent(in) :: dt
+
+    type(gemini_cfg), pointer :: cfg
+    class(curvmesh), pointer :: x
+    real(wp), dimension(:,:,:,:), pointer :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer :: electrovars
+    type(gemini_work), pointer :: intvars
+
+    call c_f_pointer(cfgC, cfg)
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
+    call c_f_pointer(intvarsC,intvars)
+    call diffusion_source_loss_energy_in(cfg,x,fluidvars,electrovars,intvars,dt)
+  end subroutine diffusion_source_loss_energy_C
 
 
   !> source/loss numerical solutions
