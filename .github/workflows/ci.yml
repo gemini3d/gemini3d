@@ -30,7 +30,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hwm14: [false]
         os: [ubuntu-latest]
         gcc: [11, 12, 13, 14]
 
@@ -57,6 +56,25 @@ jobs:
 
     - &linux-build
       uses: ./.github/workflows/composite-unix
+
+  hwm-msis:
+    strategy:
+      matrix:
+        model: [msis2]
+
+    env:
+      CMAKE: cmake
+      CTEST: ctest
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - *checkout
+
+    - *pkg
+
+    - name: workflow ${{ matrix.model }}
+      run: cmake --workflow ${{ matrix.model }}
 
 
   cmake-oldest:

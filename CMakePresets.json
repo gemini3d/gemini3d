@@ -16,7 +16,20 @@
 { "name": "gmake", "inherits": "default", "generator": "Unix Makefiles",
   "binaryDir": "build-${presetName}",
   "displayName": "GNU generator",
-  "description": "this helps catch GNU Make-specific bugs that might not appear with Ninja" },
+  "description": "this helps catch GNU Make-specific bugs that might not appear with Ninja"
+},
+{ "name": "msis2", "inherits": "default",
+  "displayName": "Use MSIS2 model",
+  "cacheVariables": {
+    "gemini3d_msis2": true
+  }
+},
+{ "name": "hwm14", "inherits": "default",
+  "displayName": "Use HWM14 model",
+  "cacheVariables": {
+    "gemini3d_hwm14": true
+  }
+},
 {
   "name": "linux", "inherits": "default",
   "displayName": "Linux build (for WSL on GHA)",
@@ -54,6 +67,8 @@
 "buildPresets": [
   { "name": "default", "configurePreset": "default", "configuration": "Release" },
   { "name": "no-build-hdf5", "configurePreset": "no-build-hdf5", "inherits": "default" },
+  { "name": "msis2", "configurePreset": "msis2", "inherits": "default" },
+  { "name": "hwm14", "configurePreset": "hwm14", "inherits": "default" },
   { "name": "gmake", "inherits": "default", "configurePreset": "gmake", "jobs": 4 },
   { "name": "linux", "configurePreset": "linux", "inherits": "default" },
   { "name": "release", "inherits": "default", "configurePreset": "release" },
@@ -73,6 +88,18 @@
     "noTestsAction": "error",
     "scheduleRandom": true,
     "stopOnFailure": false
+  }
+},
+{ "name": "msis2", "configurePreset": "msis2", "inherits": "default",
+  "displayName": "Tests for MSIS 2.x",
+  "filter": {
+    "include": {"name": "msis2"}
+  }
+},
+{ "name": "hwm14", "configurePreset": "hwm14", "inherits": "default",
+  "displayName": "Tests for HWM14",
+  "filter": {
+    "include": {"name": "hwm14"}
   }
 },
 {
@@ -146,6 +173,20 @@
     "steps": [
       { "type": "configure", "name": "default" },
       { "type": "build", "name": "default" }
+    ]
+  },
+  { "name": "msis2", "displayName": "MSIS 2.x workflow",
+    "steps": [
+      { "type": "configure", "name": "msis2" },
+      { "type": "build", "name": "msis2" },
+      { "type": "test", "name": "msis2" }
+    ]
+  },
+  { "name": "hwm14", "displayName": "HWM14 workflow",
+    "steps": [
+      { "type": "configure", "name": "hwm14" },
+      { "type": "build", "name": "hwm14" },
+      { "type": "test", "name": "hwm14" }
     ]
   },
   {
