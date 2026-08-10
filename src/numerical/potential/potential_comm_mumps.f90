@@ -425,12 +425,20 @@ contains
     J2 = 0
     J3 = 0
     !! zero everything out to initialize since *accumulating* sources
+
     if (.not. cfg%flagnodivJ0) then
       call acc_perpBGconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed background field currents...'
+      call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
+      if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
+      !^ flagnodivJ0 basically assumes that the background electric field being provided to the code is exactly
+      !    that needed to balance out the current denstiy from the winds.  I.e. there is no need to accumulate
+      !    current involved in the establishment of the background state from these sources since they naturally
+      !    yield zero divergence.  Or at least that is what we explicitly enforce with this flag.  This is relevant
+      !    especially for EPB simulations where the full region over which the background state is established is not
+      !    resolved by the model and artificial potentials will form, thus, if one just computes currents explicitly,
+      !    subject to some boundary conditions that do not include explicity accounting for currents entering and leaving
     end if
-    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
-    if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed wind currents...'
     if (cfg%flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
       if (debug .and. mpi_cfg%myid==0) print *, 'Workers have computed pressure currents...'
