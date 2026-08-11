@@ -233,6 +233,14 @@ flagJ1ve=.true.        ! use parallel current density in calculation of parallel
 &nightQ
   flagnightQ=.true.    ! use newer photoionization calculation including nighttime Q
 /
+
+! Set fill and min values for densities 
+!  (optional - defaults to reasonable values for most applications)
+&mindens_user
+  mindens_userval=1.0e-100
+  mindensnull_userval=1.0e-20
+  mindensdiv_userval=1.0e-5
+/
 ```
 
 <a name="grid_input_files"></a>

@@ -3,6 +3,7 @@ submodule(gemini3d_config) config_nml
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
 use filesystem, only : absolute
+use phys_consts, only: mindens, mindensnull, mindensdiv
 
 implicit none (type, external)
 
@@ -72,6 +73,11 @@ contains
     ! add nightime ionization
     logical :: flagnightQ = .false.
 
+    ! in case the user wants to specify minimum allowed density
+    real(wp) :: mindens_userval=1.0e-100
+    real(wp) :: mindensnull_userval=1.0e-20
+    real(wp) :: mindensdiv_userval=1.0e-5
+
     namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
     namelist /files/ file_format, indat_size, indat_grid, indat_file
     namelist /flags/ potsolve, flagperiodic, flagoutput
@@ -100,6 +106,7 @@ contains
     namelist /magpole/ flagmagpole
     namelist /J1ve/ flagJ1ve
     namelist /nightQ/ flagnightQ
+    namelist /mindens_user/ mindens_userval, mindensnull_userval, mindensdiv_userval
 
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -197,6 +204,19 @@ contains
       cfg%solfluxdir = ""
     endif
 
+    !> neural background (optional)
+    if (namelist_exists(u,'neutral_BG')) then
+      rewind(u)
+      read(u, nml=neutral_BG, iostat=i)
+      call check_nml_io(i, cfg%infile, "neutral_BG")
+      cfg%flagneuBG=flagneuBG
+      cfg%dtneuBG=dtneuBG
+      cfg%msis_version = msis_version
+    else
+      cfg%flagneuBG=.false.
+      cfg%msis_version = 0
+    end if
+
     if (namelist_exists(u, "neutralBG_file", verbose)) then
       cfg%flagneutralBGfile = 1
       rewind(u)
@@ -207,6 +227,17 @@ contains
     else
       cfg%flagneutralBGfile = 0
       cfg%neutralBGdir = ""
+    endif
+
+    if (namelist_exists(u, "glow", verbose)) then
+      cfg%flagglow = 1
+      rewind(u)
+      read(u, nml=glow, iostat=i)
+      call check_nml_io(i, cfg%infile, "glow")
+      cfg%dtglow = dtglow
+      cfg%dtglowout = dtglowout
+    else
+      cfg%flagglow = 0
     endif
 
     if (namelist_exists(u, "fang", verbose)) then
@@ -234,17 +265,6 @@ contains
       cfg%W0_char = 3000._wp ! same as W0BG default
     endif
 
-    if (namelist_exists(u, "glow", verbose)) then
-      cfg%flagglow = 1
-      rewind(u)
-      read(u, nml=glow, iostat=i)
-      call check_nml_io(i, cfg%infile, "glow")
-      cfg%dtglow = dtglow
-      cfg%dtglowout = dtglowout
-    else
-      cfg%flagglow = 0
-    endif
-
     !> EIA (optional)
     if (namelist_exists(u,'EIA')) then
       rewind(u)
@@ -254,19 +274,6 @@ contains
       cfg%v0equator=v0equator
     else
       cfg%flagEIA=.false.
-    end if
-
-    !> neural background (optional)
-    if (namelist_exists(u,'neutral_BG')) then
-      rewind(u)
-      read(u, nml=neutral_BG, iostat=i)
-      call check_nml_io(i, cfg%infile, "neutral_BG")
-      cfg%flagneuBG=flagneuBG
-      cfg%dtneuBG=dtneuBG
-      cfg%msis_version = msis_version
-    else
-      cfg%flagneuBG=.false.
-      cfg%msis_version = 0
     end if
 
     !> precip background (optional)
@@ -414,6 +421,19 @@ contains
       cfg%flagnightQ = flagnightQ
     else
       cfg%flagnightQ = .false.    ! not adding nighttime ionization (default uses the older version)
+    end if
+
+    if (namelist_exists(u, 'mindens_user')) then
+      rewind(u)
+      read(u, nml=mindens_user, iostat=i)
+      call check_nml_io(i, cfg%infile, "mindens_user")
+      mindens = mindens_userval    ! this is different from the others since we just directly set the module variable, rather than cfg
+      mindensnull = mindensnull_userval
+      mindensdiv = mindensdiv_userval
+    else
+      mindens = 1.0e-100
+      mindensnull = 1.0e-20_wp
+      mindensdiv  = 1.0e-5_wp
     end if
 
     close(u)
