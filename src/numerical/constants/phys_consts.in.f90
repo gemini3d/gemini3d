@@ -84,10 +84,11 @@ real(wp), parameter :: wavelengths(lwave)=[real(wp) :: 3371, &
                                         1304] !wavelength of each auroral line, housekeeping
 
 
-!> HOUSEKEEPING PARAMETERS for conditioning densities
-real(wp), parameter :: mindens     = 1.0e-100_wp
-real(wp), parameter :: mindensnull = 1.0e-20_wp
-real(wp), parameter :: mindensdiv  = 1.0e-5_wp
+!> HOUSEKEEPING PARAMETERS for conditioning densities, these are writeable and may be adjusted in io
+!    module if the user specifies them in the nml input file.  
+real(wp) :: mindens     = 1.0e-100_wp
+real(wp) :: mindensnull = 1.0e-20_wp
+real(wp) :: mindensdiv  = 1.0e-5_wp
 
 
 !To control the amount of console output; can be changed by user command line flag "-debug"
