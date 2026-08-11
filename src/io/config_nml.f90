@@ -240,31 +240,6 @@ contains
       cfg%flagglow = 0
     endif
 
-    if (namelist_exists(u, "fang", verbose)) then
-      rewind(u)
-      read(u, nml=fang, iostat=i)
-      call check_nml_io(i, cfg%infile, "fang")
-      cfg%flag_fang = flag_fang
-    else
-      cfg%flag_fang = 2008  !< legacy default
-    endif
-
-    if (namelist_exists(u, "fang_pars", verbose)) then
-      rewind(u)
-      read(u, nml=fang_pars, iostat=i)
-      call check_nml_io(i, cfg%infile, "fang_pars")
-      cfg%flag_fang = 0 ! force fang flag for integrated spectrum
-      cfg%diff_num_flux = diff_num_flux
-      cfg%kappa = kappa
-      cfg%bimax_frac = bimax_frac
-      cfg%W0_char = W0_char
-    else
-      cfg%diff_num_flux = 0 ! Maxwellian, same as Fang et al. 2008 within 5% in most cases
-      cfg%kappa = 1e4_wp ! close to Maxwellian
-      cfg%bimax_frac = 1._wp ! Maxwellian
-      cfg%W0_char = 3000._wp ! same as W0BG default
-    endif
-
     !> EIA (optional)
     if (namelist_exists(u,'EIA')) then
       rewind(u)
@@ -422,6 +397,31 @@ contains
     else
       cfg%flagnightQ = .false.    ! not adding nighttime ionization (default uses the older version)
     end if
+
+    if (namelist_exists(u, "fang", verbose)) then
+      rewind(u)
+      read(u, nml=fang, iostat=i)
+      call check_nml_io(i, cfg%infile, "fang")
+      cfg%flag_fang = flag_fang
+    else
+      cfg%flag_fang = 2008  !< legacy default
+    endif
+
+    if (namelist_exists(u, "fang_pars", verbose)) then
+      rewind(u)
+      read(u, nml=fang_pars, iostat=i)
+      call check_nml_io(i, cfg%infile, "fang_pars")
+      cfg%flag_fang = 0 ! force fang flag for integrated spectrum
+      cfg%diff_num_flux = diff_num_flux
+      cfg%kappa = kappa
+      cfg%bimax_frac = bimax_frac
+      cfg%W0_char = W0_char
+    else
+      cfg%diff_num_flux = 0 ! Maxwellian, same as Fang et al. 2008 within 5% in most cases
+      cfg%kappa = 1e4_wp ! close to Maxwellian
+      cfg%bimax_frac = 1._wp ! Maxwellian
+      cfg%W0_char = 3000._wp ! same as W0BG default
+    endif
 
     if (namelist_exists(u, 'mindens_user')) then
       rewind(u)
