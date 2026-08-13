@@ -241,7 +241,7 @@ contains
     !! call msis to get an initial neutral background atmosphere
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     !call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3),x%alt(1:lx1,1:lx2,1:lx3), &
+    call neutral_atmos(ymd,UTsec,x%glat(1:lx1,1:lx2,1:lx3),x%glon(1:lx1,1:lx2,1:lx3),x%alt(1:lx1,1:lx2,1:lx3), &
                          cfg%activ,cfg%msis_version,atmos)
     !if (mpi_cfg%myid == 0) then
     !  call cpu_time(tfin)
@@ -251,7 +251,7 @@ contains
     !> Horizontal wind model initialization/background
     !if (mpi_cfg%myid == 0) call cpu_time(tstart)
     !call cpu_time(tstart)
-    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, atmos=atmos)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, atmos=atmos)
     !! we sum the horizontal wind with the background state vector
     !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
     !if (mpi_cfg%myid == 0) then

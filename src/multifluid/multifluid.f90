@@ -746,6 +746,7 @@ subroutine clean_param(x,paramflag,param)
   select case (paramflag)
     case (1)    !density
       param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)    ! enforce a minimum density
+      param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),1.e3)       ! enforce a minimum density to stabilize ESF
       param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)              !enforce charge neutrality based on ion densities
 
       do isp=1,lsp             !set null cells to some value
