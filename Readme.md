@@ -89,6 +89,11 @@ To verify your GEMINI build, run the self-tests.
 ctest --test-dir build
 ```
 
+Our data files use HDF5 "deflate" ZIP compression.
+An issue that can occur is the user's HDF5 library was not build with Zlib support, which leads to self-test errors like
+
+> required filter 'deflate' is not registered
+
 To retrieve Git updates from other developers do:
 
 ```sh
