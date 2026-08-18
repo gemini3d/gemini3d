@@ -158,16 +158,20 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: vnalt,vnglat,vnglon
     class(curvmesh), intent(in) :: x
     type(neutral_info), intent(inout) :: atmos
-    real(wp), dimension(1:x%lx1,1:x%lx2,1:x%lx3,3) :: ealt,eglat,eglon
+
+    real(wp), dimension(:,:,:,:), allocatable :: ealt,eglat,eglon
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
     lx1=x%lx1; lx2=x%lx2; lx3=x%lx3
 
     !> if first time called then allocate space for projections and compute
     if (.not. atmos%flagprojections) then
+      allocate(ealt(1:lx1,1:lx2,1:lx3,3))
+      allocate(eglat, eglon, mold=ealt)
       call x%calc_unitvec_geo(ealt,eglon,eglat)
       call store_geo2native_projections(x,ealt,eglon,eglat,atmos)
       atmos%flagprojections=.true.
+      deallocate(ealt,eglat,eglon)
     end if
 
     !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb
