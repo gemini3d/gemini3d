@@ -119,17 +119,21 @@ contains
 
   !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
   subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,atmos,flagBG)
-    real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
+    real(wp), dimension(:,:,:), intent(in) :: vnalt, vnglat, vnglon
     class(curvmesh), intent(in) :: x
     type(neutral_info), intent(inout) :: atmos
     logical, intent(in), optional :: flagBG
-    real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
+
+    real(wp), dimension(:,:,:,:), allocatable :: ealt, eglat, eglon
 
     !> if first time called then allocate space for projections and compute
     if (.not. atmos%flagprojections) then
-      call x%calc_unitvec_geo(ealt,eglon,eglat)
+      allocate(ealt(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3))
+      allocate(eglat, eglon, mold=ealt)
+      call x%calc_unitvec_geo(ealt,eglon,eglat) !< meshobj.f90
       call store_geo2native_projections(x,ealt,eglon,eglat,atmos)
       atmos%flagprojections=.true.
+      deallocate(ealt,eglat,eglon)
     end if
 
     !> rotate vectors into model native coordinate system; check whether to store in base vs. perturb

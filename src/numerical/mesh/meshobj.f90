@@ -684,13 +684,14 @@ contains
   subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
     class(curvmesh), intent(in) :: self
     real(wp), dimension(:,:,:,:), intent(inout) :: ealt,eglon,eglat
+
     integer :: lx1,lx2,lx3,ix1,ix2,ix3
     real(wp) :: thetagg,phigg    ! geographic spherical coords
     real(wp), dimension(3,3) :: Rgg2gm
     real(wp), dimension(3,1) :: ehere,ehererot
 
     if ( .not. self%geog_set_status) then
-      error stop 'geographic coords. must be set prior to computing geographic unit vectors'
+      error stop 'calc_unitvec_geo: geographic coords. must be set prior to computing geographic unit vectors'
     endif
     ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
