@@ -65,7 +65,7 @@ include(cmake/python.cmake)
 
 # --- MPI
 # NOTE: our find_package(MPI) needs to be before find_package(MUMPS), which also calls find_package(MPI)
-# Conda e.g. scikit-learn can cause problems with finding MPI, so exclude Conda from search
+# Conda e.g. scikit-learn can cause problems with finding MPI (and other packages), so exclude Conda from search
 # --- avoid Anaconda libraries
 if(DEFINED ENV{CONDA_PREFIX})
   list(APPEND CMAKE_IGNORE_PREFIX_PATH $ENV{CONDA_PREFIX})
@@ -77,15 +77,12 @@ endif()
 
 include(cmake/mpi.cmake)
 
-# --- end MPI
-
 # --- HDF5
 string(JSON _stem GET "${json}" "h5fortran" "stem")
 string(JSON _archive GET "${json}" "h5fortran" "archive")
 set(h5fortran_url "${_stem}${_archive}")
 FetchContent_Declare(h5fortran URL ${h5fortran_url})
 FetchContent_MakeAvailable(h5fortran)
-# this also implicitly finds HDF5.
 # h5fortran is a high-level, object-oriented HDF5 interface.
 
 # HDF5 bug #3663 for HDF5 1.14.2..2.1
@@ -101,13 +98,8 @@ endif()
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-if(NOT DEFINED ENV{MKLROOT} AND NOT LAPACK_VENDOR MATCHES "^MKL")
-  # oneMKL MKLConfig.cmake must be invoked only once, and MUMPS invokes it.
-  find_package(LAPACK REQUIRED GLOBAL)
-else()
-  find_package(SCALAPACK REQUIRED GLOBAL)
-endif()
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
+# we'll get LAPACK and SCALAPACK from MUMPS to avoid duplication of CMake script in this project
 
 set(BUILD_SINGLE off)
 set(BUILD_DOUBLE on)
@@ -119,6 +111,8 @@ string(JSON _archive GET "${json}" "mumps" "archive")
 set(mumps_url "${_stem}${_archive}")
 FetchContent_Declare(mumps URL ${mumps_url})
 FetchContent_MakeAvailable(mumps)
+
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL false)
 
 # --- climate models
 if(gemini3d_glow)
