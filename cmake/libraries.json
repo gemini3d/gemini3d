@@ -1,7 +1,7 @@
 {
   "ffilesystem": {
     "stem": "https://github.com/ECLAIRWaveS/ffilesystem/archive/",
-    "archive": "1e08787b6017e1ecec295c49948764d84cecb840.tar.gz"
+    "archive": "8a9ad4b213a8fbdb19816451a714f54017170109.tar.gz"
   },
   "glow": {
     "stem": "https://github.com/gemini3d/glow/archive/",
@@ -9,11 +9,11 @@
   },
   "h5fortran": {
     "stem": "https://github.com/ECLAIRWaveS/h5fortran/archive/",
-    "archive": "45a6d46d8239b3416c3814d72971bcbc3062362a.tar.gz"
+    "archive": "04c7dd39405b43eac922319b6f4b74ea04b97043.tar.gz"
   },
   "hwm14": {
     "stem": "https://github.com/gemini3d/hwm14/archive/",
-    "archive": "19e222dbc0e219869b8cdf4e22fc1d4ab969b51a.tar.gz"
+    "archive": "a3092641ee4fdc7cc1a6fd42eaa45c2abc4891c2.tar.gz"
   },
   "msis": {
     "stem": "https://github.com/gemini3d/msis/archive/",
