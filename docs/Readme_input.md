@@ -93,7 +93,7 @@ source_dir = '../simulations/input/mooreOK_neutrals/'
 &neutral_BG
 flagneuBG = .true.       ! on or off
 dtneuBG = 1800.0         ! how often to call MSIS and HWM (if applicable)
-msis_version = 0         ! 0 or 20; which MSIS version to use, MSIS00 or MSIS 2.1
+msis_version = 0         ! 0 or 21; which MSIS version to use, MSIS00 or MSIS 2.1
 /
 
 ! (optional - default off) Include disturbance precipitation based on file inputs
@@ -234,7 +234,7 @@ flagJ1ve=.true.        ! use parallel current density in calculation of parallel
   flagnightQ=.true.    ! use newer photoionization calculation including nighttime Q
 /
 
-! Set fill and min values for densities 
+! Set fill and min values for densities
 !  (optional - defaults to reasonable values for most applications)
 &mindens_user
   mindens_userval=1.0e-100
