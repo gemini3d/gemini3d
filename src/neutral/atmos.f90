@@ -45,19 +45,24 @@ module procedure neutral_atmos
           altnow = 1.0     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
         end if
 
-        if(msis_version == 0) then
+        select case (msis_version)
+        case (0)
           !! MSISE00
           call msis_gtd7(doy=doy, UTsec=UTsecd, &
             alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             d=d, T=t, use_meters=.true.)
-        else
-          !! MSIS 2.x
+        case (21)
+          !! MSIS 2.1
           call msis_gtd8(doy=doy, UTsec=UTsecd, &
             alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             Dn=d, Tn=t)
-        end if
+        case default
+          ! Handle unsupported MSIS versions
+          write(stderr, '(a, 1x, i0)') "ERROR:GEMINI3D:atmos: Unsupported MSIS version", msis_version
+          error stop
+        end select
 
         atmos%nnBG(ix1,ix2,ix3,1)= d(2)    ! O
         atmos%nnBG(ix1,ix2,ix3,2)= d(3)    ! N2
