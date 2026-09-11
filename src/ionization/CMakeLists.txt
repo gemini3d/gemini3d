@@ -12,12 +12,25 @@ $<TARGET_OBJECTS:grid>
 
 if(gemini3d_glow)
   # must have trailing slash in path
-  set(glow_data_dir "${glow_SOURCE_DIR}/data/")
-  if(NOT EXISTS ${glow_data_dir}/ssflux_hint.dat)
-    message(FATAL_ERROR "GLOW data directory is missing ssflux_hint.dat: ${glow_data_dir}")
+  if(NOT DEFINED glow_data_dir)
+    message(FATAL_ERROR "[GEMINI3D] GLOW data directory variable is not defined: glow_data_dir")
+  endif()
+
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    set(glow_data_dir_free_flag "-ffree-line-length-none")
+  elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "LLVMFlang")
+    # Flang does not have a free-form column limit https://github.com/llvm/llvm-project/issues/167912#issuecomment-3529004167
+  elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "IntelLLVM")
+    # this diagnostic occurs if compiler option "-stand" was used
+    set(glow_data_dir_free_flag "-diag-disable:5268")
+  elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "NVHPC")
+    set(glow_data_dir_free_flag "-Mextend")
+  elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "Cray")
+    # already allows no limit for free form
   endif()
 
   configure_file(glow_run.in.f90 glow_run.f90 @ONLY)
+  set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/glow_run.f90 APPEND PROPERTY COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:Fortran>:${glow_data_dir_free_flag}>)
 
   target_sources(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/glow_run.f90)
 else()

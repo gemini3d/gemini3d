@@ -11,7 +11,7 @@ use cglow,only: cglow_init, &
   zz,zo,zn2,zo2,zns,znd,zno,ztn,ze,zti,zte, &
   ener,del,phitop,wave1,wave2,sflux,pespec,sespec,uflx,dflx,sion, &
   photoi,photod,phono,aglw,ecalc,zxden,zeta,zceta,eheat,vcb, &
-  data_dir
+  glow_data_dir
 
 implicit none (type, external)
 
@@ -55,10 +55,12 @@ module procedure glow_run
 
 real(sp), dimension(:), allocatable :: phitoptmp
 integer :: j
-character(len=1024) :: iri90_dir
+character(:), allocatable  :: iri90_dir
 
-data_dir = "@glow_data_dir@"
-iri90_dir = trim(data_dir) // '/iri90/'
+!! glow_data_dir assignment defines the GLOW data directory for consumption by GLOW
+glow_data_dir = "@glow_data_dir@"
+
+iri90_dir = trim(glow_data_dir) // '/iri90/'
 
 
 !! Execute:  Allocate arrays in other modules (formerly in common blocks):
