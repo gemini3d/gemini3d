@@ -5,7 +5,7 @@
   },
   "glow": {
     "stem": "https://github.com/gemini3d/glow/archive/",
-    "archive": "3d469dd821ed819f3db1473293b54132c1a2c175.tar.gz"
+    "archive": "62ce006692b8e16c403c995568ecc3403113d788.tar.gz"
   },
   "h5fortran": {
     "stem": "https://github.com/ECLAIRWaveS/h5fortran/archive/",
