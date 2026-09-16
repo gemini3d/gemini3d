@@ -532,20 +532,41 @@ contains
     class(curvmesh), intent(inout) :: x
     type(gemini_work), intent(inout) :: intvars
 
+!    if (cfg%flagneutralBGfile==1) then
+!      !print*, 'File-based neutral background...'
+!      call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
+!      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+!    else
+!      if ( get_it()==1 ) then     ! on first time step; assume we initialize using beginning date in config file
+!        print*, 'Initializing emprical background from start date in config file...'
+!        call neutral_background_empirical(cfg,cfg%ymd0,cfg%UTsec0,x,v2grid,v3grid,intvars%atmos)
+!        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
+!        tneuBG=tneuBG+cfg%dtneuBG
+!      elseif (cfg%flagneuBG .and. t>tneuBG ) then   ! update BG to current time
+!        call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
+!        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
+!        tneuBG=tneuBG+cfg%dtneuBG
+!      end if
+!    end if
+
     if (cfg%flagneutralBGfile==1) then
       !print*, 'File-based neutral background...'
       call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
       call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     else
-      if ( get_it()==1 ) then     ! on first time step; assume we initialize using beginning date in config file
-        print*, 'Initializing emprical background from start date in config file...'
-        call neutral_background_empirical(cfg,cfg%ymd0,cfg%UTsec0,x,v2grid,v3grid,intvars%atmos)
-        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
-        tneuBG=tneuBG+cfg%dtneuBG
-      elseif (cfg%flagneuBG .and. t>tneuBG ) then   ! update BG to current time
+      !> get neutral background
+!      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then
+      if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then
+        print*, 'Updating neutrals...'
+        !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
+        !call cpu_time(tstart)
         call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
         call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
+        !if (myid==0) then
+        !  call cpu_time(tfin)
+        !  print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
+        !end if
       end if
     end if
   end subroutine neutral_background_in
