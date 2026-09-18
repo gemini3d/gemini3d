@@ -1,0 +1,50 @@
+# even factory FindMPI missing this on say macOS despite printing MPI_VERSION on find
+function(check_mpi_version)
+
+if(DEFINED MPI_VERSION)
+  return()
+endif()
+
+message(CHECK_START "Checking MPI API level")
+
+set(_mpi_src
+[=[
+#include <mpi.h>
+#include <stdio.h>
+
+int main(void) {
+int version, subversion;
+
+int ierr = MPI_Get_version(&version, &subversion);
+if (ierr != 0) return 1;
+printf("CMAKE_MPI_VERSION %d.%d\n", version, subversion);
+
+return 0;
+}
+]=])
+
+try_run(h5fortran_mpi_run_ok h5fortran_mpi_build_ok
+SOURCE_FROM_VAR get_mpi_version.c _mpi_src
+CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:PATH=${MPI_C_INCLUDE_DIRS}"
+# LINK_OPTIONS ${MPI_C_LINK_FLAGS}  # breaks CentOS GCC with -Wl,-rpath
+LINK_LIBRARIES ${MPI_C_LIBRARIES}
+RUN_OUTPUT_STDOUT_VARIABLE MPI_VERSION_STRING
+COMPILE_OUTPUT_VARIABLE mpi_vers_build_out
+)
+# CMAKE_FLAGS must have quotes to handles CMake list
+
+if(NOT h5fortran_mpi_build_ok)
+  message(CHECK_FAIL "MPI_VERSION test failed to build:
+  ${mpi_vers_build_out}"
+  )
+  return()
+endif()
+
+# We don't if(mpi_run_code EQUAL 0) as some platforms / MPI libs don't precisely
+# return 0. The regex should be enough.
+if("${MPI_VERSION_STRING}" MATCHES "CMAKE_MPI_VERSION ([0-9]+\\.[0-9]+)")
+  set(MPI_VERSION ${CMAKE_MATCH_1} CACHE STRING "MPI API level")
+  message(CHECK_PASS "${MPI_VERSION}")
+endif()
+
+endfunction()

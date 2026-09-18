@@ -1,0 +1,38 @@
+{
+   HDF5malloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   obj:*/libhdf5*
+}
+{
+   HDF5calloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   obj:*/libhdf5*
+}
+{
+   HDF5param
+   Memcheck:Param
+   pwrite64(buf)
+   fun:pwrite
+   ...
+   obj:*/libhdf5*
+}
+{
+   HDF5memmove
+   Memcheck:Cond
+   fun:memmove
+   ...
+   obj:*/libhdf5*
+}
+{
+   HDF5memmovevalue
+   Memcheck:Value8
+   fun:memmove
+   ...
+   obj:*/libhdf5*
+}

@@ -1,0 +1,26 @@
+name: build example
+description: Build and test MUMPS example workflow
+
+runs:
+  using: composite
+
+  steps:
+
+  - name: configure example
+    shell: bash
+    working-directory: example
+    run: cmake --workflow default
+
+
+  - name: OpenMP example
+    shell: bash
+    if: ${{ matrix.openmp }}
+    working-directory: example/openmp
+    run: cmake --workflow default
+
+  - name: Upload log failure
+    if: ${{ failure() && matrix.openmp }}
+    uses: actions/upload-artifact@v7
+    with:
+      name: OpenMP-example-${{ runner.os }}-CMakeConfigureLog.yaml
+      path: example/openmp/build/CMakeFiles/CMakeConfigureLog.yaml

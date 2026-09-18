@@ -1,0 +1,12 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=/tmp/cmake325/cmake-3.25.3-linux-x86_64/bin/cmake;-P;/home/runner/work/gemini3d/gemini3d/build/_deps/mumps_upstream-subbuild/mumps_upstream-populate-prefix/src/mumps_upstream-populate-stamp/download-mumps_upstream-populate.cmake;COMMAND;/tmp/cmake325/cmake-3.25.3-linux-x86_64/bin/cmake;-P;/home/runner/work/gemini3d/gemini3d/build/_deps/mumps_upstream-subbuild/mumps_upstream-populate-prefix/src/mumps_upstream-populate-stamp/verify-mumps_upstream-populate.cmake;COMMAND;/tmp/cmake325/cmake-3.25.3-linux-x86_64/bin/cmake;-P;/home/runner/work/gemini3d/gemini3d/build/_deps/mumps_upstream-subbuild/mumps_upstream-populate-prefix/src/mumps_upstream-populate-stamp/extract-mumps_upstream-populate.cmake
+source_dir=/home/runner/work/gemini3d/gemini3d/build/_deps/mumps_upstream-src
+work_dir=/home/runner/work/gemini3d/gemini3d/build/_deps
+url(s)=https://mumps-solver.org/MUMPS_5.9.1.tar.gz
+hash=SHA256=659c9b57646b5a003ac618baa1faf9dd2044e46c732b3daaccbc7158003e1b46
+no_extract=
+

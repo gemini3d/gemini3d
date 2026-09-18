@@ -1,0 +1,21 @@
+name: Build and Test
+description: Build and test MUMPS with CMake workflow
+
+runs:
+  using: "composite"
+
+  steps:
+
+  - name: configure
+    shell: bash
+    run: >-
+      cmake --preset default
+      -DLAPACK_VENDOR=${{ matrix.lapack_vendor }}
+
+  - name: build, test release
+    shell: bash
+    run: cmake --workflow default
+
+  - name: install package
+    shell: bash
+    run: cmake --install build

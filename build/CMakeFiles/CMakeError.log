@@ -1,0 +1,59 @@
+Determining if the H5_HAVE_PARALLEL exist failed with the following output:
+Change Dir: /home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-897dvu
+
+Run Build Command(s):/usr/local/bin/ninja cmTC_09ec9 && [1/2] Building C object CMakeFiles/cmTC_09ec9.dir/CheckSymbolExists.c.o
+FAILED: [code=1] CMakeFiles/cmTC_09ec9.dir/CheckSymbolExists.c.o 
+/usr/bin/cc  -I/usr/include/hdf5/serial  -o CMakeFiles/cmTC_09ec9.dir/CheckSymbolExists.c.o -c /home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-897dvu/CheckSymbolExists.c
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-897dvu/CheckSymbolExists.c: In function ‘main’:
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-897dvu/CheckSymbolExists.c:8:19: error: ‘H5_HAVE_PARALLEL’ undeclared (first use in this function); did you mean ‘H5_HAVE_STRTOLL’?
+    8 |   return ((int*)(&H5_HAVE_PARALLEL))[argc];
+      |                   ^~~~~~~~~~~~~~~~
+      |                   H5_HAVE_STRTOLL
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-897dvu/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.c:
+/* */
+#include </usr/include/hdf5/serial/H5pubconf.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef H5_HAVE_PARALLEL
+  return ((int*)(&H5_HAVE_PARALLEL))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the H5_HAVE_PARALLEL_FILTERED_WRITES exist failed with the following output:
+Change Dir: /home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-ThjRSX
+
+Run Build Command(s):/usr/local/bin/ninja cmTC_c415d && [1/2] Building C object CMakeFiles/cmTC_c415d.dir/CheckSymbolExists.c.o
+FAILED: [code=1] CMakeFiles/cmTC_c415d.dir/CheckSymbolExists.c.o 
+/usr/bin/cc  -I/usr/include/hdf5/serial  -o CMakeFiles/cmTC_c415d.dir/CheckSymbolExists.c.o -c /home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-ThjRSX/CheckSymbolExists.c
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-ThjRSX/CheckSymbolExists.c: In function ‘main’:
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-ThjRSX/CheckSymbolExists.c:8:19: error: ‘H5_HAVE_PARALLEL_FILTERED_WRITES’ undeclared (first use in this function)
+    8 |   return ((int*)(&H5_HAVE_PARALLEL_FILTERED_WRITES))[argc];
+      |                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/runner/work/gemini3d/gemini3d/build/CMakeFiles/CMakeScratch/TryCompile-ThjRSX/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+ninja: build stopped: subcommand failed.
+
+
+File CheckSymbolExists.c:
+/* */
+#include </usr/include/hdf5/serial/H5pubconf.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef H5_HAVE_PARALLEL_FILTERED_WRITES
+  return ((int*)(&H5_HAVE_PARALLEL_FILTERED_WRITES))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+

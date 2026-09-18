@@ -1,0 +1,14 @@
+name = "ffilesystem"
+description = "Lightweight filesystem and path manipulations"
+categories = "io"
+version = "6.4.2"
+
+[build]
+auto-examples = false
+auto-tests = false
+
+[install]
+library = true
+
+[library]
+include-dir = ["include"]

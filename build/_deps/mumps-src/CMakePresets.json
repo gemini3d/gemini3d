@@ -1,0 +1,349 @@
+{
+  "version": 6,
+
+"configurePresets": [
+{
+  "name": "default",
+  "generator": "Ninja",
+  "displayName": "Build with Ninja and Test",
+  "binaryDir": "build",
+  "installDir": "${fileDir}/build/local",
+  "cacheVariables": {
+    "BUILD_SINGLE": false,
+    "BUILD_DOUBLE": true,
+    "BUILD_COMPLEX": false,
+    "BUILD_COMPLEX16": false,
+    "CMAKE_BUILD_TYPE": "Release",
+    "MUMPS_parallel": true,
+    "MUMPS_scotch": false,
+    "MUMPS_parmetis": false,
+    "MUMPS_metis": false,
+    "MUMPS_openmp": false,
+    "MUMPS_intsize64": false
+  }
+},
+{ "name": "gmake", "inherits": "default", "generator": "Unix Makefiles", "displayName": "Build with GNU Make" },
+{ "name": "openmp-mpi", "inherits": "default",
+  "displayName": "with OpenMP and MPI",
+  "cacheVariables": {
+    "MUMPS_openmp": true
+  }
+},
+{ "name": "openmp-nompi", "inherits": "default",
+  "displayName": "with OpenMP, but without MPI",
+  "cacheVariables": {
+    "MUMPS_openmp": true,
+    "MUMPS_parallel": false
+  }
+},
+{ "name": "int64", "inherits": "default",
+  "displayName": "with 64-bit integers",
+  "cacheVariables": {
+    "MUMPS_intsize64": true
+  }
+},
+{ "name": "msvc", "inherits": "default",
+  "displayName": "MSVC with Ninja and oneAPI",
+  "cacheVariables": {
+    "CMAKE_C_COMPILER": "cl",
+    "CMAKE_Fortran_COMPILER": "ifx"
+  },
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
+  }
+},
+{ "name": "msvc-vs", "inherits": "msvc",
+  "displayName": "MSVC Visual Studio 18 2026 (requires oneAPI Visual Studio IDE integration installed)",
+  "generator": "Visual Studio 18 2026",
+  "toolset": "fortran=ifx",
+  "architecture": "x64"
+},
+{
+  "name": "linux", "inherits": "default",
+  "displayName": "Linux with Ninja (for WSL CI)",
+  "generator": "Ninja",
+  "binaryDir": "/tmp/build",
+  "installDir": "/tmp/build/local",
+  "condition": {
+    "type": "notEquals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
+  }
+},
+{
+  "name": "shared", "inherits": "default",
+  "binaryDir": "build-${presetName}",
+  "installDir": "${fileDir}/build-${presetName}/local",
+  "cacheVariables": {
+    "BUILD_SHARED_LIBS": true,
+    "MUMPS_ENABLE_RPATH": true
+  }
+},
+{
+  "name": "nompi", "inherits": "default",
+  "installDir": "${fileDir}/build/local",
+  "cacheVariables": {
+    "MUMPS_parallel": false,
+    "MUMPS_openmp": false
+  }
+},
+{
+  "name": "matlab", "inherits": "nompi",
+  "binaryDir": "build-matlab",
+  "installDir": "${fileDir}/build-matlab/local",
+  "cacheVariables": {
+    "MUMPS_matlab": true,
+    "BUILD_SINGLE": false,
+    "BUILD_DOUBLE": true,
+    "BUILD_COMPLEX": false,
+    "BUILD_COMPLEX16": false
+  }
+},
+{
+  "name": "scotch", "inherits": "default",
+  "binaryDir": "build-${presetName}",
+  "installDir": "${fileDir}/build-${presetName}/local",
+  "cacheVariables": {
+    "MUMPS_scotch": true
+  }
+},
+{
+  "name": "metis", "inherits": "default",
+  "binaryDir": "build-${presetName}",
+  "installDir": "${fileDir}/build-${presetName}/local",
+  "cacheVariables": {
+    "MUMPS_metis": true
+  }
+},
+{ "name" : "scotch-metis", "inherits": "scotch",
+  "cacheVariables": {
+    "MUMPS_metis": true
+  }
+},
+{ "name" : "scotch-parmetis", "inherits": "scotch",
+  "cacheVariables": {
+    "MUMPS_parmetis": true
+  }
+},
+{
+  "name": "parmetis", "inherits": "default",
+  "binaryDir": "build-${presetName}",
+  "installDir": "${fileDir}/build-${presetName}/local",
+  "cacheVariables": {
+    "MUMPS_parmetis": true
+  }
+},
+{
+  "name": "aocl-win", "inherits": "default",
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
+  },
+  "cacheVariables": {
+    "LAPACK_VENDOR": "AOCL",
+    "SCALAPACK_VENDOR": "AOCL",
+    "BLAS_ROOT": "$env{ProgramFiles}/AMD/AOCL-Windows/amd-blis",
+    "LAPACK_ROOT": "$env{ProgramFiles}/AMD/AOCL-Windows/amd-libflame",
+    "SCALAPACK_ROOT": "$env{ProgramFiles}/AMD/AOCL-Windows/amd-scalapack"
+  }
+}
+],
+"buildPresets": [
+  { "name": "default", "displayName": "build with Ninja", "configurePreset": "default" },
+  { "name": "int64", "configurePreset": "int64", "displayName": "with 64-bit integers" },
+  { "name": "openmp-mpi", "configurePreset": "openmp-mpi", "displayName": "with OpenMP and MPI" },
+  { "name": "openmp-nompi", "configurePreset": "openmp-nompi", "displayName": "with OpenMP, but without MPI" },
+  { "name": "gmake", "displayName": "build with GNU Make", "configurePreset": "gmake", "jobs": 4 },
+  { "name": "msvc", "configurePreset": "msvc",
+    "configuration": "Release", "inherits": "default",
+    "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+  },
+  { "name": "msvc-vs", "configurePreset": "msvc-vs", "inherits": "msvc" },
+  { "name": "linux", "configurePreset": "linux", "inherits": "default",
+    "condition": {
+      "type": "notEquals",
+      "lhs": "${hostSystemName}",
+      "rhs": "Windows"
+    }
+  },
+  { "name": "shared", "configurePreset": "shared", "inherits": "default" },
+  { "name": "matlab", "configurePreset": "matlab", "inherits": "nompi" },
+  { "name": "scotch", "configurePreset": "scotch", "inherits": "default" },
+  { "name": "metis", "configurePreset": "metis", "inherits": "default" },
+  { "name": "scotch-metis", "configurePreset": "scotch-metis", "inherits": "default" },
+  { "name": "scotch-parmetis", "configurePreset": "scotch-parmetis", "inherits": "scotch" },
+  { "name": "parmetis", "configurePreset": "parmetis", "inherits": "default" },
+  { "name": "nompi", "configurePreset": "nompi", "inherits": "default" }
+],
+"testPresets": [
+{
+  "name": "default",
+  "configurePreset": "default",
+  "configuration": "Release",
+  "output": {
+    "outputOnFailure": true,
+    "verbosity": "verbose"
+  },
+  "execution": {
+    "noTestsAction": "error",
+    "scheduleRandom": true,
+    "stopOnFailure": false
+  }
+},
+{ "name": "int64", "configurePreset": "int64", "inherits": "default", "displayName": "with 64-bit integers" },
+{ "name": "openmp-mpi", "configurePreset": "openmp-mpi", "inherits": "default" },
+{ "name": "openmp-nompi", "configurePreset": "openmp-nompi", "inherits": "default" },
+{ "name": "gmake", "configurePreset": "gmake", "inherits": "default" },
+{ "name": "msvc", "configurePreset": "msvc", "configuration": "Release", "inherits": "default",
+  "condition": {
+    "type": "equals",
+    "lhs": "${hostSystemName}",
+    "rhs": "Windows"
+  }
+},
+{ "name": "msvc-vs", "configurePreset": "msvc-vs", "inherits": "msvc" },
+{ "name": "linux", "configurePreset": "linux", "inherits": "default",
+    "condition": {
+      "type": "notEquals",
+      "lhs": "${hostSystemName}",
+      "rhs": "Windows"
+    }
+},
+{ "name": "shared", "configurePreset": "shared", "inherits": "default" },
+{ "name": "matlab", "configurePreset": "matlab", "inherits": "nompi" },
+{ "name": "scotch", "configurePreset": "scotch", "inherits": "default" },
+{ "name": "metis", "configurePreset": "metis", "inherits": "default" },
+{ "name": "scotch-metis", "configurePreset": "scotch-metis", "inherits": "default" },
+{ "name": "scotch-parmetis", "configurePreset": "scotch-parmetis", "inherits": "scotch" },
+{ "name": "parmetis", "configurePreset": "parmetis", "inherits": "default" },
+{ "name": "nompi", "configurePreset": "nompi", "inherits": "default" }
+],
+"workflowPresets": [
+  { "name": "default", "displayName": "Build and Test in Release mode",
+    "steps": [
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" },
+      { "type": "test", "name": "default"}
+    ]
+  },
+  { "name": "build", "displayName": "Build in Release mode",
+    "steps": [
+      { "type": "configure", "name": "default" },
+      { "type": "build", "name": "default" }
+    ]
+  },
+  { "name": "int64", "displayName": "Build and Test with 64-bit integers",
+    "steps": [
+      { "type": "configure", "name": "int64" },
+      { "type": "build", "name": "int64" },
+      { "type": "test", "name": "int64" }
+    ]
+  },
+  { "name": "openmp-mpi", "displayName": "Build and Test with OpenMP and MPI",
+    "steps": [
+      { "type": "configure", "name": "openmp-mpi" },
+      { "type": "build", "name": "openmp-mpi" },
+      { "type": "test", "name": "openmp-mpi" }
+    ]
+  },
+  { "name": "openmp-nompi", "displayName": "Build and Test with OpenMP, but without MPI",
+    "steps": [
+      { "type": "configure", "name": "openmp-nompi" },
+      { "type": "build", "name": "openmp-nompi" },
+      { "type": "test", "name": "openmp-nompi" }
+    ]
+  },
+  { "name": "gmake", "displayName": "GNU Make build and test",
+    "steps": [
+      { "type": "configure", "name": "gmake" },
+      { "type": "build", "name": "gmake" },
+      { "type": "test", "name": "gmake" }
+    ]
+  },
+  { "name": "msvc", "displayName": "Build and Test with MSVC Visual Studio",
+    "steps": [
+      { "type": "configure", "name": "msvc" },
+      { "type": "build", "name": "msvc" },
+      { "type": "test", "name": "msvc"}
+    ]
+  },
+  { "name": "msvc-vs", "displayName": "Build and Test with MSVC Visual Studio 18 2026 (requires oneAPI Visual Studio IDE integration installed)",
+    "steps": [
+      { "type": "configure", "name": "msvc-vs" },
+      { "type": "build", "name": "msvc-vs" },
+      { "type": "test", "name": "msvc-vs"}
+    ]
+  },
+  { "name": "shared", "displayName": "Build and Test Shared Libraries",
+    "steps": [
+      { "type": "configure", "name": "shared" },
+      { "type": "build", "name": "shared" },
+      { "type": "test", "name": "shared" }
+    ]
+  },
+  {
+    "name": "matlab", "displayName": "Build and Test MATLAB Interface",
+    "steps": [
+      { "type": "configure", "name": "matlab" },
+      { "type": "build", "name": "matlab" },
+      { "type": "test", "name": "matlab" }
+    ]
+  },
+  { "name": "linux", "displayName": "Build and Test on Linux (WSL)",
+    "steps": [
+      { "type": "configure", "name": "linux" },
+      { "type": "build", "name": "linux" },
+      { "type": "test", "name": "linux" }
+    ]
+  },
+  { "name": "scotch", "displayName": "Build and Test with Scotch",
+    "steps": [
+      { "type": "configure", "name": "scotch" },
+      { "type": "build", "name": "scotch" },
+      { "type": "test", "name": "scotch" }
+    ]
+  },
+  { "name": "scotch-metis", "displayName": "Build and Test with Scotch and METIS",
+    "steps": [
+      { "type": "configure", "name": "scotch-metis" },
+      { "type": "build", "name": "scotch-metis" },
+      { "type": "test", "name": "scotch-metis" }
+    ]
+  },
+  { "name": "scotch-parmetis", "displayName": "Build and Test with Scotch and ParMETIS",
+    "steps": [
+      { "type": "configure", "name": "scotch-parmetis" },
+      { "type": "build", "name": "scotch-parmetis" },
+      { "type": "test", "name": "scotch-parmetis" }
+    ]
+  },
+  { "name": "metis", "displayName": "Build and Test with METIS",
+    "steps": [
+      { "type": "configure", "name": "metis" },
+      { "type": "build", "name": "metis" },
+      { "type": "test", "name": "metis" }
+    ]
+  },
+  { "name": "parmetis", "displayName": "Build and Test with ParMETIS",
+    "steps": [
+      { "type": "configure", "name": "parmetis" },
+      { "type": "build", "name": "parmetis" },
+      { "type": "test", "name": "parmetis" }
+    ]
+  },
+  { "name": "nompi", "displayName": "Build and Test without MPI",
+    "steps": [
+      { "type": "configure", "name": "nompi" },
+      { "type": "build", "name": "nompi" },
+      { "type": "test", "name": "nompi" }
+    ]
+  }
+]
+}

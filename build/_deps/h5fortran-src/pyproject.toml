@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 90
+
+[tool.mypy]
+files = ["test"]
+ignore_missing_imports = true

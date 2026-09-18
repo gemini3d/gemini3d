@@ -1,0 +1,207 @@
+# builds HDF5 library from scratch
+# Ref: https://support.hdfgroup.org/documentation/hdf5/latest/_l_b_compiling.html
+
+# note: the use of "lib" vs. CMAKE_*_LIBRARY_PREFIX is deliberate based on HDF5
+# across Intel Fortran on Windows (MSVC-like) vs. Gfortran on Windows vs. Linux.
+include(GNUInstallDirs)
+include(FetchContent)
+include(CheckSourceCompiles)
+
+
+if(NOT DEFINED h5fortran_hdf5_req)
+  set(h5fortran_hdf5_req "2.2")
+endif()
+
+if(hdf5_parallel)
+  set(HDF5_PREFER_PARALLEL ON)
+  if(NOT MPI_Fortran_FOUND)
+    find_package(MPI REQUIRED COMPONENTS C Fortran)
+  endif()
+endif()
+
+file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json json)
+
+# --- HDF5
+# https://forum.hdfgroup.org/t/issues-when-using-hdf5-as-a-git-submodule-and-using-cmake-with-add-subdirectory/7189/2
+
+set(ZLIB_USE_LOCALCONTENT OFF)
+
+set(HDF5_GENERATE_HEADERS OFF)
+set(HDF5_DISABLE_COMPILER_WARNINGS ON)
+
+# find_package(ZLIB) may have been called in another module and created the target
+# without leaving ZLIB_FOUND set in this directory scope.
+if(TARGET ZLIB::ZLIB AND NOT ZLIB_FOUND)
+  set(ZLIB_FOUND ON)
+endif()
+
+if(NOT ZLIB_FOUND)
+  set(HDF5_PACKAGE_EXTLIBS ON)
+  set(ZLIB_VERSION "1.3.2")
+  set(ZLIB_GIT_TAG "v${ZLIB_VERSION}")
+  set(ZLIB_TGZ_NAME "zlib-${ZLIB_VERSION}.tar.gz")
+  set(ZLIB_TGZ_ORIGPATH "https://github.com/madler/zlib/archive/refs/tags/${ZLIB_GIT_TAG}")
+endif()
+
+if(h5fortran_hdf5_req STREQUAL "2.1patch" OR h5fortran_hdf5_req VERSION_GREATER_EQUAL "2.0")
+  if(ZLIB_FOUND)
+    # Ensure HDF5 uses already discovered zlib and does not try to build vendored zlib.
+    set(ZLIB_USE_EXTERNAL OFF)
+  else()
+    # avoids 'add_library cannot create ALIAS target "ZLIB::ZLIB" because another target with the same name already exists."
+    set(ZLIB_USE_EXTERNAL ON)
+    set(HDF5_ALLOW_EXTERNAL_SUPPORT TGZ)
+  endif()
+
+  set(HDF5_ENABLE_ZLIB_SUPPORT ON)
+
+  # ZLIB_NG with HDF5 2.2 still has issues at build or link time with symbols.
+  set(HDF5_USE_ZLIB_NG OFF)
+  set(ZLIBNG_USE_EXTERNAL OFF)
+
+# users need their own Zlib if using HDF5 < 2.x
+elseif(h5fortran_hdf5_req MATCHES "^1\.(10|14)$")
+  # HDF5 1.10 and 1.14 use HDF5_ENABLE_Z_LIB_SUPPORT
+  # HDF5 2.x uses HDF5_ENABLE_ZLIB_SUPPORT
+  set(HDF5_ENABLE_Z_LIB_SUPPORT ON CACHE BOOL "Enable ZLib support" FORCE)
+  # HDF5 1.10 and 1.14 ZLIB fails to build Zlib despite trying
+  # Error copying directory from "/" to "<build_dir>_deps/hdf5_zlib-src": Permission denied
+  # set(ZLIB_USE_EXTERNAL ON CACHE BOOL "Use External Library Building for ZLIB else search" FORCE)
+  # 1.14 also needs:
+  # set(HDF5_ALLOW_EXTERNAL_SUPPORT "TGZ" CACHE STRING "Allow External Support for TGZ" FORCE)
+endif()
+
+
+set(HDF5_BUILD_FORTRAN ON CACHE BOOL "Build Fortran bindings" FORCE)
+
+set(HDF5_BUILD_TOOLS OFF CACHE BOOL "Build HDF5 tools" FORCE)
+# don't need tools and they make configuration step shaky
+
+set(HDF5_BUILD_EXAMPLES OFF CACHE BOOL "Build HDF5 examples" FORCE)
+set(HDF5_BUILD_HL_LIB ON CACHE BOOL "Build HDF5 High-Level library" FORCE)
+set(HDF5_USE_GNU_DIRS ON CACHE BOOL "Use GNU install directories" FORCE)
+set(HDF5_BUILD_CPP_LIB OFF CACHE BOOL "Build HDF5 C++ library" FORCE)
+
+set(ZLIB_USE_LOCALCONTENT OFF CACHE BOOL "Use local file for ZLIB FetchContent" FORCE)
+set(ZLIB_USE_LOCALCONTENT OFF)
+# ---
+
+set(BUILD_TESTING false)
+set(HDF5_ENABLE_PARALLEL ${hdf5_parallel})
+set(HDF5_BUILD_PARALLEL_TOOLS false)
+set(HDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16 OFF)
+
+if(NOT DEFINED CMAKE_Fortran_MODULE_DIRECTORY)
+  set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_INCLUDEDIR})
+endif()
+
+# -DHDF5_BUILD_PARALLEL_TOOLS:BOOL=false avoids error with HDF5 2.0 needing libMFU mpiFileUtils
+
+# -DHDF5_ENABLE_NONSTANDARD_FEATURE_FLOAT16:BOOL=OFF avoids error with GCC or Clang
+#  src/H5Tconv_integer.c:1746:75: error: 'FLT16_MAX' undeclared (first use in this function); did you mean 'INT16_MAX'?
+#
+# -DHDF5_USE_GNU_DIRS:BOOL=ON  # new for 1.14
+# -DHDF5_ENABLE_ZLIB_SUPPORT:BOOL=ON switched from -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON for HDF5 2.0
+
+if(NOT hdf5_url)
+  string(JSON hdf5_url GET ${json} "hdf5" "${h5fortran_hdf5_req}")
+endif()
+
+
+if(NOT TARGET HDF5::HDF5)
+
+  set(_hdf5_parcomps HL Fortran C)
+  if(hdf5_parallel)
+    list(APPEND _hdf5_parcomps parallel)
+  endif()
+if(h5fortran_hdf5_nobuild)
+  find_package(HDF5 REQUIRED COMPONENTS ${_hdf5_parcomps})
+else()
+  FetchContent_Declare(HDF5 URL ${hdf5_url} FIND_PACKAGE_ARGS COMPONENTS ${_hdf5_parcomps})
+  # "C" as well so that link tests work and corner cases OK
+  FetchContent_MakeAvailable(HDF5)
+endif()
+
+endif()
+
+
+if(NOT DEFINED HDF5_VERSION)
+
+set(_h5public_h)
+foreach(_hi IN ITEMS "${hdf5_SOURCE_DIR}/src/H5public.h" "${HDF5_DIR}/../../../include/H5public.h" "${HDF5_C_INCLUDE_DIR}/H5public.h")
+  if(EXISTS "${_hi}")
+    set(_h5public_h "${_hi}")
+    message(DEBUG "Found H5public.h at ${_h5public_h}")
+    break()
+  endif()
+endforeach()
+
+if(_h5public_h)
+
+# version extraction from HDF5 2.0 CMakeLists.txt
+file (READ ${_h5public_h} _h5public_h_contents)
+string (REGEX REPLACE ".*#define[ \t]+H5_VERS_MAJOR[ \t]+([0-9]*).*$"
+    "\\1" H5_VERS_MAJOR ${_h5public_h_contents})
+string (REGEX REPLACE ".*#define[ \t]+H5_VERS_MINOR[ \t]+([0-9]*).*$"
+    "\\1" H5_VERS_MINOR ${_h5public_h_contents})
+string (REGEX REPLACE ".*#define[ \t]+H5_VERS_RELEASE[ \t]+([0-9]*).*$"
+    "\\1" H5_VERS_RELEASE ${_h5public_h_contents})
+string (REGEX REPLACE ".*#define[ \t]+H5_VERS_SUBRELEASE[ \t]+\"([0-9A-Za-z._-]*)\".*$"
+    "\\1" H5_VERS_SUBRELEASE ${_h5public_h_contents})
+set(HDF5_VERSION "${H5_VERS_MAJOR}.${H5_VERS_MINOR}.${H5_VERS_RELEASE}")
+
+message(STATUS "HDF5 version ${HDF5_VERSION}")
+
+else()
+  message(WARNING "Could not find H5public.h to determine HDF5 version")
+endif()
+
+endif()
+
+
+macro(hdf5_imported_targets)
+
+if(BUILD_SHARED_LIBS)
+  set(_hdf5_lib_type "shared")
+else()
+  set(_hdf5_lib_type "static")
+endif()
+file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${_hdf5_lib_type})
+# avoid race condition "Imported target "HDF5::HDF5" includes non-existent path"
+
+
+add_library(HDF5::HDF5 INTERFACE IMPORTED)
+# look under
+# HDF5 2.x: ${h5fortran_BINARY_DIR}/_deps/hdf5-build/hdf5-targets.cmake
+# HDF5 1.14: ${h5fortran_BINARY_DIR}/_deps/hdf5-build/hdf5-config.cmake look for hdf5_comp variable like hdf5_hl_fortran
+
+target_link_libraries(HDF5::HDF5 INTERFACE
+hdf5_hl_fortran-${_hdf5_lib_type}
+hdf5_fortran-${_hdf5_lib_type}
+hdf5_hl-${_hdf5_lib_type}
+hdf5-${_hdf5_lib_type}
+)
+
+target_include_directories(HDF5::HDF5 INTERFACE ${CMAKE_Fortran_MODULE_DIRECTORY}/${_hdf5_lib_type})
+
+if(h5fortran_hdf5_req STREQUAL "1.10")
+  file(MAKE_DIRECTORY ${hdf5_BINARY_DIR}/mod/${_hdf5_lib_type})
+  target_include_directories(HDF5::HDF5 INTERFACE ${hdf5_BINARY_DIR}/mod/${_hdf5_lib_type})
+endif()
+
+endmacro()
+
+
+if(NOT TARGET HDF5::HDF5)
+
+  # we built HDF5, so define HDF5::HDF5 like FindHDF5.cmake find_package(HDF5)
+  hdf5_imported_targets()
+
+elseif(HDF5_FOUND)
+
+  # the factory HDF5::HDF5 target FindHDF5 is missing HL_Fortran, so let's just define it.
+  if(h5fortran_find_hdf5_factory)
+    set_property(TARGET HDF5::HDF5 PROPERTY INTERFACE_LINK_LIBRARIES hdf5::hdf5_hl_fortran hdf5::hdf5_fortran hdf5::hdf5_hl hdf5::hdf5)
+  endif()
+
+endif()

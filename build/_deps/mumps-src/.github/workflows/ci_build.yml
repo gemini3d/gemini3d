@@ -1,0 +1,50 @@
+name: ci_build
+
+on:
+  push:
+    paths:
+      - "scripts/CMakeLists.txt"
+      - ".github/workflows/ci_build.yml"
+      - "cmake/libraries.json"
+
+jobs:
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        preset: [scotch]
+
+    env:
+      FC: gfortran-14
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install prereqs (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install --no-install-recommends libopenmpi-dev openmpi-bin liblapack-dev
+        [[ ${{ contains(matrix.preset, 'scotch') }} ]] && sudo apt install --no-install-recommends bison flex
+
+    - name: Install prereqs (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install open-mpi
+        [[ ${{ contains(matrix.preset, 'scotch') }} ]] && brew install bison flex
+
+    - name: build and test
+      run: cmake --workflow ${{ matrix.preset }}
+
+    - run: cmake --install build-${{ matrix.preset }}
+
+# builds fine on local machine
+    # - name: configure example
+    #   run: cmake -S example -B example/build -DBUILD_SHARED_LIBS:BOOL=${{ matrix.shared }}
+    # - name: build example
+    #   run: cmake --build example/build
+    # - name: test example
+    #   run: ctest --test-dir example/build -V

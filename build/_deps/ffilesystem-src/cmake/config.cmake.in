@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+include(${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@-targets.cmake)
+
+set(ffilesystem_cpp @HAVE_CXX_FILESYSTEM@)
+set(ffilesystem_fortran @ffilesystem_fortran@)
+set(ffilesystem_shared @BUILD_SHARED_LIBS@)
+
+target_link_libraries(ffilesystem::filesystem INTERFACE
+@GNU_stdfs@
+${CMAKE_DL_LIBS}
+)
+
+check_required_components(@PROJECT_NAME@)

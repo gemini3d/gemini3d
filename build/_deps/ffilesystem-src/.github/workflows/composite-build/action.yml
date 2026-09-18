@@ -1,0 +1,26 @@
+name: "build-test-install-example"
+description: "Build, test, install and example workflow for CMake presets"
+
+runs:
+
+  using: composite
+
+  steps:
+
+    # save CI time
+  # - name: workflow without std::filesystem
+  #   shell: bash
+  #   run: cmake --workflow nostdfs
+
+  - name: Release workflow
+    shell: bash
+    run: cmake --workflow default --fresh
+
+  - name: install package
+    shell: bash
+    run: cmake --install build
+
+  - name: example workflow
+    shell: bash
+    run: cmake --workflow default
+    working-directory: example
