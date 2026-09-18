@@ -1,0 +1,24 @@
+# Full-step restart contract for the authorized research profile
+
+Use `scripts/qualification/run_research.py --exe build/gemini.bin --case CASE --ranks 2 --layout 1 2`. The launcher validates the required electric-field/precipitation schemas and hashes all files under `inputs`; only the duration `tdur` can change for continuation. Input symlinks and driver/grid/state paths outside `inputs` are rejected. The native reader compares the input and executable SHA256 tokens, MPI layout, schema, clock and state precision. Tokens bind an audited launch; they are not authentication of a hostile caller that forges environment variables.
+
+`GEMINI_EXACT_RESTART=1` is opt-in. Unsupported capacitance, GLOW, evolving/file-driven neutrals, moving grid, missing spatial coverage, external solar-flux files and reduced output are rejected. Other unqualified combinations are outside the model card. The default `/restart_core` remains the compatible core-only path and does not make these stronger guarantees. The Fortran and C++ frontends call the same runtime implementation. The tested frontend must restart its own executable; a changed executable is rejected.
+
+| State family at the completed step | Treatment and reason |
+| --- | --- |
+| ns, vs1, vs2, vs3, Ts, including ghost storage | Entire rank-local fluid array saved at float64. Prior transverse drifts are needed by the next CFL calculation; ghost velocity history affects boundary/viscosity operations. |
+| E1/E2/E3, J1/J2/J3, Phi | Entire rank-local electric/current/potential array saved. Full global Phi remains in the core record and restores root potential history. |
+| vs1i/vs2i/vs3i | Saved interface-velocity arrays. Boundary setup reads the previous interface values before the next recomputation. |
+| dt and output deadlines | Saved. The first continuation step respects the saved growth limiter and does not run the fresh-start microstep. |
+| Process-local iteration counter | Reinitialized to one. It initializes MUMPS, neutral background and caches in a new process; restoring the prior count skips mandatory initialization. The prior count is retained as diagnostic metadata. |
+| Neutral background and solar forcing | Reconstructed from immutable inputs at the configured original epoch for the admitted frozen empirical background. The evolved-background and GLOW cadence variants are not admitted. |
+| Driver interpolation brackets | Reconstructed from the hashed complete, uniform-cadence streams at the resumed time. Midpoint evaluation proceeds through the normal driver path. Trajectory tests verify the resulting reconstruction. |
+| Species momentum and internal-energy work arrays | Recomputed from saved primitives before the next advection. They are not independent state in the admitted standard-energy mode. |
+| Conductivities, rates, viscosity and MUMPS workspace | Recomputed in the next native solve. Capacitance and dynamic transverse-momentum history are outside this profile. |
+| Grid, species, units, modes, source data | Bound through the full input hash and executable hash; MPI rank layout must match. Cross-layout restart is rejected. |
+
+Each rank writes a uniquely named sidecar, closes HDF5 and atomically publishes that sidecar. After a collective barrier, root writes the full checkpoint to a reserved same-directory temporary file, adds the sidecar prefix and metadata, closes HDF5, then renames it to the dated `.h5` name. The milestone scanner never selects the temporary name. A crash before the final rename leaves the prior final checkpoint intact; orphan sidecars can remain. Keep the dated checkpoint and every sidecar it references together when copying a run. Do not delete sidecars merely because their names contain `partial`: the published root file references those immutable generation names.
+
+The demonstrated guarantee is atomic namespace visibility on the tested POSIX filesystem, not fsync-based power-loss durability. Windows has a platform-specific replacement implementation but is not qualified here. A completion marker/schema/type check is not cryptographic payload-integrity verification. The package hashes evidence artifacts; external archival/transfer workflows should likewise retain SHA256 manifests.
+
+`test/qualification/research_matrix.py` requires the complete output-frame sequence and compares every saved field/species against the predeclared RMS bounds for 2D (1/2 ranks), 3D (1 rank and both two-rank decompositions), exercises malformed state/input/layout/executable rejection, and compares C++/Fortran trajectories plus a C++ self-restart. Actual rank-local records must contain 35 fluid and 7 electric channels, matching the C/Fortran allocations. A sanitizer-detected over-read from stale 23-channel electric descriptors was corrected across the C wrappers. The separately shifted-midnight case checks calendar rollover. No tolerance is fitted to the measured residual.

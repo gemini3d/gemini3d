@@ -1,3 +1,8 @@
+# Audit modification 2026-09-16: correct MPI test worker count and fail if required reference tests cannot be registered
+set(gemini3d_test_run_root "${PROJECT_BINARY_DIR}/test_runs" CACHE PATH "Isolated native test output directory")
+if(NOT IS_ABSOLUTE "${gemini3d_test_run_root}")
+  message(FATAL_ERROR "gemini3d_test_run_root must be absolute")
+endif()
 function(gcd a b out_var)
   if(a LESS 1 OR b LESS 1)
     message(FATAL_ERROR "gcd: positive integers only")
@@ -36,80 +41,33 @@ endfunction()
 
 function(max_gcd2 lx2 lx3 M out_var)
 ## find (d2,d3) with d2|lx2, d3|lx3, d2*d3<=M that maximises d2*d3,
-## breaking ties by minimising |d2-d3|
+## return the worker count; process-grid factor selection happens in the solver
 if(M LESS 1)
   message(FATAL_ERROR "max_gcd2: CPU count must be at least one")
 endif()
 
+if(lx2 LESS 1 OR lx3 LESS 1)
+  message(FATAL_ERROR "max_gcd2: grid dimensions must be positive")
+endif()
 set(best 1)
-set(t2 1)
-set(t3 2147483647)
-
-# foreach(RANGE) requires non-negative stop; guard and use index trick for
-# reverse iteration (CMake RANGE step must be positive until 3.27)
-math(EXPR irng "${M} - 2")
-math(EXPR jrng "${M} - 2")
-
-foreach(_ki RANGE 0 ${irng})
-  math(EXPR i "${M} - ${_ki}")
-
-  set(_next_i false)
-  foreach(_kj RANGE 0 ${jrng})
-    math(EXPR j "${M} - ${_kj}")
-
-    max_gcd(${lx2} ${i} f2)
-    max_gcd(${lx3} ${j} f3)
-    math(EXPR _prod "${f2} * ${f3}")
-
-    if(_prod GREATER ${M})
-      continue()  # cycle x3
-    elseif(_prod LESS best)
-      break()     # exit x3
-    endif()
-
-    math(EXPR q2 "${lx2} / ${i}")
-    if(q2 EQUAL 1)
-      set(_next_i true)
-      break()     # cycle x2
-    endif()
-
-    math(EXPR q3 "${lx3} / ${j}")
-    if(q3 EQUAL 1)
-      continue()  # cycle x3
-    endif()
-
-    math(EXPR df "${f2} - ${f3}")
-    if(df LESS 0)
-      math(EXPR _adf "${df} * -1")
-    else()
-      set(_adf ${df})
-    endif()
-    math(EXPR dt "${t2} - ${t3}")
-    if(dt LESS 0)
-      math(EXPR _adt "${dt} * -1")
-    else()
-      set(_adt ${dt})
-    endif()
-    if(_adf GREATER _adt)
-      continue()  # cycle x3
-    endif()
-
-    set(t2 ${f2})
-    set(t3 ${f3})
-    set(best ${_prod})
-  endforeach()
-
-  if(_next_i)
-    continue()    # cycle x2
+math(EXPR limit "${M}")
+if(lx2 LESS limit)
+  set(limit ${lx2})
+endif()
+foreach(d2 RANGE 1 ${limit})
+  math(EXPR remainder "${lx2} % ${d2}")
+  if(NOT remainder EQUAL 0)
+    continue()
   endif()
-
-  math(EXPR _i_M "${i} * ${M}")
-  if(_i_M LESS best)
-    break()       # exit x2
+  math(EXPR budget "${M} / ${d2}")
+  max_gcd(${lx3} ${budget} d3)
+  math(EXPR candidate "${d2} * ${d3}")
+  if(candidate GREATER best)
+    set(best ${candidate})
   endif()
 endforeach()
-
 set(${out_var} ${best} PARENT_SCOPE)
+
 endfunction()
 
 
@@ -139,26 +97,12 @@ if(name MATCHES "_cpp$" AND NOT TARGET gemini_c.bin)
 endif()
 
 # --- setup test
-set(out_dir ${PROJECT_BINARY_DIR}/${name})
+set(out_dir ${gemini3d_test_run_root}/${name})
 set(ref_root ${PROJECT_BINARY_DIR}/test_data/compare)
 set(ref_dir ${ref_root}/${name})
-set(arc_json_file ${PROJECT_BINARY_DIR}/ref_data.json)
-
-# --- download reference data JSON file (for previously generated data)
-if(NOT EXISTS ${arc_json_file})
-  file(READ ${CMAKE_CURRENT_LIST_DIR}/test_urls.json _libj)
-
-  string(JSON url GET ${_libj} ref_data url)
-
-  file(DOWNLOAD ${url} ${arc_json_file} STATUS ret LOG log)
-
-  list(GET ret 0 stat)
-  if(NOT stat EQUAL 0)
-    list(GET ret 1 err)
-    message(WARNING "${url} download failed: ${err}
-    ${log}")
-    return()
-  endif()
+set(arc_json_file ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data_snapshot.json)
+if(NOT EXISTS "${arc_json_file}")
+  message(FATAL_ERROR "Required pinned reference manifest is missing: ${arc_json_file}")
 endif()
 
 # --- compute proper number of MPI workers for this test
@@ -167,19 +111,19 @@ file(READ ${arc_json_file} _refj)
 
 get_url_name(${name} url_name)
 
-string(JSON Nlx ERROR_VARIABLE _err LENGTH ${_refj} tests ${url_name} lx)
+string(JSON Nlx ERROR_VARIABLE _err LENGTH "${_refj}" tests ${url_name} lx)
 if(_err)
-  message(WARNING "test ${name} missing lx in ${arc_json_file}: ${_err}")
+  message(FATAL_ERROR "test ${name} missing lx in ${arc_json_file}: ${_err}")
   return()
 endif()
 if(NOT Nlx EQUAL 3)
-  message(WARNING "test ${name} has lx=${Nlx} in ${arc_json_file}, expected 3")
+  message(FATAL_ERROR "test ${name} has lx=${Nlx} in ${arc_json_file}, expected 3")
   return()
 endif()
 
-string(JSON lx1 GET ${_refj} tests ${url_name} lx 0)
-string(JSON lx2 GET ${_refj} tests ${url_name} lx 1)
-string(JSON lx3 GET ${_refj} tests ${url_name} lx 2)
+string(JSON lx1 GET "${_refj}" tests ${url_name} lx 0)
+string(JSON lx2 GET "${_refj}" tests ${url_name} lx 1)
+string(JSON lx3 GET "${_refj}" tests ${url_name} lx 2)
 
 max_mpi(${lx2} ${lx3} ${MPIEXEC_MAX_NUMPROCS} Nworker)
 
@@ -193,6 +137,8 @@ COMMAND ${CMAKE_COMMAND}
   -Doutdir:PATH=${out_dir}
   -Drefroot:PATH=${ref_root}
   -Darc_json_file:FILEPATH=${arc_json_file}
+  -Dreset_test_outputs=ON
+  -Dtest_binary_dir:PATH=${gemini3d_test_run_root}
   -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
@@ -212,6 +158,8 @@ endif()
 add_test(NAME gemini_run:${name}:dryrun COMMAND ${test_cmd} -dryrun)
 set_tests_properties(gemini_run:${name}:dryrun PROPERTIES
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+FIXTURES_SETUP ${name}:frontend_dryrun
+RESOURCE_LOCK cpu_mpi
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini3d.run>
 PROCESSORS ${Nworker}
 )
@@ -232,7 +180,7 @@ add_test(NAME gemini:${name}:dryrun COMMAND ${mpi_cmd} $<TARGET_FILE:${test_cmd}
 test_mpi_props(gemini:${name}:dryrun ${Nworker})
 set_tests_properties(gemini:${name}:dryrun PROPERTIES
 FIXTURES_SETUP ${name}:dryrun
-FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt;${name}:frontend_dryrun"
 )
 hdf5_dll(gemini:${name}:dryrun)
 
@@ -263,7 +211,7 @@ endfunction()
 
 function(setup_magcalc_test name)
 
-set(out_dir ${PROJECT_BINARY_DIR}/${name})
+set(out_dir ${gemini3d_test_run_root}/${name})
 
 add_test(NAME magcalc:${name}:setup
 COMMAND ${Python_EXECUTABLE} -m gemini3d.magcalc ${out_dir}

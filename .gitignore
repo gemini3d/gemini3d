@@ -4,3 +4,8 @@
 .DS_Store
 
 CMakeUserPresets.json
+
+# Local Python diagnostics and CI environment
+__pycache__/
+*.py[cod]
+.venv/

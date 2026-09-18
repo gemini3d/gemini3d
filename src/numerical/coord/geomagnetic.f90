@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: reject years outside the calibrated pole table
 module geomagnetic
 
 !> transformations and data relevant to converting geographic to geomagnetic coordinates
@@ -46,8 +47,7 @@ contains
         thetan = 9.4105_wp * pi / 180
         phin = 287.32_wp * pi / 180
       case default
-        thetan = 11.000_wp * pi / 180
-        phin = 289.00_wp * pi / 180
+        error stop 'set_magnetic_pole: supported table is 1920:2025; provide an epoch-consistent updated grid/model.'
     end select
   end subroutine set_magnetic_pole
 
@@ -60,11 +60,11 @@ contains
     real(wp) :: phig
     real(wp) :: argtmp,alpha
 
-    glonwrap=mod(glon,360._wp)
+    glonwrap=modulo(glon,360._wp)
     thetag = pi/2 - glat*pi/180
     phig = glonwrap*pi/180
 
-    theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
+    theta = acos(max(-1._wp,min(1._wp,cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))))
     argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
     alpha = acos( max(min(argtmp,1._wp),-1._wp) )
 
@@ -85,8 +85,8 @@ contains
     real(wp) :: phig2,phiwrap
     real(wp) :: argtmp
 
-    phiwrap=mod(phi,2*pi)
-    thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
+    phiwrap=modulo(phi,2*pi)
+    thetag2p=acos(max(-1._wp,min(1._wp,cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))))
     argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
     beta=acos( max(min(argtmp,1._wp),-1._wp) )
 
@@ -95,7 +95,7 @@ contains
     else
       phig2=phin+beta
     end if
-    phig2=mod(phig2,2*pi)
+    phig2=modulo(phig2,2*pi)
     thetag2=pi/2-thetag2p
 
     glon=phig2*180._wp/pi
@@ -173,14 +173,14 @@ contains
     real(wp) :: xp,yp
     real(wp) :: theta2,theta3,gamma1,gamma2,phi2,phi3
     integer :: lx1,lx2,lx3,ix1,ix2,ix3    ! local copies
-    logical :: flag3D=.false.
+    logical :: flag3D
 
     lx1=size(alt,1)
     lx2=size(alt,2)
     lx3=size(alt,3)
     if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
 
-    if (size(alt,2)/=1 .and. size(alt,3)/=1) flag3D=.true.
+    flag3D=size(alt,2)/=1 .and. size(alt,3)/=1
 
     z(:,:,:)=alt(:,:,:)
     do ix3=1,lx3
@@ -238,7 +238,7 @@ contains
     real(wp), intent(inout), dimension(:,:,:) :: alt,theta,phi
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
     real(wp) :: gamma1,gamma2
-    logical :: flag3D=.false.
+    logical :: flag3D
 
     lx1=size(x,1)
     lx2=size(x,2)

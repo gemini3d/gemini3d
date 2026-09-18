@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: do not read uninitialized output flags
 ! Copyright 2021 Matthew Zettergren
 
 ! Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +23,7 @@
 module gemini3d_C
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
+use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, c_associated, wp => C_DOUBLE
 
 use phys_consts, only: lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3, detect_gridtype
@@ -147,10 +148,11 @@ contains
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
+    if (.not.c_associated(cfgC)) return
     call c_f_pointer(cfgC,cfg)
     deallocate(cfg)
-    cfg=>null()
-    cfgC=c_loc(cfg)     ! send back a null pointer as a precaution
+    nullify(cfg)
+    cfgC=c_null_ptr
   end subroutine gemini_cfg_dealloc_C
 
 
@@ -164,7 +166,7 @@ contains
     type(gemini_cfg), pointer :: cfg
     logical :: neuBG
 
-    neuBG = flagneuBG /= 0
+    neuBG = .false.  ! output-only native value
 
     call c_f_pointer(cfgC,cfg)
     call get_config_vars(cfg, neuBG, flagdneu,dtneuBG,dtneu)
@@ -232,6 +234,8 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
+    if (.not.c_associated(intvarsC)) return
+    if (.not.c_associated(cfgC)) error stop "gemini_work_dealloc_C: null configuration"
     call c_f_pointer(cfgC,cfg)
     call c_f_pointer(intvarsC,intvars)
 
@@ -239,6 +243,7 @@ contains
     !    when passed back and forth with C so only deallocate the derived types
     !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
+    intvarsC=c_null_ptr
   end subroutine gemini_work_dealloc_C
 
 
@@ -258,9 +263,10 @@ contains
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
-    !print*, 'gemini_grid_dealloc_C:  ',xtype
+    if (.not.c_associated(xC)) return
     x=>set_gridpointer_dyntype(xtype,xC)
     call gemini_grid_dealloc(x,xtype,xC)
+    xC=c_null_ptr
   end subroutine gemini_grid_dealloc_C
 
 
@@ -356,7 +362,7 @@ contains
 
     logical :: flagneuBG_f
 
-    flagneuBG_f = flagneuBG /= 0
+    flagneuBG_f = .false.  ! output-only native value
 
     call c_f_pointer(cfgC,cfg)
     call get_cfg_timevars(cfg,tmilestone, flagneuBG_f, dtneuBG,flagdneu,flagoutput)
@@ -1376,7 +1382,7 @@ contains
 
     call c_f_pointer(cfgC, cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call check_finite_output_in(cfg, fluidvars, electrovars, t)
   end subroutine check_finite_output_C

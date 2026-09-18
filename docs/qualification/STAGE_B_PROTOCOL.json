@@ -1,0 +1,49 @@
+{
+  "schema": "gemini.stage_b.protocol.1",
+  "declared_on": "2026-09-17",
+  "authorization": "Please continue the work on the GEMINI updates to complete all remaining 14 gates and provide the updated source code and PDF report using the same techniques and any other tools needed to complete all work.",
+  "meaning": "Implementation and evidence collection across the remaining gates; does not manufacture third-party approval or waive prerequisites.",
+  "existing_budgets": "ACCEPTANCE_BUDGETS.json unchanged",
+  "geometry_screen": {
+    "domain": "Every physical cell of the pinned mini3d_fang Cartesian grid",
+    "years": [2026, 2027, 2028, 2029, 2030],
+    "max_relative_field_magnitude_error": 0.05,
+    "max_field_direction_error_degrees": 1.0,
+    "interpretation": "Initial proposed approximation bounds, declared before screening. A failure keeps the production epoch guard; no budget is fitted to measured error. Passing this screen alone would not validate metrics or driver transforms."
+  },
+  "source_accounting": {
+    "normalized_budget": 1e-11,
+    "etd_analytic_oracle_scaled_error": 5e-14,
+    "precision_digits": 80,
+    "scope": "Aggregate frozen-coefficient source/loss ODE and standard-energy temperature-floor ledger; whole-step energy and individual rates remain required"
+  },
+  "interchange": {
+    "schema": "gemini.exchange.1",
+    "fields": "The nine supported full-output fields; original stored precision and explicit SI units",
+    "round_trip": "Bitwise identical supported fields; mask, time, species, axes and native basis checked",
+    "mhd6_conversion": "Rejected pending physical closure, scales, boundaries and missing magnetic/perpendicular-species state"
+  },
+  "manufactured_exchange": {
+    "scope": "Complete Cartesian cell averages on identical domain bounds; no masked or curved cells",
+    "integral_rtol": 1e-13,
+    "integral_atol": 1e-14,
+    "passive_exchange": "Known exact two-reservoir solution, conservation and contraction from tiny to stiff time steps",
+    "limitations": "Does not select or validate a GEMINI/CVTWIN two-way source law"
+  },
+  "data_and_ml": {
+    "scientific_corpus_prerequisites": ["R02", "R04", "R07"],
+    "splits": ["train", "validation", "calibration", "test"],
+    "independence_unit": "Physical event and forcing/initial-state lineage, not time window or mesh cell",
+    "normalization": "Training events only",
+    "surrogate": "No model trained or accuracy claim allowed before corpus admission. Complete rollout comparison with persistence, actual numerical reference, fixed errors and measured end-to-end cost.",
+    "uq": "One maximum normalized rollout-error score per event; insufficient finite quantile, excessive width, population mismatch or declared feature excursion causes abstention. No control enabled.",
+    "population_budgets": "Must be fixed for the actual selected data/instrument/population before evaluation; existing physical targets remain unchanged. Generic synthetic unit checks do not establish them."
+  },
+  "external_evidence": {
+    "R01": "Actual numerical maintainer approval",
+    "R07": "Independent physics review and matched held-out data",
+    "R08": "User-designated GitHub destination with successful required workflow jobs and usable LeakSanitizer host",
+    "R09": "Distribution owner review of actual target inventory, notices and advisory relevance",
+    "R14": "Successful complete workload under a fresh delegated cgroup, three runs, original 600 s / 2048 MiB bounds"
+  }
+}

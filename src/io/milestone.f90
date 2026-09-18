@@ -1,7 +1,9 @@
 submodule (io) milestone
 
 use timeutils, only : date_filename,dateinc
-use h5fortran, only : h5exist
+use h5fortran, only : h5exist, hdf5_file
+use hdf5, only: H5T_NATIVE_DOUBLE
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type,external)   !! external procedures must be explicitly denoted thusly
 
@@ -14,7 +16,10 @@ integer, dimension(3) :: ymd
 real(wp) :: UTsec
 character(:), allocatable :: fn
 logical :: exists
-real(wp) :: tsim
+real(wp) :: tsim, saved_ut
+integer :: saved_ymd(3),schema,complete,realbits,i
+character(3), parameter :: core_fields(4)=[character(3)::'ns','Ts','vs1','Phi']
+type(hdf5_file) :: hf
 
 tsim = 0
 tmile = 0
@@ -46,6 +51,37 @@ milesearch : do
   !! last output file
 
   if (h5exist(fn, '/nsall')) then
+    ! A partially written frame is not a restart checkpoint.
+    if (.not.h5exist(fn,'/Tsall') .or. .not.h5exist(fn,'/vs1all') .or. &
+        .not.h5exist(fn,'/Phiall') .or. .not.h5exist(fn,'/time/ymd') .or. &
+        .not.h5exist(fn,'/time/UThour')) error stop 'Incomplete restart frame: ' // fn
+    if (h5exist(fn,'/restart_core')) then
+      if (.not.h5exist(fn,'/restart_core/complete') .or. .not.h5exist(fn,'/restart_core/schema') .or. &
+          .not.h5exist(fn,'/restart_core/realbits') .or. .not.h5exist(fn,'/restart_core/ns') .or. &
+          .not.h5exist(fn,'/restart_core/Ts') .or. .not.h5exist(fn,'/restart_core/vs1') .or. &
+          .not.h5exist(fn,'/restart_core/Phi')) error stop 'Incomplete core restart record: '//fn
+      call hf%open(fn,action='r')
+      call hf%read('/restart_core/schema',schema)
+      call hf%read('/restart_core/complete',complete)
+      call hf%read('/restart_core/realbits',realbits)
+      if (schema/=1.or.complete/=1.or.realbits/=storage_size(1._wp)) &
+        error stop 'Unsupported core restart schema or precision: '//fn
+      if (hf%ndim('/restart_core/Phi')/=3) error stop 'Core restart potential must be full 3D: '//fn
+      do i=1,size(core_fields)
+        if (hf%dtype('/restart_core/'//trim(core_fields(i)))/=H5T_NATIVE_DOUBLE) &
+          error stop 'Core restart fields must contain float64 data: '//fn
+      enddo
+      call hf%close()
+    elseif (cfg%potsolve==3) then
+      error stop 'Field-resolved restart requires a full 3D potential checkpoint; saved slab is insufficient.'
+    endif
+    call hf%open(fn,action='r')
+    call hf%read('/time/ymd',saved_ymd)
+    call hf%read('/time/UThour',saved_ut)
+    call hf%close()
+    saved_ut=saved_ut*3600._wp
+    if (.not.ieee_is_finite(saved_ut)) error stop 'Nonfinite restart time: ' // fn
+    if (any(saved_ymd/=ymd) .or. abs(saved_ut-UTsec)>0.005_wp) error stop 'Restart timestamp mismatch: ' // fn
     !! this file is milestone
     ymdmile=ymd
     UTsecmile=UTsec

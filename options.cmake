@@ -1,3 +1,4 @@
+# Audit modification 2026-09-16: declare real64 scope and explicit simulation-test gate
 include(GNUInstallDirs)
 
 message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} CMake ${CMAKE_VERSION}  Toolchain ${CMAKE_TOOLCHAIN_FILE}")
@@ -12,6 +13,12 @@ if(host_ramGB LESS 2)
   message(STATUS "Minimum RAM is about 2 GB--some tests or simulations may fail due to small memory (RAM)")
 endif()
 
+
+if(DEFINED gemini3d_realbits AND NOT gemini3d_realbits EQUAL 64)
+  message(FATAL_ERROR "Audited profile requires gemini3d_realbits=64; C wrappers and density floors require separate real32 qualification.")
+endif()
+
+option(gemini3d_test_simulations "register required reference simulations (OFF is unit-only, not release verification)" ON)
 
 if(gemini3d_realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")

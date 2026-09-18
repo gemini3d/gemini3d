@@ -1,3 +1,4 @@
+// Audit modification 2026-09-16: validate CLI, bound path copies, match ABI, check size arithmetic and abort failed MPI allocations
 // MAIN PROGRAM FOR GEMINI3D
 
 #include <iostream>
@@ -14,6 +15,7 @@ namespace fs = std::filesystem;
 #include <mpi.h>
 
 #include "gemini3d.h"
+#include "cli_utils.h"
 #include "ffilesystem.h"
 
 int gemini_main(struct params*, int*, int*);
@@ -24,7 +26,7 @@ void fluid_adv(double*, double*, int*, double*, int*, int*, double*, double*, do
 
 int main(int argc, char **argv) {
 
-  struct params s;
+  struct params s{};
   int myid;
   int ierr = MPI_Init(&argc, &argv);
   if(ierr){
@@ -61,7 +63,11 @@ int main(int argc, char **argv) {
   s.fortran_nml = 1;
 
   // Prepare Gemini3D struct
-  std::strcpy(s.out_dir, out_dir.data());
+  if (!gemini_cli::copy_outdir(out_dir, s.out_dir, sizeof(s.out_dir))) {
+    std::cerr << "Expanded output directory exceeds the C interface limit of " << LMAX-1 << " bytes\n";
+    MPI_Finalize();
+    return EXIT_FAILURE;
+  }
 
   s.fortran_cli = 0;
   s.debug = 0;
@@ -69,31 +75,24 @@ int main(int argc, char **argv) {
   int lid2in = -1, lid3in = -1;
   MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
-  for (int i = 2; i < argc; i++) {
-    std::string_view arg(argv[i]);
-    if (arg == "-d" || arg == "-debug")
-      s.debug = 1;
-
-    if (arg == "-dryrun")
-      s.dryrun = 1;
-
-    if (arg == "-h" || arg == "-help") {
-      help_gemini_bin();
-      MPI_Finalize();
-      return EXIT_SUCCESS;
-    }
-    if (arg == "-manual_grid") {
-      if (argc < i+1) {
-        MPI_Finalize();
-        std::cerr << "-manual_grid lid2in lid3in\n";
-        return EXIT_FAILURE;
-      }
-      lid2in = atoi(argv[i]);
-      lid3in = atoi(argv[i+1]);
-    }
+  bool help = false;
+  std::string cli_error;
+  if (!gemini_cli::parse_options(argc, argv, s, lid2in, lid3in, help, cli_error)) {
+    std::cerr << cli_error << "\n";
+    MPI_Finalize();
+    return EXIT_FAILURE;
+  }
+  if (help) {
+    help_gemini_bin();
+    MPI_Finalize();
+    return EXIT_SUCCESS;
   }
 
-  gemini_main(&s, &lid2in, &lid3in);
+  const int status = gemini_main(&s, &lid2in, &lid3in);
+  if (status != 0) {
+    MPI_Abort(MPI_COMM_WORLD, status);
+    return EXIT_FAILURE;
+  }
 
   if(MPI_Finalize()){
     std::cerr << "MPI_Finalize failed\n";
@@ -112,14 +111,14 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   int lsp;
   double UTsec;
   int ymd[3];
-  double* fluidvars;
-  double* fluidauxvars;
-  double* electrovars;    // pointers modifiable by fortran
+  double* fluidvars = nullptr;
+  double* fluidauxvars = nullptr;
+  double* electrovars = nullptr;    // pointers modifiable by fortran
   double t=0.0, dt=1e-4;
   double tout, tneuBG, tglowout, tdur, tmilestone=0;
   int iupdate;
   int flagoutput;
-  bool flagneuBG;
+  int flagneuBG = 0;
   int flagdneu;
   double dtneu,dtneuBG;
   int myid,lid;
@@ -159,20 +158,23 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   // Allocate memory and get pointers to blocks of data
   //gemini_alloc(&fluidvars,&fluidauxvars,&electrovars);    // allocate space in fortran modules for data
   std::cout << "start C allocations:  " << lx1 << " " << lx2 << " " << lx3 << std::endl;
-  fluidvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*5*lsp*sizeof(double));
-  fluidauxvars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*(2*lsp+9)*sizeof(double));
-  electrovars=(double*) malloc((lx1+4)*(lx2+4)*(lx3+4)*7*sizeof(double));
-  if (! fluidvars){
-    std::cerr << "fluidvars failed malloc, worker: " << myid << std::endl;
-    return 1;
+  try {
+    const auto cells = gemini_cli::cell_count(lx1, lx2, lx3);
+    if (lsp <= 0) throw std::invalid_argument("invalid species count");
+    const auto species = static_cast<std::size_t>(lsp);
+    fluidvars = static_cast<double*>(std::malloc(gemini_cli::array_bytes(cells, gemini_cli::checked_product(5, species))));
+    fluidauxvars = static_cast<double*>(std::malloc(gemini_cli::array_bytes(cells, 2*species+9)));
+    electrovars = static_cast<double*>(std::malloc(gemini_cli::array_bytes(cells, 7)));
+  } catch (const std::exception& error) {
+    std::cerr << "Invalid allocation dimensions: " << error.what() << "\n";
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    return EXIT_FAILURE;
   }
-  if (! fluidauxvars){
-    std::cerr << "fluiduxvars failed malloc, worker: " << myid << std::endl;
-    return 1;
-  }
-  if (! electrovars){
-    std::cerr << "electrovars failed malloc, worker: " << myid << std::endl;
-    return 1;
+  if (!fluidvars || !fluidauxvars || !electrovars) {
+    std::cerr << "Plasma allocation failed, worker: " << myid << "\n";
+    free(fluidvars); free(fluidauxvars); free(electrovars);
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    return EXIT_FAILURE;
   }
   gemini_work_alloc_C(&cfgC,&intvars);
   outdir_fullgridvaralloc_C(&cfgC,&intvars,&lx1,&lx2all,&lx3all);          // create output directory and allocate some module space for potential

@@ -77,6 +77,11 @@
 ],
 "testPresets": [
 {
+  "name": "offline", "inherits": "default",
+  "displayName": "Run with pre-cached reference archives; no network fetch allowed",
+  "environment": {"GEMINI3D_OFFLINE": "1"}
+},
+{
   "name": "default",
   "configurePreset": "default",
   "configuration": "Release",

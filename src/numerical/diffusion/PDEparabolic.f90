@@ -16,7 +16,7 @@ public :: TRBDF21D, backEuler1D
 contains
 
 
-function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i)
+function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i,Tsmin_mid,Tsmax_mid,increments)
 
 !! SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
 !! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
@@ -36,6 +36,13 @@ function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i)
 real(wp), dimension(:), intent(in) :: A,B,C,D,E
 real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
+! Existing callers prescribe stage-constant boundaries. Time-varying Dirichlet
+! or Neumann data must also supply the value at t+dt/2 for the TR stage.
+real(wp), intent(in), optional :: Tsmin_mid,Tsmax_mid
+! Integrated reaction, drift, conduction, explicit source and imposed endpoint
+! increments. These are evaluated from the numerical stage states, not from
+! the interior residual. Endpoints are algebraic boundary reservoirs.
+real(wp), intent(out), optional :: increments(size(Ts),5)
 integer, dimension(2), intent(in) :: BCtype  !=0 dirichlet; =1 neumann
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
@@ -156,6 +163,9 @@ else
 end if
 
 
+if (present(Tsmin_mid)) TR(1)=Tsmin_mid
+if (present(Tsmax_mid)) TR(lx1)=Tsmax_mid
+
 !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
@@ -249,10 +259,20 @@ end if
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,TRBDF21D,kl=2)
 
+if (present(increments)) then
+  ! TR uses dt/2 followed by the BDF formula with dt/3. Eliminating the
+  ! intermediate state gives dt/3 times each of L(T0), L(TR), L(Tfinal).
+  increments=dt/3*(parabolic_terms(Ts,A,B,C,D,E,dx1,dx1i) &
+                 +parabolic_terms(TR,A,B,C,D,E,dx1,dx1i) &
+                 +parabolic_terms(TRBDF21D,A,B,C,D,E,dx1,dx1i))
+  increments(1,5)=TRBDF21D(1)-Ts(1)
+  increments(lx1,5)=TRBDF21D(lx1)-Ts(lx1)
+endif
+
 end function TRBDF21D
 
 
-function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i,coeffs,rhs)
+function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,BCtype,dx1,dx1i,coeffs,rhs,increments)
 
 !------------------------------------------------------------
 !-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
@@ -272,6 +292,7 @@ real(wp), dimension(:,:), intent(inout), optional :: coeffs
 !! intent(out)
 real(wp), dimension(:), intent(inout), optional :: rhs
 !! intent(out)
+real(wp), intent(out), optional :: increments(size(Ts),5)
 
 integer, parameter :: ll=2                   !number of lower diagonals
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
@@ -370,6 +391,12 @@ end if
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,backEuler1D,kl=2)
 
+if (present(increments)) then
+  increments=dt*parabolic_terms(backEuler1D,A,B,C,D,E,dx1,dx1i)
+  increments(1,5)=backEuler1D(1)-Ts(1)
+  increments(lx1,5)=backEuler1D(lx1)-Ts(lx1)
+endif
+
 !> this is for if one wants to output the matrix bands for testing purposes
 if (present(coeffs)) then
   coeffs(1:lx1,1)=M(ll+2,1:lx1)
@@ -378,5 +405,20 @@ if (present(coeffs)) then
 end if
 
 end function backEuler1D
+
+pure function parabolic_terms(T,A,B,C,D,E,dx,dxi) result(terms)
+  real(wp), intent(in) :: T(:),A(:),B(:),C(:),D(:),E(:),dx(0:),dxi(:)
+  real(wp) :: terms(size(T),5),left,right
+  integer :: i
+  terms=0
+  do i=2,size(T)-1
+    left=0.5_wp*(D(i-1)+D(i))*(T(i)-T(i-1))/dx(i)
+    right=0.5_wp*(D(i)+D(i+1))*(T(i+1)-T(i))/dx(i+1)
+    terms(i,1)=A(i)*T(i)
+    terms(i,2)=B(i)*(T(i+1)-T(i-1))/(dx(i+1)+dx(i))
+    terms(i,3)=C(i)*(right-left)/dxi(i)
+    terms(i,4)=E(i)
+  enddo
+end function parabolic_terms
 
 end module PDEparabolic

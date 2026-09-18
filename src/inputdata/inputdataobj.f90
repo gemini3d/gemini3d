@@ -7,16 +7,25 @@ use phys_consts, only : wp
 use gemini3d_config, only: gemini_cfg
 use meshobj, only : curvmesh
 use meshobj_dipole, only: dipolemesh
-use interpolation, only : interp1,interp2,interp3
-use timeutils, only : dateinc, date_filename, find_lastdate
+use interpolation, only : interp1,interp2,interp3,coverage_mask
+use timeutils, only : dateinc, date_filename, find_lastdate, elapsed_seconds, shift_datetime
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type, external)
 private
 public :: inputdata
 
 
+! Each mask describes target sites; values remain distinguishable from physical zero.
+type :: spatial_coverage
+  logical, allocatable :: valid(:)
+end type spatial_coverage
+
 !> this is a generic class for an data object being input into the model and interpolated in space and time
 type, abstract :: inputdata
+  type(spatial_coverage) :: coverage(7) ! axes 1,2,3,23,12,13,123
+  integer :: spatial_missing_count=0
+  logical :: allow_missing_spatial=.false., coverage_warning_sent=.false.
   character(:), allocatable :: dataname     ! string description of dataset
   character(:), allocatable :: sourcedir    ! source location containing data input files
 
@@ -98,6 +107,7 @@ type, abstract :: inputdata
     procedure :: set_name              ! assign a character string name to our dataset
     procedure :: set_source            ! set the source directory for the input data
     procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
+    procedure :: validate_spatial_coverage
     procedure :: spaceinterp           ! interpolate spatially
     procedure :: nospaceinterp         ! do not interpolate; fill arrays directly from input data (assuming flag checks pass)
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
@@ -290,6 +300,8 @@ contains
     class(inputdata), intent(inout) :: self
     real(wp), intent(in) :: dtdata
 
+    if (.not.ieee_is_finite(dtdata)) error stop "inputdata: nonfinite cadence"
+    if (dtdata<=0 .or. dtdata>86400) error stop "inputdata: cadence must be in (0,86400]"
     self%dt=dtdata
     self%flagcadence=.true.
   end subroutine set_cadence
@@ -354,18 +366,19 @@ contains
       !self%tref(1)=UTsectmp-UTsec-2*self%dt
       !self%tref(2)=self%tref(1)+self%dt
 
-      self%tref(1)=(UTsectmp-cfg%UTsec0)-2*self%dt
+      self%tref(1)=elapsed_seconds(cfg%ymd0,cfg%UTsec0,ymdtmp,UTsectmp)-2*self%dt
       self%tref(2)=self%tref(1)+self%dt
 
       !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
       !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
       !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
+      call shift_datetime(-self%dt,ymdtmp,UTsectmp)
+      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp)  !abs time arg to be < 0
 
       !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
       !  loads up a current state so that we get a proper interpolation for the first time step.
       !call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
-      call self%update(cfg,dtmodel,self%tref(2)+3/2*self%dt,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
+      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
 
       self%flagprimed=.true.
 
@@ -402,6 +415,8 @@ contains
     integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
     real(wp) :: UTsectmp
 
+    self%allow_missing_spatial=cfg%allow_missing_spatial
+
     !! basic error checking
     if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
     if (.not. self%flagcadence) error stop 'inputdata:update() - must define cadence first...'
@@ -411,7 +426,7 @@ contains
     !print*, '    ',self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
 
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
-    if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then
+    do while (t+dtmodel/2 >= self%tref(2) .or. .not.self%flagprimed)
       !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
       if (self%flagfirst) then
         !initialize dates
@@ -430,6 +445,9 @@ contains
       !Read in neutral data from a file
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
 
+      if (abs(elapsed_seconds(self%ymdref(:,2),self%UTsecref(2),ymdtmp,UTsectmp)-self%dt) &
+          > 1e-6_wp) error stop 'inputdata: missing or nonuniform frame; resample to declared cadence'
+
       !Spatial interpolation for the frame we just read in (or copying)
       if (self%flagnointerp) then
         call self%nospaceinterp()
@@ -445,7 +463,8 @@ contains
       self%tref(2)=self%tref(1)+self%dt
       self%UTsecref(2)=UTsectmp
       self%ymdref(:,2)=ymdtmp
-    end if !done loading frame data...
+      if (.not.self%flagprimed) exit  ! priming loads exactly one frame on each call
+    end do !done loading frame data...
 
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
@@ -588,6 +607,36 @@ contains
 
   !> use data stored in input arrays to interpolate onto grid sites for "next" dataset.  There may be a need here to
   !    accommodate singleton dimension naturally to void having to define extensions for different types of interp...
+  subroutine validate_spatial_coverage(self)
+    class(inputdata),intent(inout) :: self
+    integer :: i
+    if (self%l1Dax1>0) self%coverage(1)%valid=coverage_mask(self%coord1,self%coord1iax1)
+    if (self%l1Dax2>0) self%coverage(2)%valid=coverage_mask(self%coord2,self%coord2iax2)
+    if (self%l1Dax3>0) self%coverage(3)%valid=coverage_mask(self%coord3,self%coord3iax3)
+    if (self%l2Dax23>0) self%coverage(4)%valid= &
+      coverage_mask(self%coord2,self%coord2iax23).and.coverage_mask(self%coord3,self%coord3iax23)
+    if (self%l2Dax12>0) self%coverage(5)%valid= &
+      coverage_mask(self%coord1,self%coord1iax12).and.coverage_mask(self%coord2,self%coord2iax12)
+    if (self%l2Dax13>0) self%coverage(6)%valid= &
+      coverage_mask(self%coord1,self%coord1iax13).and.coverage_mask(self%coord3,self%coord3iax13)
+    if (self%l3D>0) self%coverage(7)%valid=coverage_mask(self%coord1,self%coord1i) &
+      .and.coverage_mask(self%coord2,self%coord2i).and.coverage_mask(self%coord3,self%coord3i)
+    self%spatial_missing_count=0
+    do i=1,7
+      if (allocated(self%coverage(i)%valid)) &
+        self%spatial_missing_count=self%spatial_missing_count+count(.not.self%coverage(i)%valid)
+    enddo
+    if (self%spatial_missing_count>0) then
+      if (allocated(self%dataname).and..not.self%coverage_warning_sent) &
+        write(stderr,*) 'Spatial coverage missing: ',self%dataname,self%spatial_missing_count
+      if (.not.self%allow_missing_spatial) &
+        error stop 'inputdata: uncovered target sites; extend input grid or explicitly allow flagged zero fill'
+      if (.not.self%coverage_warning_sent) write(stderr,*) &
+        'WARNING: explicitly allowed zero fill; coverage masks mark missing values, not physical zeros.'
+      self%coverage_warning_sent=.true.
+    endif
+  end subroutine validate_spatial_coverage
+
   subroutine spaceinterp(self)
     class(inputdata),intent(inout) :: self
     integer :: iparm
@@ -611,6 +660,8 @@ contains
     coord2iax23=>self%coord2iax23; coord3iax23=>self%coord3iax23;
     coord1iax12=>self%coord1iax12; coord2iax12=>self%coord2iax12;
     coord1iax13=>self%coord1iax13; coord3iax13=>self%coord3iax13;
+
+    call self%validate_spatial_coverage()
 
     !> 1D arrays varying along the 1-axis
     if (self%l1Dax1>0) then
@@ -785,6 +836,12 @@ contains
     integer :: ic1,ic2,ic3,iparm
     integer :: lc1i,lc2i,lc3i
 
+    if (.not.all(ieee_is_finite([t,dt,self%tref]))) error stop "inputdata: nonfinite interpolation time"
+    if (dt<0 .or. self%tref(2)<=self%tref(1)) error stop "inputdata: invalid interpolation interval"
+    if (self%flagprimed) then
+      if (t+dt/2<self%tref(1) .or. t+dt/2>self%tref(2)) &
+        error stop "inputdata: query is outside temporal driver coverage"
+    endif
     ! convenience vars
     lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
 

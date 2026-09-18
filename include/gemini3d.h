@@ -1,3 +1,4 @@
+// Audit modification 2026-09-16: match integer(C_INT) flag ABI
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
@@ -47,7 +48,7 @@ extern void read_config_in_C(struct params*, void**);
 extern void set_magnetic_pole_in_C(void**);
 extern void grid_size_in_C(void**);
 extern void get_fullgrid_size_C(int*, int*, int*);
-extern void get_config_vars_C(void**, bool*, int*, double*, double*);
+extern void get_config_vars_C(void**, int*, int*, double*, double*);
 extern void get_subgrid_size_C(int*, int*, int*);
 extern void get_species_size_C(int*);
 extern void get_fullgrid_lims_C(double*, double*, double*, double*, double*, double*);

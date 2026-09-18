@@ -63,6 +63,7 @@ integer :: myid
 
 !> initialize mpi
 call mpi_init()
+call mpi_comm_rank(MPI_COMM_WORLD,myid)  ! initialize the outer termination-log rank
 p%fortran_cli = 1
 p%fortran_nml = 1
 p%out_dir(1) = c_null_char

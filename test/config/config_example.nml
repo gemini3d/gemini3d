@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: clarify implemented potential modes.
 &base
 ymd = 2013,2,20               ! year, month, day
 UTsec0 = 18000.0              ! start time in UT seconds
@@ -9,7 +10,7 @@ Teinf = 1500.0                ! exospheric electron temperature
 /
 
 &flags
-potsolve = 1      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
+potsolve = 1      ! solve electrodynamics:   0 - disturbance off; 1 - field-integrated; 3 - field-resolved; 2 - unsupported
 flagoutput = 2
 /
 

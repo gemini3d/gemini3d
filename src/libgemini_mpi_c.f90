@@ -113,7 +113,7 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call get_initial_state(cfg, fluidvars,electrovars,intvars, x, UTsec, ymd, tdur, t, tmilestone)
   end subroutine get_initial_state_C
@@ -138,7 +138,7 @@ contains
     call c_f_pointer(intvarsC,intvars)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call check_fileoutput(cfg, fluidvars, electrovars, intvars, t, tout,tglowout,tmilestone,flagoutput,ymd,UTsec)
   end subroutine check_fileoutput_C
@@ -171,7 +171,7 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(intvarsC,intvars)
 
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call BGfield_Lagrangian(cfg, x, electrovars, intvars)
   end subroutine BGfield_Lagrangian_C
@@ -197,7 +197,7 @@ contains
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call get_initial_drifts(cfg, x, fluidvars, fluidauxvars, electrovars, intvars)
   end subroutine get_initial_drifts_C
@@ -260,7 +260,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
 
     x=>set_gridpointer_dyntype(xtype, xC)
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call pot2perpfield_in(x,electrovars)
   end subroutine pot2perpfield_C
@@ -404,7 +404,7 @@ contains
     call c_f_pointer(cfgC, cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
     x=>set_gridpointer_dyntype(xtype, xC)
 

@@ -17,6 +17,8 @@
 module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
+use transport_audit, only: audit_mass_source,audit_mass_cleanup,audit_etd_source,audit_temperature_floor, &
+                         audit_transport_enabled,audit_energy_operator
 use advec, only: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct, thermal_conduct_new
@@ -56,7 +58,7 @@ subroutine sweep3_allspec_mass(dt,x,vs3i,ns)
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
 
-  call sweep3_allspec(ns,vs3i,dt,x,0,6)
+  call sweep3_allspec(ns,vs3i,dt,x,0,6,quantity=1)
 end subroutine sweep3_allspec_mass
 subroutine sweep3_allspec_momentum(dt,x,vs3i,rhovs1)
   real(wp), intent(in) :: dt
@@ -64,7 +66,7 @@ subroutine sweep3_allspec_momentum(dt,x,vs3i,rhovs1)
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
-  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6)
+  call sweep3_allspec(rhovs1,vs3i,dt,x,1,6,quantity=2)
 end subroutine sweep3_allspec_momentum
 subroutine sweep3_allspec_energy(dt,x,vs3i,rhoes)
   real(wp), intent(in) :: dt
@@ -72,7 +74,7 @@ subroutine sweep3_allspec_energy(dt,x,vs3i,rhoes)
   real(wp), dimension(:,:,:,:), intent(in) :: vs3i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
 
-  call sweep3_allspec(rhoes,vs3i,dt,x,0,7)
+  call sweep3_allspec(rhoes,vs3i,dt,x,0,7,quantity=3)
 end subroutine sweep3_allspec_energy
 
 
@@ -83,7 +85,7 @@ subroutine sweep1_allspec_mass(dt,x,vs1i,ns)
   real(wp), dimension(:,:,:,:), intent(in) :: vs1i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
 
-  call sweep1_allspec(ns,vs1i,dt,x,6)     ! sweep1 doesn't need to know the rank of the advected quantity
+  call sweep1_allspec(ns,vs1i,dt,x,6,quantity=1)     ! sweep1 doesn't need to know the rank of the advected quantity
 end subroutine sweep1_allspec_mass
 subroutine sweep1_allspec_momentum(dt,x,vs1i,rhovs1)
   real(wp), intent(in) :: dt
@@ -91,7 +93,7 @@ subroutine sweep1_allspec_momentum(dt,x,vs1i,rhovs1)
   real(wp), dimension(:,:,:,:), intent(in) :: vs1i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
-  call sweep1_allspec(rhovs1,vs1i,dt,x,6)
+  call sweep1_allspec(rhovs1,vs1i,dt,x,6,quantity=2)
 end subroutine sweep1_allspec_momentum
 subroutine sweep1_allspec_energy(dt,x,vs1i,rhoes)
   real(wp), intent(in) :: dt
@@ -99,7 +101,7 @@ subroutine sweep1_allspec_energy(dt,x,vs1i,rhoes)
   real(wp), dimension(:,:,:,:), intent(in) :: vs1i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
 
-  call sweep1_allspec(rhoes,vs1i,dt,x,7)
+  call sweep1_allspec(rhoes,vs1i,dt,x,7,quantity=3)
 end subroutine sweep1_allspec_energy
 
 
@@ -110,7 +112,7 @@ subroutine sweep2_allspec_mass(dt,x,vs2i,ns)
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns
 
-  call sweep2_allspec(ns,vs2i,dt,x,0,6)
+  call sweep2_allspec(ns,vs2i,dt,x,0,6,quantity=1)
 end subroutine sweep2_allspec_mass
 subroutine sweep2_allspec_momentum(dt,x,vs2i,rhovs1)
   real(wp), intent(in) :: dt
@@ -118,7 +120,7 @@ subroutine sweep2_allspec_momentum(dt,x,vs2i,rhovs1)
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhovs1
 
-  call sweep2_allspec(rhovs1,vs2i,dt,x,1,6)
+  call sweep2_allspec(rhovs1,vs2i,dt,x,1,6,quantity=2)
 end subroutine sweep2_allspec_momentum
 subroutine sweep2_allspec_energy(dt,x,vs2i,rhoes)
   real(wp), intent(in) :: dt
@@ -126,7 +128,7 @@ subroutine sweep2_allspec_energy(dt,x,vs2i,rhoes)
   real(wp), dimension(:,:,:,:), intent(in) :: vs2i
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
 
-  call sweep2_allspec(rhoes,vs2i,dt,x,0,7)
+  call sweep2_allspec(rhoes,vs2i,dt,x,0,7,quantity=3)
 end subroutine sweep2_allspec_energy
 
 
@@ -391,6 +393,7 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: rhoes
   real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: paramtrim,rhoeshalf
   real(wp), dimension(0:size(vs1,1)-3,0:size(vs1,2)-3,0:size(vs1,3)-3) :: divvs
+  real(wp), allocatable :: increments(:,:,:,:)
   integer :: isp,lsp
 
    !print*, 'compression:  ',  shape(vs1(1:lx1,1:lx2,1:lx3,:)),minval(vs1(1:lx1,1:lx2,1:lx3,:)), &
@@ -398,6 +401,7 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
    !                       minloc(vs1(1:lx1,1:lx2,1:lx3,:)),maxloc(vs1(1:lx1,1:lx2,1:lx3,:))
 
   lsp=size(vs1,4)
+  if(audit_transport_enabled) allocate(increments(lx1,lx2,lx3,5))
   do isp=1,lsp
     divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
                   vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
@@ -409,6 +413,13 @@ subroutine compression(dt,x,vs1,vs2,vs3,Q,rhoes)
     !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
 
     paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
+    if(audit_transport_enabled) then
+      increments=0
+      increments(:,:,:,1)=-dt*rhoeshalf*(gammas(isp)-1)*divvs(1:lx1,1:lx2,1:lx3)
+      increments(:,:,:,2)=-dt*Q(:,:,:,isp)*divvs(1:lx1,1:lx2,1:lx3)
+      call audit_energy_operator(1,isp,rhoes(1:lx1,1:lx2,1:lx3,isp),paramtrim,increments, &
+                                 spread(spread(spread(1._wp,1,lx1),2,lx2),3,lx3))
+    endif
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
   end do
 end subroutine compression
@@ -430,9 +441,11 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
   real(wp), intent(in) :: Teinf
   real(wp), dimension(-1:size(Ts,1)-2,-1:size(Ts,2)-2,-1:size(Ts,3)-2) :: param    ! could be a pointer to avoid wasting memory?
   real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) :: A,B,C,D,E,lambda,beta
+  real(wp), allocatable :: increments(:,:,:,:)
   integer :: isp,lsp
 
   lsp=size(Ts,4)
+  if(audit_transport_enabled) allocate(increments(lx1,lx2,lx3,5))
   do isp=1,lsp
     param=Ts(:,:,:,isp)     !temperature for this species
     call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
@@ -440,16 +453,20 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
     call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
     select case (flagdiffsolve)
       case (1)
-        param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+        param=backEuler3D(param,A,B,C,D,E,dt,x,increments)    !1st order method
       case (2)
-        param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+        param=TRBDF23D(param,A,B,C,D,E,dt,x,increments)       !2nd order method
       case default
         print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
         error stop
     end select
 
+    if(audit_transport_enabled) call audit_energy_operator(2,isp,Ts(1:lx1,1:lx2,1:lx3,isp), &
+      param(1:lx1,1:lx2,1:lx3),increments,max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)*kB/(gammas(isp)-1))
     Ts(:,:,:,isp) = param
     Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)    ! is this necessary or does clean_param take care of???
+    if(audit_transport_enabled) call audit_temperature_floor(1,isp,param(1:lx1,1:lx2,1:lx3), &
+      Ts(1:lx1,1:lx2,1:lx3,isp),max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)*kB/(gammas(isp)-1))
   end do
 end subroutine energy_diffusion
 
@@ -664,10 +681,18 @@ subroutine energy_source_loss_solve(dt,Pr,Lo,Qeprecip,rhoes,Ts,ns)
     end if
     paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
     paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    if(isp==lsp) then
+      call audit_etd_source(3,isp,rhoes(1:lx1,1:lx2,1:lx3,isp),paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt,Qeprecip)
+    else
+      call audit_etd_source(3,isp,rhoes(1:lx1,1:lx2,1:lx3,isp),paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    endif
     rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+    if(audit_transport_enabled) paramtrim=Ts(1:lx1,1:lx2,1:lx3,isp)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+    if(audit_transport_enabled) call audit_temperature_floor(2,isp,paramtrim, &
+      Ts(1:lx1,1:lx2,1:lx3,isp),max(ns(1:lx1,1:lx2,1:lx3,isp),mindensdiv)*kB/(gammas(isp)-1))
   end do
 end subroutine energy_source_loss_solve
 
@@ -691,6 +716,7 @@ subroutine momentum_source_loss_solve(dt,x,Pr,Lo,ns,rhovs1,vs1,J1,flagJ1)
   do isp=1,lsp-1
     paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
     paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    call audit_etd_source(2,isp,rhovs1(1:lx1,1:lx2,1:lx3,isp),paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
     rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
   end do
@@ -726,6 +752,8 @@ subroutine mass_source_loss_solve(dt,Pr,Lo,Prionize,ns)
   do isp=1,lsp-1
     paramtrim=ns(1:lx1,1:lx2,1:lx3,isp)
     paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
+    call audit_etd_source(1,isp,ns(1:lx1,1:lx2,1:lx3,isp),paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt,Prionize(:,:,:,isp))
+    call audit_mass_source(isp,ns(1:lx1,1:lx2,1:lx3,isp),paramtrim)
     ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
   end do
   ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
@@ -743,9 +771,12 @@ subroutine clean_param(x,paramflag,param)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
   integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
 
+  if(paramflag==1) call audit_mass_cleanup(param,.true.)
   select case (paramflag)
     case (1)    !density
       param(:,:,:,1:lsp-1)=max(param(:,:,:,1:lsp-1),mindens)    ! enforce a minimum density
+      ! Honor the configured floor. ESF runs needing 1e3 must set mindens_userval=1e3.
+      ! Audit correction 2026-09-16: do not silently override every case with an ESF-specific floor.
       param(:,:,:,lsp)=sum(param(:,:,:,1:lsp-1),4)              !enforce charge neutrality based on ion densities
 
       do isp=1,lsp             !set null cells to some value
@@ -868,6 +899,7 @@ subroutine clean_param(x,paramflag,param)
       !! throw an error as the code is likely not going to behave in a predictable way in this situation...
       error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
   end select
+  if(paramflag==1) call audit_mass_cleanup(param,.false.)
 end subroutine clean_param
 
 

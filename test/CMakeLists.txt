@@ -1,3 +1,4 @@
+# Audit modification 2026-09-16: make unit-only verification explicit
 set_property(DIRECTORY PROPERTY LABELS standalone_libraries)
 
 if(gemini3d_matlab)
@@ -137,9 +138,14 @@ add_subdirectory(mpi)
 add_subdirectory(neutral)
 add_subdirectory(potential)
 add_subdirectory(temporal)
+add_subdirectory(audit)
 
 # self-test simulations -- after all targets for if(TARGET ...)
 include(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+if(gemini3d_test_simulations)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+else()
+  message(WARNING "Reference simulations explicitly disabled: this build cannot provide release verification.")
+endif()
 
 endif()

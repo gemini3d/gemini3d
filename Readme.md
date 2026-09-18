@@ -1,5 +1,11 @@
 # GEMINI
 
+> Audit snapshot, 16 September 2026. This tree contains documented corrections to
+> upstream commit `aa50fa1a34c374edaf7e1c79e6d330e4025f777c`.
+> Read [the development handoff](docs/PREINTEGRATION.md) and [audit profile](docs/Readme_audit.md)
+> before using it. This is a development candidate, not an upstream release or
+> a physically validated digital twin. Consult the validation report for native regression results and remaining science gates.
+
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
 [![ci](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci.yml)
 [![macOS CI](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/ci_macos.yml)
@@ -59,7 +65,7 @@ Requirements:
   * Cray with GCC or Intel oneAPI backend
 * Python and/or MATLAB for scripting front- and back-ends
 * CMake: if your CMake is too old, [download](https://cmake.org/download/) or `python -m pip install cmake`
-* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only, which runs much more slowly than with MPI.
+* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. The current CMake build requires MPI even for a one-process run.
 
 ### Gemini3D setup
 

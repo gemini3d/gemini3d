@@ -41,6 +41,7 @@ use gemini3d_config, only : gemini_cfg,read_configfile
 use precipBCs_mod, only: init_precipinput, precipBCs_fileinput, precipBCs
 use solfluxBCs_mod, only: init_solfluxinput, solfluxBCs_fileinput, solfluxBCs
 use neutral, only: neutral_info,neutral_info_alloc,neutral_info_dealloc
+use restart_runtime, only: runtime_times
 use neutral_background, only: init_neutral_background
 use multifluid, only : sweep3_allspec_mass,sweep3_allspec_momentum,sweep3_allspec_energy, &
             sweep1_allspec_mass,sweep1_allspec_momentum,sweep1_allspec_energy, &
@@ -216,6 +217,8 @@ contains
       call find_config(cfg)
       call read_configfile(cfg, verbose=.false.)
       call check_input_files(cfg)
+    else
+      error stop "read_config_in: fortran_nml=0 is not implemented; provide config.nml"
     endif
 
     !> at this point we can check the input files and make sure we have a well-formed simulation setup
@@ -731,6 +734,7 @@ contains
     !> Initialize some variables need for time stepping and output
 !    it = 1; t = 0; tout = t; tglowout = t; tneuBG=t
     it = 1; tout = t; tglowout = t; tneuBG=t
+    call runtime_times(tout,tglowout)
   end subroutine set_start_values_auxtimevars
 
 
