@@ -14,11 +14,10 @@ import re
 import subprocess
 
 
-def input_signature(case):
-    root=(case/'inputs').resolve()
+    root=case/'inputs'
+    if root.is_symlink():raise ValueError('Input symlinks are unsupported in the verified profile')
+    root=root.resolve()
     records={}
-    for path in sorted(root.rglob('*')):
-        if path.is_symlink():raise ValueError('Input symlinks are unsupported in the verified profile')
         if not path.is_file():continue
         data=path.read_bytes()
         if path.name=='config.nml':
