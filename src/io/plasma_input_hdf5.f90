@@ -2,7 +2,7 @@ submodule (io:plasma_input) plasma_input_hdf5
 
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
-use hdf5, only: H5T_NATIVE_DOUBLE
+use hdf5, only: H5T_NATIVE_DOUBLE, h5tequal_f
 use mpimod, only : bcast_send3D_ghost, bcast_send
 
 implicit none (type, external)
@@ -91,6 +91,8 @@ contains
     integer :: lx1,lx2all,lx3all
     integer :: ix1
     integer :: lx1in,lx2in,lx3in, schema, complete, realbits,i
+    integer :: type_error
+    logical :: is_double
     character(3), parameter :: core_fields(4)=[character(3)::'ns','Ts','vs1','Phi']
     real(wp), dimension(:,:), allocatable :: Phislab
     real(wp), allocatable :: tmpPhi(:)
@@ -126,8 +128,9 @@ contains
       if (schema/=1 .or. complete/=1 .or. realbits/=storage_size(1._wp)) &
         error stop 'Unsupported core restart schema or precision'
       do i=1,size(core_fields)
-        if (hf%dtype('/restart_core/'//trim(core_fields(i)))/=H5T_NATIVE_DOUBLE) &
-          error stop 'Core restart fields must contain float64 data'
+        call h5tequal_f(hf%dtype('/restart_core/'//trim(core_fields(i))),H5T_NATIVE_DOUBLE,is_double,type_error)
+        if (type_error/=0) error stop 'Cannot compare core restart datatype'
+        if (.not.is_double) error stop 'Core restart fields must contain float64 data'
       enddo
       call hf%read('/restart_core/ns',nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
       call hf%read('/restart_core/vs1',vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))

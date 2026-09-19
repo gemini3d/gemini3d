@@ -2,7 +2,7 @@ submodule (io) milestone
 
 use timeutils, only : date_filename,dateinc
 use h5fortran, only : h5exist, hdf5_file
-use hdf5, only: H5T_NATIVE_DOUBLE
+use hdf5, only: H5T_NATIVE_DOUBLE, h5tequal_f
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type,external)   !! external procedures must be explicitly denoted thusly
@@ -16,8 +16,10 @@ integer, dimension(3) :: ymd
 real(wp) :: UTsec
 character(:), allocatable :: fn
 logical :: exists
+logical :: is_double
 real(wp) :: tsim, saved_ut
 integer :: saved_ymd(3),schema,complete,realbits,i
+integer :: type_error
 character(3), parameter :: core_fields(4)=[character(3)::'ns','Ts','vs1','Phi']
 type(hdf5_file) :: hf
 
@@ -68,8 +70,9 @@ milesearch : do
         error stop 'Unsupported core restart schema or precision: '//fn
       if (hf%ndim('/restart_core/Phi')/=3) error stop 'Core restart potential must be full 3D: '//fn
       do i=1,size(core_fields)
-        if (hf%dtype('/restart_core/'//trim(core_fields(i)))/=H5T_NATIVE_DOUBLE) &
-          error stop 'Core restart fields must contain float64 data: '//fn
+        call h5tequal_f(hf%dtype('/restart_core/'//trim(core_fields(i))),H5T_NATIVE_DOUBLE,is_double,type_error)
+        if (type_error/=0) error stop 'Cannot compare core restart datatype: '//fn
+        if (.not.is_double) error stop 'Core restart fields must contain float64 data: '//fn
       enddo
       call hf%close()
     elseif (cfg%potsolve==3) then

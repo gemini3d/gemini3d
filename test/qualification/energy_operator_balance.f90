@@ -7,7 +7,7 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 implicit none
 integer,parameter :: n=13
 real(wp) :: old(n),y(n),a(n),b(n),c(n),d(n),e(n),dx(0:n+2),dxi(n),terms(n,5),dt,err,scale
-real(wp) :: old3(-1:n+2,-1:3,-1:3),new3(-1:n+2,-1:3,-1:3)
+real(wp) :: old3(-1:n+2,-1:3,-1:3),new3(-1:n+2,-1:3,-1:3),plain3(-1:n+2,-1:3,-1:3)
 real(wp) :: aa(n,1,1),zz(n,1,1),cc(n,1,1),terms3(n,1,1,5)
 type(cartmesh) :: x
 integer :: i,method,bc1,bc2,probe
@@ -51,10 +51,16 @@ x%dx1=dx;x%dx1i=dxi
 old3=321._wp;old3(1:n,1,1)=old;old3(0,1,1)=1.2_wp;old3(n+1,1,1)=2.4_wp
 aa=-0.1_wp;zz=0;cc=1
 new3=TRBDF23D(old3,aa,zz,cc,cc,zz,dt,x,terms3)
+plain3=TRBDF23D(old3,aa,zz,cc,cc,zz,dt,x)
+if(.not.all(ieee_is_finite(plain3)).or.any(plain3/=new3)) error stop 'TR diagnostics changed result'
 if(any(new3(-1,:,:)/=old3(-1,:,:)).or.any(new3(:,0,:)/=old3(:,0,:))) error stop 'TR halos undefined'
 err=maxval(abs(new3(1:n,1,1)-old-sum(terms3(:,1,1,:),2)))
 if(err>1e-11_wp) error stop '3D TR ledger'
-new3=backEuler3D(old3,aa,zz,cc,cc,zz,dt,x)
+new3=backEuler3D(old3,aa,zz,cc,cc,zz,dt,x,terms3)
+plain3=backEuler3D(old3,aa,zz,cc,cc,zz,dt,x)
+if(.not.all(ieee_is_finite(plain3)).or.any(plain3/=new3)) error stop 'BE diagnostics changed result'
+err=maxval(abs(new3(1:n,1,1)-old-sum(terms3(:,1,1,:),2)))
+if(err>1e-11_wp) error stop '3D BE ledger'
 if(any(new3(n+2,:,:)/=old3(n+2,:,:)).or.any(new3(:,:,3)/=old3(:,:,3))) error stop 'BE halos undefined'
 print '(a)', 'PASS: 24 parabolic cases; face telescoping; 3D ledgers and defined halos'
 end program
