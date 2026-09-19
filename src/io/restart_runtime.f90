@@ -6,7 +6,7 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp
 use gemini3d_config, only: gemini_cfg
 use h5fortran, only: hdf5_file
-use hdf5, only: H5T_NATIVE_DOUBLE
+use hdf5, only: H5T_NATIVE_DOUBLE, h5tequal_f
 use atomic_file, only: stage_file, publish_file
 use timeutils, only: date_filename
 use mpimod, only: mpi_cfg
@@ -128,14 +128,17 @@ subroutine runtime_restore(fluid,electro,vi1,vi2,vi3,iteration,neutral_time)
   integer, intent(inout) :: iteration
   real(wp), intent(inout) :: neutral_time
   type(hdf5_file) :: f
-  integer :: i,complete
+  integer :: i,complete,type_error
+  logical :: is_double
   character(7), parameter :: fields(5)=[character(7)::'fluid','electro','vi1','vi2','vi3']
   if(.not.pending) return
   call f%open(restore_file,action='r')
   call f%read('/complete',complete)
   if(complete/=1) error stop 'Incomplete runtime checkpoint'
   do i=1,size(fields)
-    if(f%dtype('/'//trim(fields(i)))/=H5T_NATIVE_DOUBLE.or.f%ndim('/'//trim(fields(i)))/=4) &
+    call h5tequal_f(f%dtype('/'//trim(fields(i))),H5T_NATIVE_DOUBLE,is_double,type_error)
+    if(type_error/=0) error stop 'Cannot compare runtime checkpoint datatype'
+    if(.not.is_double.or.f%ndim('/'//trim(fields(i)))/=4) &
       error stop 'Runtime checkpoint requires float64 rank-four state'
   enddo
   call f%read('/fluid',fluid);call f%read('/electro',electro)

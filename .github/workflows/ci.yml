@@ -20,9 +20,6 @@ on:
 
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 # avoid wasted runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

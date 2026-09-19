@@ -18,9 +18,6 @@ on:
       - "scripts/**"
       - "**.md"
 
-permissions:
-  contents: read
-
 jobs:
 
   macos:
