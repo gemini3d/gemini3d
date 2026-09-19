@@ -11,6 +11,7 @@ do i=1,command_argument_count()
  call get_command_argument(i,file)
  cfg%infile=trim(file)
  call read_configfile(cfg)
- print *, "AUDIT_CONFIG",cfg%msis_version,cfg%dtneuBG,cfg%flagevibcool,cfg%flagperiodic,mindens
+ print '(a,1x,i0,1x,es24.15e3,1x,i0,1x,i0,1x,es24.15e3)', &
+   "AUDIT_CONFIG", cfg%msis_version, cfg%dtneuBG, cfg%flagevibcool, cfg%flagperiodic, mindens
 enddo
 end program
