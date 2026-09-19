@@ -32,7 +32,7 @@ def measure(command,parent,output,wall_budget,memory_budget_mib,timeout):
         if (group/'memory.swap.max').exists():(group/'memory.swap.max').write_text('0')
         # Move the new child itself before exec, before any command work starts.
         def enter():
-            with (group/'cgroup.procs').open('w') as stream:stream.write('0')
+            with (group/'cgroup.procs').open('w') as stream:stream.write(str(os.getpid()))
         start=time.monotonic()
         with output.with_suffix('.log').open('w') as log:
             proc=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT,preexec_fn=enter,start_new_session=True)
