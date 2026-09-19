@@ -20,4 +20,4 @@ runs:
     shell: bash
     if: runner.os == 'macOS'
     run: |
-      brew install open-mpi hdf5 scalapack numpy
+      brew install open-mpi hdf5 scalapack numpy h5py scipy
