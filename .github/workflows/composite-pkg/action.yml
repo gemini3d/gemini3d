@@ -19,4 +19,6 @@ runs:
   - name: Install packages (MacOS)
     shell: bash
     if: runner.os == 'macOS'
-    run: brew install open-mpi hdf5 scalapack
+    run: |
+      brew install open-mpi hdf5 scalapack
+      python3 -m pip install numpy
