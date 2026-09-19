@@ -46,8 +46,8 @@ jobs:
     - uses: Vampire/setup-wsl@v7
       with:
         distribution: Ubuntu-24.04
-        additional-packages:
-         ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev python3-h5py python3-scipy
+        additional-packages: >-
+          ninja-build gcc g++ gfortran libscalapack-openmpi-dev libopenmpi-dev openmpi-bin libhdf5-dev liblapack-dev python3-h5py python3-scipy
         use-cache: true
         wsl-shell-user: tester
 
