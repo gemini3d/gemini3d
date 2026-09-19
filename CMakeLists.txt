@@ -101,7 +101,11 @@ endif()
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
+# CMake 3.25 misparses FetchContent FIND_PACKAGE_ARGS when it auto-appends GLOBAL.
+# Keep the old-CMake path working by resolving parent-scope LAPACK directly below.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
+  set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
+endif()
 # we'll get LAPACK and SCALAPACK from MUMPS to avoid duplication of CMake script in this project
 
 set(BUILD_SINGLE off)
@@ -115,6 +119,10 @@ set(mumps_url "${_stem}${_archive}")
 string(JSON _sha256 GET "${json}" "mumps" "sha256")
 FetchContent_Declare(mumps URL ${mumps_url} URL_HASH SHA256=${_sha256})
 FetchContent_MakeAvailable(mumps)
+
+if(CMAKE_VERSION VERSION_LESS 3.26)
+  find_package(LAPACK REQUIRED)
+endif()
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL false)
 
