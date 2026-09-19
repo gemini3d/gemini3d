@@ -9,3 +9,5 @@ CMakeUserPresets.json
 __pycache__/
 *.py[cod]
 .venv/
+
+build/

@@ -1,5 +1,0 @@
-*.asv
-
-/subprojects/*
-
-!/subprojects/*.wrap

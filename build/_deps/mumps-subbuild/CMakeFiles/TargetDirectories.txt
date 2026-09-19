@@ -1,3 +1,0 @@
-/home/runner/work/gemini3d/gemini3d/build/_deps/mumps-subbuild/CMakeFiles/mumps-populate.dir
-/home/runner/work/gemini3d/gemini3d/build/_deps/mumps-subbuild/CMakeFiles/edit_cache.dir
-/home/runner/work/gemini3d/gemini3d/build/_deps/mumps-subbuild/CMakeFiles/rebuild_cache.dir
