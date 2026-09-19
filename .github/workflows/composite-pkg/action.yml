@@ -21,4 +21,8 @@ runs:
     if: runner.os == 'macOS'
     run: |
       brew install open-mpi hdf5 scalapack numpy scipy
-      HDF5_DIR="$(brew --prefix hdf5)" "$(brew --prefix)"/bin/python3 -m pip install h5py
+      python_env="${RUNNER_TEMP}/gemini3d-python"
+      "$(brew --prefix)"/bin/python3 -m venv --system-site-packages "${python_env}"
+      echo "${python_env}/bin" >> "${GITHUB_PATH}"
+      echo "Python_ROOT_DIR=${python_env}" >> "${GITHUB_ENV}"
+      HDF5_DIR="$(brew --prefix hdf5)" "${python_env}"/bin/python -m pip install h5py
