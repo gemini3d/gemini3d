@@ -25,6 +25,6 @@ if(NUMPY_FOUND AND H5PY_FOUND)
     endif()
     set_tests_properties(qualification:restart_runtime_${layout} PROPERTIES
       LABELS "unit;qualification;mpi" TIMEOUT 180 PROCESSORS ${ranks}
-      ENVIRONMENT "OMPI_MCA_rmaps_base_oversubscribe=1")
+      ENVIRONMENT "OMPI_MCA_rmaps_base_oversubscribe=1;PRTE_MCA_rmaps_base_oversubscribe=1")
   endforeach()
 endif()

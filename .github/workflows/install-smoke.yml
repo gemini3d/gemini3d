@@ -17,6 +17,7 @@ env:
   OPENBLAS_NUM_THREADS: 1
   OMP_NUM_THREADS: 1
   OMPI_MCA_rmaps_base_oversubscribe: 1
+  PRTE_MCA_rmaps_base_oversubscribe: 1
 
 jobs:
   unix:
@@ -91,7 +92,8 @@ jobs:
           $env:OMPI_ALLOW_RUN_AS_ROOT = "1"
           $env:OMPI_ALLOW_RUN_AS_ROOT_CONFIRM = "1"
           $forward = @("TMPDIR", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
-                       "OMPI_MCA_rmaps_base_oversubscribe", "OMPI_ALLOW_RUN_AS_ROOT",
+                       "OMPI_MCA_rmaps_base_oversubscribe", "PRTE_MCA_rmaps_base_oversubscribe",
+                       "OMPI_ALLOW_RUN_AS_ROOT",
                        "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM")
           $env:WSLENV = ((@($env:WSLENV) + $forward) | Where-Object { $_ }) -join ":"
           & ./scripts/install-local.ps1 -Distribution Ubuntu-24.04 -SystemDeps `
@@ -102,7 +104,8 @@ jobs:
         run: |
           set -euo pipefail
           export TMPDIR="$PWD/build/scratch"
-          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 OMPI_MCA_rmaps_base_oversubscribe=1
+          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+          export OMPI_MCA_rmaps_base_oversubscribe=1 PRTE_MCA_rmaps_base_oversubscribe=1
           export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
           "$PWD/build/local-install/venv/bin/python" scripts/local_environment.py check \
             --root "$PWD/build/local-install" 2>&1 | tee build/installer-evidence/check.log

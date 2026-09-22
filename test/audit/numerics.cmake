@@ -37,7 +37,8 @@ foreach(ranks IN ITEMS 1 2 4)
       TIMEOUT 60 PROCESSORS ${ranks} LABELS "unit;audit;numerics;mpi")
     if(ranks GREATER 2)
       set_property(TEST audit:${probe}_${ranks} APPEND PROPERTY ENVIRONMENT
-        "OMPI_MCA_rmaps_base_oversubscribe=1")
+        "OMPI_MCA_rmaps_base_oversubscribe=1"
+        "PRTE_MCA_rmaps_base_oversubscribe=1")
     endif()
   endforeach()
 endforeach()
