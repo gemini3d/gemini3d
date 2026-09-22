@@ -12,17 +12,21 @@ if(NUMPY_FOUND AND H5PY_FOUND)
     list(APPEND restart_mpi_flags "--mpi-post=${flag}")
   endforeach()
   foreach(layout IN ITEMS 1x2 2x2)
-    add_test(NAME qualification:restart_runtime_${layout} COMMAND ${Python_EXECUTABLE}
-      ${PROJECT_SOURCE_DIR}/test/qualification/test_restart_runtime.py
-      --exe $<TARGET_FILE:qualification_restart_runtime>
-      --mpiexec ${MPIEXEC_EXECUTABLE} --layout ${layout}
-      --numproc-flag=${MPIEXEC_NUMPROC_FLAG} ${restart_mpi_flags}
-      --work ${CMAKE_CURRENT_BINARY_DIR}/restart-runtime-${layout})
     if(layout STREQUAL "2x2")
       set(ranks 4)
     else()
       set(ranks 2)
     endif()
+    set(layout_restart_mpi_flags ${restart_mpi_flags})
+    if(ranks GREATER 2 AND MPI_C_LIBRARY_VERSION_STRING MATCHES "Open[ ]?MPI")
+      list(APPEND layout_restart_mpi_flags "--mpi-pref=--map-by" "--mpi-pref=:OVERSUBSCRIBE")
+    endif()
+    add_test(NAME qualification:restart_runtime_${layout} COMMAND ${Python_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/test/qualification/test_restart_runtime.py
+      --exe $<TARGET_FILE:qualification_restart_runtime>
+      --mpiexec ${MPIEXEC_EXECUTABLE} --layout ${layout}
+      --numproc-flag=${MPIEXEC_NUMPROC_FLAG} ${layout_restart_mpi_flags}
+      --work ${CMAKE_CURRENT_BINARY_DIR}/restart-runtime-${layout})
     set_tests_properties(qualification:restart_runtime_${layout} PROPERTIES
       LABELS "unit;qualification;mpi" TIMEOUT 180 PROCESSORS ${ranks}
       ENVIRONMENT "OMPI_MCA_rmaps_base_oversubscribe=1;PRTE_MCA_rmaps_base_oversubscribe=1")

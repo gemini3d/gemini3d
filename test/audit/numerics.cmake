@@ -29,9 +29,13 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel" AND NOT WIN32)
   target_compile_options(audit_magcalc_kernels PRIVATE -fpe0)
 endif()
 foreach(ranks IN ITEMS 1 2 4)
+  set(audit_mpi_flags ${MPIEXEC_PREFLAGS})
+  if(ranks GREATER 2 AND MPI_C_LIBRARY_VERSION_STRING MATCHES "Open[ ]?MPI")
+    list(APPEND audit_mpi_flags --map-by :OVERSUBSCRIBE)
+  endif()
   foreach(probe IN ITEMS halo_end magcalc_kernels)
     add_test(NAME audit:${probe}_${ranks}
-      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${MPIEXEC_PREFLAGS}
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${ranks} ${audit_mpi_flags}
         $<TARGET_FILE:audit_${probe}> ${MPIEXEC_POSTFLAGS})
     set_tests_properties(audit:${probe}_${ranks} PROPERTIES
       TIMEOUT 60 PROCESSORS ${ranks} LABELS "unit;audit;numerics;mpi")
