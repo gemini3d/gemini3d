@@ -35,6 +35,10 @@ foreach(ranks IN ITEMS 1 2 4)
         $<TARGET_FILE:audit_${probe}> ${MPIEXEC_POSTFLAGS})
     set_tests_properties(audit:${probe}_${ranks} PROPERTIES
       TIMEOUT 60 PROCESSORS ${ranks} LABELS "unit;audit;numerics;mpi")
+    if(ranks GREATER 2)
+      set_property(TEST audit:${probe}_${ranks} APPEND PROPERTY ENVIRONMENT
+        "OMPI_MCA_rmaps_base_oversubscribe=1")
+    endif()
   endforeach()
 endforeach()
 
