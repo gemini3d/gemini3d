@@ -250,13 +250,14 @@ subroutine runtime_output_header(f)
 end subroutine
 function checkpoint_basename(path) result(name)
   character(*), intent(in) :: path
-  character(:), allocatable :: name
+  character(:), allocatable :: name,clean
   integer :: n,last
-  n=len_trim(path)
+  clean=trim(path)
+  n=len(clean)
   if(n<1) error stop 'Runtime checkpoint root identity mismatch'
-  if(path(n:n)=='/'.or.path(n:n)=='\') error stop 'Runtime checkpoint root identity mismatch'
-  last=scan(path(:n),'/\',back=.true.)
-  name=path(last+1:n)
+  if(clean(n:n)=='/'.or.clean(n:n)=='\') error stop 'Runtime checkpoint root identity mismatch'
+  last=scan(clean,'/\',back=.true.)
+  name=clean(last+1:n)
   if(len_trim(name)==0) error stop 'Runtime checkpoint root identity mismatch'
 end function
 end module
