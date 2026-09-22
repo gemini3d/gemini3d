@@ -15,6 +15,44 @@ SPEC.loader.exec_module(local)
 
 
 class LocalEnvironment(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("pwsh"), "PowerShell is required for WSL wrapper tests")
+    def test_wsl_install_options_and_exit_status(self):
+        script = str(local.SOURCE / "scripts/install-local.ps1").replace("'", "''")
+        command = """
+function wsl.exe {
+    $global:LASTEXITCODE = 0
+    if ($args[3] -eq 'wslpath') {
+        '/checkout with spaces/scripts/install-local.sh'
+    } else {
+        ConvertTo-Json -Compress -InputObject @($args)
+        $global:LASTEXITCODE = INSTALL_EXIT
+    }
+}
+& 'SCRIPT' -Distribution Ubuntu-24.04 -SystemDeps -Root '/local env' `
+    -Jobs 3 -BuildType Debug -ReferenceTests -SourceCache '/cache dir/sources.cmake'
+""".replace("SCRIPT", script)
+        run = subprocess.run(["pwsh", "-NoProfile", "-NonInteractive", "-Command",
+                              command.replace("INSTALL_EXIT", "0")],
+                             capture_output=True, text=True)
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertEqual(json.loads(run.stdout), [
+            "--distribution", "Ubuntu-24.04", "--exec", "bash",
+            "/checkout with spaces/scripts/install-local.sh",
+            "--jobs", "3", "--build-type", "Debug", "--system-deps", "--root", "/local env",
+            "--reference-tests", "--source-cache", "/cache dir/sources.cmake",
+        ])
+        failed = subprocess.run(["pwsh", "-NoProfile", "-NonInteractive", "-Command",
+                                 command.replace("INSTALL_EXIT", "17")],
+                                capture_output=True, text=True)
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("Local installation failed (exit 17)", failed.stderr)
+        for old, new in (("-Jobs 3", "-Jobs 0"), ("-BuildType Debug", "-BuildType Invalid")):
+            invalid = subprocess.run(["pwsh", "-NoProfile", "-NonInteractive", "-Command",
+                                      command.replace("INSTALL_EXIT", "0").replace(old, new)],
+                                     capture_output=True, text=True)
+            self.assertNotEqual(invalid.returncode, 0)
+            self.assertEqual(invalid.stdout, "")
+
     def test_run_arguments_after_action_and_separator(self):
         with tempfile.TemporaryDirectory(prefix="gemini local ") as directory:
             root = Path(directory)

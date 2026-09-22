@@ -81,6 +81,55 @@ Validation and remaining acceptance:
 Reference archives, hashes and comparison tolerances were not relaxed. No
 software-only result closes the independent scientific gates.
 
+### Follow-up installation and acceptance verification
+
+The follow-up started from `0c759dacdba497a74cad50fedc811123c8a42e4a`;
+the results below supersede assumptions that the installation or hosted
+qualification had already completed:
+
+- Exercised the actual Linux `install-local.sh --system-deps` entry point on
+  Ubuntu 24.04. Native prerequisites and all five pinned local Python packages
+  installed, and `pip check` passed. Configuration detected GNU 13.3, OpenMPI and
+  HDF5 1.10.10, but the approved MUMPS 5.9.1 URL still failed DNS resolution.
+  The installer exited unsuccessfully, emitted no success record, and both
+  `check` and `run` refused this incomplete environment. No replacement archive
+  or weakened provenance check was used.
+- The PowerShell installer now forwards local-root, jobs, Debug/Release,
+  reference-test and offline-source-cache options. Its orchestration regression
+  checks argument boundaries with spaces, invalid options, and a failed WSL
+  installation. All ten local-environment tests passed on Linux with PowerShell.
+  This is wrapper validation, not a successful installation inside Windows WSL.
+- The Windows smoke workflow now invokes the actual PowerShell entry point.
+  macOS and Windows end-to-end execution remain pending on their target hosts.
+- Fixed the remaining unquoted manual-grid/start/end-time values in the native
+  launcher and expanded its preservation/argument regression from 16 to 36
+  cases. Running that regression remains blocked on the native build. The
+  existing native and CMake partition probes passed 34,848 and 5,400 cases,
+  respectively; review of the other A1–A10/restart corrections found no further
+  high-confidence defects in this pass.
+- Preintegration now explicitly uses Bash with pipeline failure propagation,
+  so a failed build or test cannot be hidden by successful log capture.
+  Hosted evidence also requires Debug restart/numerical-budget execution, not
+  just Release. Fifty-four tests passed across fourteen standalone Python
+  qualification modules, including all eight hosted-evidence tests, with no
+  skips. These are component/contract checks, not native simulation evidence.
+- Recorded an inventory of 355 source files and a partial native dependency/
+  toolchain inventory. Hash inventories identify the reviewed source but are
+  not exhaustive line coverage, complete build output, or scientific approval.
+- Hosted installation and preintegration runs for the starting candidate reported
+  `action_required`; the installation run had zero jobs and no failure logs.
+  Maintainer approval is needed before these can supply execution evidence.
+- LeakSanitizer again accepted the clean control and detected the intentional
+  1237-byte leak. The delegated-cgroup probe was blocked by permissions.
+  Neither control substitutes for full-application leak or performance results.
+- The advisory lookup found no reported vulnerabilities for the five pinned
+  local Python requirements. Native/transitive and target-distribution advisory
+  and license approval remain open.
+
+Release acceptance is therefore still blocked on an approved, reachable MUMPS
+archive/cache, complete native reference/restart/accounting and sanitizer runs,
+approved hosted platform execution, and the independent scientific gates above.
+
 ## Historical handoff
 
 Branch `fix/preintegration-validation-2026-09-16` now merges upstream `9320b8912343ebd9bfb10a68c1e987f2278ff147` and retains the earlier remediation commit `ec5a1382a69e616e698aa36538958d38eb423e2d`. The delivered verification manifest identifies the final candidate commit, tree, test results, artifact hashes and any environment-limited checks.

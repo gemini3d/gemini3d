@@ -45,9 +45,15 @@ def main():
                 for path in sim.rglob("*") if path.is_file()}
 
     before = hashes()
+    flag_cases = ([], ["-dryrun"], ["-plan"], ["-start_time", "2013", "2", "20", "18060"],
+                  ["-end_time", "2013", "2", "20", "18120"], ["-manual_grid", "3", "2"],
+                  # The child, not the shell, must receive and validate option values.
+                  ["-manual_grid", "1 2", "3"],
+                  ["-start_time", "2013", "2", "20", "18060 $value"],
+                  ["-end_time", "2013", "2", "20", "18060's value"])
     for cpus in ("1", "6"):
         env = dict(os.environ, GEMINI_CPU=cpus, ARGV_RECORD=str(record))
-        for flags in ([], ["-dryrun"], ["-plan"], ["-start_time", "2013", "2", "20", "18060"]):
+        for flags in flag_cases:
             for child_exit in ("0", "7"):
                 if record.exists():
                     record.unlink()
@@ -60,7 +66,7 @@ def main():
                     assert not record.exists(), "planning launched the simulation"
                 else:
                     assert json.loads(record.read_text()) == [str(sim), *flags]
-    print("16 launcher preservation, quoting, failure, planning and single-CPU contracts passed")
+    print(f"{4 * len(flag_cases)} launcher preservation, quoting, failure, planning and single-CPU contracts passed")
 
 
 if __name__ == "__main__":

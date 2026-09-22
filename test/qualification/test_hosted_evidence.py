@@ -1,6 +1,6 @@
 import copy
 from pathlib import Path
-import json,re,sys,unittest
+import json,re,shutil,subprocess,sys,unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts/qualification'))
 from hosted_evidence import verify,REQUIRED,WORKFLOW,REQUIRED_STEPS
 class HostedEvidence(unittest.TestCase):
@@ -25,6 +25,29 @@ class HostedEvidence(unittest.TestCase):
     def test_skipped_required_step_fails_successful_job(self):
         run,jobs=self.fixture();jobs[0]['steps'][0]['conclusion']='skipped'
         self.assertFalse(verify(run,jobs,'example/research','a'*40,2)['passed'])
+    def test_debug_requires_native_numerical_budgets(self):
+        run,jobs=self.fixture()
+        job=next(j for j in jobs if j['name']=='native (Debug)')
+        step='Qualify exact restart and native numerical budgets'
+        self.assertIn(step,REQUIRED_STEPS[job['name']])
+        for conclusion in ['skipped',None]:
+            with self.subTest(conclusion=conclusion):
+                bad=copy.deepcopy(jobs)
+                debug=next(j for j in bad if j['name']=='native (Debug)')
+                if conclusion is None:
+                    debug['steps']=[s for s in debug['steps'] if s['name']!=step]
+                else:
+                    next(s for s in debug['steps'] if s['name']==step)['conclusion']=conclusion
+                self.assertFalse(verify(run,bad,'example/research','a'*40,2)['passed'])
+    def test_workflow_pipelines_fail_closed(self):
+        workflow=(Path(__file__).resolve().parents[2]/WORKFLOW).read_text()
+        self.assertRegex(workflow,r'(?m)^defaults:\n  run:\n    shell: bash\s*$')
+    @unittest.skipUnless(shutil.which('bash'),'Bash is required to exercise GitHub shell semantics')
+    def test_explicit_github_bash_rejects_pipeline_failure(self):
+        # GitHub adds pipefail only when the Bash shell is explicitly selected.
+        result=subprocess.run(['bash','--noprofile','--norc','-e','-o','pipefail','-c',
+                               'false | tee'],capture_output=True,text=True,timeout=10)
+        self.assertNotEqual(result.returncode,0)
     def test_workflow_preserves_required_executable_contract(self):
         root=Path(__file__).resolve().parents[2]
         workflow=(root/WORKFLOW).read_text()
@@ -67,7 +90,14 @@ class HostedEvidence(unittest.TestCase):
         self.assertNotIn('continue-on-error:',workflow)
         for platform in ['ubuntu-24.04','macos-14','windows-2022','Ubuntu-24.04']:
             self.assertIn(platform,workflow)
-        self.assertEqual(workflow.count('bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2'),2)
+        jobs=dict(re.findall(r'(?ms)^  (unix|wsl):\n(.*?)(?=^  \w[\w-]*:\n|\Z)',workflow))
+        self.assertEqual(set(jobs),{'unix','wsl'})
+        bash='bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2'
+        self.assertEqual(workflow.count(bash),1)
+        self.assertEqual(jobs['unix'].count(bash),1)
+        self.assertIn('& ./scripts/install-local.ps1 -Distribution Ubuntu-24.04 -SystemDeps',jobs['wsl'])
+        self.assertIn('-Root "$($linuxRoot.Trim())/build/local-install" -Jobs 2',jobs['wsl'])
+        self.assertRegex(jobs['wsl'],r'(?m)^      - name: Install through the WSL local entrypoint\n        shell: pwsh\s*$')
         self.assertEqual(workflow.count('scripts/local_environment.py check'),2)
         self.assertEqual(workflow.count('build/local-install/environment.json'),2)
         self.assertEqual(workflow.count('if-no-files-found: error'),2)

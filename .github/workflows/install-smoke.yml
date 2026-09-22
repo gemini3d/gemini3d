@@ -75,17 +75,27 @@ jobs:
         with:
           ref: ${{ env.CANDIDATE_COMMIT }}
       - name: Install through the WSL local entrypoint
-        shell: wsl-bash {0}
+        shell: pwsh
         run: |
-          set -euo pipefail
-          test "$(git rev-parse HEAD)" = "${{ env.CANDIDATE_COMMIT }}"
-          mkdir -p build/installer-evidence build/scratch
-          git rev-parse HEAD > build/installer-evidence/candidate.txt
-          export TMPDIR="$PWD/build/scratch"
-          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 OMPI_MCA_rmaps_base_oversubscribe=1
-          export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-          bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2 \
-            2>&1 | tee build/installer-evidence/install.log
+          $ErrorActionPreference = "Stop"
+          $candidate = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $candidate -ne $env:CANDIDATE_COMMIT) {
+            throw "Checkout does not match the candidate"
+          }
+          New-Item -ItemType Directory -Force build/installer-evidence, build/scratch | Out-Null
+          $candidate | Set-Content build/installer-evidence/candidate.txt
+          $linuxRoot = & wsl.exe --distribution Ubuntu-24.04 --exec wslpath -a $env:GITHUB_WORKSPACE
+          if ($LASTEXITCODE -ne 0) { throw "Cannot locate checkout in WSL" }
+          $env:TMPDIR = "$($linuxRoot.Trim())/build/scratch"
+          $env:OMPI_ALLOW_RUN_AS_ROOT = "1"
+          $env:OMPI_ALLOW_RUN_AS_ROOT_CONFIRM = "1"
+          $forward = @("TMPDIR", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
+                       "OMPI_MCA_rmaps_base_oversubscribe", "OMPI_ALLOW_RUN_AS_ROOT",
+                       "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM")
+          $env:WSLENV = ((@($env:WSLENV) + $forward) | Where-Object { $_ }) -join ":"
+          & ./scripts/install-local.ps1 -Distribution Ubuntu-24.04 -SystemDeps `
+            -Root "$($linuxRoot.Trim())/build/local-install" -Jobs 2 `
+            2>&1 | Tee-Object build/installer-evidence/install.log
       - name: Verify installed WSL environment without shell activation
         shell: wsl-bash {0}
         run: |

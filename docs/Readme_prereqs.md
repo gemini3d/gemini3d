@@ -26,6 +26,11 @@ or Ubuntu 24.04); an older system Python must be upgraded explicitly.
 For Windows, `scripts/install-local.ps1 -SystemDeps` invokes the same installer
 in the installed Ubuntu WSL distribution; `-Distribution` selects another WSL
 distribution. It does not provision WSL or claim native Windows qualification.
+The PowerShell entry point accepts `-Root`, `-Jobs`, `-BuildType Debug`,
+`-ReferenceTests` and `-SourceCache` as equivalents of the shell options below.
+`-Root` and `-SourceCache` are paths inside the selected WSL distribution, not
+Windows drive paths. The Windows installation workflow invokes this PowerShell
+entry point rather than bypassing it.
 
 `--build-type Debug` enables the existing Debug checks. `--jobs` limits build/test
 parallelism. Add `--reference-tests` to run **all registered tests**, including

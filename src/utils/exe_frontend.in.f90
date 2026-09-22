@@ -92,15 +92,15 @@ do i = 2, argc
     do j = 1,2
       call get_command_argument(i+j, buf, length=L, status=ierr)
       if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -manual_grid expected two parameters"
-      extra = extra // ' ' // trim(buf)
+      extra = extra // ' ' // quote_argument(trim(buf))
     enddo
   case ('-start_time', '-end_time')
     !! flags with four parameters
-    extra = extra // ' ' // trim(buf)
+    extra = extra // ' ' // quote_argument(trim(buf))
     do j = 1,4
       call get_command_argument(i+j, buf, length=L, status=ierr)
       if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -start_time expected four parameters"
-      extra = extra // ' ' // trim(buf)
+      extra = extra // ' ' // quote_argument(trim(buf))
     enddo
   case default
     error stop "Gemini3D: unknown option: " // trim(buf)
