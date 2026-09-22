@@ -4,6 +4,7 @@ The boundary channel is the change in algebraically prescribed endpoint cells.
 It is NOT mislabeled as conductive heat flux. The interior conduction channel
 uses flux divergences evaluated at the actual implicit solver stages. Whole-step
 coupled momentum/energy and physical closure validation remain separate gates.
+Four ranks support the optional 2x2 regression, not an expanded science profile.
 """
 import argparse
 import json
@@ -16,7 +17,7 @@ EXPECTED={(stage,s) for stage in (1,2) for s in range(1,8)}
 
 def check(directory,ranks,budget=1e-11):
     directory=Path(directory)
-    if ranks not in (1,2) or not math.isfinite(budget) or budget<=0:
+    if ranks not in (1,2,4) or not math.isfinite(budget) or budget<=0:
         raise ValueError('Admitted rank count and positive finite budget required')
     expected={f'energy-operators-r{r:08d}.csv' for r in range(ranks)}
     if {p.name for p in directory.glob('energy-operators-r*.csv')}!=expected:

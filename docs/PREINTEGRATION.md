@@ -140,6 +140,35 @@ and [installation run](https://github.com/CatalystNexusLLC/gemini3d/actions/runs
 are `action_required`; the preintegration log query reports zero jobs, not
 failed tests. Repeating these blocked attempts cannot establish qualification.
 
+Additional engineering checks and corrections in this continuation:
+
+- The optional four-rank matrix was rejected by the source and energy ledger
+  checkers even when its simulations succeeded. Both now admit the existing
+  2×2 regression without changing the frozen scientific profile. Seven ledger
+  tests pass, including two new tests that failed before the correction;
+  missing/extra ranks, missing stages/clocks/floors and corrupted balances still
+  reject the evidence.
+- The restart matrix now rewrites exactly one duration assignment, including
+  indented assignments, validates positive finite values, and requires the
+  continuation duration to increase. Continuations must preserve seed frames
+  and produce a later checkpoint. The original indentation bug prevented the
+  intended split; a successful native no-op restart was not demonstrated
+  (the native solver already rejects final-time restarts). Seven profile tests
+  pass, including malformed/duplicate duration rejection and Fortran `D`/`d`
+  exponent handling; the related 23-test component suite also passed before
+  the exponent-only follow-up.
+- Ten installer regressions and fifty-four existing standalone qualification
+  tests passed before these focused changes. Dependency pins, scientific budgets,
+  reference data and comparison tolerances are unchanged by the matrix fixes.
+- CodeQL completed for Actions, Python and C/C++ with zero alerts. This does
+  not cover Fortran physics correctness. The combined tool's automated review
+  component reported an unavailable model despite its success heading, so it
+  is not counted as a completed review. A separate read-only reviewer found no
+  further high-confidence issues in the prior follow-up diff or four-rank fix.
+- LeakSanitizer controls passed again; delegated memory accounting is still
+  denied. The pinned Python advisory lookup returned no reported vulnerabilities,
+  which is not target-distribution approval.
+
 The remaining decisions and required evidence are:
 
 | Owner | Required action or decision | Closure evidence |

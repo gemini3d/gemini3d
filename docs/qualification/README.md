@@ -76,7 +76,12 @@ For GNU address/undefined-behavior instrumentation use a new Debug build with `-
 
 `.github/workflows/preintegration.yml` runs on pull requests, pushes and manual dispatches without excluding qualification/script changes. It runs Debug/Release native comparisons and the full research matrix, verified HDF5 2.2.0, sanitizer checks, a deliberate-leak positive control, and unsuppressed application leak checks. Artifacts bind the checked-out candidate commit, repository, run and attempt and retain hashed diagnostics even on failure. This workflow definition is not evidence of a hosted pass.
 
-The separate `install-smoke.yml` exercises `scripts/install-local.sh --system-deps --root PATH --jobs 2` on Ubuntu, macOS/Homebrew and Ubuntu under Windows WSL, followed by `local_environment.py check` without shell activation. It retains the installation receipt and failure logs for the exact candidate. These jobs exercise unit/library/installed-resource checks, not the optional `--reference-tests` scope or scientific acceptance. WSL exercises the Bash installer inside WSL, not the PowerShell wrapper. OpenMPI oversubscription permits small four-rank correctness probes on two-slot hosts; it is not multi-node or performance evidence.
+The separate `install-smoke.yml` exercises `scripts/install-local.sh --system-deps --root PATH --jobs 2` on Ubuntu and macOS/Homebrew, and invokes `scripts/install-local.ps1` to run that installer under Windows WSL. Each installation is followed by `local_environment.py check` without shell activation. It retains the installation receipt and failure logs for the exact candidate. These jobs exercise unit/library/installed-resource checks, not the optional `--reference-tests` scope or scientific acceptance. OpenMPI oversubscription permits small four-rank correctness probes on two-slot hosts; it is not multi-node or performance evidence.
+
+`research_matrix.py --extended-layouts` additionally checks the four-rank 2×2
+decomposition, including every rank's source, temperature-floor and energy
+operator ledgers. It does not expand the frozen one/two-rank scientific profile
+or relax its numerical budgets.
 
 Kernel-memory measurements require an already delegated cgroup-v2 memory controller. `GEMINI_QUALIFICATION_CGROUP` can name that parent through a repository variable; the default is `/sys/fs/cgroup`. No privilege/mount workaround, sampling substitution or skipped measurement can produce a pass. Missing delegation, LeakSanitizer capability failure, or an MPI/dependency leak remains a failed/blocked qualification requiring a capable host and triage.
 

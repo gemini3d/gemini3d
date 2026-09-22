@@ -38,5 +38,32 @@ class Sources(unittest.TestCase):
             self.write(p);floor=p/'temperature-floor-r00000000.csv';floor.write_text('t,dt,stage,species,energy_added_J\n')
             with self.assertRaisesRegex(ValueError,'Missing'):check(p,1)
 
+    def test_four_rank_regression_preserves_all_ledger_checks(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);self.write(p)
+            for rank in range(1,4):
+                for stem in ('sources','continuity','temperature-floor'):
+                    (p/f'{stem}-r{rank:08d}.csv').write_bytes((p/f'{stem}-r00000000.csv').read_bytes())
+            result=check(p,4)
+            self.assertTrue(result['passed'])
+            self.assertEqual(result['rows'],2*4*len(EXPECTED))
+            self.assertEqual(result['temperature_floor_rows'],2*4*2*7)
+            last=p/'sources-r00000003.csv';original=last.read_text()
+            last.write_text(original.replace(',105,5,10,',',105,7,10,',1))
+            self.assertFalse(check(p,4)['passed'])
+            last.write_text(original)
+            continuity=p/'continuity-r00000003.csv'
+            continuity.write_text('t,dt\n0,1\n')
+            with self.assertRaisesRegex(ValueError,'Source/continuity'):check(p,4)
+            continuity.write_bytes((p/'continuity-r00000000.csv').read_bytes())
+            floor=p/'temperature-floor-r00000003.csv';floor_text=floor.read_text()
+            floor.write_text('\n'.join(floor_text.splitlines()[:-1])+'\n')
+            with self.assertRaisesRegex(ValueError,'Missing'):check(p,4)
+            floor.write_text(floor_text);last.unlink()
+            with self.assertRaisesRegex(ValueError,'inventory'):check(p,4)
+            last.write_text(original)
+            (p/'sources-r00000004.csv').write_text(original)
+            with self.assertRaisesRegex(ValueError,'inventory'):check(p,4)
+
 
 if __name__=='__main__':unittest.main()

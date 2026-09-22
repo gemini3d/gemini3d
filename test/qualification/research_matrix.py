@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -21,6 +22,28 @@ from run_research import input_signature,preflight
 from check_transport import check,check_continuity
 from check_sources import check as check_sources
 from check_energy_operators import check as check_energy
+
+
+def set_duration(case,duration,*,extend=False):
+    cfg=case/'inputs/config.nml';text=cfg.read_text()
+    pattern=re.compile(r'(?im)^([ \t]*tdur[ \t]*=)([^!\r\n]*)')
+    matches=list(pattern.finditer(text))
+    if len(matches)!=1:raise ValueError('Exactly one tdur assignment required')
+    try:
+        value=matches[0][2].strip().removesuffix(',').strip()
+        previous=float(value.replace('D','e').replace('d','e'))
+        duration=float(duration)
+    except (TypeError,ValueError) as e:
+        raise ValueError('tdur must be a positive finite duration') from e
+    if not all(math.isfinite(value) and value>0 for value in (previous,duration)):
+        raise ValueError('tdur must be a positive finite duration')
+    if extend and duration<=previous:raise ValueError('Restart tdur must extend the first run')
+    cfg.write_text(pattern.sub(lambda m:m[1]+f' {duration:.17g} ',text))
+
+
+def restart_advanced(case,previous):
+    frames={p.name for p in case.glob('????????_?????.??????.h5')}
+    return bool(previous) and previous<frames and max(frames)>max(previous)
 
 
 def checkpoint_shapes(case,ranks,layout):
@@ -93,20 +116,25 @@ def main():
     if a.quick:cases=cases[:2]
     def create(name,case,duration):
         path=a.work/name;shutil.copytree(a.inputs_root/case/'inputs',path/'inputs')
-        cfg=path/'inputs/config.nml';cfg.write_text(re.sub(r'(?im)^(tdur\s*=)[^!\n]*',r'\g<1> '+str(duration)+' ',cfg.read_text()))
+        set_duration(path,duration)
         return path
-    def run(path,label,ranks,layout,expected=None,executable=exe):
+    def run(path,label,ranks,layout,expected=None,executable=exe,restart=False):
         valid=preflight(path);(path/'forcing-preflight.json').write_text(json.dumps(valid,indent=2)+'\n')
         sig=input_signature(path);(path/'verified-inputs.json').write_text(json.dumps(sig,indent=2)+'\n')
         env=dict(os.environ,GEMINI_EXACT_RESTART='1',GEMINI_INPUT_SHA256=sig['sha256'],
                  GEMINI_EXECUTABLE_SHA256=hashlib.sha256(executable.read_bytes()).hexdigest(),GEMINI_NUMERICAL_AUDIT='1')
         cmd=[a.mpiexec,'-n',str(ranks),str(executable),str(path.resolve()),'-manual_grid',*[str(i) for i in layout]]
+        previous={p.name for p in path.glob('????????_?????.??????.h5')} if restart else set()
         t=time.monotonic()
         proc=subprocess.run(cmd,env=env,text=True,capture_output=True,timeout=600)
         elapsed=time.monotonic()-t
         (a.work/(label+'.log')).write_text(proc.stdout+proc.stderr)
         passed=(proc.returncode==0 and checkpoint_shapes(path,ranks,layout)) if expected is None else proc.returncode!=0 and expected in proc.stdout+proc.stderr
+        if restart:
+            advanced=restart_advanced(path,previous)
+            passed=passed and advanced
         row=dict(label=label,returncode=proc.returncode,passed=passed,expected_rejection=expected,wall_seconds=elapsed)
+        if restart:row['restart_advanced']=advanced
         runs.append(row);print(json.dumps(row),flush=True)
         return passed
     for case,ranks,layout in cases:
@@ -116,8 +144,8 @@ def main():
         okay=run(split,tag+'_first',ranks,layout) and okay
         # Preserve a restart seed for the adversarial probes before continuing.
         seed=a.work/(tag+'_seed');shutil.copytree(split,seed)
-        cfg=split/'inputs/config.nml';cfg.write_text(re.sub(r'(?im)^(tdur\s*=)[^!\n]*',r'\g<1> 300 ',cfg.read_text()))
-        okay=run(split,tag+'_restart',ranks,layout) and okay
+        set_duration(split,300,extend=True)
+        okay=run(split,tag+'_restart',ranks,layout,restart=True) and okay
         if okay:
             comparisons.append(dict(case=tag,**compare(continuous,split,budget)))
             transport.append(dict(case=tag,**check(continuous,layout=layout)))
@@ -129,7 +157,7 @@ def main():
                           'swap_rank','mismatched_generation','nonfinite_fluid','nonfinite_electro',
                           'nonfinite_vi1','nonfinite_vi2','nonfinite_vi3']:
                 bad=a.work/('reject_'+fault);shutil.copytree(seed,bad)
-                cfg=bad/'inputs/config.nml';cfg.write_text(re.sub(r'(?im)^(tdur\s*=)[^!\n]*',r'\g<1> 300 ',cfg.read_text()))
+                set_duration(bad,300,extend=True)
                 frame=sorted(bad.glob('????????_?????.??????.h5'))[-1]
                 with h5py.File(frame,'r+') as f:
                     if fault=='layout':f['restart_runtime/layout'][...]=[2,1]
@@ -168,8 +196,8 @@ def main():
                 cpp_split=create('cpp_split',case,120)
                 cpp_okay=run(cpp,'cpp_continuous',ranks,layout,executable=cpp_exe)
                 cpp_okay=run(cpp_split,'cpp_first',ranks,layout,executable=cpp_exe) and cpp_okay
-                cfg=cpp_split/'inputs/config.nml';cfg.write_text(re.sub(r'(?im)^(tdur\s*=)[^!\n]*',r'\g<1> 300 ',cfg.read_text()))
-                cpp_okay=run(cpp_split,'cpp_restart',ranks,layout,executable=cpp_exe) and cpp_okay
+                set_duration(cpp_split,300,extend=True)
+                cpp_okay=run(cpp_split,'cpp_restart',ranks,layout,executable=cpp_exe,restart=True) and cpp_okay
                 if cpp_okay:
                     comparisons.append(dict(case='cpp_vs_fortran',**compare(continuous,cpp,budget)))
                     comparisons.append(dict(case='cpp_restart',**compare(cpp,cpp_split,budget)))

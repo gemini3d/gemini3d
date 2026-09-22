@@ -38,4 +38,27 @@ class EnergyLedger(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'scale'):check(p,1)
             r=self.fixture(p);r.append(r[-1]);self.save(p,r)
             with self.assertRaisesRegex(ValueError,'duplicate'):check(p,1)
+    def test_four_rank_regression_preserves_all_ledger_checks(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);self.fixture(p)
+            for rank in range(1,4):
+                for stem in ('energy-operators','continuity'):
+                    (p/f'{stem}-r{rank:08d}.csv').write_bytes((p/f'{stem}-r00000000.csv').read_bytes())
+            result=check(p,4)
+            self.assertTrue(result['passed'])
+            self.assertEqual(result['rows'],2*4*2*7)
+            last=p/'energy-operators-r00000003.csv';original=last.read_text()
+            last.write_text(original.replace(',10,11,1,',',10,11,2,',1))
+            self.assertFalse(check(p,4)['passed'])
+            last.write_text('\n'.join(original.splitlines()[:-1])+'\n')
+            with self.assertRaisesRegex(ValueError,'Missing'):check(p,4)
+            last.write_text(original)
+            continuity=p/'continuity-r00000003.csv';continuity.write_text('t,dt\n0,1\n')
+            with self.assertRaisesRegex(ValueError,'Energy/continuity'):check(p,4)
+            continuity.write_bytes((p/'continuity-r00000000.csv').read_bytes())
+            last.unlink()
+            with self.assertRaisesRegex(ValueError,'inventory'):check(p,4)
+            last.write_text(original)
+            (p/'energy-operators-r00000004.csv').write_text(original)
+            with self.assertRaisesRegex(ValueError,'inventory'):check(p,4)
 if __name__=='__main__':unittest.main()

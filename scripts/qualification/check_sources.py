@@ -2,6 +2,7 @@
 
 No inferred residual is used as a source. This does not certify the underlying
 reaction/closure physics or the still-incomplete whole-step energy balance.
+Four ranks support the optional 2x2 regression, not an expanded science profile.
 """
 import argparse
 import csv
@@ -24,7 +25,7 @@ def rows(path):
 
 
 def check(directory,ranks,budget=1e-11):
-    if ranks not in (1,2):raise ValueError('Unsupported research layout')
+    if ranks not in (1,2,4):raise ValueError('Unsupported regression rank count')
     expected_files={f'sources-r{r:08d}.csv' for r in range(ranks)}
     if {p.name for p in directory.glob('sources-r*.csv')}!=expected_files:
         raise ValueError('Incomplete or unexpected source rank inventory')
