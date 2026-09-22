@@ -42,6 +42,8 @@ The successful `build/local/environment.json` records the source revision and
 dirty status, per-file source hashes, native dependency pins/configuration,
 Python packages, test inventory, verification scope and executable hash.
 Inventory is not a claim that every file or scientific mode has been reviewed.
+Enabled MSIS2/HWM14 parameter files are also required and hashed in the installed
+resource directory, and their hashes are checked before running.
 
 Use `python3 /absolute/path/to/scripts/local_environment.py check` to recheck an
 installation, or `run --case /absolute/path/to/case --ranks 2` to launch it.

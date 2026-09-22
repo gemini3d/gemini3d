@@ -92,6 +92,15 @@ def executable(prefix, build_type):
     return prefix / "bin" / ("gemini.bin.debug" if build_type == "Debug" else "gemini.bin")
 
 
+def model_resources(cache):
+    names = []
+    if cache.get("gemini3d_msis2", "").upper() in ("ON", "TRUE", "1", "YES"):
+        names.append("msis21.parm")
+    if cache.get("gemini3d_hwm14", "").upper() in ("ON", "TRUE", "1", "YES"):
+        names += ["hwm123114.bin", "dwm07b104i.dat", "gd2qd.dat"]
+    return names
+
+
 def install(args):
     root = args.root
     root.mkdir(parents=True, exist_ok=True)
@@ -147,6 +156,7 @@ def install(args):
         "packages": json.loads(execute([bin_dir / "python", "-I", "-m", "pip", "list", "--format=json"],
                                       env=env, capture=True)),
         "native_configuration": cache,
+        "model_resources_sha256": {name: digest(prefix / "bin" / name) for name in model_resources(cache)},
         "mpi_launcher": str(launcher), "mpi_launcher_sha256": digest(launcher),
         "mpi_environment": {name: env.get(name) for name in MPI_ENVIRONMENT},
         "tests": [test["name"] for test in inventory["tests"]],
@@ -170,6 +180,10 @@ def check(root):
     exe = executable(prefix, saved.get("build_type"))
     if saved.get("requirements_sha256") != digest(REQUIREMENTS) or saved.get("executable_sha256") != digest(exe):
         raise RuntimeError("Installation changed since verification; rerun the installer.")
+    resources = {name: digest(prefix / "bin" / name)
+                 for name in model_resources(saved["native_configuration"])}
+    if resources != saved.get("model_resources_sha256"):
+        raise RuntimeError("Installed model resources changed; rerun the installer.")
     env = environment(root)
     launcher = saved.get("mpi_launcher")
     current = shutil.which("mpiexec", path=env["PATH"])

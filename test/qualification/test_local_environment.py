@@ -82,6 +82,7 @@ class LocalEnvironment(unittest.TestCase):
                 "schema": "gemini.local-environment.1", "build_type": "Release",
                 "requirements_sha256": local.digest(local.REQUIREMENTS),
                 "executable_sha256": local.digest(exe), "mpi_launcher": str(old),
+                "native_configuration": {}, "model_resources_sha256": {},
             }))
             with patch.object(local.shutil, "which", return_value=str(new)), \
                     patch.object(local, "execute") as run:
@@ -115,12 +116,14 @@ class LocalEnvironment(unittest.TestCase):
             launcher.write_text("fixture")
             (root / "build/CMakeCache.txt").write_text(
                 f"gemini3d_realbits:STRING=64\nMPIEXEC_EXECUTABLE:FILEPATH={launcher}\n"
-                "MPIEXEC_NUMPROC_FLAG:STRING=-n\n")
+                "MPIEXEC_NUMPROC_FLAG:STRING=-n\ngemini3d_msis2:BOOL=ON\n")
             source_cache = root / "sources.cmake"
             source_cache.write_text("# hash-verified offline source locations\n")
             exe = root / "install/bin/gemini.bin"
             exe.parent.mkdir(parents=True)
             exe.write_text("fixture")
+            resource = exe.parent / "msis21.parm"
+            resource.write_text("model parameter fixture")
             commands = []
 
             def execute(command, **kwargs):
@@ -140,12 +143,18 @@ class LocalEnvironment(unittest.TestCase):
             saved = json.loads((root / "environment.json").read_text())
             self.assertEqual(saved["verification"], "unit-tests-only")
             self.assertEqual(saved["tests"], ["audit:example"])
+            self.assertEqual(saved["model_resources_sha256"], {"msis21.parm": local.digest(resource)})
             self.assertTrue(any("-Dgemini3d_require_qualification=ON" in c for c in commands))
             self.assertTrue(any("-C" in c and str(source_cache) in c for c in commands))
             self.assertTrue(any("-R" in c and "HDF5_standalone" in c[-1] for c in commands))
             test_index = next(i for i, c in enumerate(commands) if "--no-tests=error" in c)
             install_index = next(i for i, c in enumerate(commands) if "--install" in c)
             self.assertLess(test_index, install_index)
+            resource.write_text("changed model parameters")
+            with patch.object(local, "execute") as run:
+                with self.assertRaisesRegex(RuntimeError, "model resources changed"):
+                    local.check(root)
+                run.assert_not_called()
 
 
 if __name__ == "__main__":

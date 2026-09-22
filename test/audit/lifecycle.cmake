@@ -1,6 +1,8 @@
 add_executable(audit_neutral_background neutral_background_test.f90)
 target_link_libraries(audit_neutral_background PRIVATE neutral_background neutral neutraldataBG meshobj_cart grid gemini3d)
 intel_fortran_main_linker(audit_neutral_background)
+target_compile_options(audit_neutral_background PRIVATE
+  $<$<COMPILE_LANG_AND_ID:Fortran,GNU>:-ffpe-trap=invalid,zero,overflow>)
 foreach(mode IN ITEMS covered endpoint singleton descending_covered ascending descending closed closed_covered zero belowground)
   add_test(NAME audit:neutral_background_${mode} COMMAND audit_neutral_background ${mode})
   set_tests_properties(audit:neutral_background_${mode} PROPERTIES LABELS "unit;audit")

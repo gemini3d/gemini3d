@@ -91,9 +91,14 @@ contains
     !   from object into arrays used by other modules
     atmos%nnBG(:,:,:,1:5)=atmosbackground%natminow(:,:,:,1:5)
     atmos%TnBG=atmosbackground%natminow(:,:,:,9)
-    if (.not. all(ieee_is_finite(atmos%TnBG)) .or. any(atmos%TnBG<=0)) &
+    if (.not. all(ieee_is_finite(atmos%TnBG))) &
       error stop 'neutral background: temperatures must be finite and positive'
-    call NO_calc(atmos%nnBG,atmos%TnBG)
+    if (any(atmos%TnBG<=0 .and. x%alt(1:lx1,1:x%lx2,1:x%lx3)>=0 .and. &
+        x%alt(1:lx1,1:x%lx2,1:x%lx3)<=atmosbackground%altpmax)) &
+      error stop 'neutral background: temperatures must be finite and positive'
+    ! Uncovered cells are zero-filled by interpolation and replaced below.
+    ! Do not divide by their placeholder temperatures while deriving reference NO.
+    call NO_calc(atmos%nnBG,merge(atmos%TnBG,1._wp,atmos%TnBG>0))
 
     ! rotate winds to model native and place into wind background arrays in the atmos object
     call rotate_geo2native(atmosbackground%natminow(:,:,:,6), &
@@ -234,6 +239,8 @@ contains
       end do
     end do
 
+    if (.not. all(ieee_is_finite(atmos%TnBG)) .or. any(atmos%TnBG<=0)) &
+      error stop 'neutral background: temperatures must be finite and positive'
   end subroutine neutral_background_fileinput_copyout
 
 

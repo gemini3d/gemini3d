@@ -58,4 +58,17 @@ class HostedEvidence(unittest.TestCase):
             self.assertIs(qualification[key],True)
         self.assertIs(qualification['gemini3d_hwm14'],False)
         self.assertIn("mini2dns_fang_cpp",jobs['sanitizers'])
+    def test_install_smoke_exercises_real_entrypoints(self):
+        root=Path(__file__).resolve().parents[2]
+        workflow=(root/'.github/workflows/install-smoke.yml').read_text()
+        self.assertRegex(workflow,r'(?m)^  pull_request:\s*$')
+        self.assertRegex(workflow,r'(?m)^  push:\s*$')
+        self.assertNotIn('paths-ignore:',workflow)
+        self.assertNotIn('continue-on-error:',workflow)
+        for platform in ['ubuntu-24.04','macos-14','windows-2022','Ubuntu-24.04']:
+            self.assertIn(platform,workflow)
+        self.assertEqual(workflow.count('bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2'),2)
+        self.assertEqual(workflow.count('scripts/local_environment.py check'),2)
+        self.assertEqual(workflow.count('build/local-install/environment.json'),2)
+        self.assertEqual(workflow.count('if-no-files-found: error'),2)
 if __name__=='__main__':unittest.main()

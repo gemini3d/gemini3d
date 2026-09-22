@@ -21,6 +21,7 @@ env:
   CTEST_PARALLEL_LEVEL: 2
   OPENBLAS_NUM_THREADS: 1
   OMP_NUM_THREADS: 1
+  OMPI_MCA_rmaps_base_oversubscribe: 1
   HDF5_PLUGIN_PRELOAD: "::"
 
 jobs:

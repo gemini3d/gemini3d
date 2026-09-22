@@ -21,9 +21,18 @@ if (mode=='singleton' .or. mode=='singleton_uncovered') call set_total_grid_size
 call set_subgrid_sizes(1,1)
 x%lx1=lx1; x%lx2=lx2; x%lx3=lx3
 allocate(x%alt(lx1,1,1),bg)
-allocate(bg%data3Dinow(lx1,1,1,9))
+allocate(bg%lc1,bg%lc2,bg%lc3)
+bg%lc1=lx1; bg%lc2=1; bg%lc3=1
+bg%lc1i=lx1; bg%lc2i=1; bg%lc3i=1
+bg%l0D=0; bg%l1Dax1=0; bg%l1Dax2=0; bg%l1Dax3=0
+bg%l2Dax23=0; bg%l2Dax12=0; bg%l2Dax13=0; bg%l3D=9
+bg%flagsizes=.true.
+call bg%init_storage()
 bg%natminow=>bg%data3Dinow
-bg%flagdoinput=.false. ! exercise copyout using a prepared, already interpolated frame
+call bg%set_source('prepared')
+call bg%set_cadence(2._wp)
+bg%flagprimed=.true.
+bg%tref=[-1._wp,1._wp]
 bg%altpmax=300e3_wp
 call neutral_info_alloc(atmos)
 atmos%flagprojections=.true.
@@ -95,6 +104,14 @@ case default
   error stop 'unknown neutral test mode'
 end select
 
+! Spatial interpolation leaves zeros where altitude coverage is missing.
+do i=1,lx1
+  if (x%alt(i,1,1)>bg%altpmax .or. x%alt(i,1,1)<0) bg%data3Dinow(i,1,1,:)=0
+  if (x%alt(i,1,1)<0) expected_v(i)=0
+end do
+! Two identical, already spatially interpolated frames isolate copyout policy.
+bg%data3Di(:,:,:,:,1)=bg%data3Dinow
+bg%data3Di(:,:,:,:,2)=bg%data3Dinow
 call neutral_background_fileinput(1._wp,0._wp,cfg,[2020,1,1],0._wp,x,atmos,bg)
 if (any(abs(atmos%nnBG(:,1,1,1)-expected_n)>1e-12_wp)) error stop 'density extrapolation'
 if (any(abs(atmos%TnBG(:,1,1)-expected_t)>1e-12_wp)) error stop 'temperature extrapolation'
@@ -108,6 +125,6 @@ end if
 if (any(atmos%vn1/=-999) .or. any(atmos%vn2/=-999) .or. any(atmos%vn3/=-999)) &
   error stop 'background update changed aggregate winds'
 call neutral_info_dealloc(atmos)
-deallocate(x%alt,bg)
+deallocate(x%alt,bg,expected_n,expected_t,expected_v)
 print *, 'neutral background passed: ',trim(mode)
 end program neutral_background_test
