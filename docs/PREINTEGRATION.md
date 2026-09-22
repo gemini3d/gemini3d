@@ -130,6 +130,34 @@ Release acceptance is therefore still blocked on an approved, reachable MUMPS
 archive/cache, complete native reference/restart/accounting and sanitizer runs,
 approved hosted platform execution, and the independent scientific gates above.
 
+### Release decision boundary
+
+The next continuation starts from
+`2e050c50d5a3d33920926ecf24831afa77c53b76`. The approved MUMPS archive still
+fails DNS resolution. The exact-candidate
+[preintegration run](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35771770031)
+and [installation run](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35771769791)
+are `action_required`; the preintegration log query reports zero jobs, not
+failed tests. Repeating these blocked attempts cannot establish qualification.
+
+The remaining decisions and required evidence are:
+
+| Owner | Required action or decision | Closure evidence |
+| --- | --- | --- |
+| Dependency/release maintainer | Restore access to the approved MUMPS archive or supply the existing offline installer with the archive matching `cmake/libraries.json`. Any different source/version requires a reviewed dependency decision. | Successful pinned installation, all nine unchanged native references, launcher regressions, restart/accounting matrix and application sanitizer results. |
+| Repository maintainer | Approve the waiting workflows for the final candidate; do not count an agent-task success as a model test. | Successful Debug/Release/current-HDF5/sanitizer and Linux/macOS/WSL/Intel runs, with their exact-commit evidence artifacts. |
+| HPC/runtime administrator | Provide a host with delegated cgroup v2 memory accounting and the declared runtime/toolchain. | Three complete workloads meet the existing memory/latency budgets; actual application leak checks pass alongside the controls. |
+| Numerical maintainer and independent plasma physicist | Review the floor/ETD changes and agree a physically complete source/work/flux ledger and coupled refinement cases. Supply independent matched reference observations/models. | R01/R04/R07 approvals and results meeting unchanged acceptance budgets; aggregate component ledgers alone are insufficient. |
+| Geomagnetic/grid specialist | Choose and review a consistent field, basis, metrics and driver formulation for the proposed current-epoch domain. | R03 domain-wide independent validation; retain the production epoch guard until then. |
+| Optional-mode and distribution owners | Approve supported mode/platform combinations and actual target dependency/data licenses, advisories and deployment isolation. | R09/R17 inventory and independent optional-mode references, including HWM14 where proposed. |
+
+Corpus training, calibrated assimilation, uncertainty claims and physical
+coupling remain downstream of these decisions (R10–R13/R16/R18); no synthetic
+fixture or generated approval can close them. Physical control remains excluded.
+The status is **blocked pending release qualification and specialist decisions**,
+not release-qualified. No archive hash, scientific budget, reference tolerance
+or safety guard is relaxed to turn a blocked gate into a pass.
+
 ## Historical handoff
 
 Branch `fix/preintegration-validation-2026-09-16` now merges upstream `9320b8912343ebd9bfb10a68c1e987f2278ff147` and retains the earlier remediation commit `ec5a1382a69e616e698aa36538958d38eb423e2d`. The delivered verification manifest identifies the final candidate commit, tree, test results, artifact hashes and any environment-limited checks.
