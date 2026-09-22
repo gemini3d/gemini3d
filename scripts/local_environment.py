@@ -13,12 +13,22 @@ import shutil
 import subprocess
 import sys
 import venv
+import xml.etree.ElementTree as ET
 
 
 SOURCE = Path(__file__).resolve().parents[1]
 REQUIREMENTS = SOURCE / "scripts/requirements-local.txt"
 MPI_ENVIRONMENT = ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "LD_PRELOAD",
                    "DYLD_INSERT_LIBRARIES", "I_MPI_ROOT", "MPI_ROOT", "MPI_HOME")
+LIBRARY_TESTS = {"HDF5_standalone_C", "HDF5_standalone_Fortran",
+                 "GeminiMPIstandalone", "GeminiMUMPSstandalone"}
+REFERENCE_TESTS = {
+    "gemini:compare:" + name for name in (
+        "mini2dns_fang", "mini2dew_fang", "mini3d_fang", "mini2dns_fang_cpp",
+        "mini2dns_glow", "mini2dew_glow", "mini3d_glow", "mini2dns_glow_cpp",
+        "mini2dns_msis2_fang",
+    )
+}
 
 
 def execute(command, *, env=None, capture=False, cwd=None):
@@ -101,6 +111,33 @@ def model_resources(cache):
     return names
 
 
+def verified_tests(ctest, build, env, jobs, suite, filters=(), required=()):
+    command = [ctest, "--test-dir", build, *filters]
+    inventory = json.loads(execute([*command, "--show-only=json-v1"], env=env, capture=True))
+    tests = inventory["tests"]
+    selected = {test["name"] for test in tests}
+    disabled = {test["name"] for test in tests if any(
+        p["name"] == "DISABLED" and p["value"] for p in test.get("properties", []))}
+    expected = selected - disabled
+    if len(selected) != len(tests) or not expected:
+        raise RuntimeError(f"{suite}: no enabled tests or duplicate test registration")
+    missing = set(required) - expected
+    if missing:
+        raise RuntimeError(f"{suite}: required tests missing or disabled: " + ", ".join(sorted(missing)))
+    report = build / f"local-{suite}.xml"
+    report.unlink(missing_ok=True)
+    execute([*command, "--output-on-failure", "--no-tests=error", "--parallel", jobs,
+             "--output-junit", report], env=env)
+    cases = ET.parse(report).getroot().findall(".//testcase")
+    names = [case.get("name") for case in cases]
+    passed = {case.get("name") for case in cases if case.get("status") == "run" and
+              all(case.find(tag) is None for tag in ("failure", "error", "skipped"))}
+    if len(names) != len(set(names)) or set(names) != selected or passed != expected:
+        raise RuntimeError(f"{suite}: executed test results do not match the enabled inventory")
+    return {"selected": sorted(selected), "disabled": sorted(disabled), "passed": sorted(passed),
+            "junit": report.name, "junit_sha256": digest(report)}
+
+
 def install(args):
     root = args.root
     root.mkdir(parents=True, exist_ok=True)
@@ -126,12 +163,15 @@ def install(args):
              f"-DMPIEXEC_MAX_NUMPROCS={args.jobs}"], env=env)
     execute([cmake, "--build", build, "--parallel", args.jobs], env=env)
     ctest = bin_dir / "ctest"
-    tests = [ctest, "--test-dir", build, "--output-on-failure", "--no-tests=error",
-             "--parallel", args.jobs]
-    if not args.reference_tests:
-        execute([*tests, "-R", "^(HDF5_standalone_.*|GeminiMPIstandalone|GeminiMUMPSstandalone)$"], env=env)
-        tests += ["-L", "unit"]
-    execute(tests, env=env)
+    if args.reference_tests:
+        results = {"reference": verified_tests(ctest, build, env, args.jobs, "reference",
+                                               required=LIBRARY_TESTS | REFERENCE_TESTS)}
+    else:
+        results = {
+            "libraries": verified_tests(ctest, build, env, args.jobs, "libraries",
+                ("-R", "^(HDF5_standalone_.*|GeminiMPIstandalone|GeminiMUMPSstandalone)$"), LIBRARY_TESTS),
+            "unit": verified_tests(ctest, build, env, args.jobs, "unit", ("-L", "unit")),
+        }
     execute([cmake, "--install", build], env=env)
     exe = executable(prefix, args.build_type)
     # Run from the installed resource directory, not the source/build directory.
@@ -160,7 +200,8 @@ def install(args):
         "mpi_launcher": str(launcher), "mpi_launcher_sha256": digest(launcher),
         "mpi_environment": {name: env.get(name) for name in MPI_ENVIRONMENT},
         "tests": [test["name"] for test in inventory["tests"]],
-        "verification": "all-registered-tests" if args.reference_tests else "unit-tests-only",
+        "test_results": results,
+        "verification": "enabled-registered-tests" if args.reference_tests else "unit-tests-only",
         "executable_sha256": digest(exe),
     }
     record.write_text(json.dumps(manifest, indent=2) + "\n")
@@ -241,7 +282,7 @@ def main(argv=None):
             if args.action == "run":
                 execute([*mpi, args.ranks, exe, args.case.resolve(), *extra],
                         env=env, cwd=exe.parent)
-    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, RuntimeError, ET.ParseError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"Local environment error: {error}\n")
 
 

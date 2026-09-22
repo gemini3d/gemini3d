@@ -187,6 +187,44 @@ The status is **blocked pending release qualification and specialist decisions**
 not release-qualified. No archive hash, scientific budget, reference tolerance
 or safety guard is relaxed to turn a blocked gate into a pass.
 
+### Delegated engineering decisions and execution receipts
+
+The continuation from `01bbfeab3df39107a67554f1b45bd409856c4d09` accepts
+delegated approval for engineering decisions. Additional permission to execute
+the existing qualification workflows is no longer requested. Approval to do the
+work is not independent physical evidence, target-platform execution, or a
+successful release result.
+
+- Retain the approved dependency pins, nine reference cases, acceptance budgets
+  and frozen one/two-rank scientific scope. Exercise the already supported
+  four-rank regression in both hosted native Debug and Release jobs, without
+  admitting additional scientific modes. Eight workflow/evidence contract tests
+  passed.
+- Installation now verifies fresh CTest JUnit results against the selected test
+  inventory. All four library checks are mandatory; reference installation also
+  requires all nine comparisons. Explicitly disabled optional tests are recorded
+  separately; runtime skips, missing/duplicate cases and failed results cannot
+  publish a successful installation. Hashed JUnit reports are retained in all
+  installation-smoke artifacts. Fourteen installer regressions passed, including
+  real CTest pass/disabled/skipped/failure controls and successful default and
+  reference receipt orchestration. These controls are not native model results.
+- Requested an ordinary rerun of
+  [preintegration run 35774340798, attempt 2](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35774340798).
+  It progressed beyond the previous approval block and built both native
+  Debug/Release profiles and the verified current HDF5 library. Its remaining
+  tests were still executing when this update was recorded. This run identifies
+  the starting commit, not the later execution-receipt changes.
+- Local access to the pinned MUMPS host still fails DNS resolution; no archive
+  substitution was made. A separate read-only review found no significant
+  issues in the execution-receipt changes.
+
+Remaining obligations are **measured release qualification**, not a request to
+repeat engineering approval: final-candidate hosted/platform/sanitizer results,
+delegated-host memory/performance measurements, actual target dependency/data
+review, and independent scientific benchmarks and complete coupled accounting.
+The production epoch guard and physical-control exclusion remain in force.
+No downstream scientific gate is closed by delegation alone.
+
 ## Historical handoff
 
 Branch `fix/preintegration-validation-2026-09-16` now merges upstream `9320b8912343ebd9bfb10a68c1e987f2278ff147` and retains the earlier remediation commit `ec5a1382a69e616e698aa36538958d38eb423e2d`. The delivered verification manifest identifies the final candidate commit, tree, test results, artifact hashes and any environment-limited checks.

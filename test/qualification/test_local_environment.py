@@ -15,6 +15,62 @@ SPEC.loader.exec_module(local)
 
 
 class LocalEnvironment(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("ctest") and shutil.which("cmake"), "CTest is required")
+    def test_real_ctest_execution_receipt_and_skipped_test_rejection(self):
+        with tempfile.TemporaryDirectory(prefix="gemini ctest ") as directory:
+            root = Path(directory)
+            cmake = Path(shutil.which("cmake")).as_posix()
+            tests = root / "CTestTestfile.cmake"
+            tests.write_text(
+                f'add_test(passes "{cmake}" -E true)\n'
+                f'add_test(optional "{cmake}" -E false)\n'
+                'set_tests_properties(optional PROPERTIES DISABLED TRUE)\n')
+            result = local.verified_tests(shutil.which("ctest"), root, None, 1, "fixture",
+                                          required={"passes"})
+            self.assertEqual(result["passed"], ["passes"])
+            self.assertEqual(result["disabled"], ["optional"])
+            self.assertEqual(result["junit_sha256"], local.digest(root / result["junit"]))
+            with self.assertRaisesRegex(RuntimeError, "required tests missing or disabled"):
+                local.verified_tests(shutil.which("ctest"), root, None, 1, "fixture", required={"optional"})
+            tests.write_text(f'add_test(skipped "{cmake}" -E true)\n'
+                             'set_tests_properties(skipped PROPERTIES SKIP_RETURN_CODE 0)\n')
+            with self.assertRaisesRegex(RuntimeError, "executed test results"):
+                local.verified_tests(shutil.which("ctest"), root, None, 1, "fixture")
+            tests.write_text(f'add_test(failed "{cmake}" -E false)\n')
+            with self.assertRaises(subprocess.CalledProcessError):
+                local.verified_tests(shutil.which("ctest"), root, None, 1, "fixture")
+
+    def test_test_receipt_rejects_missing_disabled_duplicate_or_stale_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for tests in ([], [{"name": "test", "properties": [{"name": "DISABLED", "value": True}]}],
+                          [{"name": "test"}, {"name": "test"}]):
+                with self.subTest(tests=tests), patch.object(
+                        local, "execute", return_value=json.dumps({"tests": tests})) as run:
+                    with self.assertRaisesRegex(RuntimeError, "no enabled tests or duplicate"):
+                        local.verified_tests("ctest", root, None, 1, "fixture")
+                    self.assertEqual(run.call_count, 1)
+            report = root / "local-fixture.xml"
+            passed = '<testsuite><testcase name="test" status="run"/></testsuite>'
+            reports = [None, '<testsuite/>', passed.replace('name="test"', 'name="other"'),
+                       passed.replace('</testsuite>', '<testcase name="test" status="run"/></testsuite>'),
+                       passed.replace('/>', '><skipped/></testcase>'),
+                       passed.replace('/>', '><failure/></testcase>'),
+                       passed.replace('/>', '><error/></testcase>'),
+                       passed.replace('status="run"', 'status="notrun"')]
+            for contents in reports:
+                with self.subTest(contents=contents):
+                    report.write_text(passed)
+                    def execute(command, **kwargs):
+                        if "--show-only=json-v1" in command:
+                            return '{"tests":[{"name":"test"}]}'
+                        self.assertFalse(report.exists(), "Old test results must be removed before CTest runs")
+                        if contents is not None:
+                            report.write_text(contents)
+                    with patch.object(local, "execute", side_effect=execute):
+                        with self.assertRaises((RuntimeError, FileNotFoundError)):
+                            local.verified_tests("ctest", root, None, 1, "fixture")
+
     @unittest.skipUnless(shutil.which("pwsh"), "PowerShell is required for WSL wrapper tests")
     def test_wsl_install_options_and_exit_status(self):
         script = str(local.SOURCE / "scripts/install-local.ps1").replace("'", "''")
@@ -145,6 +201,12 @@ function wsl.exe {
                 run.assert_not_called()
 
     def test_success_checks_before_publication(self):
+        self.check_successful_install(reference_tests=False)
+
+    def test_successful_reference_install_records_complete_execution(self):
+        self.check_successful_install(reference_tests=True)
+
+    def check_successful_install(self, reference_tests):
         with tempfile.TemporaryDirectory(prefix="gemini install ") as directory:
             root = Path(directory)
             (root / "venv").mkdir()
@@ -163,12 +225,19 @@ function wsl.exe {
             resource = exe.parent / "msis21.parm"
             resource.write_text("model parameter fixture")
             commands = []
+            libraries = sorted(local.LIBRARY_TESTS)
+            all_tests = sorted(local.LIBRARY_TESTS | local.REFERENCE_TESTS | {"audit:example"})
 
             def execute(command, **kwargs):
                 commands.append([str(item) for item in command])
                 self.assertFalse((root / "environment.json").exists())
+                names = libraries if "-R" in command else ["audit:example"] if "-L" in command else all_tests
                 if "--show-only=json-v1" in command:
-                    return '{"tests":[{"name":"audit:example"}]}'
+                    return json.dumps({"tests": [{"name": name} for name in names]})
+                if "--output-junit" in command:
+                    report = command[command.index("--output-junit") + 1]
+                    report.write_text("<testsuite>" + "".join(
+                        f'<testcase name="{name}" status="run"/>' for name in names) + "</testsuite>")
                 if "--format=json" in command:
                     return "[]"
 
@@ -177,22 +246,57 @@ function wsl.exe {
                     patch.object(local, "source_identity", return_value={}), \
                     patch.object(local, "source_inventory", return_value={}):
                 local.main(["install", "--root", directory, "--jobs", "2",
-                            "--source-cache", str(source_cache)])
+                            "--source-cache", str(source_cache)] +
+                           (["--reference-tests"] if reference_tests else []))
             saved = json.loads((root / "environment.json").read_text())
-            self.assertEqual(saved["verification"], "unit-tests-only")
-            self.assertEqual(saved["tests"], ["audit:example"])
+            self.assertEqual(saved["tests"], all_tests)
+            if reference_tests:
+                self.assertEqual(saved["verification"], "enabled-registered-tests")
+                self.assertEqual(saved["test_results"]["reference"]["passed"], all_tests)
+                self.assertEqual(set(saved["test_results"]), {"reference"})
+            else:
+                self.assertEqual(saved["verification"], "unit-tests-only")
+                self.assertEqual(saved["test_results"]["libraries"]["passed"], libraries)
+                self.assertEqual(saved["test_results"]["unit"]["passed"], ["audit:example"])
+                self.assertTrue(any("-R" in c and "HDF5_standalone" in c[c.index("-R") + 1] for c in commands))
+            for result in saved["test_results"].values():
+                self.assertEqual(result["junit_sha256"], local.digest(root / "build" / result["junit"]))
             self.assertEqual(saved["model_resources_sha256"], {"msis21.parm": local.digest(resource)})
             self.assertTrue(any("-Dgemini3d_require_qualification=ON" in c for c in commands))
             self.assertTrue(any("-C" in c and str(source_cache) in c for c in commands))
-            self.assertTrue(any("-R" in c and "HDF5_standalone" in c[-1] for c in commands))
-            test_index = next(i for i, c in enumerate(commands) if "--no-tests=error" in c)
+            test_indices = [i for i, c in enumerate(commands) if "--no-tests=error" in c]
             install_index = next(i for i, c in enumerate(commands) if "--install" in c)
-            self.assertLess(test_index, install_index)
+            self.assertEqual(len(test_indices), 1 if reference_tests else 2)
+            self.assertTrue(all(index < install_index for index in test_indices))
             resource.write_text("changed model parameters")
             with patch.object(local, "execute") as run:
                 with self.assertRaisesRegex(RuntimeError, "model resources changed"):
                     local.check(root)
                 run.assert_not_called()
+
+    def test_reference_install_requires_all_nine_comparisons_before_publication(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "venv").mkdir()
+            (root / "venv/pyvenv.cfg").write_text("fixture")
+            names = sorted(local.LIBRARY_TESTS | local.REFERENCE_TESTS)
+            self.assertEqual(len(local.REFERENCE_TESTS), 9)
+            for disabled in (False, True):
+                tests = [{"name": name} for name in names]
+                if disabled:
+                    tests[-1]["properties"] = [{"name": "DISABLED", "value": True}]
+                else:
+                    tests.pop()
+                def execute(command, **kwargs):
+                    self.assertNotIn("--install", command)
+                    self.assertNotIn("--output-junit", command)
+                    if "--show-only=json-v1" in command:
+                        return json.dumps({"tests": tests})
+                with self.subTest(disabled=disabled), patch.object(local, "native_prerequisites"), \
+                        patch.object(local, "python_check"), patch.object(local, "execute", side_effect=execute):
+                    with self.assertRaises(SystemExit):
+                        local.main(["install", "--root", directory, "--reference-tests"])
+                self.assertFalse((root / "environment.json").exists())
 
 
 if __name__ == "__main__":

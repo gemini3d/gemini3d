@@ -60,6 +60,7 @@ jobs:
             build/local-install/build/CMakeCache.txt
             build/local-install/build/CMakeFiles/CMakeConfigureLog.yaml
             build/local-install/build/Testing/
+            build/local-install/build/local-*.xml
 
   wsl:
     name: install (WSL Ubuntu-24.04)
@@ -117,3 +118,4 @@ jobs:
             build/local-install/build/CMakeCache.txt
             build/local-install/build/CMakeFiles/CMakeConfigureLog.yaml
             build/local-install/build/Testing/
+            build/local-install/build/local-*.xml

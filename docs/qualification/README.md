@@ -80,7 +80,8 @@ The separate `install-smoke.yml` exercises `scripts/install-local.sh --system-de
 
 `research_matrix.py --extended-layouts` additionally checks the four-rank 2×2
 decomposition, including every rank's source, temperature-floor and energy
-operator ledgers. It does not expand the frozen one/two-rank scientific profile
+operator ledgers. Both hosted native Debug and Release jobs now request this
+extended matrix. It does not expand the frozen one/two-rank scientific profile
 or relax its numerical budgets.
 
 Kernel-memory measurements require an already delegated cgroup-v2 memory controller. `GEMINI_QUALIFICATION_CGROUP` can name that parent through a repository variable; the default is `/sys/fs/cgroup`. No privilege/mount workaround, sampling substitution or skipped measurement can produce a pass. Missing delegation, LeakSanitizer capability failure, or an MPI/dependency leak remains a failed/blocked qualification requiring a capable host and triage.

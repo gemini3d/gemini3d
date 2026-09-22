@@ -1,6 +1,6 @@
 import copy
 from pathlib import Path
-import json,re,shutil,subprocess,sys,unittest
+import json,re,shlex,shutil,subprocess,sys,unittest
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts/qualification'))
 from hosted_evidence import verify,REQUIRED,WORKFLOW,REQUIRED_STEPS
 class HostedEvidence(unittest.TestCase):
@@ -65,7 +65,15 @@ class HostedEvidence(unittest.TestCase):
             self.assertIn('ref: ${{ env.CANDIDATE_COMMIT }}',block)
         self.assertIn('build_type: Debug',jobs['native'])
         self.assertIn('build_type: Release',jobs['native'])
-        self.assertIn('research_matrix.py',jobs['native'])
+        research=re.search(r'(?ms)^      - name: Qualify exact restart and native numerical budgets\n'
+                           r'        run: \|\n(.*?)(?=^      - |\Z)',jobs['native'])
+        self.assertIsNotNone(research)
+        command=shlex.split(research[1].replace('\\\n',' '),comments=True)
+        command=command[:command.index('|')]
+        self.assertEqual(command[:2],['python','test/qualification/research_matrix.py'])
+        self.assertIn('--extended-layouts',command)
+        self.assertNotIn('--quick',command)
+        self.assertEqual(command[command.index('--work')+1],'build/research')
         for case in ['mini2dns_fang','mini2dew_fang','mini3d_fang','mini2dns_fang_cpp',
                      'mini2dns_glow','mini2dew_glow','mini3d_glow','mini2dns_glow_cpp','mini2dns_msis2_fang']:
             self.assertIn('"'+case+'"',jobs['native'])

@@ -76,6 +76,7 @@ jobs:
         run: |
           python test/qualification/research_matrix.py --build build \
             --inputs-root build/test_runs --work build/research --suffix="${{ matrix.suffix }}" \
+            --extended-layouts \
             2>&1 | tee build/research.log
       - name: Record actual dependency inventory
         run: python scripts/qualification/inventory.py --source . --build build --output build/evidence/inventory.json

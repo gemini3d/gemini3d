@@ -33,8 +33,10 @@ Windows drive paths. The Windows installation workflow invokes this PowerShell
 entry point rather than bypassing it.
 
 `--build-type Debug` enables the existing Debug checks. `--jobs` limits build/test
-parallelism. Add `--reference-tests` to run **all registered tests**, including
-reference downloads and simulations; the default unit-only installation is
+parallelism. Add `--reference-tests` to run **all enabled registered tests**,
+including reference downloads and simulations. All four standalone library
+checks and all nine pinned native comparisons must be registered, enabled and
+pass in that mode; the default unit-only installation is
 **not** release or scientific qualification. Initial setup needs network access.
 HPC/offline users should follow the existing offline dependency/reference-cache
 instructions and provide their own compatible MPI/compiler environment.
@@ -46,6 +48,14 @@ index); this flag alone does not make an installation fully offline.
 The successful `build/local/environment.json` records the source revision and
 dirty status, per-file source hashes, native dependency pins/configuration,
 Python packages, test inventory, verification scope and executable hash.
+Its `test_results` distinguishes selected, explicitly disabled and actually
+passed tests for each suite. The installer compares CTest's selected inventory
+with fresh JUnit results before installing or publishing a success record;
+runtime-skipped, missing, failed or stale results cannot count as passes.
+Disabled optional tests are listed, not silently counted as tested. The hashed
+reports are `build/local/build/local-*.xml` (under the chosen local root), and
+installation CI retains them alongside the receipt. This proves CTest execution,
+not independent physical acceptance or the absence of skips internal to a test.
 Inventory is not a claim that every file or scientific mode has been reviewed.
 Enabled MSIS2/HWM14 parameter files are also required and hashed in the installed
 resource directory, and their hashes are checked before running.
