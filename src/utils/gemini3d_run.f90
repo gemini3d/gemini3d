@@ -39,7 +39,8 @@ if(lid > 1) then
 else
   cmd = ''
 endif
-cmd = cmd // quote_argument(gem_exe) // ' ' // quote_argument(path) // extra
+cmd = cmd // quote_argument(gem_exe) // ' ' // quote_argument(path)
+if(len(extra)>0) cmd = cmd // ' ' // trim(adjustl(extra))
 print *, cmd
 call execute_command_line(cmd, exitstat=i)
 

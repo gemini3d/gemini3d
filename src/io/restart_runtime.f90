@@ -92,7 +92,7 @@ subroutine runtime_read(core,cfg,t)
   call f%close()
   if(any(layout/=[mpi_cfg%lid2,mpi_cfg%lid3])) error stop 'Incompatible runtime checkpoint layout'
   if(digest/=input_digest) error stop 'Changed restart inputs: input SHA256 mismatch'
-  if(trim(checkpoint)/=core(scan(core,'/\',back=.true.)+1:)) error stop 'Runtime checkpoint root identity mismatch'
+  if(trim(checkpoint)/=checkpoint_basename(core)) error stop 'Runtime checkpoint root identity mismatch'
   if(len_trim(checkpoint)==0.or.len_trim(prefix)<=len_trim(checkpoint)+9.or. &
      index(prefix,'/')/=0.or.index(prefix,'\')/=0.or.index(prefix,'..')/=0) &
     error stop 'Invalid runtime checkpoint prefix'
@@ -248,4 +248,15 @@ subroutine runtime_output_header(f)
   call f%write('/restart_runtime/prefix',state_prefix)
   call f%write('/restart_runtime/checkpoint',checkpoint_name)
 end subroutine
+function checkpoint_basename(path) result(name)
+  character(*), intent(in) :: path
+  character(:), allocatable :: name
+  integer :: n,last
+  n=len_trim(path)
+  if(n<1) error stop 'Runtime checkpoint root identity mismatch'
+  if(path(n:n)=='/'.or.path(n:n)=='\') error stop 'Runtime checkpoint root identity mismatch'
+  last=scan(path(:n),'/\',back=.true.)
+  name=path(last+1:n)
+  if(len_trim(name)==0) error stop 'Runtime checkpoint root identity mismatch'
+end function
 end module
