@@ -158,6 +158,23 @@ contains
     case default
       error stop 'ERROR:gemini3d:config: not sure how to read Gemini3D configuration file: ' // cfg%infile
     end select
+    call filename_cadence(cfg%dtout, "dtout")
+    if (cfg%flagglow /= 0) call filename_cadence(cfg%dtglowout, "dtglowout")
+    if (cfg%flagprecfile /= 0) call filename_cadence(cfg%dtprec, "dtprec")
+    if (cfg%flagE0file /= 0) call filename_cadence(cfg%dtE0, "dtE0")
+    if (cfg%flagdneu /= 0) call filename_cadence(cfg%dtneu, "dtneu")
+    if (cfg%flagsolfluxfile /= 0) call filename_cadence(cfg%dtsolflux, "dtsolflux")
+    if (cfg%flagneutralBGfile /= 0) call filename_cadence(cfg%dtneuBGfile, "dtneuBGfile")
   end subroutine read_configfile
+
+  subroutine filename_cadence(value, name)
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+    real(wp), intent(in) :: value
+    character(*), intent(in) :: name
+
+    ! Preserve legacy filenames: they round timestamps to 10 ms, not microseconds.
+    if (.not. ieee_is_finite(value)) error stop "config: nonfinite filename cadence: " // name
+    if (value < 0.01_wp) error stop "config: filename cadence must be at least 0.01 seconds: " // name
+  end subroutine filename_cadence
 
 end module gemini3d_config

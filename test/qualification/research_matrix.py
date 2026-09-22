@@ -23,16 +23,30 @@ from check_sources import check as check_sources
 from check_energy_operators import check as check_energy
 
 
-def checkpoint_shapes(case,ranks):
-    """Check the C/Fortran allocation contract from actual published records."""
+def checkpoint_shapes(case,ranks,layout):
+    """Check identity, finite payloads and the C/Fortran allocation contract."""
     frames=sorted(case.glob('????????_?????.??????.h5'))
     if not frames:return False
     for frame in frames:
-        with h5py.File(frame) as f:prefix=f['restart_runtime/prefix'][()].decode().strip()
+        with h5py.File(frame) as f:
+            root=f['restart_runtime']
+            prefix=root['prefix'][()].decode().strip()
+            checkpoint=root['checkpoint'][()]
+            input_sha=root['input_sha256'][()]
+            executable_sha=root['executable_sha256'][()]
+            if root['schema'][()]!=2 or tuple(root['layout'][...])!=tuple(layout):return False
+            if checkpoint.decode().strip()!=frame.name or not prefix.startswith(frame.name+'.partial.'):return False
         for rank in range(ranks):
             with h5py.File(case/(prefix+f'.r{rank:08d}.h5')) as f:
+                if f['schema'][()]!=2 or f['complete'][()]!=1 or f['rank'][()]!=rank:return False
+                if tuple(f['layout'][...])!=tuple(layout) or f['checkpoint'][()]!=checkpoint:return False
+                if f['generation'][()].decode().strip()!=prefix:return False
+                if f['input_sha256'][()]!=input_sha or f['executable_sha256'][()]!=executable_sha:return False
                 if f['fluid'].shape[0]!=35 or f['electro'].shape[0]!=7:return False
                 if f['fluid'].shape[1:]!=f['electro'].shape[1:]:return False
+                for field in ('fluid','electro','vi1','vi2','vi3'):
+                    if f[field].ndim!=4 or f[field].dtype!=np.dtype('float64'):return False
+                    if not np.isfinite(f[field][...]).all():return False
     return True
 
 
@@ -63,7 +77,11 @@ def compare(continuous,split,budget):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--build',type=Path,required=True)
     p.add_argument('--inputs-root',type=Path,required=True);p.add_argument('--work',type=Path,required=True)
-    p.add_argument('--mpiexec',default='mpiexec');p.add_argument('--quick',action='store_true');p.add_argument('--suffix',default='');a=p.parse_args()
+    p.add_argument('--mpiexec',default='mpiexec');p.add_argument('--quick',action='store_true');p.add_argument('--suffix',default='')
+    p.add_argument('--extended-layouts',action='store_true',
+                   help='also test four-rank 2x2 decomposition outside the frozen 1/2-rank profile')
+    a=p.parse_args()
+    if a.quick and a.extended_layouts:p.error('--extended-layouts requires the full matrix, not --quick')
     a.work.mkdir(parents=True,exist_ok=False)
     root=Path(__file__).resolve().parents[2]
     budget=json.loads((root/'docs/qualification/ACCEPTANCE_BUDGETS.json').read_text())['budgets']['checkpoint']
@@ -71,6 +89,7 @@ def main():
     runs=[];comparisons=[];transport=[];continuity=[];sources=[];energy=[]
     cases=[('mini2dns_fang',1,[1,1]),('mini2dns_fang',2,[1,2]),('mini3d_fang',1,[1,1]),
            ('mini3d_fang',2,[1,2]),('mini3d_fang',2,[2,1])]
+    if a.extended_layouts:cases.append(('mini3d_fang',4,[2,2]))
     if a.quick:cases=cases[:2]
     def create(name,case,duration):
         path=a.work/name;shutil.copytree(a.inputs_root/case/'inputs',path/'inputs')
@@ -86,7 +105,7 @@ def main():
         proc=subprocess.run(cmd,env=env,text=True,capture_output=True,timeout=600)
         elapsed=time.monotonic()-t
         (a.work/(label+'.log')).write_text(proc.stdout+proc.stderr)
-        passed=(proc.returncode==0 and checkpoint_shapes(path,ranks)) if expected is None else proc.returncode!=0 and expected in proc.stdout+proc.stderr
+        passed=(proc.returncode==0 and checkpoint_shapes(path,ranks,layout)) if expected is None else proc.returncode!=0 and expected in proc.stdout+proc.stderr
         row=dict(label=label,returncode=proc.returncode,passed=passed,expected_rejection=expected,wall_seconds=elapsed)
         runs.append(row);print(json.dumps(row),flush=True)
         return passed
@@ -106,7 +125,9 @@ def main():
             sources.append(dict(case=tag,**check_sources(continuous,ranks)))
             energy.append(dict(case=tag,**check_energy(continuous,ranks)))
         if case=='mini2dns_fang' and ranks==2:
-            for fault in ['inputs','layout','missing_state','incomplete_state','bad_dtype','bad_clock','bad_binary']:
+            for fault in ['inputs','layout','missing_state','incomplete_state','bad_dtype','bad_clock','bad_binary',
+                          'swap_rank','mismatched_generation','nonfinite_fluid','nonfinite_electro',
+                          'nonfinite_vi1','nonfinite_vi2','nonfinite_vi3']:
                 bad=a.work/('reject_'+fault);shutil.copytree(seed,bad)
                 cfg=bad/'inputs/config.nml';cfg.write_text(re.sub(r'(?im)^(tdur\s*=)[^!\n]*',r'\g<1> 300 ',cfg.read_text()))
                 frame=sorted(bad.glob('????????_?????.??????.h5'))[-1]
@@ -119,16 +140,26 @@ def main():
                     forcing=next((bad/'inputs/Efield').glob('????????_*.h5'))
                     with h5py.File(forcing,'r+') as f:f['Exit'][...]+=0.00001
                 if fault=='missing_state':state.unlink()
-                if fault in ['incomplete_state','bad_dtype','bad_clock']:
+                if fault=='swap_rank':
+                    other=bad/(prefix+'.r00000001.h5')
+                    first_bytes,other_bytes=state.read_bytes(),other.read_bytes()
+                    state.write_bytes(other_bytes);other.write_bytes(first_bytes)
+                if fault in ['incomplete_state','bad_dtype','bad_clock','mismatched_generation'] or fault.startswith('nonfinite_'):
                     with h5py.File(state,'r+') as f:
                         if fault=='incomplete_state':f['complete'][...]=0
                         if fault=='bad_clock':f['dt'][...]=np.nan
+                        if fault=='mismatched_generation':f['generation'][...]=b'wrong-generation'
+                        if fault.startswith('nonfinite_'):
+                            field=fault.removeprefix('nonfinite_')
+                            f[field][tuple(n-1 for n in f[field].shape)]=np.nan if field=='fluid' else np.inf
                         if fault=='bad_dtype':
                             data=f['fluid'][...].astype('float32');del f['fluid'];f['fluid']=data
                 expected={'inputs':'Changed restart inputs','layout':'Incompatible runtime checkpoint layout',
                           'missing_state':'Missing runtime state file','incomplete_state':'Incomplete runtime checkpoint',
                           'bad_dtype':'requires float64','bad_clock':'Invalid runtime checkpoint clock',
-                          'bad_binary':'Changed restart executable'}[fault]
+                          'bad_binary':'Changed restart executable','swap_rank':'Runtime state rank mismatch',
+                          'mismatched_generation':'Runtime state generation mismatch'}
+                expected='Nonfinite runtime checkpoint payload: '+fault.removeprefix('nonfinite_') if fault.startswith('nonfinite_') else expected[fault]
                 run(bad,'reject_'+fault,ranks,layout,expected)
             # A C++ run must produce the same physics as Fortran; each self-restart remains binary-bound.
             cpp_exe=(a.build/('gemini_c.bin'+a.suffix)).resolve()
@@ -146,6 +177,7 @@ def main():
             else:
                 runs.append(dict(label='cpp_required',passed=False,error='Required C++ executable is missing'))
     result=dict(schema='gemini.research.matrix.1',executable_sha256=exe_sha,runs=runs,
+                 extended_layouts=a.extended_layouts,
                 comparisons=comparisons,transport=transport,continuity=continuity,sources=sources,energy=energy,
                 passed=all(r['passed'] for r in runs) and len(comparisons)==len(cases)+2 and
                        len(energy)==len(cases)+1 and all(r['passed'] for r in comparisons+transport+continuity+sources+energy))

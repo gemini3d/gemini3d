@@ -23,8 +23,9 @@ use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_neutral_perturb
+use neutral, only: neutral_wind_aggregate
 
-use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work
+use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work, v2grid, v3grid
 use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  outdir_fullgridvaralloc, get_initial_state, check_fileoutput, check_dryrun, &
  BGfield_Lagrangian, get_initial_drifts, init_procgrid, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, &
@@ -309,14 +310,14 @@ contains
   end subroutine dt_select_C
 
 
-!  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
-!    type(C_PTR), intent(inout) :: intvarsC
-!
-!    type(gemini_work), pointer :: intvars
-!
-!    call c_f_pointer(intvarsC,intvars)
-!    call neutral_atmos_wind_update(intvars)
-!  end subroutine neutral_atmos_wind_update_C
+  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
+    type(C_PTR), intent(inout) :: intvarsC
+    type(gemini_work), pointer :: intvars
+
+    if (.not. c_associated(intvarsC)) error stop "neutral_atmos_wind_update_C: null work object"
+    call c_f_pointer(intvarsC,intvars)
+    call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.false.)
+  end subroutine neutral_atmos_wind_update_C
 
 
   subroutine inputdata_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='inputdata_perturb_C')

@@ -326,13 +326,8 @@ contains
   subroutine destructor(self)
     type(neutraldataBG), intent(inout) :: self
 
-    if (self%flagcoordsi) then
-      ! in addition to the normal coordsi allocatables we also have projections for this extension
-      deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
-      deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
-      deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
-    end if
-
     call self%dissociate_pointers()
+    nullify(self%llon,self%llat,self%lalt,self%altp,self%glonp,self%glatp)
+    nullify(self%natmp,self%natmiprev,self%natminext,self%natminow,self%alti,self%gloni,self%glati)
   end subroutine destructor
 end module neutraldataBGobj

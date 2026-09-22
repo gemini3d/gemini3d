@@ -6,6 +6,7 @@ module PDEparabolic
 !> banded and tridiagonal solvers, for now we just take everything to be banded...
 use phys_consts, only: wp
 use vendor_lapack95, only: gbsv!,gtsv
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
 implicit none (type, external)
 
@@ -50,7 +51,7 @@ integer, parameter :: ll=2                   !number of lower diagonals
 
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
 real(wp), dimension(size(Ts)) :: Dh
-integer :: ix1,lx1
+integer :: ix1,lx1,info
 
 real(wp), dimension(size(Ts)) :: TR
 
@@ -169,7 +170,8 @@ if (present(Tsmax_mid)) TR(lx1)=Tsmax_mid
 !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
-call gbsv(M,TR,kl=2)
+call gbsv(M,TR,kl=2,info=info)
+call check_solver_info(info,'TRBDF21D TR stage')
 
 
 
@@ -257,7 +259,8 @@ end if
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
-call gbsv(M,TRBDF21D,kl=2)
+call gbsv(M,TRBDF21D,kl=2,info=info)
+call check_solver_info(info,'TRBDF21D BDF2 stage')
 
 if (present(increments)) then
   ! TR uses dt/2 followed by the BDF formula with dt/3. Eliminating the
@@ -298,7 +301,7 @@ integer, parameter :: ll=2                   !number of lower diagonals
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
 real(wp), dimension(size(Ts)) :: Dh
 real(wp), dimension(size(Ts)) :: backEuler1D
-integer :: ix1,lx1
+integer :: ix1,lx1,info
 
 !------------------------------------------------------------
 !-------DEFINE A MATRIX USING BANDED STORAGE
@@ -389,7 +392,8 @@ end if
 
 !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
-call gbsv(M,backEuler1D,kl=2)
+call gbsv(M,backEuler1D,kl=2,info=info)
+call check_solver_info(info,'backEuler1D')
 
 if (present(increments)) then
   increments=dt*parabolic_terms(backEuler1D,A,B,C,D,E,dx1,dx1i)
@@ -405,6 +409,16 @@ if (present(coeffs)) then
 end if
 
 end function backEuler1D
+
+subroutine check_solver_info(info,stage)
+  integer, intent(in) :: info
+  character(*), intent(in) :: stage
+
+  if (info == 0) return
+  write(stderr,'(a,a,a,i0)') 'PDEparabolic: ',stage,' gbsv INFO=',info
+  if (info < 0) error stop 'PDEparabolic: invalid LAPACK argument'
+  error stop 'PDEparabolic: singular diffusion matrix'
+end subroutine check_solver_info
 
 pure function parabolic_terms(T,A,B,C,D,E,dx,dxi) result(terms)
   real(wp), intent(in) :: T(:),A(:),B(:),C(:),D(:),E(:),dx(0:),dxi(:)

@@ -1,0 +1,191 @@
+name: preintegration
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+  CC: gcc
+  CXX: g++
+  FC: gfortran
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 2
+  OPENBLAS_NUM_THREADS: 1
+  OMP_NUM_THREADS: 1
+  HDF5_PLUGIN_PRELOAD: "::"
+
+jobs:
+  native:
+    name: native (${{ matrix.build_type }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build_type: Debug
+            preset: qualification-debug
+            suffix: .debug
+          - build_type: Release
+            preset: qualification-release
+            suffix: ""
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+      - uses: ./.github/workflows/qualification-setup
+      - name: Configure and build required qualification
+        run: |
+          cmake --preset ${{ matrix.preset }} -B build -DPython_EXECUTABLE="$(command -v python)"
+          cmake --build build --parallel 2 2>&1 | tee build/build.log
+      - name: Run native suite and reference comparisons
+        run: |
+          ctest --test-dir build --show-only=json-v1 > build/evidence/ctest-registration.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          tests = {t["name"]: t for t in json.loads(Path("build/evidence/ctest-registration.json").read_text())["tests"]}
+          cases = ["mini2dns_fang", "mini2dew_fang", "mini3d_fang", "mini2dns_fang_cpp",
+                   "mini2dns_glow", "mini2dew_glow", "mini3d_glow", "mini2dns_glow_cpp", "mini2dns_msis2_fang"]
+          for case in cases:
+              test = tests["gemini:compare:" + case]
+              if any(p["name"] == "DISABLED" and p["value"] for p in test.get("properties", [])):
+                  raise RuntimeError("Required reference comparison disabled: " + case)
+          PY
+          ctest --test-dir build --output-on-failure --no-tests=error --output-junit native.xml 2>&1 | tee build/native.log
+      - name: Verify restart record precision and rejection behavior
+        run: |
+          python test/qualification/restart_core_checks.py \
+            --exe build/gemini.bin${{ matrix.suffix }} --case build/test_runs/mini2dns_fang \
+            --work build/restart-core 2>&1 | tee build/restart-core.log
+      - name: Qualify exact restart and native numerical budgets
+        run: |
+          python test/qualification/research_matrix.py --build build \
+            --inputs-root build/test_runs --work build/research --suffix="${{ matrix.suffix }}" \
+            2>&1 | tee build/research.log
+      - name: Record actual dependency inventory
+        run: python scripts/qualification/inventory.py --source . --build build --output build/evidence/inventory.json
+      - name: Preserve native evidence
+        if: always()
+        uses: ./.github/workflows/qualification-evidence
+        with:
+          profile: native-${{ matrix.build_type }}
+
+  current-hdf5:
+    name: current-hdf5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+      - uses: ./.github/workflows/qualification-setup
+      - name: Build verified current HDF5
+        run: |
+          cmake -Dqualification_work="$GITHUB_WORKSPACE/build/hdf5-work" \
+            -Dqualification_prefix="$GITHUB_WORKSPACE/build/hdf5-install" \
+            -P scripts/build_qualification_hdf5.cmake 2>&1 | tee build/hdf5-build.log
+      - name: Build and test current-library profile
+        run: |
+          cmake --preset qualification-release -B build -DPython_EXECUTABLE="$(command -v python)" \
+            -DHDF5_ROOT="$GITHUB_WORKSPACE/build/hdf5-install" -Dh5fortran_hdf5_nobuild=ON
+          grep -Fx 'HDF5_VERSION:STRING=2.2.0' build/CMakeCache.txt
+          cmake --build build --parallel 2 2>&1 | tee build/build.log
+          ctest --test-dir build --output-on-failure --no-tests=error --output-junit native.xml \
+            2>&1 | tee build/native.log
+      - name: Qualify current-library restart and numerical budgets
+        run: |
+          python test/qualification/restart_core_checks.py --exe build/gemini.bin \
+            --case build/test_runs/mini2dns_fang --work build/restart-core \
+            2>&1 | tee build/restart-core.log
+          python test/qualification/research_matrix.py --build build \
+            --inputs-root build/test_runs --work build/research 2>&1 | tee build/research.log
+      - name: Measure complete workload with kernel memory accounting
+        env:
+          GEMINI_QUALIFICATION_CGROUP: ${{ vars.GEMINI_QUALIFICATION_CGROUP }}
+        run: |
+          mkdir -p build/memory-workloads
+          for repetition in 1 2 3; do
+            mkdir -p "build/memory-workloads/$repetition"
+            cp -a build/test_runs/mini3d_fang/inputs "build/memory-workloads/$repetition/inputs"
+            python scripts/qualification/kernel_memory.py \
+              --parent "${GEMINI_QUALIFICATION_CGROUP:-/sys/fs/cgroup}" \
+              --output "build/memory-workloads/$repetition/measurement.json" \
+              --wall-budget 600 --memory-budget-mib 2048 --timeout 660 -- \
+              python scripts/qualification/run_research.py --exe build/gemini.bin \
+                --case "build/memory-workloads/$repetition" --ranks 2 --layout 1 2
+          done
+      - name: Record actual dependency inventory
+        if: always()
+        run: python scripts/qualification/inventory.py --source . --build build --output build/evidence/inventory.json
+      - name: Preserve current-library evidence
+        if: always()
+        uses: ./.github/workflows/qualification-evidence
+        with:
+          profile: current-hdf5
+
+  sanitizers:
+    name: sanitizers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+      - uses: ./.github/workflows/qualification-setup
+      - name: Build instrumented required qualification
+        run: |
+          cmake --preset qualification-debug -B build -Dgemini3d_sanitizers=ON \
+            -DPython_EXECUTABLE="$(command -v python)"
+          cmake --build build --parallel 2 2>&1 | tee build/build.log
+      - name: Check audit probes and native C++ consumer
+        run: |
+          ctest --test-dir build -L 'audit|qualification' --output-on-failure --no-tests=error \
+            --output-junit sanitizer.xml 2>&1 | tee build/sanitizer.log
+          ctest --test-dir build -R '^gemini:compare:mini2dns_fang_cpp$' --output-on-failure --no-tests=error \
+            --output-junit cpp.xml 2>&1 | tee build/cpp.log
+      - name: Verify LeakSanitizer detects the intentional leak control
+        if: ${{ !cancelled() }}
+        run: python scripts/qualification/host_capabilities.py --only leak --work build/leak-control
+      - name: Check leaks in standalone ABI and interpolation probes
+        if: ${{ !cancelled() }}
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          LSAN_OPTIONS: exitcode=23
+        run: |
+          ctest --test-dir build -R '^(audit:cabi|audit:interpolation|qualification:c_consumer)$' \
+            --output-on-failure --no-tests=error --output-junit leaks.xml 2>&1 | tee build/leaks.log
+      - name: Check instrumented full-step Fortran and C++ checkpoints
+        if: ${{ !cancelled() }}
+        run: |
+          ctest --test-dir build -R '^(mini2dns_fang|mini3d_fang):download$' \
+            --output-on-failure --no-tests=error
+          python test/qualification/research_matrix.py --build build --inputs-root build/test_runs \
+            --work build/research --suffix=.debug 2>&1 | tee build/research.log
+      - name: Check leaks in the actual native application
+        if: ${{ !cancelled() }}
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          LSAN_OPTIONS: exitcode=23
+        run: |
+          mkdir -p build/leak-application
+          cp -a build/test_runs/mini2dns_fang/inputs build/leak-application/inputs
+          python scripts/qualification/run_research.py --exe build/gemini.bin.debug \
+            --case build/leak-application --ranks 2 --layout 1 2 2>&1 | tee build/leak-application.log
+      - name: Preserve sanitizer evidence
+        if: always()
+        uses: ./.github/workflows/qualification-evidence
+        with:
+          profile: sanitizers

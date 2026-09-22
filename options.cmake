@@ -51,6 +51,10 @@ file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
 option(gemini3d_BUILD_TESTING "build Gemini3D tests" ${gemini3d_IS_TOP_LEVEL})
+option(gemini3d_require_qualification "require the complete Python qualification test dependencies" OFF)
+if(gemini3d_require_qualification AND (NOT BUILD_TESTING OR NOT gemini3d_BUILD_TESTING))
+  message(FATAL_ERROR "gemini3d_require_qualification requires BUILD_TESTING=ON and gemini3d_BUILD_TESTING=ON")
+endif()
 
 if(gemini3d_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")

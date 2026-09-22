@@ -45,13 +45,15 @@ The gate checker requires exactly R01-R18, an exact candidate commit, existing h
 
 ## Reproduce
 
-Use a fresh build directory after derived-type or toolchain changes. For simultaneous or externally synchronized workspaces, set `-Dgemini3d_test_run_root=/absolute/fresh-output-root` to isolate native case outputs; the default is `build/test_runs`. This directory is reserved for CTest cases and its dated outputs are reset on each run. Install GNU C/C++/Fortran, MPI, LAPACK/BLAS/ScaLAPACK, HDF5 Fortran/HL with deflate, and the pinned Python test environment recorded in the workflow.
+Use a fresh build directory after derived-type or toolchain changes. For simultaneous or externally synchronized workspaces, set `-Dgemini3d_test_run_root=/absolute/fresh-output-root` to isolate native case outputs; the default is `build/test_runs`. This directory is reserved for CTest cases and its dated outputs are reset on each run. Install GNU C/C++/Fortran, MPI, LAPACK/BLAS/ScaLAPACK, HDF5 Fortran/HL with deflate, and Python **3.11 or newer** (qualification hashing uses `hashlib.file_digest`) with NumPy, h5py and SciPy. Hosted jobs install the pinned versions in `requirements.txt`.
+
+`-Dgemini3d_require_qualification=ON` requires `BUILD_TESTING=ON`, `gemini3d_BUILD_TESTING=ON` and all these Python dependencies; missing dependencies fail configuration. Import checks run again on every configure, including when the interpreter changes. The default is OFF for optional native-only builds: unavailable Python-dependent tests are not registered, which is **not complete qualification**. The `qualification-debug` and `qualification-release` configure presets require these dependencies and retain all nine pinned native cases.
 
 ```sh
 cmake -Doffline_dir=/absolute/cache -P scripts/offline_libraries.cmake
 cmake -S . -B build -G Ninja -C /absolute/cache/sources.cmake \
   -DCMAKE_BUILD_TYPE=Release -Dgemini3d_realbits=64 \
-  -Dgemini3d_test_simulations=ON -DMPIEXEC_MAX_NUMPROCS=2
+  -Dgemini3d_test_simulations=ON -Dgemini3d_require_qualification=ON -DMPIEXEC_MAX_NUMPROCS=2
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure --output-junit native.xml
 python test/qualification/restart_core_checks.py --exe build/gemini.bin \
@@ -71,6 +73,12 @@ cmake -Dqualification_work=/absolute/new-hdf5-work \
 ```
 
 For GNU address/undefined-behavior instrumentation use a new Debug build with `-Dgemini3d_sanitizers=ON`. Set `ASAN_OPTIONS=detect_leaks=0:halt_on_error=1` only when leak checking is deliberately excluded; this is not leak qualification. The supplied hosted workflow has a separate leak job step. External MPI/HDF5/BLAS libraries are not automatically instrumented.
+
+`.github/workflows/preintegration.yml` runs on pull requests, pushes and manual dispatches without excluding qualification/script changes. It runs Debug/Release native comparisons and the full research matrix, verified HDF5 2.2.0, sanitizer checks, a deliberate-leak positive control, and unsuppressed application leak checks. Artifacts bind the checked-out candidate commit, repository, run and attempt and retain hashed diagnostics even on failure. This workflow definition is not evidence of a hosted pass.
+
+Kernel-memory measurements require an already delegated cgroup-v2 memory controller. `GEMINI_QUALIFICATION_CGROUP` can name that parent through a repository variable; the default is `/sys/fs/cgroup`. No privilege/mount workaround, sampling substitution or skipped measurement can produce a pass. Missing delegation, LeakSanitizer capability failure, or an MPI/dependency leak remains a failed/blocked qualification requiring a capable host and triage.
+
+The Cartesian remapper accepts only Boolean or integer zero/one validity masks of the source-cell shape. Floating-point, string, object and nonbinary integer masks are rejected rather than coerced to truth; any invalid/cut cell still rejects this all-covered remapping contract.
 
 Run each forcing stream through `validate_driver.py` with explicit start/stop/cadence before launching. Naive timestamps mean UTC. The validator rejects gaps; it does not infer cadence, impute data or approve extrapolation.
 

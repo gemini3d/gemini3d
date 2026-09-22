@@ -1,0 +1,55 @@
+name: Qualification evidence
+description: Retain exact-commit diagnostics and hashed measurements, including failures
+inputs:
+  profile:
+    description: Qualification build profile
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Hash qualification evidence
+      shell: bash
+      run: |
+        mkdir -p build/evidence
+        python3 - <<'PY'
+        import hashlib, json
+        from pathlib import Path
+        files = set()
+        for name in ("Testing", "evidence", "test_runs", "research",
+                     "restart-core", "leak-control", "leak-application", "memory-workloads"):
+            root = Path("build") / name
+            if root.is_dir():
+                files.update(p for p in root.rglob("*") if p.is_file())
+        for pattern in ("*.json", "*.log", "*.xml", "CMakeCache.txt",
+                        "CMakeFiles/CMakeConfigureLog.yaml", "test/audit/*.json"):
+            files.update(p for p in Path("build").glob(pattern) if p.is_file())
+        records = []
+        for path in sorted(files):
+            if path.name == "sha256.json":
+                continue
+            with path.open("rb") as stream:
+                records.append({"path": str(path), "sha256": hashlib.file_digest(stream, "sha256").hexdigest()})
+        Path("build/evidence/sha256.json").write_text(json.dumps(records, indent=2) + "\n")
+        PY
+    - name: Upload exact-commit qualification evidence
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: qualification-${{ inputs.profile }}-${{ env.CANDIDATE_COMMIT }}-${{ github.run_id }}-${{ github.run_attempt }}
+        if-no-files-found: error
+        retention-days: 14
+        path: |
+          build/evidence/
+          build/CMakeCache.txt
+          build/CMakeFiles/CMakeConfigureLog.yaml
+          build/*.log
+          build/*.json
+          build/*.xml
+          build/Testing/
+          build/test/audit/*.json
+          build/test_runs/
+          build/research/
+          build/restart-core/
+          build/leak-control/
+          build/leak-application/
+          build/memory-workloads/
