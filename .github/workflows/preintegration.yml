@@ -192,6 +192,7 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           LSAN_OPTIONS: exitcode=23:suppressions=${{ github.workspace }}/.github/lsan-openmpi.supp
+          PMIX_MCA_gds: hash
         run: |
           mkdir -p build/leak-application
           cp -a build/test_runs/mini2dns_fang/inputs build/leak-application/inputs

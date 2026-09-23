@@ -82,6 +82,7 @@ class HostedEvidence(unittest.TestCase):
         self.assertIn('detect_leaks=1:halt_on_error=1',jobs['sanitizers'])
         self.assertIn('LSAN_OPTIONS: exitcode=23:suppressions=${{ github.workspace }}/.github/lsan-openmpi.supp',
                       jobs['sanitizers'])
+        self.assertIn('PMIX_MCA_gds: hash',jobs['sanitizers'])
         self.assertEqual((root/'.github/lsan-openmpi.supp').read_text().strip().splitlines(),
                          ['# OpenMPI 4.x on Ubuntu 24.04 leaks hwloc allocations during MPI_Init().',
                           'leak:ompi_mpi_init',
