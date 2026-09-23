@@ -37,8 +37,9 @@ class QualificationDependencies(unittest.TestCase):
         self.env = dict(os.environ, PYTHONPATH=str(self.modules))
 
     def configure(self, *args):
+        cmake = os.environ.get("CMAKE") or shutil.which("cmake") or "cmake"
         return subprocess.run(
-            ["cmake", "-S", str(self.source), "-B", str(self.root / "build"),
+            [cmake, "-S", str(self.source), "-B", str(self.root / "build"),
              f"-DPython_EXECUTABLE={sys.executable}", *args],
             env=self.env, capture_output=True, text=True, timeout=60
         )
