@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class QualificationDependencies(unittest.TestCase):
     def setUp(self):
-        self.work = tempfile.TemporaryDirectory(dir=Path.cwd())
+        self.work = tempfile.TemporaryDirectory()
         self.addCleanup(self.work.cleanup)
         self.root = Path(self.work.name)
         self.source = self.root / "source"
