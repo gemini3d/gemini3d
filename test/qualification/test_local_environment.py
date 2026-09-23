@@ -67,6 +67,7 @@ class LocalEnvironment(unittest.TestCase):
                         self.assertFalse(report.exists(), "Old test results must be removed before CTest runs")
                         if contents is not None:
                             report.write_text(contents)
+                        return subprocess.CompletedProcess(command, 0)
                     with patch.object(local, "execute", side_effect=execute):
                         with self.assertRaises((RuntimeError, FileNotFoundError)):
                             local.verified_tests("ctest", root, None, 1, "fixture")
@@ -239,6 +240,7 @@ function wsl.exe {
                     report = command[command.index("--output-junit") + 1]
                     report.write_text("<testsuite>" + "".join(
                         f'<testcase name="{name}" status="run"/>' for name in names) + "</testsuite>")
+                    return subprocess.CompletedProcess(command, 0)
                 if "--format=json" in command:
                     return "[]"
 

@@ -196,33 +196,38 @@ subroutine runtime_save(cfg,ymd,ut,fluid,electro,vi1,vi2,vi3,iteration,neutral_t
   integer, intent(in) :: ymd(3),iteration
   real(wp), intent(in) :: ut,neutral_time,tout,tglowout
   real(wp), intent(in) :: fluid(:,:,:,:),electro(:,:,:,:),vi1(:,:,:,:),vi2(:,:,:,:),vi3(:,:,:,:)
-  character(:), allocatable :: path,temporary,final
+  character(:), allocatable :: path,temporary,final,local_checkpoint,local_prefix,local_staged_output
   character(4096) :: message
   character(16) :: rank
   type(hdf5_file) :: f
   if(.not.enabled) return
   call check_payload(fluid,electro,vi1,vi2,vi3)
   final=date_filename(cfg%outdir,ymd,ut)//'.h5'
-  checkpoint_name=final(scan(final,'/\',back=.true.)+1:)
+  local_checkpoint=final(scan(final,'/\',back=.true.)+1:)
   message=''
   if(mpi_cfg%myid==0) then
-    staged_output=stage_file(final)
-    if(len(staged_output)>len(message)) error stop 'Checkpoint path too long'
-    message=staged_output
+    local_staged_output=stage_file(final)
+    if(len(local_staged_output)>len(message)) error stop 'Checkpoint path too long'
+    message=local_staged_output
   endif
   call MPI_Bcast(message,len(message),MPI_CHARACTER,0,MPI_COMM_WORLD)
-  staged_output=trim(message)
-  state_prefix=staged_output(len_trim(cfg%outdir)+2:)
+  local_staged_output=trim(message)
+  local_prefix=local_staged_output(len_trim(cfg%outdir)+2:)
+  if(mpi_cfg%myid==0) then
+    staged_output=local_staged_output
+    state_prefix=local_prefix
+    checkpoint_name=local_checkpoint
+  endif
   write(rank,'(I8.8)') mpi_cfg%myid
-  path=staged_output//'.r'//trim(rank)//'.h5'
+  path=local_staged_output//'.r'//trim(rank)//'.h5'
   temporary=stage_file(path)
   call f%open(temporary,action='w')
   call f%write('/schema',runtime_schema);call f%write('/input_sha256',input_digest)
   call f%write('/executable_sha256',executable_digest)
   call f%write('/rank',mpi_cfg%myid)
   call f%write('/layout',[mpi_cfg%lid2,mpi_cfg%lid3])
-  call f%write('/checkpoint',checkpoint_name)
-  call f%write('/generation',state_prefix)
+  call f%write('/checkpoint',local_checkpoint)
+  call f%write('/generation',local_prefix)
   call f%write('/iteration',iteration);call f%write('/dt',previous_dt)
   call f%write('/next_output',tout);call f%write('/next_glow',tglowout)
   call f%write('/neutral_time',neutral_time)

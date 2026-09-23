@@ -31,11 +31,12 @@ REFERENCE_TESTS = {
 }
 
 
-def execute(command, *, env=None, capture=False, cwd=None):
-    return subprocess.run(
-        [str(arg) for arg in command], check=True, env=env, cwd=cwd,
+def execute(command, *, env=None, capture=False, cwd=None, check=True, result=False):
+    proc = subprocess.run(
+        [str(arg) for arg in command], check=check, env=env, cwd=cwd,
         text=True, stdout=subprocess.PIPE if capture else None,
-    ).stdout
+    )
+    return proc if result else proc.stdout
 
 
 def digest(path):
@@ -126,14 +127,20 @@ def verified_tests(ctest, build, env, jobs, suite, filters=(), required=()):
         raise RuntimeError(f"{suite}: required tests missing or disabled: " + ", ".join(sorted(missing)))
     report = build / f"local-{suite}.xml"
     report.unlink(missing_ok=True)
-    execute([*command, "--output-on-failure", "--no-tests=error", "--parallel", jobs,
-             "--output-junit", report], env=env)
+    run = execute([*command, "--output-on-failure", "--no-tests=error", "--parallel", jobs,
+                   "--output-junit", report], env=env, check=False, result=True)
     cases = ET.parse(report).getroot().findall(".//testcase")
     names = [case.get("name") for case in cases]
+    executed = {case.get("name") for case in cases
+                if case.find("skipped") is None and case.get("status") != "disabled"}
     passed = {case.get("name") for case in cases if case.get("status") == "run" and
               all(case.find(tag) is None for tag in ("failure", "error", "skipped"))}
-    if len(names) != len(set(names)) or set(names) != selected or passed != expected:
+    if len(names) != len(set(names)) or set(names) != selected or executed != expected:
         raise RuntimeError(f"{suite}: executed test results do not match the enabled inventory")
+    if run.returncode == 0 and passed != expected:
+        raise RuntimeError(f"{suite}: executed test results do not match the enabled inventory")
+    if run.returncode != 0:
+        raise subprocess.CalledProcessError(run.returncode, [str(arg) for arg in command])
     return {"selected": sorted(selected), "disabled": sorted(disabled), "passed": sorted(passed),
             "junit": report.name, "junit_sha256": digest(report)}
 
