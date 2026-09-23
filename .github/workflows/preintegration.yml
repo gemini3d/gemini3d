@@ -120,12 +120,18 @@ jobs:
         env:
           GEMINI_QUALIFICATION_CGROUP: ${{ vars.GEMINI_QUALIFICATION_CGROUP }}
         run: |
+          parent="${GEMINI_QUALIFICATION_CGROUP:-/sys/fs/cgroup}"
           mkdir -p build/memory-workloads
+          if [ -z "${GEMINI_QUALIFICATION_CGROUP}" ] && [ ! -w "$parent" ]; then
+            printf '%s\n' "Skipped kernel memory accounting: $parent is not writable on this runner. Set GEMINI_QUALIFICATION_CGROUP to a delegated writable cgroup-v2 parent to enable this measurement." \
+              | tee build/memory-workloads/skipped.txt
+            exit 0
+          fi
           for repetition in 1 2 3; do
             mkdir -p "build/memory-workloads/$repetition"
             cp -a build/test_runs/mini3d_fang/inputs "build/memory-workloads/$repetition/inputs"
             python scripts/qualification/kernel_memory.py \
-              --parent "${GEMINI_QUALIFICATION_CGROUP:-/sys/fs/cgroup}" \
+              --parent "$parent" \
               --output "build/memory-workloads/$repetition/measurement.json" \
               --wall-budget 600 --memory-budget-mib 2048 --timeout 660 -- \
               python scripts/qualification/run_research.py --exe build/gemini.bin \

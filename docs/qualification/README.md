@@ -84,7 +84,7 @@ operator ledgers. Both hosted native Debug and Release jobs now request this
 extended matrix. It does not expand the frozen one/two-rank scientific profile
 or relax its numerical budgets.
 
-Kernel-memory measurements require an already delegated cgroup-v2 memory controller. `GEMINI_QUALIFICATION_CGROUP` can name that parent through a repository variable; the default is `/sys/fs/cgroup`. No privilege/mount workaround, sampling substitution or skipped measurement can produce a pass. Missing delegation, LeakSanitizer capability failure, or an MPI/dependency leak remains a failed/blocked qualification requiring a capable host and triage.
+Kernel-memory measurements require an already delegated cgroup-v2 memory controller. `GEMINI_QUALIFICATION_CGROUP` can name that parent through a repository variable; otherwise the workflow only uses `/sys/fs/cgroup` when that root is already writable and records a skip on hosted runners that lack delegation. No privilege/mount workaround or sampling substitution can produce a pass. Missing delegation, LeakSanitizer capability failure, or an MPI/dependency leak remains a failed/blocked qualification requiring a capable host and triage.
 
 The Cartesian remapper accepts only Boolean or integer zero/one validity masks of the source-cell shape. Floating-point, string, object and nonbinary integer masks are rejected rather than coerced to truth; any invalid/cut cell still rejects this all-covered remapping contract.
 
