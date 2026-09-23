@@ -65,7 +65,7 @@ jobs:
 
   wsl:
     name: install (WSL Ubuntu-24.04)
-    runs-on: windows-2022
+    runs-on: windows-latest
     timeout-minutes: 90
     steps:
       - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
