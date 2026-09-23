@@ -39,7 +39,7 @@ if(Python_Interpreter_FOUND)
     --work ${CMAKE_CURRENT_BINARY_DIR}/cadence-contract)
   set_tests_properties(audit:filename_cadence PROPERTIES LABELS "unit;audit" TIMEOUT 60)
 endif()
-if(H5PY_FOUND)
+if(NUMPY_FOUND AND H5PY_FOUND)
   add_test(NAME audit:launcher_preserves_outputs COMMAND ${Python_EXECUTABLE}
     ${CMAKE_CURRENT_LIST_DIR}/test_launcher_contract.py --exe $<TARGET_FILE:gemini3d.run>
     --work ${CMAKE_CURRENT_BINARY_DIR}/launcher-contract)

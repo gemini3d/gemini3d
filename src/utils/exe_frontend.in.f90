@@ -150,7 +150,7 @@ if (Ncpu >= 1) return
 Ncpu = cpu_count()
 if (Ncpu < 1) then
   write(stderr,'(a,i0)') "ERROR: gemini3d.run:get_Ncpu: run mpiexec with gemini.bin" // &
-    "as CPU count wan not detected ", Ncpu
+    "as CPU count was not detected ", Ncpu
   error stop
 endif
 
