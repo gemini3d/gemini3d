@@ -9,6 +9,8 @@ implicit none (type, external)
 private
 public :: cli_parser, get_Ncpu, quote_argument, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
 
+character(*), parameter :: default_numproc_flag = "@MPIEXEC_NUMPROC_FLAG@"
+
 interface !< cpu_count.cpp
 integer(c_int) function cpu_count_c() bind(c, name="cpu_count")
 import c_int
@@ -23,10 +25,10 @@ cpu_count = int(cpu_count_c())
 end function
 
 
-subroutine cli_parser(plan, path, exe, mpiexec, extra)
+subroutine cli_parser(plan, path, exe, mpiexec, numproc_flag, extra)
 
 logical, intent(out) :: plan
-character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
+character(:), allocatable, intent(out) :: path, exe, mpiexec, numproc_flag, extra
 
 character(1000) :: buf
 integer :: argc, i, j, ierr, L
@@ -109,6 +111,11 @@ end do
 
 if(.not.allocated(exe)) exe = find_exe("")
 if(.not.allocated(mpiexec)) mpiexec = find_mpiexec("")
+if (len_trim(default_numproc_flag) > 0) then
+  numproc_flag = default_numproc_flag
+else
+  numproc_flag = "-n"
+endif
 
 end subroutine cli_parser
 

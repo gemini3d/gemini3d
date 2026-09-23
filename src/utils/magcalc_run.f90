@@ -9,11 +9,11 @@ use autogrid, only : grid_auto, max_mpi
 implicit none (type, external)
 
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu
-character(:), allocatable :: path, exe, cmd, mpiexec, extra
+character(:), allocatable :: path, exe, cmd, mpiexec, numproc_flag, extra
 logical :: plan
 character(1000) :: buf
 
-call cli_parser(plan, path, exe, mpiexec, extra)
+call cli_parser(plan, path, exe, mpiexec, numproc_flag, extra)
 
 Ncpu = get_Ncpu()
 
@@ -35,7 +35,7 @@ if(plan) stop 'magcalc.run: plan complete'
 
 !> run magcalc.bin
 if(lid > 1) then
-  write(buf, '(A1,A,A,I0,1X,A,1X,A,1X,A)') '"',mpiexec, '" -n ', lid, exe, path, extra
+  write(buf, '(A1,A,A,A,1X,I0,1X,A,1X,A,1X,A)') '"',mpiexec, '" ', trim(numproc_flag), lid, exe, path, extra
 else
   write(buf, '(A,1X,A,1X,A)') exe, path, extra
 endif

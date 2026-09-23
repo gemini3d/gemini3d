@@ -9,11 +9,11 @@ use autogrid, only : grid_auto, max_mpi
 implicit none (type, external)
 
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu
-character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra
+character(:), allocatable :: path, gem_exe, cmd, mpiexec, numproc_flag, extra
 logical :: plan
 character(20) :: count
 
-call cli_parser(plan, path, gem_exe, mpiexec, extra)
+call cli_parser(plan, path, gem_exe, mpiexec, numproc_flag, extra)
 
 Ncpu = get_Ncpu()
 
@@ -35,7 +35,7 @@ if(.not. plan) then
 !> run gemini.bin
 if(lid > 1) then
   write(count, '(I0)') lid
-  cmd = quote_argument(mpiexec) // ' -n ' // trim(count) // ' '
+  cmd = quote_argument(mpiexec) // ' ' // trim(numproc_flag) // ' ' // trim(count) // ' '
 else
   cmd = ''
 endif

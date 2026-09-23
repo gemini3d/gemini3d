@@ -16,6 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
+    parser.add_argument("--numproc-flag", required=True)
     args = parser.parse_args()
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
@@ -36,7 +37,7 @@ def main():
     child.chmod(0o755)
     mpi = work / "MPI's launcher with spaces"
     mpi.write_text(f"#!{sys.executable}\nimport subprocess,sys\n"
-                   "assert sys.argv[1:3] == ['-n', '6'], sys.argv\n"
+                   f"assert sys.argv[1:3] == [{args.numproc_flag!r}, '6'], sys.argv\n"
                    "sys.exit(subprocess.call(sys.argv[3:]))\n")
     mpi.chmod(0o755)
 
