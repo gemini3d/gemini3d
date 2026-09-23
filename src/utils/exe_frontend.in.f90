@@ -339,15 +339,24 @@ end subroutine help_magcalc_run
 function quote_argument(arg) result(quoted)
 character(*), intent(in) :: arg
 character(:), allocatable :: quoted
-integer :: i
+integer :: i, n
 
 if ("@WIN32@" == "1") then
   ! cmd.exe expands these even inside double quotes; reject rather than reinterpret.
   if (scan(arg, '"%!') /= 0) error stop "launcher: unsupported shell character in argument"
-  quoted = '"' // arg // '"'
+  if (len_trim(arg) == 0) then
+    quoted = '""'
+  else
+    quoted = '"' // arg(:len_trim(arg)) // '"'
+  endif
 else
+  n = len_trim(arg)
+  if (n == 0) then
+    quoted = "''"
+    return
+  endif
   quoted = "'"
-  do i = 1, len(arg)
+  do i = 1, n
     if (arg(i:i) == "'") then
       quoted = quoted // "'" // '"' // "'" // '"' // "'"
     else

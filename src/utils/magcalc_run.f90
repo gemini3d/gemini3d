@@ -2,7 +2,7 @@ program magcalc_run
 !! for use from terminal/CMake, computes optimal MPI count
 !! for a particular simulation
 
-use exe_frontend, only : cli_parser, get_Ncpu
+use exe_frontend, only : cli_parser, get_Ncpu, quote_argument
 use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 
@@ -11,8 +11,7 @@ implicit none (type, external)
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu
 character(:), allocatable :: path, exe, cmd, mpiexec, numproc_flag, extra
 logical :: plan
-character(1000) :: buf
-
+character(20) :: count
 call cli_parser(plan, path, exe, mpiexec, numproc_flag, extra)
 
 Ncpu = get_Ncpu()
@@ -35,12 +34,13 @@ if(plan) stop 'magcalc.run: plan complete'
 
 !> run magcalc.bin
 if(lid > 1) then
-  write(buf, '(A1,A,A,A,1X,I0,1X,A,1X,A,1X,A)') '"',mpiexec, '" ', trim(numproc_flag), lid, exe, path, extra
+  write(count, '(I0)') lid
+  cmd = quote_argument(mpiexec) // ' ' // trim(numproc_flag) // ' ' // trim(count) // ' '
 else
-  write(buf, '(A,1X,A,1X,A)') exe, path, extra
+  cmd = ''
 endif
-!! quotes are for mpiexec path with spaces
-cmd = trim(buf)
+cmd = cmd // quote_argument(exe) // ' ' // quote_argument(path)
+if(len_trim(extra)>0) cmd = trim(cmd) // ' ' // trim(adjustl(extra))
 print *, cmd
 call execute_command_line(cmd, exitstat=i)
 

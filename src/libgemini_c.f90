@@ -261,7 +261,7 @@ contains
 
   !> C wrapper to deallocate grid
   subroutine gemini_grid_dealloc_C(xtype,xC) bind(C, name='gemini_grid_dealloc_C')
-    integer(C_INT), intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
@@ -274,7 +274,7 @@ contains
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_C(xtype,xC) bind(C, name='gemini_grid_generate_C')
-    integer(C_INT), intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
@@ -285,7 +285,7 @@ contains
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_altnull_C(xtype,xC,altnullC) bind(C, name='gemini_grid_generate_altnull_C')
-    integer(C_INT), intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     real(wp), intent(inout) :: altnullC
     class(curvmesh), pointer :: x
