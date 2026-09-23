@@ -184,6 +184,7 @@ if(Python_Interpreter_FOUND)
       ${PROJECT_SOURCE_DIR}/test/qualification/test_${probe}.py)
     set_tests_properties(qualification:${probe} PROPERTIES LABELS "unit;qualification")
   endforeach()
+  set_tests_properties(qualification:qualification_dependencies PROPERTIES ENVIRONMENT "CMAKE=${CMAKE_COMMAND}")
   add_test(NAME qualification:model_guard COMMAND ${Python_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/test/qualification/test_mode_guard.py
     --alternate $<TARGET_FILE:gemini.altenergy.bin> --density $<TARGET_FILE:gemini.denspot.bin>)
