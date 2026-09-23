@@ -84,7 +84,11 @@ class HostedEvidence(unittest.TestCase):
                       jobs['sanitizers'])
         self.assertEqual((root/'.github/lsan-openmpi.supp').read_text().strip().splitlines(),
                          ['# OpenMPI 4.x on Ubuntu 24.04 leaks hwloc allocations during MPI_Init().',
-                          'leak:ompi_mpi_init'])
+                          'leak:ompi_mpi_init',
+                          '# Ubuntu 24.04 OpenBLAS (0.3.26) leaves process-lifetime allocations visible to LSAN.',
+                          'leak:libopenblasp-r0.3.26.so',
+                          '# Ubuntu 24.04 UBSan runtime leaves process-lifetime allocations visible to LSAN.',
+                          'leak:libubsan.so.1.0.0'])
         self.assertIn('kernel_memory.py',jobs['current-hdf5'])
         self.assertIn('for repetition in 1 2 3',jobs['current-hdf5'])
         presets=json.loads((root/'CMakePresets.json').read_text())['configurePresets']
