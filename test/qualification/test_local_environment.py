@@ -118,7 +118,8 @@ function wsl.exe {
                 local.main(["run", "--root", directory, "--case", directory, "--ranks", "2",
                             "--", "-dryrun", "-manual_grid", "1", "2"])
             self.assertEqual(run.call_args.args[0],
-                             ["/mpi/mpiexec", "-n", 2, exe, root, "-dryrun", "-manual_grid", "1", "2"])
+                             ["/mpi/mpiexec", "-n", 2, exe, root.resolve(),
+                              "-dryrun", "-manual_grid", "1", "2"])
             self.assertEqual(run.call_args.kwargs["cwd"], exe.parent)
 
     def test_check_requires_success_record_and_never_installs(self):
@@ -263,7 +264,7 @@ function wsl.exe {
                 self.assertEqual(result["junit_sha256"], local.digest(root / "build" / result["junit"]))
             self.assertEqual(saved["model_resources_sha256"], {"msis21.parm": local.digest(resource)})
             self.assertTrue(any("-Dgemini3d_require_qualification=ON" in c for c in commands))
-            self.assertTrue(any("-C" in c and str(source_cache) in c for c in commands))
+            self.assertTrue(any("-C" in c and str(source_cache.resolve()) in c for c in commands))
             test_indices = [i for i, c in enumerate(commands) if "--no-tests=error" in c]
             install_index = next(i for i, c in enumerate(commands) if "--install" in c)
             self.assertEqual(len(test_indices), 1 if reference_tests else 2)
