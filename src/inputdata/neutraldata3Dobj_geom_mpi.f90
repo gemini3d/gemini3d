@@ -150,7 +150,23 @@ contains
     ! null pointers specific to parent neutraldata class
     call self%dissociate_neutral_pointers()
 
-    ! Allocatable projections, coordinates and MPI slabs finalize automatically.
+    if (allocated(self%proj_ezp_e1)) deallocate(self%proj_ezp_e1)
+    if (allocated(self%proj_ezp_e2)) deallocate(self%proj_ezp_e2)
+    if (allocated(self%proj_ezp_e3)) deallocate(self%proj_ezp_e3)
+    if (allocated(self%proj_eyp_e1)) deallocate(self%proj_eyp_e1)
+    if (allocated(self%proj_eyp_e2)) deallocate(self%proj_eyp_e2)
+    if (allocated(self%proj_eyp_e3)) deallocate(self%proj_eyp_e3)
+    if (allocated(self%proj_exp_e1)) deallocate(self%proj_exp_e1)
+    if (allocated(self%proj_exp_e2)) deallocate(self%proj_exp_e2)
+    if (allocated(self%proj_exp_e3)) deallocate(self%proj_exp_e3)
+    if (allocated(self%ximat)) deallocate(self%ximat)
+    if (allocated(self%yimat)) deallocate(self%yimat)
+    if (allocated(self%zimat)) deallocate(self%zimat)
+    if (allocated(self%extents)) deallocate(self%extents)
+    if (allocated(self%indx)) deallocate(self%indx)
+    if (allocated(self%slabsizes)) deallocate(self%slabsizes)
+    if (allocated(self%xnall)) deallocate(self%xnall)
+    if (allocated(self%ynall)) deallocate(self%ynall)
 
     ! set pointers to null
     nullify(self%xi,self%yi,self%zi);

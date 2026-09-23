@@ -43,6 +43,9 @@ subroutine runtime_select(cfg)
   character(256) :: value
   integer :: status,length,i
   enabled=.false.;pending=.false.;runtime_ready=.false.;previous_dt=0
+  if(allocated(restore_file)) deallocate(restore_file)
+  if(allocated(restore_checkpoint)) deallocate(restore_checkpoint)
+  if(allocated(restore_generation)) deallocate(restore_generation)
   if(allocated(staged_output)) deallocate(staged_output)
   if(allocated(state_prefix)) deallocate(state_prefix)
   if(allocated(checkpoint_name)) deallocate(checkpoint_name)

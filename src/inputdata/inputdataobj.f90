@@ -1003,9 +1003,11 @@ contains
     if (associated(self%data2Dax12inow)) deallocate(self%data2Dax12inow)
     if (associated(self%data2Dax13inow)) deallocate(self%data2Dax13inow)
     if (associated(self%data3Dinow)) deallocate(self%data3Dinow)
-    do i=1,size(self%coverage)
-      if (allocated(self%coverage(i)%valid)) deallocate(self%coverage(i)%valid)
-    end do
+    if (allocated(self%coverage)) then
+      do i=1,size(self%coverage)
+        if (allocated(self%coverage(i)%valid)) deallocate(self%coverage(i)%valid)
+      end do
+    end if
 
     self%flagdatasize=.false.
     self%flagsizes=.false.

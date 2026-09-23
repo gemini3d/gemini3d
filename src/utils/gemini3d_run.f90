@@ -40,7 +40,7 @@ else
   cmd = ''
 endif
 cmd = cmd // quote_argument(gem_exe) // ' ' // quote_argument(path)
-if(len(extra)>0) cmd = cmd // trim(extra)
+if(len_trim(extra)>0) cmd = trim(cmd) // ' ' // trim(adjustl(extra))
 print *, cmd
 call execute_command_line(cmd, exitstat=i)
 

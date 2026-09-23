@@ -327,6 +327,15 @@ contains
     type(neutraldataBG), intent(inout) :: self
 
     call self%dissociate_pointers()
+    if (allocated(self%proj_ezp_e1)) deallocate(self%proj_ezp_e1)
+    if (allocated(self%proj_ezp_e2)) deallocate(self%proj_ezp_e2)
+    if (allocated(self%proj_ezp_e3)) deallocate(self%proj_ezp_e3)
+    if (allocated(self%proj_eyp_e1)) deallocate(self%proj_eyp_e1)
+    if (allocated(self%proj_eyp_e2)) deallocate(self%proj_eyp_e2)
+    if (allocated(self%proj_eyp_e3)) deallocate(self%proj_eyp_e3)
+    if (allocated(self%proj_exp_e1)) deallocate(self%proj_exp_e1)
+    if (allocated(self%proj_exp_e2)) deallocate(self%proj_exp_e2)
+    if (allocated(self%proj_exp_e3)) deallocate(self%proj_exp_e3)
     nullify(self%llon,self%llat,self%lalt,self%altp,self%glonp,self%glatp)
     nullify(self%natmp,self%natmiprev,self%natminext,self%natminow,self%alti,self%gloni,self%glati)
   end subroutine destructor
