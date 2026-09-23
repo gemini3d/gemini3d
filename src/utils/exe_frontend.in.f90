@@ -144,15 +144,9 @@ if (Ncpu >= 1) return
 Ncpu = get_Ncpu_envvar("SLURM_NTASKS")
 if (Ncpu >= 1) return
 
-! write(stderr,'(A)') "NOTE: gemini3d.run: CPU count not found in environment variables, using cpu_count.cpp." // &
-!   " If running on an HPC, only one node will be used."
+! write(stderr,'(A)') "NOTE: gemini3d.run: CPU count not found in environment variables, using one process."
 
-Ncpu = cpu_count()
-if (Ncpu < 1) then
-  write(stderr,'(a,i0)') "ERROR: gemini3d.run:get_Ncpu: run mpiexec with gemini.bin" // &
-    "as CPU count was not detected ", Ncpu
-  error stop
-endif
+Ncpu = 1
 
 end function get_Ncpu
 
