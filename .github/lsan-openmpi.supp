@@ -1,0 +1,2 @@
+# OpenMPI 4.x on Ubuntu 24.04 leaks hwloc allocations during MPI_Init().
+leak:ompi_mpi_init

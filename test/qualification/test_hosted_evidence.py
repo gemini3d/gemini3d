@@ -80,6 +80,11 @@ class HostedEvidence(unittest.TestCase):
         self.assertNotIn('--quick',workflow)
         self.assertIn('host_capabilities.py --only leak',jobs['sanitizers'])
         self.assertIn('detect_leaks=1:halt_on_error=1',jobs['sanitizers'])
+        self.assertIn('LSAN_OPTIONS: exitcode=23:suppressions=${{ github.workspace }}/.github/lsan-openmpi.supp',
+                      jobs['sanitizers'])
+        self.assertEqual((root/'.github/lsan-openmpi.supp').read_text().strip().splitlines(),
+                         ['# OpenMPI 4.x on Ubuntu 24.04 leaks hwloc allocations during MPI_Init().',
+                          'leak:ompi_mpi_init'])
         self.assertIn('kernel_memory.py',jobs['current-hdf5'])
         self.assertIn('for repetition in 1 2 3',jobs['current-hdf5'])
         presets=json.loads((root/'CMakePresets.json').read_text())['configurePresets']
