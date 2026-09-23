@@ -10,6 +10,16 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def find_cmake():
+    for candidate in (os.environ.get("CMAKE"), shutil.which("cmake"), "cmake"):
+        if not candidate:
+            continue
+        resolved = shutil.which(candidate) or candidate
+        if resolved == "cmake" or Path(resolved).is_file():
+            return resolved
+    return "cmake"
+
+
 class QualificationDependencies(unittest.TestCase):
     def setUp(self):
         self.work = tempfile.TemporaryDirectory()
@@ -37,9 +47,8 @@ class QualificationDependencies(unittest.TestCase):
         self.env = dict(os.environ, PYTHONPATH=str(self.modules))
 
     def configure(self, *args):
-        cmake = os.environ.get("CMAKE") or shutil.which("cmake") or "cmake"
         return subprocess.run(
-            [cmake, "-S", str(self.source), "-B", str(self.root / "build"),
+            [find_cmake(), "-S", str(self.source), "-B", str(self.root / "build"),
              f"-DPython_EXECUTABLE={sys.executable}", *args],
             env=self.env, capture_output=True, text=True, timeout=60
         )
@@ -108,6 +117,14 @@ class QualificationDependencies(unittest.TestCase):
                                         "-DBUILD_TESTING=ON", "-Dgemini3d_BUILD_TESTING=ON", f"-D{flag}=OFF")
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("requires BUILD_TESTING=ON", result.stderr)
+
+    def test_unusable_cmake_environment_falls_back_to_path(self):
+        cmake = os.environ.get("CMAKE")
+        self.addCleanup(lambda: os.environ.pop("CMAKE", None) if cmake is None else os.environ.__setitem__("CMAKE", cmake))
+        os.environ["CMAKE"] = "D:/not-valid-under-wsl/cmake.exe"
+        result = self.configure("-Dgemini3d_require_qualification=ON")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(all(value.upper() == "TRUE" for value in self.found()))
 
 
 if __name__ == "__main__":
