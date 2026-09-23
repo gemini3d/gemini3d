@@ -261,7 +261,7 @@ contains
 
   !> C wrapper to deallocate grid
   subroutine gemini_grid_dealloc_C(xtype,xC) bind(C, name='gemini_grid_dealloc_C')
-    integer(C_INT), intent(in) :: xtype
+    integer(C_INT), intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
