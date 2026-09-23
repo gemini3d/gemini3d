@@ -96,10 +96,11 @@ class HostedEvidence(unittest.TestCase):
         self.assertRegex(workflow,r'(?m)^  push:\s*$')
         self.assertNotIn('paths-ignore:',workflow)
         self.assertNotIn('continue-on-error:',workflow)
-        for platform in ['ubuntu-24.04','macos-14','windows-2022','Ubuntu-24.04']:
+        for platform in ['ubuntu-24.04','macos-14','Ubuntu-24.04']:
             self.assertIn(platform,workflow)
         jobs=dict(re.findall(r'(?ms)^  (unix|wsl):\n(.*?)(?=^  \w[\w-]*:\n|\Z)',workflow))
         self.assertEqual(set(jobs),{'unix','wsl'})
+        self.assertRegex(jobs['wsl'],r'(?m)^    runs-on: windows-(?:latest|\d{4})\s*$')
         bash='bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2'
         self.assertEqual(workflow.count(bash),1)
         self.assertEqual(jobs['unix'].count(bash),1)
