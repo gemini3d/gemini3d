@@ -45,6 +45,9 @@ class QualificationDependencies(unittest.TestCase):
         for module in ("numpy", "h5py", "scipy"):
             (self.modules / (module + ".py")).write_text("__version__ = 'test-fixture'\n")
         self.env = dict(os.environ, PYTHONPATH=str(self.modules))
+        cmake = os.environ.get("CMAKE")
+        if cmake and Path(cmake).is_file():
+            self.env["PATH"] = str(Path(cmake).parent) + os.pathsep + self.env.get("PATH", "")
 
     def configure(self, *args):
         return subprocess.run(
