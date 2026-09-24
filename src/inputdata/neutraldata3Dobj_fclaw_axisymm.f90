@@ -260,6 +260,9 @@ contains
   subroutine destructor(self)
     type(neutraldata3D_fclaw_axisymm) :: self
 
-    call self%dissociate_fclaw_pointers()
+call self%dissociate_fclaw_pointers()
+if (allocated(self%proj_ehorzp_e1)) deallocate(self%proj_ehorzp_e1)
+if (allocated(self%proj_ehorzp_e2)) deallocate(self%proj_ehorzp_e2)
+if (allocated(self%proj_ehorzp_e3)) deallocate(self%proj_ehorzp_e3)
   end subroutine destructor
 end module neutraldata3Dobj_fclaw_axisymm
