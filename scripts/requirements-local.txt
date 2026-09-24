@@ -1,0 +1,6 @@
+# Local build and qualification environment (Python 3.11+).
+cmake==3.31.10
+ninja==1.13.2
+numpy==2.3.5
+scipy==1.16.3
+h5py==3.16.0

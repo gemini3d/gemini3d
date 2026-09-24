@@ -17,6 +17,9 @@ on:
       - "**.md"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 # avoid wasted runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,6 +39,11 @@ jobs:
     steps:
 
     - uses: actions/checkout@v7
+
+    - name: Install Python test dependencies
+      run: |
+        sudo apt update
+        sudo apt install --no-install-recommends python3-h5py python3-scipy
 
     # this must be before oneAPI script commands else the scripts do not exist on the image
 

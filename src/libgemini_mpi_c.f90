@@ -23,8 +23,9 @@ use multifluid_mpi, only: halo_allparams
 use sources_mpi, only: RK2_prep_mpi_allspec
 use ionization_mpi, only: get_gavg_Tinf
 use neutral_perturbations, only: clear_neutral_perturb
+use neutral, only: neutral_wind_aggregate
 
-use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work
+use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers, gemini_work, v2grid, v3grid
 use gemini3d_mpi, only: mpisetup_in, mpiparms, &
  outdir_fullgridvaralloc, get_initial_state, check_fileoutput, check_dryrun, &
  BGfield_Lagrangian, get_initial_drifts, init_procgrid, init_inputdata_in, init_Efieldinput_in, pot2perpfield_in, &
@@ -113,7 +114,7 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call get_initial_state(cfg, fluidvars,electrovars,intvars, x, UTsec, ymd, tdur, t, tmilestone)
   end subroutine get_initial_state_C
@@ -138,7 +139,7 @@ contains
     call c_f_pointer(intvarsC,intvars)
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call check_fileoutput(cfg, fluidvars, electrovars, intvars, t, tout,tglowout,tmilestone,flagoutput,ymd,UTsec)
   end subroutine check_fileoutput_C
@@ -171,7 +172,7 @@ contains
     x=>set_gridpointer_dyntype(xtype, xC)
     call c_f_pointer(intvarsC,intvars)
 
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call BGfield_Lagrangian(cfg, x, electrovars, intvars)
   end subroutine BGfield_Lagrangian_C
@@ -197,7 +198,7 @@ contains
 
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call get_initial_drifts(cfg, x, fluidvars, fluidauxvars, electrovars, intvars)
   end subroutine get_initial_drifts_C
@@ -260,7 +261,7 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
 
     x=>set_gridpointer_dyntype(xtype, xC)
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call pot2perpfield_in(x,electrovars)
   end subroutine pot2perpfield_C
@@ -309,14 +310,14 @@ contains
   end subroutine dt_select_C
 
 
-!  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
-!    type(C_PTR), intent(inout) :: intvarsC
-!
-!    type(gemini_work), pointer :: intvars
-!
-!    call c_f_pointer(intvarsC,intvars)
-!    call neutral_atmos_wind_update(intvars)
-!  end subroutine neutral_atmos_wind_update_C
+  subroutine neutral_atmos_wind_update_C(intvarsC) bind(C, name='neutral_atmos_wind_update_C')
+    type(C_PTR), intent(inout) :: intvarsC
+    type(gemini_work), pointer :: intvars
+
+    if (.not. c_associated(intvarsC)) error stop "neutral_atmos_wind_update_C: null work object"
+    call c_f_pointer(intvarsC,intvars)
+    call neutral_wind_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb,.false.)
+  end subroutine neutral_atmos_wind_update_C
 
 
   subroutine inputdata_perturb_C(cfgC, intvarsC, xtype,xC, dt,t,ymd,UTsec) bind(C, name='inputdata_perturb_C')
@@ -404,7 +405,7 @@ contains
     call c_f_pointer(cfgC, cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
     call c_f_pointer(fluidauxvarsC,fluidauxvars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
     call c_f_pointer(intvarsC,intvars)
     x=>set_gridpointer_dyntype(xtype, xC)
 

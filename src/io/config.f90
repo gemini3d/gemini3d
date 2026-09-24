@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: explicit MSIS00 default.
 module gemini3d_config
 
 use filesystem, only: suffix
@@ -9,14 +10,16 @@ public :: read_configfile, gemini_cfg
 
 type :: gemini_cfg
   !> basic simulation information (base)
-  integer, dimension(3) :: ymd0
-  real(wp) :: UTsec0, tdur, dtout
-  real(wp) :: activ(3)
-  real(wp) :: tcfl
-  real(wp) :: Teinf
-  integer :: potsolve,flagperiodic,flagoutput
+  integer, dimension(3) :: ymd0=0
+  real(wp) :: UTsec0=0, tdur=0, dtout=0
+  real(wp) :: activ(3)=0
+  real(wp) :: tcfl=0
+  real(wp) :: Teinf=0
+  integer :: potsolve=1,flagperiodic=0,flagoutput=1
   logical :: nooutput = .false.
   logical :: dryrun = .false.
+  ! Missing spatial coverage is an error unless explicitly allowed and flagged.
+  logical :: allow_missing_spatial = .false.
 
   !> file information (files)
   character(:), allocatable :: infile,outdir,indatsize,indatgrid,indatfile,out_format, &
@@ -25,7 +28,7 @@ type :: gemini_cfg
   character(:), allocatable :: git_revision
 
   !> neutral atmospheric perturbations
-  integer :: flagdneu                           ! whether or not to include neutral perturbations from input files
+  integer :: flagdneu=0                           ! whether or not to include neutral perturbations from input files
   character(:), allocatable :: sourcedir        ! where the neutral input files are located
   integer :: interptype = 0                       ! assumptions to be used when interpolating neutrals:  0-cartesian 2D, 1-axisymmetric 2D, 3 - cartesian 3D
   real(wp) :: sourcemlat = 0,sourcemlon = 0         ! source latitude and longitude
@@ -33,12 +36,12 @@ type :: gemini_cfg
   real(wp) :: dxn = 0,drhon = 0,dzn = 0               ! dx,dy (or drho),dz for neutral inputs
 
   !> preciptiation file inputs
-  integer :: flagprecfile                       ! whether or not we have precipitation input from a file
+  integer :: flagprecfile=0                       ! whether or not we have precipitation input from a file
   character(:), allocatable :: precdir          ! location of precipitation input data
   real(wp) :: dtprec = 0                          ! time step between precipitation inputs
 
   !> electric field file inputs
-  integer :: flagE0file                         ! whether or not to have electric field file input
+  integer :: flagE0file=0                         ! whether or not to have electric field file input
   character(:), allocatable :: E0dir            ! location of electric field input data
   real(wp) :: dtE0 = 0                            ! time step between electric field inputs
 
@@ -53,8 +56,8 @@ type :: gemini_cfg
   real(wp) :: dtneuBGfile=0
 
   !> GLOW parameters
-  integer :: flagglow              ! whether or not to use glow to compute impact ionization
-  real(wp) :: dtglow, dtglowout    ! time step between GLOW updates and outputs for GLOW emissions
+  integer :: flagglow=0              ! whether or not to use glow to compute impact ionization
+  real(wp) :: dtglow=0, dtglowout=0    ! time step between GLOW updates and outputs for GLOW emissions
 
   !> fang parameters
   integer :: flag_fang = 2008       ! configure Fang ionization model
@@ -71,7 +74,7 @@ type :: gemini_cfg
   !> varying neutral atmosphere background
   logical :: flagneuBG = .false.                ! whether or not to allow MSIS to be called to update neutral background
   real(wp) :: dtneuBG = 900._wp                  ! approximate time between MSIS calls
-  integer :: msis_version
+  integer :: msis_version = 0
 
   !> background preciptation
   real(wp) :: PhiWBG = 1e-3_wp                      ! background total energy flux in mW/m^2
@@ -155,6 +158,23 @@ contains
     case default
       error stop 'ERROR:gemini3d:config: not sure how to read Gemini3D configuration file: ' // cfg%infile
     end select
+    call filename_cadence(cfg%dtout, "dtout")
+    if (cfg%flagglow /= 0) call filename_cadence(cfg%dtglowout, "dtglowout")
+    if (cfg%flagprecfile /= 0) call filename_cadence(cfg%dtprec, "dtprec")
+    if (cfg%flagE0file /= 0) call filename_cadence(cfg%dtE0, "dtE0")
+    if (cfg%flagdneu /= 0) call filename_cadence(cfg%dtneu, "dtneu")
+    if (cfg%flagsolfluxfile /= 0) call filename_cadence(cfg%dtsolflux, "dtsolflux")
+    if (cfg%flagneutralBGfile /= 0) call filename_cadence(cfg%dtneuBGfile, "dtneuBGfile")
   end subroutine read_configfile
+
+  subroutine filename_cadence(value, name)
+    use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+    real(wp), intent(in) :: value
+    character(*), intent(in) :: name
+
+    ! Preserve legacy filenames: they round timestamps to 10 ms, not microseconds.
+    if (.not. ieee_is_finite(value)) error stop "config: nonfinite filename cadence: " // name
+    if (value < 0.01_wp) error stop "config: filename cadence must be at least 0.01 seconds: " // name
+  end subroutine filename_cadence
 
 end module gemini3d_config

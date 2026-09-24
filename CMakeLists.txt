@@ -42,12 +42,25 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 include(cmake/package/git_rev.cmake)
 include(options.cmake)
+include(cmake/sanitizers.cmake)
 
 set(CMAKE_CXX_STANDARD 17)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 file(READ cmake/libraries.json json)
+
+function(fetchcontent_github_with_codeload name stem archive sha256)
+  set(url "${stem}${archive}")
+  string(REGEX MATCH "^https://github\\.com/([^/]+/[^/]+)/archive/$" _match "${stem}")
+  if(_match)
+    string(REPLACE ".tar.gz" "" ref "${archive}")
+    set(codeload_url "https://codeload.github.com/${CMAKE_MATCH_1}/tar.gz/${ref}")
+    FetchContent_Declare(${name} URL ${url} ${codeload_url} URL_HASH SHA256=${sha256})
+  else()
+    FetchContent_Declare(${name} URL ${url} URL_HASH SHA256=${sha256})
+  endif()
+endfunction()
 
 # Fortran filesystem library "ffilesystem"
 set(ffilesystem_fallback true)
@@ -56,8 +69,8 @@ set(HAVE_F03TYPE false)
 # may need fallback for old or slightly broken compilers
 string(JSON _stem GET "${json}" "ffilesystem" "stem")
 string(JSON _archive GET "${json}" "ffilesystem" "archive")
-set(ffilesystem_url ${_stem}${_archive})
-FetchContent_Declare(ffilesystem URL ${ffilesystem_url})
+string(JSON _sha256 GET "${json}" "ffilesystem" "sha256")
+fetchcontent_github_with_codeload(ffilesystem "${_stem}" "${_archive}" "${_sha256}")
 FetchContent_MakeAvailable(ffilesystem)
 
 # find python before excluding Anaconda
@@ -80,8 +93,8 @@ include(cmake/mpi.cmake)
 # --- HDF5
 string(JSON _stem GET "${json}" "h5fortran" "stem")
 string(JSON _archive GET "${json}" "h5fortran" "archive")
-set(h5fortran_url "${_stem}${_archive}")
-FetchContent_Declare(h5fortran URL ${h5fortran_url})
+string(JSON _sha256 GET "${json}" "h5fortran" "sha256")
+fetchcontent_github_with_codeload(h5fortran "${_stem}" "${_archive}" "${_sha256}")
 FetchContent_MakeAvailable(h5fortran)
 # h5fortran is a high-level, object-oriented HDF5 interface.
 
@@ -98,7 +111,11 @@ endif()
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
+# CMake 3.25 misparses FetchContent FIND_PACKAGE_ARGS when it auto-appends GLOBAL.
+# Keep the old-CMake path working by resolving parent-scope LAPACK directly below.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
+  set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
+endif()
 # we'll get LAPACK and SCALAPACK from MUMPS to avoid duplication of CMake script in this project
 
 set(BUILD_SINGLE off)
@@ -108,9 +125,13 @@ set(BUILD_COMPLEX16 off)
 
 string(JSON _stem GET "${json}" "mumps" "stem")
 string(JSON _archive GET "${json}" "mumps" "archive")
-set(mumps_url "${_stem}${_archive}")
-FetchContent_Declare(mumps URL ${mumps_url})
+string(JSON _sha256 GET "${json}" "mumps" "sha256")
+fetchcontent_github_with_codeload(mumps "${_stem}" "${_archive}" "${_sha256}")
 FetchContent_MakeAvailable(mumps)
+
+if(CMAKE_VERSION VERSION_LESS 3.26)
+  find_package(LAPACK REQUIRED)
+endif()
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL false)
 
@@ -118,16 +139,16 @@ set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL false)
 if(gemini3d_glow)
   string(JSON _stem GET "${json}" "glow" "stem")
   string(JSON _archive GET "${json}" "glow" "archive")
-  set(glow_url "${_stem}${_archive}")
-  FetchContent_Declare(glow URL ${glow_url})
+  string(JSON _sha256 GET "${json}" "glow" "sha256")
+  fetchcontent_github_with_codeload(glow "${_stem}" "${_archive}" "${_sha256}")
   FetchContent_MakeAvailable(glow)
 endif()
 
 if(gemini3d_hwm14)
   string(JSON _stem GET "${json}" "hwm14" "stem")
   string(JSON _archive GET "${json}" "hwm14" "archive")
-  set(hwm14_url "${_stem}${_archive}")
-  FetchContent_Declare(hwm14 URL ${hwm14_url})
+  string(JSON _sha256 GET "${json}" "hwm14" "sha256")
+  fetchcontent_github_with_codeload(hwm14 "${_stem}" "${_archive}" "${_sha256}")
   FetchContent_MakeAvailable(hwm14)
 endif()
 
@@ -138,8 +159,8 @@ endif()
 set(msis_BUILD_UTILS on)
 string(JSON _stem GET "${json}" "msis" "stem")
 string(JSON _archive GET "${json}" "msis" "archive")
-set(msis_url "${_stem}${_archive}")
-FetchContent_Declare(msis URL ${msis_url})
+string(JSON _sha256 GET "${json}" "msis" "sha256")
+fetchcontent_github_with_codeload(msis "${_stem}" "${_archive}" "${_sha256}")
 FetchContent_MakeAvailable(msis)
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 if(gemini3d_msis2)

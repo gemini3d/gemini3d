@@ -1,5 +1,8 @@
 name: ci_macos
 
+permissions:
+  contents: read
+
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
@@ -14,7 +17,6 @@ on:
       - "docs/**"
       - "scripts/**"
       - "**.md"
-
 
 jobs:
 

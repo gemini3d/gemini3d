@@ -1,0 +1,381 @@
+{
+  "system": {
+    "c_compiler": "GNU 12.2.0",
+    "cmake_version": "3.25.1",
+    "cpp_compiler": "GNU 12.2.0",
+    "cpu": "8 core Apple M1",
+    "fortran_compiler": "GNU 12.2.0",
+    "memory_ram_MB": 16384,
+    "operating_system": "Darwin"
+  },
+  "tests": {
+    "GDI_KHI_eq": {
+      "archive": "GDI_KHI_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "4faa58f2c4d419a8626221b9a4f8e022783b3df406af778ee3bc9a53a214dd31",
+      "url": "https://www.dropbox.com/s/3s465sd24ugs2w9/GDI_KHI_eq.zst?dl=1"
+    },
+    "GDI_periodic_lowres": {
+      "archive": "GDI_periodic_lowres.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "c8bfd1215b61f5f199c5205325e4cde50c54000cd624108a077e6f5c58ec4556",
+      "url": "https://www.dropbox.com/s/57iy7xwsoox924l/GDI_periodic_lowres.zst?dl=1"
+    },
+    "KHI_periodic_lowres": {
+      "archive": "KHI_periodic_lowres.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "40c311edd90a7c8ac0df1453e8bb541dcf2238dc462c35c6a44b7a29cbf50bdf",
+      "url": "https://www.dropbox.com/s/2rjq3ymhbk8de0f/KHI_periodic_lowres.zst?dl=1"
+    },
+    "arcs": {
+      "archive": "arcs.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "82d0dbc0c8154157ef4a81764af7634d2fb06ae4a7a7d5e5b14bdbc8272a192b",
+      "url": "https://www.dropbox.com/s/zecguhdn1s3vqjf/arcs.zst?dl=1"
+    },
+    "arcs_eq": {
+      "archive": "arcs_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "a7396d11c8700f1b5b38329d44ae27041fefaeee43df93f9e32c699d7b15db9e",
+      "url": "https://www.dropbox.com/s/pbanjjpzw4jmzjb/arcs_eq.zst?dl=1"
+    },
+    "cusp2d_eq": {
+      "archive": "cusp2d_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "eeadb3241d078f0c409536ae2cbd3bab7f7a0b92eddaec322767c3d914a428ac",
+      "url": "https://www.dropbox.com/s/w4laaqapxnpb0s6/cusp2d_eq.zst?dl=1"
+    },
+    "cusp3d_eq": {
+      "archive": "cusp3d_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "936508e4d5d988cab2c00091d869848a02c387f37e5c5806c206da8abec48c4e",
+      "url": "https://www.dropbox.com/s/6kmx7htvvk2nmrm/cusp3d_eq.zst?dl=1"
+    },
+    "cusp_softprecip2D_Dirich": {
+      "archive": "cusp_softprecip2D_Dirich.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "95de0f98aa7bb31d91ee8e9f6bfd64ac636a2fdc391486cf2873f490c04f865f",
+      "url": "https://www.dropbox.com/s/3wyssn8jd0pfjkn/cusp_softprecip2D_Dirich.zst?dl=1"
+    },
+    "cusp_softprecip2D_Neu": {
+      "archive": "cusp_softprecip2D_Neu.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "5ccb372d2faff63293a9f985581b7df3f1ce1c715f12d0fa89c132782ee49e2c",
+      "url": "https://www.dropbox.com/s/8mcg5u00j8cx7ic/cusp_softprecip2D_Neu.zst?dl=1"
+    },
+    "cusp_softprecip3D": {
+      "archive": "cusp_softprecip3D.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "bb7424e06095cc2d37dd1eca6b550c048841d3f8a4a0c1a8bc38b95bda92ba5c",
+      "url": "https://www.dropbox.com/s/u4ao4hfwud7p1fv/cusp_softprecip3D.zst?dl=1"
+    },
+    "mini2dew_eq": {
+      "archive": "mini2dew_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "d3f297995341e2ccdc3da16bf72db36cd230d88f86defdd054d4d3a11ad971af",
+      "url": "https://www.dropbox.com/s/py3gtwlxf47c537/mini2dew_eq.zst?dl=1"
+    },
+    "mini2dew_fang": {
+      "archive": "mini2dew_fang.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        40,
+        1
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "28d7f16b08721411d51e4c624f3469e2a17bdd330b44e319a32364d3c5521e20",
+      "url": "https://www.dropbox.com/s/0pfpjbpxcxdcxkm/mini2dew_fang.zst?dl=1"
+    },
+    "mini2dew_glow": {
+      "archive": "mini2dew_glow.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        40,
+        1
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "072d6bea6a358b26c1875fa248d419c91f5b1d313ccfa1dd90f5cc9d9c68b991",
+      "url": "https://www.dropbox.com/s/zlpwk9b15aiucka/mini2dew_glow.zst?dl=1"
+    },
+    "mini2dns_eq": {
+      "archive": "mini2dns_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "e9f59e1d4614453a302ee01a7a052ff241b48dcd8a51fc4461f89845ba7fd4dd",
+      "url": "https://www.dropbox.com/s/tig0lzn9t7cuwl5/mini2dns_eq.zst?dl=1"
+    },
+    "mini2dns_msis2_eq": {
+      "archive": "mini2dns_msis2_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW",
+        "MSIS2"
+      ],
+      "lx": [
+        48,
+        1,
+        12
+      ],
+      "pygemini_version": "1.8.0",
+      "sha256": "a4261891369026d40b47a094f8d8cf9c594fd41453a540f6d573930d19382d6d",
+      "url": "https://www.dropbox.com/scl/fi/8h1tcxa2i95ayq9mpx7um/mini2dns_msis2_eq.zst?rlkey=4yqatbd17m9enz03cbj30w4ud&st=wembmgra&dl=1"
+    },
+    "mini2dns_fang": {
+      "archive": "mini2dns_fang.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        1,
+        20
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "6ab7ed22e6b0e6926e6ab3eb1a13697be4fe8c74ecc71a2a0008f256a88179dc",
+      "url": "https://www.dropbox.com/s/o926kny2jlpehu9/mini2dns_fang.zst?dl=1",
+      "audit_note": "Dimension order corrected from the hash-verified inputs/simsize.h5 on 2026-09-16; archive/hash unchanged."
+    },
+    "mini2dns_msis2_fang": {
+      "archive": "mini2dns_msis2_fang.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW",
+        "MSIS2"
+      ],
+      "lx": [
+        48,
+        1,
+        20
+      ],
+      "pygemini_version": "1.8.0",
+      "sha256": "6f74dff26bac69999cafef756ddd86fd44f3f8f2698f1726c2e45d7529969e70",
+      "url": "https://www.dropbox.com/scl/fi/uqn55y2c5hxzcwee8pjpv/mini2dns_msis2_fang.zst?rlkey=bbc4n56fnl0td3x7u8hgzjobq&st=d62lzs8s&dl=1"
+    },
+    "mini2dns_glow": {
+      "archive": "mini2dns_glow.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        1,
+        20
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "fe0ee83ad85a3743b7238f29c527e3044960aa13983948ebc7f44996aa3ca732",
+      "url": "https://www.dropbox.com/s/h7aej4rfno8jy2h/mini2dns_glow.zst?dl=1",
+      "audit_note": "Dimension order corrected from the hash-verified inputs/simsize.h5 on 2026-09-16; archive/hash unchanged."
+    },
+    "mini3d_eq": {
+      "archive": "mini3d_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "09c75b34b1a7148a7eb407a0ac2ce2d883d2f3943e4fd47ab81426040d87d79b",
+      "url": "https://www.dropbox.com/s/ldi07j8suiou1yr/mini3d_eq.zst?dl=1"
+    },
+    "mini3d_fang": {
+      "archive": "mini3d_fang.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        12,
+        16
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "29fed05d89e9514c53feaf839335a574bd8892e1d2d9c8c054ca8da5179b67f3",
+      "url": "https://www.dropbox.com/s/wrnekz415uotz0m/mini3d_fang.zst?dl=1"
+    },
+    "mini3d_glow": {
+      "archive": "mini3d_glow.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "lx": [
+        48,
+        12,
+        16
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "cceed6e88deb433980c4c30e086e3c154e1154c08dfb2d6ae4cfaf8210cda831",
+      "url": "https://www.dropbox.com/s/7tf1bwg5hnccpvn/mini3d_glow.zst?dl=1"
+    },
+    "tohoku20112D_medres_2Dneu": {
+      "archive": "tohoku20112D_medres_2Dneu.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "694bf22d3cbeb11ec6ad169c58697d6e72706a09b9b23b449d77a8f050aaa618",
+      "url": "https://www.dropbox.com/s/nmtqdisblvztvtn/tohoku20112D_medres_2Dneu.zst?dl=1"
+    },
+    "tohoku20112D_medres_axineu": {
+      "archive": "tohoku20112D_medres_axineu.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "1456dade752c1846db6994c8ac5eece3dcda4c87e93b6a25f9c6c89264aa2347",
+      "url": "https://www.dropbox.com/s/b365fpuymkcap7b/tohoku20112D_medres_axineu.zst?dl=1"
+    },
+    "tohoku20113D_lowres_3Dneu": {
+      "archive": "tohoku20113D_lowres_3Dneu.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "ab18c32e10957856a938bae7b395ef738669d11d884d37ec55f2ce515df63426",
+      "url": "https://www.dropbox.com/s/mysze5he5d8pom7/tohoku20113D_lowres_3Dneu.zst?dl=1"
+    },
+    "tohoku20113D_lowres_axineu": {
+      "archive": "tohoku20113D_lowres_axineu.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "c603e301107b9223768796860cc6935ddd640ddd7d32ef6da36c6abdc0f416f4",
+      "url": "https://www.dropbox.com/s/dityrs1y14p7e87/tohoku20113D_lowres_axineu.zst?dl=1"
+    },
+    "tohoku2d_eq": {
+      "archive": "tohoku2d_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "115920988f1dc14676865c2f2ab82233947c974cf8df16cdc9de127f317beedb",
+      "url": "https://www.dropbox.com/s/cm1ex2ck4xkrube/tohoku2d_eq.zst?dl=1"
+    },
+    "tohoku3d_eq": {
+      "archive": "tohoku3d_eq.zst",
+      "gemini_features": [
+        "REALBITS:64",
+        "MPI",
+        "HDF5",
+        "GLOW"
+      ],
+      "pygemini_version": "1.7.1",
+      "sha256": "b1861e26c2e5719c32959dd14792da71fe7d0d0e2396b3559f644fa4f75d7f4b",
+      "url": "https://www.dropbox.com/s/8wr2uklx72e502g/tohoku3d_eq.zst?dl=1"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+// Audit modification 2026-09-16: match integer(C_INT) flag ABI
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
@@ -47,7 +48,7 @@ extern void read_config_in_C(struct params*, void**);
 extern void set_magnetic_pole_in_C(void**);
 extern void grid_size_in_C(void**);
 extern void get_fullgrid_size_C(int*, int*, int*);
-extern void get_config_vars_C(void**, bool*, int*, double*, double*);
+extern void get_config_vars_C(void**, int*, int*, double*, double*);
 extern void get_subgrid_size_C(int*, int*, int*);
 extern void get_species_size_C(int*);
 extern void get_fullgrid_lims_C(double*, double*, double*, double*, double*, double*);
@@ -58,9 +59,13 @@ extern void set_start_values_auxtimevars_C(double*, double*, double*);
 extern void set_start_timefromcfg_C(void**, int*, double*, double*);
 extern void set_start_values_auxvars_C(int*, void**, double**);
 extern void get_cfg_timevars_C(void**,double*,int*,double*,int*,int*);
+/* Initialize the configured empirical MSIS model before neutral_atmos_winds_C.
+ * Allocated work/grid objects and setv2v3_C (zero for fixed grids) are required.
+ * File-driven backgrounds instead use init_neutralBG_input_C/inputdata_perturb_C. */
 extern void msisinit_C(void**);
 extern void init_neutralBG_input_C(void**, int*, void**, double*, double*, int*, double*, void**);
 extern void set_update_cadence_C(int*);
+/* Refresh empirical background and aggregate it with current perturbations/drift. */
 extern void neutral_atmos_winds_C(void**, int*, void**, int*, double*, void**);
 extern void check_finite_output_C(void**, double**, double**, double*);
 extern void get_solar_indices_C(void**, double*, double*);
@@ -136,6 +141,7 @@ extern void pot2perpfield_C(int*, void**, double**);
 extern void BGfield_Lagrangian_C(void**, int*, void**, double**, void**);
 extern void init_neutralperturb_C(double*, void**, int*, void**, void**, int*, double*);
 extern void get_initial_drifts_C(void**, int*, void**, double**, double**, double**, void**);
+/* Reaggregate current winds after changing perturbations or setv2v3_C; idempotent. */
 extern void neutral_atmos_wind_update_C(void**);
 extern void neutral_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);
 extern void efield_perturb_C(void**, void**, int*, void**, double*, double*, int*, double*);

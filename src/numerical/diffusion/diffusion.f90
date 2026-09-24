@@ -125,7 +125,7 @@ contains
   end subroutine set_BCtype
 
 
-  function backEuler3D_curv(f,A,B,C,D,E,dt,x)
+  function backEuler3D_curv(f,A,B,C,D,E,dt,x,increments)
     !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
     !! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
     !! A CONVENIENT MEMORY SPACE FOR BOUNDARY CONDITIONS.
@@ -135,6 +135,8 @@ contains
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
 
+    real(wp), intent(out), optional :: increments(size(f,1)-4,size(f,2)-4,size(f,3)-4,5)
+    real(wp), allocatable :: local_increments(:,:)
     integer :: ix2,ix3,lx1,lx2,lx3
     real(wp),dimension(size(f,1)-4) :: fx1slice
 
@@ -144,12 +146,23 @@ contains
     lx2=size(f,2)-4
     lx3=size(f,3)-4
 
+    ! Every returned halo value must be defined; previously only the interior
+    ! was assigned and the caller copied the undefined halo into temperature.
+    backEuler3D_curv=f
+    if(present(increments)) allocate(local_increments(lx1,5))
     do ix3=1,lx3
       do ix2=1,lx2
         fx1slice=f(1:lx1,ix2,ix3)
-        fx1slice=backEuler1D(fx1slice,A(:,ix2,ix3), &
+        if(present(increments)) then
+          fx1slice=backEuler1D(fx1slice,A(:,ix2,ix3), &
+                      B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
+                      f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,BCtype,x%dx1,x%dx1i,increments=local_increments)
+          increments(:,ix2,ix3,:)=local_increments
+        else
+          fx1slice=backEuler1D(fx1slice,A(:,ix2,ix3), &
                       B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
                       f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,BCtype,x%dx1,x%dx1i)
+        endif
         !! inner ghost cells include boundary conditions
         backEuler3D_curv(1:lx1,ix2,ix3)=fx1slice
       end do
@@ -157,7 +170,7 @@ contains
   end function backEuler3D_curv
 
 
-  function TRBDF23D_curv(f,A,B,C,D,E,dt,x)
+  function TRBDF23D_curv(f,A,B,C,D,E,dt,x,increments)
     !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
     !! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
     !! A CONVENIENT MEMORY SPACE FOR BOUNDARY CONDITIONS.
@@ -175,6 +188,8 @@ contains
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
 
+    real(wp), intent(out), optional :: increments(size(f,1)-4,size(f,2)-4,size(f,3)-4,5)
+    real(wp), allocatable :: local_increments(:,:)
     integer :: ix2,ix3,lx1,lx2,lx3
     real(wp),dimension(size(f,1)-4) :: fx1slice
 
@@ -184,12 +199,23 @@ contains
     lx2=size(f,2)-4
     lx3=size(f,3)-4
 
+    ! Every returned halo value must be defined; previously only the interior
+    ! was assigned and the caller copied the undefined halo into temperature.
+    TRBDF23D_curv=f
+    if(present(increments)) allocate(local_increments(lx1,5))
     do ix3=1,lx3
       do ix2=1,lx2
         fx1slice=f(1:lx1,ix2,ix3)
-        fx1slice=TRBDF21D(fx1slice,A(:,ix2,ix3), &
+        if(present(increments)) then
+          fx1slice=TRBDF21D(fx1slice,A(:,ix2,ix3), &
+                      B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
+                      f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,BCtype,x%dx1,x%dx1i,increments=local_increments)
+          increments(:,ix2,ix3,:)=local_increments
+        else
+          fx1slice=TRBDF21D(fx1slice,A(:,ix2,ix3), &
                       B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
                       f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,BCtype,x%dx1,x%dx1i)
+        endif
         !! inner ghost cells include boundary conditions
         TRBDF23D_curv(1:lx1,ix2,ix3)=fx1slice
       end do

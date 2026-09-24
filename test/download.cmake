@@ -1,7 +1,12 @@
+# Audit modification 2026-09-16: offline tests must not silently fetch missing archives
 cmake_minimum_required(VERSION 3.19)
 # .zst requires CMake 3.15+, JSON Cmake 3.19
 
 function(download_archive url archive exp_hash)
+
+if("$ENV{GEMINI3D_OFFLINE}" STREQUAL "1")
+  message(FATAL_ERROR "Offline mode: verified archive is missing or corrupt: ${archive}. Run the download preset online first.")
+endif()
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
 file(DOWNLOAD ${url} ${archive}
@@ -26,9 +31,9 @@ file(READ ${arc_json_file} _refj)
 
 get_url_name(${name} url_name)
 
-string(JSON url GET ${_refj} tests ${url_name} url)
-string(JSON archive_name GET ${_refj} tests ${url_name} archive)
-string(JSON hash GET ${_refj} tests ${url_name} sha256)
+string(JSON url GET "${_refj}" tests ${url_name} url)
+string(JSON archive_name GET "${_refj}" tests ${url_name} archive)
+string(JSON hash GET "${_refj}" tests ${url_name} sha256)
 
 set(archive ${refroot}/${archive_name})
 
@@ -77,3 +82,18 @@ gemini_download_ref_data(${name} ${refroot} ${arc_json_file})
 
 # copy sim inputs into build/${name}/inputs
 file(COPY ${ref_dir}/inputs DESTINATION ${outdir})
+
+# Audit correction 2026-09-16: CTest cases must start from the pinned ICs,
+# including on rerun. Never remove reference data or arbitrary user outputs.
+if(reset_test_outputs)
+  if(NOT name MATCHES "^mini[0-9A-Za-z_]+$" OR NOT DEFINED test_binary_dir
+     OR NOT outdir STREQUAL "${test_binary_dir}/${name}")
+    message(FATAL_ERROR "Refusing to reset outputs outside the named CTest case directory")
+  endif()
+  file(GLOB old_test_frames "${outdir}/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_*.h5")
+  list(LENGTH old_test_frames old_test_frame_count)
+  message(STATUS "Resetting ${old_test_frame_count} dated CTest frames in ${outdir}")
+  if(old_test_frames)
+    file(REMOVE ${old_test_frames})
+  endif()
+endif()

@@ -1,3 +1,4 @@
+<!-- Audit modification 2026-09-16: correct executable namelist example and current mode meanings. -->
 # GEMINI Input
 
 In addition to command line options (see main README), GEMINI requires input file information to specify:
@@ -33,13 +34,13 @@ UTsec0 = 18000.0              ! UTsec0:  start time in UT seconds
 tdur = 300.0                  ! tdur:  duration of simulation in seconds
 dtout = 60.0                  ! dtout: how often to do file output
 activ = 108.9, 111.0, 5       ! activ:  f107a,f107,Ap
-tcfl = 0.9                    ! tcfl:  target cfl number
+tcfl = 0.5                    ! conservative starting value; certify post-driver CFL for your case
 Teinf = 1500.0                ! Teinf:  exospheric electron temperature
 /
 
 ! Flags controlling various aspects of solve and output behavior
 &flags
-potsolve = 1                  ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
+potsolve = 1                  ! solve electrodynamics:   0 - disturbance solve off; 1 - field-integrated electrostatic; 3 - field-resolved electrostatic; 2 - unsupported
 flagperiodic = 0              ! whether to consider the x3 dimension periodic:  0 - no; nonzero - yes; 1 - yes and force periodicity in glat/glon across x3 (good for instability simulations needed a uniform background neutral atmosphere and SZA)
 flagoutput = 1                ! what information to put in output files:  1 - all state variables; 2 - averaged plasma parameters; 3 - electron density only
 /
@@ -98,14 +99,12 @@ msis_version = 0         ! 0 or 21; which MSIS version to use, MSIS00 or MSIS 2.
 
 ! (optional - default off) Include disturbance precipitation based on file inputs
 &precip
-flagprecfile = 1                   ! use precipitaiton file input:  0 - no; 1 - yes
 dtprec = 5.0                       ! time step between precipitation file inputs
 prec_dir = 'test_data/test3d_glow/inputs/prec_inputs/'
 /
 
 ! (optional - default off) Include electric field boundary condition inputs from a file
 &efield
-flagE0file = 1                     ! use electric field boundary condition file input:  0 - no; 1 - yes
 dtE0 = 1.0                         ! time step between electric field file inputs
 E0_dir = 'test_data/test3d_glow/inputs/Efield_inputs/'
 /
@@ -131,7 +130,6 @@ W0_char = 3000              ! thermal energy in eV for diff_num_flux = 3. E0, W0
 
 ! (optional - default off) Use glow to compute impact ionization, Cartesian grids only
 &glow
-flagglow = 1                ! use glow?  0 - no; 1 - yes
 dtglow = 5.0                ! how often to recall GLOW to compute ionization
 dtglowout = 60.0            ! ow often to do Glow file output
 /
@@ -143,7 +141,7 @@ W0BG=3e3                      ! characteristic energy (eV)
 /
 
 ! (optional - default off) Leading order electrodynamics
-%capacitance
+&capacitance
 flagcap = 2                   ! whether to use ionospheric capacitance in the solves:  0 - no; 1 - ionospheric part; 2 - ionospheric+magnetospheric parts
 magcap =  30.0                ! magnetospheric capacitance (Farads)
 /
@@ -187,6 +185,7 @@ flagdiamagnetic=.true.        ! whether or not to compute pressure terms in perp
 ! (optional - off by default)
 &twoway_coupled
 flagtwoway=.true.        ! whether or not to compute momentum and energy rates back to neutrals
+/
 
 ! (optional - off by default) assume background current divergence free?
 &nodivJ0
@@ -235,9 +234,9 @@ flagJ1ve=.true.        ! use parallel current density in calculation of parallel
 /
 
 ! Set fill and min values for densities
-!  (optional - defaults to reasonable values for most applications)
+!  (optional - values must be selected and validated for the simulation regime)
 &mindens_user
-  mindens_userval=1.0e-100
+  mindens_userval=1.0e-100 ! physical ion floor; use 1.0e3 explicitly for ESF stabilization
   mindensnull_userval=1.0e-20
   mindensdiv_userval=1.0e-5
 /

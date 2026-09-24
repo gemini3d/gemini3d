@@ -11,19 +11,46 @@ module temporal_mpi
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+use, intrinsic :: iso_fortran_env, only: int64
+use temporal, only: cflcalc
 use phys_consts, only: kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg
 use meshobj, only:  curvmesh
 use gemini3d_config, only: gemini_cfg
 
-use mpi_f08, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send, mpi_recv
+use mpi_f08, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE, mpi_send, mpi_recv, MPI_Allreduce, MPI_MAX
 
 implicit none (type, external)
 
 private
-public :: dt_comm
+public :: dt_comm, enforce_post_update_cfl
 
 contains
+  pure real(wp) function to_next_knot(t,cadence) result(dt)
+    real(wp), intent(in) :: t,cadence
+    if (.not.all(ieee_is_finite([t,cadence]))) error stop "driver knot: nonfinite time"
+    if (cadence<=0) error stop "driver knot: cadence must be positive"
+    dt=real(floor(t/cadence,kind=int64)+1_int64,wp)*cadence-t
+    if (dt<=epsilon(t)*max(1._wp,abs(t))*8) dt=cadence
+  end function to_next_knot
+
+  !> Fail before fluid advancement if newly solved drifts invalidate the selected step.
+  !> Retrying requires restoring all stateful driver/potential updates and is not implicit.
+  subroutine enforce_post_update_cfl(Ts,vs1,vs2,vs3,x,dt)
+    real(wp), intent(in) :: Ts(-1:,-1:,-1:,:),vs1(-1:,-1:,-1:,:), &
+                           vs2(-1:,-1:,-1:,:),vs3(-1:,-1:,-1:,:)
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dt
+    real(wp) :: local_cfl,global_cfl
+    call cflcalc(Ts,vs1,vs2,vs3,x%dl1i,x%dl2i,x%dl3i,dt,local_cfl)
+    call MPI_Allreduce(local_cfl,global_cfl,1,mpi_realprec,MPI_MAX,MPI_COMM_WORLD)
+    if (global_cfl>1._wp+64*epsilon(global_cfl)) then
+      if (mpi_cfg%myid==0) print *, 'Post-update CFL exceeds one: ',global_cfl, ' dt=',dt
+      error stop "Updated forcing invalidates the time step; reduce tcfl or refine driver cadence."
+    endif
+  end subroutine enforce_post_update_cfl
+
   subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
     real(wp), intent(in) :: t,tout,tglowout
     type(gemini_cfg), intent(in) :: cfg
@@ -52,18 +79,32 @@ contains
 
       !CHECK WHETHER WE'D OVERSTEP OUR TARGET OUTPUT TIME
       !GLOW OUTPUT HAS PRIORITY SINCE IT WILL OUTPUT MORE OFTEN
-      if ((cfg%flagglow/=0).and.(t+dt>tglowout)) then
+      if ((cfg%flagglow/=0).and.(tglowout>t).and.(t+dt>tglowout)) then
         dt=tglowout-t
         print *, 'GLOW is throttling dt...'
       end if
 
-      if (t+dt>tout) then
+      if (tout>t .and. t+dt>tout) then
         dt=tout-t
         if (debug) print *, 'Slowing down for an output...'
       end if
 
-      !! DON'T ALLOW ZERO DT
-      dt = max(dt, 1e-6_wp)
+      ! The existing frontend initializes output deadlines to t.  Its first
+      ! electrodynamic/fluid update populates derived output quantities before
+      ! writing that frame.  Preserve this bootstrap with a CAP, never a floor:
+      ! a smaller stability-limited step must not be increased to 1 microsecond.
+      if (tout==t .or. (cfg%flagglow/=0 .and. tglowout==t)) dt=min(dt,1e-6_wp)
+
+      ! Do not cross the final time or a supplied driver knot.
+      dt=min(dt,cfg%tdur-t)
+      if (cfg%flagprecfile/=0) dt=min(dt,to_next_knot(t,cfg%dtprec))
+      if (cfg%flagE0file/=0) dt=min(dt,to_next_knot(t,cfg%dtE0))
+      if (cfg%flagsolfluxfile/=0) dt=min(dt,to_next_knot(t,cfg%dtsolflux))
+      if (cfg%flagneutralBGfile/=0) dt=min(dt,to_next_knot(t,cfg%dtneuBGfile))
+      if (cfg%flagdneu/=0) dt=min(dt,to_next_knot(t,cfg%dtneu))
+      ! Never increase a stability-limited step to an arbitrary minimum.
+      if (.not.ieee_is_finite(dt)) error stop "dt_comm: nonfinite time step"
+      if (dt<=0 .or. t+dt<=t) error stop "dt_comm: time step cannot advance the simulation"
 
       !! SEND GLOBAL DT TO ALL WORKERS
       do iid=1,mpi_cfg%lid-1
