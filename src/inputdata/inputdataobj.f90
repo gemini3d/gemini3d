@@ -46,44 +46,45 @@ type, abstract :: inputdata
                                         !   the base class will never change this -- extensions must handle
 
   !! here we store data that have already been received but not yet interpolated
-  real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
-  integer, pointer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
-  real(wp), dimension(:), pointer :: data0D
-  real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
-  real(wp), dimension(:,:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
-  real(wp), dimension(:,:,:,:), pointer :: data3D
+  ! These pointers own their allocations; extensions only alias them.
+  real(wp), dimension(:), pointer :: coord1=>null(),coord2=>null(),coord3=>null()
+  integer, pointer :: lc1=>null(),lc2=>null(),lc3=>null()
+  real(wp), dimension(:), pointer :: data0D=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax1=>null(),data1Dax2=>null(),data1Dax3=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax23=>null(),data2Dax12=>null(),data2Dax13=>null()
+  real(wp), dimension(:,:,:,:), pointer :: data3D=>null()
 
   !! here we store data that have already been spatially interpolated
-  real(wp), dimension(:,:), pointer :: data0Di                    ! array for storing a "stack" of scalar data (only interpolated in time)
+  real(wp), dimension(:,:), pointer :: data0Di=>null()             ! scalar data, interpolated only in time
                                                                      !  last axis is for prev,next copies of data for interp in time
                                                                      !  second to last axis is for number of datasets of this dimension
   integer :: l0D                                                     ! length/number of scalar datasets
-  real(wp), dimension(:,:,:), pointer :: data1Dax1i                  ! array for storing series of 1D data, array varies along non-singleton axis
-  real(wp), dimension(:,:,:), pointer :: data1Dax2i,data1Dax3i       ! 1D data arrays varying along coordinates (axes) 2 and 3
+  real(wp), dimension(:,:,:), pointer :: data1Dax1i=>null()         ! 1D data varying along axis 1
+  real(wp), dimension(:,:,:), pointer :: data1Dax2i=>null(),data1Dax3i=>null()
   integer :: l1Dax1,l1Dax2,l1Dax3
-  real(wp), dimension(:,:,:,:), pointer :: data2Dax23i               ! array for storing series of 2D data, varies along two non-singleton axes
-  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i,data2dax13i   !2D arrays varying along 1,2 and 1,3 axes
+  real(wp), dimension(:,:,:,:), pointer :: data2Dax23i=>null()      ! 2D data varying along axes 2,3
+  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i=>null(),data2dax13i=>null()
   integer :: l2Dax23,l2Dax12,l2Dax13
-  real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
+  real(wp), dimension(:,:,:,:,:), pointer :: data3Di=>null()        ! array for storing series of 3D data
   integer :: l3D
 
   !! by default we have one set of target coordinates; extension can define others, if needed; note these are "flat" arrays (rank 1)
-  real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i             ! coordinates of the interpolation sites, full 3D, size lc1i*lc2i*lc3i
-  real(wp), dimension(:), pointer :: coord1iax1                          ! 1D target coords for variations along axis 1
-  real(wp), dimension(:), pointer :: coord2iax2                          ! 1D target coords for variations along axis 2
-  real(wp), dimension(:), pointer :: coord3iax3                          ! 1D target coords for variations along axis 3
-  real(wp), dimension(:), pointer :: coord2iax23,coord3iax23             ! 2D target along axes 2,3
-  real(wp), dimension(:), pointer :: coord1iax12,coord2iax12             ! 2D target along axes 1,2
-  real(wp), dimension(:), pointer :: coord1iax13,coord3iax13             ! 2D target along axes 1,3
+  real(wp), dimension(:), pointer :: coord1i=>null(),coord2i=>null(),coord3i=>null()
+  real(wp), dimension(:), pointer :: coord1iax1=>null()                 ! 1D target coords for variations along axis 1
+  real(wp), dimension(:), pointer :: coord2iax2=>null()                 ! 1D target coords for variations along axis 2
+  real(wp), dimension(:), pointer :: coord3iax3=>null()                 ! 1D target coords for variations along axis 3
+  real(wp), dimension(:), pointer :: coord2iax23=>null(),coord3iax23=>null()
+  real(wp), dimension(:), pointer :: coord1iax12=>null(),coord2iax12=>null()
+  real(wp), dimension(:), pointer :: coord1iax13=>null(),coord3iax13=>null()
   integer :: lc1i,lc2i,lc3i                                              ! dataset length along the 3 coordinate axes
 
   !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
-  real(wp), dimension(:), pointer :: data0Dinow
-  real(wp), dimension(:,:), pointer :: data1Dax1inow
-  real(wp), dimension(:,:), pointer :: data1Dax2inow,data1Dax3inow
-  real(wp), dimension(:,:,:), pointer :: data2Dax23inow
-  real(wp), dimension(:,:,:), pointer :: data2Dax12inow,data2dax13inow
-  real(wp), dimension(:,:,:,:), pointer :: data3Dinow
+  real(wp), dimension(:), pointer :: data0Dinow=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax1inow=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax2inow=>null(),data1Dax3inow=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax23inow=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax12inow=>null(),data2dax13inow=>null()
+  real(wp), dimension(:,:,:,:), pointer :: data3Dinow=>null()
 
   real(wp), dimension(2) :: tref                                     ! times for two input frames bracketting current time
   real(wp) :: tnow                                                   ! time corresponding to data in *now arrays, viz current time insofar as this object knows
@@ -955,21 +956,64 @@ contains
   !> deallocate memory and dissociated pointers for generic array data
   subroutine dissociate_pointers(self)
     class(inputdata), intent(inout) :: self
+    integer :: i
 
-    if (self%flagalloc) then
-      deallocate(self%data0D)
-      deallocate(self%data1Dax1, self%data1Dax2, self%data1Dax3)
-      deallocate(self%data2Dax23, self%data2Dax12, self%data2Dax13)
-      deallocate(self%data3D)
+    ! Some extensions allocate only current-time storage or stop after dimensions.
+    ! Deallocate owners individually, never the aliases in the derived types.
+    if (associated(self%lc1)) deallocate(self%lc1)
+    if (associated(self%lc2)) deallocate(self%lc2)
+    if (associated(self%lc3)) deallocate(self%lc3)
+    if (associated(self%coord1)) deallocate(self%coord1)
+    if (associated(self%coord2)) deallocate(self%coord2)
+    if (associated(self%coord3)) deallocate(self%coord3)
+    if (associated(self%coord1i)) deallocate(self%coord1i)
+    if (associated(self%coord2i)) deallocate(self%coord2i)
+    if (associated(self%coord3i)) deallocate(self%coord3i)
+    if (associated(self%coord1iax1)) deallocate(self%coord1iax1)
+    if (associated(self%coord2iax2)) deallocate(self%coord2iax2)
+    if (associated(self%coord3iax3)) deallocate(self%coord3iax3)
+    if (associated(self%coord2iax23)) deallocate(self%coord2iax23)
+    if (associated(self%coord3iax23)) deallocate(self%coord3iax23)
+    if (associated(self%coord1iax12)) deallocate(self%coord1iax12)
+    if (associated(self%coord2iax12)) deallocate(self%coord2iax12)
+    if (associated(self%coord1iax13)) deallocate(self%coord1iax13)
+    if (associated(self%coord3iax13)) deallocate(self%coord3iax13)
 
-      deallocate(self%data0Di)
-      deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
-      deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
-      deallocate(self%data3Di)
-    end if
+    if (associated(self%data0D)) deallocate(self%data0D)
+    if (associated(self%data1Dax1)) deallocate(self%data1Dax1)
+    if (associated(self%data1Dax2)) deallocate(self%data1Dax2)
+    if (associated(self%data1Dax3)) deallocate(self%data1Dax3)
+    if (associated(self%data2Dax23)) deallocate(self%data2Dax23)
+    if (associated(self%data2Dax12)) deallocate(self%data2Dax12)
+    if (associated(self%data2Dax13)) deallocate(self%data2Dax13)
+    if (associated(self%data3D)) deallocate(self%data3D)
+    if (associated(self%data0Di)) deallocate(self%data0Di)
+    if (associated(self%data1Dax1i)) deallocate(self%data1Dax1i)
+    if (associated(self%data1Dax2i)) deallocate(self%data1Dax2i)
+    if (associated(self%data1Dax3i)) deallocate(self%data1Dax3i)
+    if (associated(self%data2Dax23i)) deallocate(self%data2Dax23i)
+    if (associated(self%data2Dax12i)) deallocate(self%data2Dax12i)
+    if (associated(self%data2Dax13i)) deallocate(self%data2Dax13i)
+    if (associated(self%data3Di)) deallocate(self%data3Di)
+    if (associated(self%data0Dinow)) deallocate(self%data0Dinow)
+    if (associated(self%data1Dax1inow)) deallocate(self%data1Dax1inow)
+    if (associated(self%data1Dax2inow)) deallocate(self%data1Dax2inow)
+    if (associated(self%data1Dax3inow)) deallocate(self%data1Dax3inow)
+    if (associated(self%data2Dax23inow)) deallocate(self%data2Dax23inow)
+    if (associated(self%data2Dax12inow)) deallocate(self%data2Dax12inow)
+    if (associated(self%data2Dax13inow)) deallocate(self%data2Dax13inow)
+    if (associated(self%data3Dinow)) deallocate(self%data3Dinow)
+    do i=1,size(self%coverage)
+      if (allocated(self%coverage(i)%valid)) deallocate(self%coverage(i)%valid)
+    end do
 
+    self%flagdatasize=.false.
+    self%flagsizes=.false.
     self%flagalloc=.false.
     self%flagprimed=.false.
     self%flagcoordsi=.false.
+    self%flagfirst=.true.
+    self%spatial_missing_count=0
+    self%coverage_warning_sent=.false.
   end subroutine dissociate_pointers
 end module inputdataobj

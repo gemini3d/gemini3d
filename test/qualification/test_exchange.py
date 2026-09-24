@@ -34,6 +34,23 @@ class Exchange(unittest.TestCase):
         with self.assertRaises(ValueError):reservoir_step(1,2,-1,1,1,1)
         with self.assertRaises(ValueError):cvtwin_mhd6(None)
 
+    def test_remap_accepts_only_boolean_or_binary_integer_masks(self):
+        grid=[np.array([0.,.2,1.])]*3
+        q=np.arange(16,dtype=float).reshape(2,2,2,2)
+        for dtype in [bool,np.int8,np.int64,np.uint8,np.uint64]:
+            with self.subTest(dtype=dtype):
+                np.testing.assert_allclose(remap(q,grid,grid,np.ones((2,2,2),dtype=dtype)),q)
+        for value in [2,-1,0.5,1.,float('nan'),float('inf'),'true','1',1+0j,None]:
+            with self.subTest(invalid=value):
+                with self.assertRaisesRegex(ValueError,'Boolean or zero/one'):
+                    remap(q,grid,grid,np.full((2,2,2),value))
+        for mask in [np.zeros((2,2,2),int),np.ones((2,2,1),bool),np.array(True)]:
+            with self.subTest(mask=mask):
+                with self.assertRaisesRegex(ValueError,'Masked'):
+                    remap(q,grid,grid,mask)
+        with self.assertRaisesRegex(ValueError,'Boolean or zero/one'):
+            remap(q,grid,grid,np.ones((2,2,2),dtype=object))
+
     def fixture(self,p):
         shape=(2,3,4);grid=p/'grid.h5';frame=p/'20130220_18060.000000.h5'
         with h5py.File(grid,'w') as f:

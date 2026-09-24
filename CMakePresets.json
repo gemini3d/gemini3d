@@ -31,6 +31,31 @@
   }
 },
 {
+  "name": "qualification", "inherits": "default",
+  "hidden": true,
+  "cacheVariables": {
+    "BUILD_TESTING": true,
+    "gemini3d_BUILD_TESTING": true,
+    "gemini3d_require_qualification": true,
+    "gemini3d_test_simulations": true,
+    "gemini3d_realbits": "64",
+    "gemini3d_glow": true,
+    "gemini3d_msis2": true,
+    "gemini3d_hwm14": false,
+    "MPIEXEC_MAX_NUMPROCS": "2"
+  }
+},
+{
+  "name": "qualification-debug", "inherits": "qualification",
+  "binaryDir": "build-qualification-debug",
+  "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+},
+{
+  "name": "qualification-release", "inherits": "qualification",
+  "binaryDir": "build-qualification-release",
+  "cacheVariables": {"CMAKE_BUILD_TYPE": "Release"}
+},
+{
   "name": "linux", "inherits": "default",
   "displayName": "Linux build (for WSL on GHA)",
   "generator": "Ninja",

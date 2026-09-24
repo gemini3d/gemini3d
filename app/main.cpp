@@ -237,6 +237,7 @@ int gemini_main(struct params* ps, int* plid2in, int* plid3in){
   clear_neutral_background_C(&intvars);
   free(fluidvars); free(fluidauxvars); free(electrovars);
   gemini_work_dealloc_C(&cfgC,&intvars);
+  gemini_grid_dealloc_C(&xtype,&xC);
   gemini_cfg_dealloc_C(&cfgC);
   return 0;
 }

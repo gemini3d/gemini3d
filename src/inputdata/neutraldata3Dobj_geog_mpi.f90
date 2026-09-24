@@ -159,21 +159,28 @@ contains
     ! null pointers specific to parent neutraldata class
     call self%dissociate_neutral_pointers()
 
-    ! now deallocate arrays specific to this extension
-    deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
-    deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
-    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
-    deallocate(self%ximat,self%yimat,self%zimat)
-
-    ! root has some extra data
-    if (mpi_cfg%myid==0) then
-      deallocate(self%extents,self%indx,self%slabsizes)
-      deallocate(self%xnall,self%ynall)
-    end if
+    if (allocated(self%proj_ezp_e1)) deallocate(self%proj_ezp_e1)
+    if (allocated(self%proj_ezp_e2)) deallocate(self%proj_ezp_e2)
+    if (allocated(self%proj_ezp_e3)) deallocate(self%proj_ezp_e3)
+    if (allocated(self%proj_eyp_e1)) deallocate(self%proj_eyp_e1)
+    if (allocated(self%proj_eyp_e2)) deallocate(self%proj_eyp_e2)
+    if (allocated(self%proj_eyp_e3)) deallocate(self%proj_eyp_e3)
+    if (allocated(self%proj_exp_e1)) deallocate(self%proj_exp_e1)
+    if (allocated(self%proj_exp_e2)) deallocate(self%proj_exp_e2)
+    if (allocated(self%proj_exp_e3)) deallocate(self%proj_exp_e3)
+    if (allocated(self%ximat)) deallocate(self%ximat)
+    if (allocated(self%yimat)) deallocate(self%yimat)
+    if (allocated(self%zimat)) deallocate(self%zimat)
+    if (allocated(self%extents)) deallocate(self%extents)
+    if (allocated(self%indx)) deallocate(self%indx)
+    if (allocated(self%slabsizes)) deallocate(self%slabsizes)
+    if (allocated(self%xnall)) deallocate(self%xnall)
+    if (allocated(self%ynall)) deallocate(self%ynall)
 
     ! set pointers to null
     nullify(self%xi,self%yi,self%zi);
     nullify(self%xn,self%yn,self%zn);
+    nullify(self%lxn,self%lyn,self%lzn)
     nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
   end subroutine destructor
 

@@ -260,6 +260,7 @@ contains
     call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
     !call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
     !call gemini_work_dealloc(cfg,intvars)
+    deallocate(x)    ! finalizes the mesh after all input-data borrowers are gone
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 

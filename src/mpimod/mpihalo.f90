@@ -309,7 +309,7 @@ contains
       call mpi_irecv(inbuffer,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD, requests(2))
 
       call mpi_waitall(2,requests,statuses)
-      paramend=inbuffer
+      if (.not. x3end) paramend=inbuffer
 
       deallocate(outbuffer,inbuffer)
     end if
@@ -327,7 +327,7 @@ contains
       call mpi_irecv(inbuffer,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD, requests(2))
 
       call mpi_waitall(2,requests,statuses)
-      paramtop=inbuffer
+      if (.not. x2end) paramtop=inbuffer
 
       deallocate(outbuffer,inbuffer)
     end if
@@ -343,9 +343,9 @@ contains
 
       allocate(inbuf_corner(lx1))
       call mpi_irecv(inbuf_corner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD, requests(2))
-      paramcorner = inbuf_corner
 
       call mpi_waitall(2,requests,statuses)
+      if (upright) paramcorner = inbuf_corner
       deallocate(outbuf_corner,inbuf_corner)
     end if
 

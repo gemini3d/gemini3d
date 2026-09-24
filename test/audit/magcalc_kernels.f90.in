@@ -1,0 +1,174 @@
+! Compile the production program's internal kernels and 2-D component assembly
+! verbatim: the reference below must not become another copy of those kernels.
+program audit_magcalc_kernels
+use phys_consts, only: wp,pi,mu0
+use mpimod, only: runtime_cfg=>mpi_cfg,gemini_mpi_config,mpisetup,mpi_manualgrid,halo_end,mpi_realprec,tag=>gemini_mpi
+use meshobj_cart, only: cartmesh
+use mpi_f08, only: MPI_Init,MPI_Finalize,MPI_Allreduce,MPI_SUM,MPI_COMM_WORLD
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+implicit none
+type(cartmesh) :: x
+type(gemini_mpi_config) :: mpi_cfg
+integer :: lx1,lx2,lx3,ipoints,i,k,c,gk,total
+real(wp), allocatable :: Rx(:,:,:),Ry(:,:,:),Rcubed(:,:,:),dV(:,:,:),integrand(:,:,:)
+real(wp), allocatable :: Jx(:,:,:),Jy(:,:,:),Jz(:,:,:)
+real(wp), allocatable :: Rxend(:,:),Ryend(:,:),Rcubedend(:,:),dVend(:,:),integrandend(:,:)
+real(wp), allocatable :: Jxend(:,:),Jyend(:,:),Jzend(:,:)
+real(wp), allocatable :: Rcubedtop(:,:),dVtop(:,:),Rcubedcorner(:),dVcorner(:)
+real(wp) :: Br(1),Btheta(1),Bphi(1),result(3),reference(3),numerator
+call MPI_Init()
+call mpisetup()
+mpi_cfg=runtime_cfg
+do total=4,8,4
+  lx1=3; lx2=1; lx3=total/mpi_cfg%lid
+  call mpi_manualgrid(1,total,1,mpi_cfg%lid)
+  mpi_cfg=runtime_cfg
+  allocate(Rx(lx1,1,lx3),Ry(lx1,1,lx3),Rcubed(lx1,1,lx3),dV(lx1,1,lx3),integrand(lx1,1,lx3))
+  allocate(Jx(lx1,1,lx3),Jy(lx1,1,lx3),Jz(lx1,1,lx3))
+  allocate(Rxend(lx1,1),Ryend(lx1,1),Rcubedend(lx1,1),dVend(lx1,1),integrandend(lx1,1))
+  allocate(Jxend(lx1,1),Jyend(lx1,1),Jzend(lx1,1))
+  allocate(Rcubedtop(lx1,lx3),dVtop(lx1,lx3),Rcubedcorner(lx1),dVcorner(lx1))
+  do k=1,lx3
+    gk=mpi_cfg%myid3*lx3+k
+    do i=1,lx1
+      Rx(i,1,k)=radius_x(i,gk); Ry(i,1,k)=radius_y(i,gk)
+      Jx(i,1,k)=current(1,i,gk); Jy(i,1,k)=current(2,i,gk); Jz(i,1,k)=current(3,i,gk)
+    enddo
+  enddo
+  dV=1
+  call halo_end(dV,dVend,dVtop,dVcorner,tag%dV)
+  call halo_end(Rx,Rxend,Rcubedtop,Rcubedcorner,tag%Rx)
+  call halo_end(Ry,Ryend,Rcubedtop,Rcubedcorner,tag%Ry)
+  call halo_end(Jx,Jxend,Rcubedtop,Rcubedcorner,tag%Jx)
+  call halo_end(Jy,Jyend,Rcubedtop,Rcubedcorner,tag%Jy)
+  call halo_end(Jz,Jzend,Rcubedtop,Rcubedcorner,tag%Jz)
+  ipoints=1
+@MAGCALC_2D@
+  call MPI_Allreduce([Br(1),Btheta(1),Bphi(1)],result,3,mpi_realprec,MPI_SUM,MPI_COMM_WORLD)
+  reference=0
+  do c=1,3
+    do k=2,total
+      do i=2,lx1
+        numerator=cross_product(c,i-1,k-1)+cross_product(c,i,k-1)+ &
+          cross_product(c,i-1,k)+cross_product(c,i,k)
+        reference(c)=reference(c)+mu0/(8*pi)*numerator/(radius_x(i,k)**2+radius_y(i,k)**2)
+      enddo
+    enddo
+  enddo
+  if (.not.all(ieee_is_finite(result))) error stop 'Nonfinite 2-D magnetic field'
+  if (maxval(abs(result-reference))>128*epsilon(1._wp)*maxval(abs(reference))) &
+    error stop 'Magnetic quadrature disagrees with direct discrete oracle'
+  ! Terminal ranks must skip their zero denominator even for nonzero end data.
+  if (mpi_cfg%myid3==mpi_cfg%lid3-1) then
+    integrand=0; integrandend=1; Rcubedend=0; dVend=0
+    numerator=integrate2D(integrand,integrandend)
+    if (.not.ieee_is_finite(numerator) .or. numerator/=0) error stop 'Terminal 2-D end cell was evaluated'
+  endif
+  deallocate(Rx,Ry,Rcubed,dV,integrand,Jx,Jy,Jz,Rxend,Ryend,Rcubedend,dVend,integrandend,Jxend,Jyend,Jzend)
+  deallocate(Rcubedtop,dVtop,Rcubedcorner,dVcorner)
+enddo
+call check_current_edges()
+call MPI_Finalize()
+print *, 'Magnetic 2-D quadrature, terminal slabs and current edges passed'
+contains
+pure real(wp) function radius_x(i,k)
+  integer, intent(in) :: i,k
+  radius_x=2._wp+0.5_wp*i+0.25_wp*k
+end function
+pure real(wp) function radius_y(i,k)
+  integer, intent(in) :: i,k
+  radius_y=3._wp+0.25_wp*i-0.125_wp*k
+end function
+pure real(wp) function current(c,i,k)
+  integer, intent(in) :: c,i,k
+  select case(c)
+  case(1)
+    current=real(2*i+k,wp)
+  case(2)
+    current=real(i-3*k,wp)
+  case(3)
+    current=real(i+k,wp)
+  end select
+end function
+pure real(wp) function cross_product(c,i,k)
+  integer, intent(in) :: c,i,k
+  select case(c)
+  case(1)
+    cross_product=-current(3,i,k)*radius_y(i,k)
+  case(2)
+    cross_product=current(3,i,k)*radius_x(i,k)
+  case(3)
+    cross_product=current(1,i,k)*radius_y(i,k)-current(2,i,k)*radius_x(i,k)
+  end select
+end function
+subroutine check_current_edges()
+  real(wp), allocatable :: j1(:,:,:),j2(:,:,:),j3(:,:,:),before(:,:,:)
+  integer :: n2,n3,edge,ii,jj,kk
+  ! fixJ has no communication; replay each possible boundary rank locally.
+  mpi_cfg%myid=1
+  do n2=1,5
+    do n3=1,5
+      allocate(j1(-1:4,-1:n2+2,-1:n3+2),j2(-1:4,-1:n2+2,-1:n3+2),j3(-1:4,-1:n2+2,-1:n3+2))
+      allocate(before(-1:4,-1:n2+2,-1:n3+2),x%alt(-1:4,-1:n2+2,-1:n3+2))
+      do edge=1,4
+        mpi_cfg%lid2=3; mpi_cfg%lid3=3; mpi_cfg%myid2=1; mpi_cfg%myid3=1
+        select case(edge)
+        case(1)
+          mpi_cfg%myid2=0
+        case(2)
+          mpi_cfg%myid2=2
+        case(3)
+          mpi_cfg%myid3=0
+        case(4)
+          mpi_cfg%myid3=2
+        end select
+        do kk=-1,n3+2
+          do jj=-1,n2+2
+            do ii=-1,4
+              before(ii,jj,kk)=real(ii+10*jj+100*kk,wp)
+            enddo
+          enddo
+        enddo
+        j1=before; j2=2; j3=3; x%alt=100000
+        x%alt(-1,:,:)=70000
+        call fixJ(j1,j2,j3)
+        if (any(j1(-1,:,:)/=0) .or. any(j2(-1,:,:)/=0) .or. any(j3(-1,:,:)/=0)) &
+          error stop 'Low altitude current cutoff'
+        if (any(j2(1:2,:,:)/=2) .or. any(j3(1:2,:,:)/=3)) error stop 'Transverse current changed'
+        select case(edge)
+        case(1)
+          if(n2<=2)then
+            if(any(j1(1:2,1:n2,:)/=0)) error stop 'Small low x2 current boundary'
+          else
+            if(any(j1(1:2,1,:)/=before(1:2,3,:)) .or. any(j1(1:2,2,:)/=before(1:2,3,:))) &
+              error stop 'Low x2 current extrapolation'
+          endif
+        case(2)
+          if(n2<=2)then
+            if(any(j1(1:2,1:n2,:)/=0)) error stop 'Small high x2 current boundary'
+          else
+            if(any(j1(1:2,n2-1,:)/=before(1:2,n2-2,:)) .or. any(j1(1:2,n2,:)/=before(1:2,n2-2,:))) &
+              error stop 'High x2 current extrapolation'
+          endif
+        case(3)
+          if(n3<=2)then
+            if(any(j1(1:2,:,1:n3)/=0)) error stop 'Small low x3 current boundary'
+          else
+            if(any(j1(1:2,:,1)/=before(1:2,:,3)) .or. any(j1(1:2,:,2)/=before(1:2,:,3))) &
+              error stop 'Low x3 current extrapolation'
+          endif
+        case(4)
+          if(n3<=2)then
+            if(any(j1(1:2,:,1:n3)/=0)) error stop 'Small high x3 current boundary'
+          else
+            if(any(j1(1:2,:,n3-1)/=before(1:2,:,n3-2)) .or. any(j1(1:2,:,n3)/=before(1:2,:,n3-2))) &
+              error stop 'High x3 current extrapolation'
+          endif
+        end select
+      enddo
+      deallocate(j1,j2,j3,before,x%alt)
+    enddo
+  enddo
+end subroutine
+@MAGCALC_KERNELS@
+end program

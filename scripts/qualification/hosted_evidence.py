@@ -10,7 +10,8 @@ from pathlib import Path
 REQUIRED={'native (Debug)','native (Release)','current-hdf5','sanitizers'}
 WORKFLOW='.github/workflows/preintegration.yml'
 REQUIRED_STEPS={
-    'native (Debug)':{'Run native suite and reference comparisons','Verify restart record precision and rejection behavior'},
+    'native (Debug)':{'Run native suite and reference comparisons','Verify restart record precision and rejection behavior',
+                       'Qualify exact restart and native numerical budgets'},
     'native (Release)':{'Run native suite and reference comparisons','Verify restart record precision and rejection behavior',
                         'Qualify exact restart and native numerical budgets'},
     'current-hdf5':{'Build and test current-library profile','Qualify current-library restart and numerical budgets',

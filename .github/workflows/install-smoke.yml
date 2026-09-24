@@ -1,0 +1,124 @@
+name: local-installation
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+  OPENBLAS_NUM_THREADS: 1
+  OMP_NUM_THREADS: 1
+  OMPI_MCA_rmaps_base_oversubscribe: 1
+  PRTE_MCA_rmaps_base_oversubscribe: 1
+
+jobs:
+  unix:
+    name: install (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+      - name: Install through the supported local entrypoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_COMMIT"
+          mkdir -p build/installer-evidence build/scratch
+          git rev-parse HEAD > build/installer-evidence/candidate.txt
+          export TMPDIR="$PWD/build/scratch"
+          bash scripts/install-local.sh --system-deps --root "$PWD/build/local-install" --jobs 2 \
+            2>&1 | tee build/installer-evidence/install.log
+      - name: Verify installed environment without shell activation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export TMPDIR="$PWD/build/scratch"
+          "$PWD/build/local-install/venv/bin/python" scripts/local_environment.py check \
+            --root "$PWD/build/local-install" 2>&1 | tee build/installer-evidence/check.log
+      - name: Preserve exact-commit installation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: install-${{ matrix.os }}-${{ env.CANDIDATE_COMMIT }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            build/installer-evidence/
+            build/local-install/environment.json
+            build/local-install/build/CMakeCache.txt
+            build/local-install/build/CMakeFiles/CMakeConfigureLog.yaml
+            build/local-install/build/Testing/
+            build/local-install/build/local-*.xml
+
+  wsl:
+    name: install (WSL Ubuntu-24.04)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+        with:
+          distribution: Ubuntu-24.04
+          additional-packages: git
+          use-cache: false
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.CANDIDATE_COMMIT }}
+      - name: Install through the WSL local entrypoint
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $candidate = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $candidate -ne $env:CANDIDATE_COMMIT) {
+            throw "Checkout does not match the candidate"
+          }
+          New-Item -ItemType Directory -Force build/installer-evidence, build/scratch | Out-Null
+          $candidate | Set-Content build/installer-evidence/candidate.txt
+          $linuxRoot = & wsl.exe --distribution Ubuntu-24.04 --exec wslpath -a $env:GITHUB_WORKSPACE
+          if ($LASTEXITCODE -ne 0) { throw "Cannot locate checkout in WSL" }
+          $env:TMPDIR = "$($linuxRoot.Trim())/build/scratch"
+          $env:OMPI_ALLOW_RUN_AS_ROOT = "1"
+          $env:OMPI_ALLOW_RUN_AS_ROOT_CONFIRM = "1"
+          $forward = @("TMPDIR", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
+                       "OMPI_MCA_rmaps_base_oversubscribe", "PRTE_MCA_rmaps_base_oversubscribe",
+                       "OMPI_ALLOW_RUN_AS_ROOT",
+                       "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM")
+          $env:WSLENV = ((@($env:WSLENV) + $forward) | Where-Object { $_ }) -join ":"
+          & ./scripts/install-local.ps1 -Distribution Ubuntu-24.04 -SystemDeps `
+            -Root "$($linuxRoot.Trim())/build/local-install" -Jobs 2 `
+            2>&1 | Tee-Object build/installer-evidence/install.log
+      - name: Verify installed WSL environment without shell activation
+        shell: wsl-bash {0}
+        run: |
+          set -euo pipefail
+          export TMPDIR="$PWD/build/scratch"
+          export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+          export OMPI_MCA_rmaps_base_oversubscribe=1 PRTE_MCA_rmaps_base_oversubscribe=1
+          export OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+          "$PWD/build/local-install/venv/bin/python" scripts/local_environment.py check \
+            --root "$PWD/build/local-install" 2>&1 | tee build/installer-evidence/check.log
+      - name: Preserve exact-commit WSL installation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: install-wsl-${{ env.CANDIDATE_COMMIT }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          path: |
+            build/installer-evidence/
+            build/local-install/environment.json
+            build/local-install/build/CMakeCache.txt
+            build/local-install/build/CMakeFiles/CMakeConfigureLog.yaml
+            build/local-install/build/Testing/
+            build/local-install/build/local-*.xml

@@ -2,15 +2,14 @@ module exe_frontend
 
 use, intrinsic :: iso_c_binding, only : c_int
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, compiler_options
-use phys_consts, only : wp
-use gemini3d_config, only : gemini_cfg, read_configfile
 use gemini3d_sysinfo, only : get_compiler_vendor
-use filesystem, only : parent, assert_is_dir, expanduser, remove
-use timeutils, only : date_filename,dateinc
+use filesystem, only : parent, assert_is_dir, expanduser
 
 implicit none (type, external)
 private
-public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
+public :: cli_parser, get_Ncpu, quote_argument, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
+
+character(*), parameter :: default_numproc_flag = "@MPIEXEC_NUMPROC_FLAG@"
 
 interface !< cpu_count.cpp
 integer(c_int) function cpu_count_c() bind(c, name="cpu_count")
@@ -26,10 +25,10 @@ cpu_count = int(cpu_count_c())
 end function
 
 
-subroutine cli_parser(plan, path, exe, mpiexec, extra)
+subroutine cli_parser(plan, path, exe, mpiexec, numproc_flag, extra)
 
 logical, intent(out) :: plan
-character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
+character(:), allocatable, intent(out) :: path, exe, mpiexec, numproc_flag, extra
 
 character(1000) :: buf
 integer :: argc, i, j, ierr, L
@@ -88,22 +87,22 @@ do i = 2, argc
   !> options passed to child executable
   case ('-dryrun', '-debug', '-nooutput')
     !! flags with no parameters
-    extra = extra // ' ' // trim(buf)
+    extra = extra // ' ' // quote_argument(trim(buf))
   case ('-manual_grid')
     !! flags with two parameters
-    extra = extra // ' ' // trim(buf)
+    extra = extra // ' ' // quote_argument(trim(buf))
     do j = 1,2
       call get_command_argument(i+j, buf, length=L, status=ierr)
       if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -manual_grid expected two parameters"
-      extra = extra // ' ' // trim(buf)
+      extra = extra // ' ' // quote_argument(trim(buf))
     enddo
   case ('-start_time', '-end_time')
     !! flags with four parameters
-    extra = extra // ' ' // trim(buf)
+    extra = extra // ' ' // quote_argument(trim(buf))
     do j = 1,4
       call get_command_argument(i+j, buf, length=L, status=ierr)
       if(ierr /= 0 .or. L==0 .or. buf(1:1) == "-") error stop trim(buf) // " -start_time expected four parameters"
-      extra = extra // ' ' // trim(buf)
+      extra = extra // ' ' // quote_argument(trim(buf))
     enddo
   case default
     error stop "Gemini3D: unknown option: " // trim(buf)
@@ -112,6 +111,11 @@ end do
 
 if(.not.allocated(exe)) exe = find_exe("")
 if(.not.allocated(mpiexec)) mpiexec = find_mpiexec("")
+if (len_trim(default_numproc_flag) > 0) then
+  numproc_flag = default_numproc_flag
+else
+  numproc_flag = "-n"
+endif
 
 end subroutine cli_parser
 
@@ -136,26 +140,20 @@ integer function get_Ncpu() result(Ncpu)
 
 
 Ncpu = get_Ncpu_envvar("GEMINI_CPU")
-if (Ncpu > 1) return
+if (Ncpu >= 1) return
 
 Ncpu = get_Ncpu_envvar("NSLOTS")
-if (Ncpu > 1) return
+if (Ncpu >= 1) return
 
 Ncpu = get_Ncpu_envvar("PBS_NP")
-if (Ncpu > 1) return
+if (Ncpu >= 1) return
 
 Ncpu = get_Ncpu_envvar("SLURM_NTASKS")
-if (Ncpu > 1) return
+if (Ncpu >= 1) return
 
-! write(stderr,'(A)') "NOTE: gemini3d.run: CPU count not found in environment variables, using cpu_count.cpp." // &
-!   " If running on an HPC, only one node will be used."
+! write(stderr,'(A)') "NOTE: gemini3d.run: CPU count not found in environment variables, using one process."
 
-Ncpu = cpu_count()
-if (Ncpu <= 1) then
-  write(stderr,'(a,i0)') "ERROR: gemini3d.run:get_Ncpu: run mpiexec with gemini.bin" // &
-    "as CPU count wan not detected ", Ncpu
-  error stop
-endif
+Ncpu = 1
 
 end function get_Ncpu
 
@@ -289,6 +287,8 @@ print '(/,a,/)', 'GEMINI-3D: gemini3d.run ' // "@git_rev@"
 print '(a)', 'Compiler vendor: '// get_compiler_vendor()
 print '(a)', 'Compiler version: ' // compiler_version()
 print '(/,a,/)', 'the first and only positional argument is simulation output directory.'
+print '(a)', 'Existing outputs are preserved, including during dry runs and restarts.'
+print '(a)', 'For a fresh run, use a new directory or explicitly remove old outputs yourself.'
 print '(a)', 'Optional arguments:'
 print '(a,t20,a)', '-plan', 'print MPI partition x2,x3 for given CPU count'
 print '(a,t20,a)', '-dryrun', 'allows quick check of first time step'
@@ -336,43 +336,36 @@ stop 'EOF: magcalc.run'
 end subroutine help_magcalc_run
 
 
-subroutine clean_output(path)
+function quote_argument(arg) result(quoted)
+character(*), intent(in) :: arg
+character(:), allocatable :: quoted
+integer :: i, n
 
-character(*), intent(in) :: path
-
-type(gemini_cfg) :: cfg
-integer, dimension(3) :: ymd
-real(wp) :: UTsec
-character(:), allocatable :: fn
-logical :: exists
-
-cfg%outdir = path
-cfg%infile = path // '/inputs/config.nml'
-inquire(file=cfg%infile, exist=exists)
-if(.not.exists) error stop 'gemini3d.run: not a file: ' // cfg%infile
-
-call read_configfile(cfg)
-
-ymd = cfg%ymd0
-UTsec = cfg%UTsec0
-
-fn = date_filename(cfg%outdir, ymd, UTsec) // ".h5"
-
-do
-  !! new filename, add the 1 if it is the first
-  fn = date_filename(cfg%outdir, ymd, UTsec) // ".h5"
-
-  inquire(file=fn, exist=exists)
-  if ( .not. exists ) exit
-  !! last output file
-  print *, 'delete: ', fn
-  call remove(fn)
-
-  !! next time
-  call dateinc(cfg%dtout, ymd,UTsec)
-end do
-
-end subroutine clean_output
+if ("@WIN32@" == "1") then
+  ! cmd.exe expands these even inside double quotes; reject rather than reinterpret.
+  if (scan(arg, '"%!') /= 0) error stop "launcher: unsupported shell character in argument"
+  if (len_trim(arg) == 0) then
+    quoted = '""'
+  else
+    quoted = '"' // arg(:len_trim(arg)) // '"'
+  endif
+else
+  n = len_trim(arg)
+  if (n == 0) then
+    quoted = "''"
+    return
+  endif
+  quoted = "'"
+  do i = 1, n
+    if (arg(i:i) == "'") then
+      quoted = quoted // "'" // '"' // "'" // '"' // "'"
+    else
+      quoted = quoted // arg(i:i)
+    endif
+  enddo
+  quoted = quoted // "'"
+endif
+end function quote_argument
 
 
 end module exe_frontend

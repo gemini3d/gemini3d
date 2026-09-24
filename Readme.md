@@ -69,6 +69,14 @@ Requirements:
 
 ### Gemini3D setup
 
+For a local Python/build/install environment with dependency installation and
+verification, use `scripts/install-local.sh --system-deps` on Debian/Ubuntu,
+macOS, or Windows WSL. Windows PowerShell users can invoke
+`scripts/install-local.ps1 -SystemDeps`. See
+[local environment setup](docs/Readme_prereqs.md#verified-local-environment)
+for prerequisites, runtime checks, offline limitations, and full-reference testing.
+Omit `--system-deps` to use an already provisioned native toolchain.
+
 Obtain the Gemini3D source code:
 
 ```sh

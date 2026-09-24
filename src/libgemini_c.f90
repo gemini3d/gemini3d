@@ -33,6 +33,8 @@ use meshobj_dipole, only: dipolemesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
+use neutral_background, only: msisinit_in, neutral_background_empirical
+use neutral, only: neutral_aggregate
 use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, &
             set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
@@ -55,7 +57,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in
+            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in, v2grid, v3grid
 
 implicit none (type, external)
 
@@ -259,7 +261,7 @@ contains
 
   !> C wrapper to deallocate grid
   subroutine gemini_grid_dealloc_C(xtype,xC) bind(C, name='gemini_grid_dealloc_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
@@ -272,7 +274,7 @@ contains
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_C(xtype,xC) bind(C, name='gemini_grid_generate_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
@@ -283,7 +285,7 @@ contains
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_altnull_C(xtype,xC,altnullC) bind(C, name='gemini_grid_generate_altnull_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     real(wp), intent(inout) :: altnullC
     class(curvmesh), pointer :: x
@@ -297,11 +299,11 @@ contains
   subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC, &
                                      identifier,x1lims,x2lims,x3lims) bind(C,name="plasma_output_nompi_C")
     type(c_ptr), intent(in) :: cfgC
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: electrovarsC
-    integer, intent(in) :: identifier
+    integer(C_INT), intent(in) :: identifier
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -429,13 +431,14 @@ contains
 
 
   !> initialization procedure needed for MSIS 2.0
-!  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
-!    type(c_ptr), intent(in) :: cfgC
-!    type(gemini_cfg), pointer :: cfg
-!
-!    call c_f_pointer(cfgC,cfg)
-!    call msisinit_in(cfg)
-!  end subroutine msisinit_C
+  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
+    type(c_ptr), intent(in) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    if (.not. c_associated(cfgC)) error stop "msisinit_C: null configuration"
+    call c_f_pointer(cfgC,cfg)
+    call msisinit_in(cfg)
+  end subroutine msisinit_C
 
 
   !> call to initialize the neutral background information
@@ -488,24 +491,29 @@ contains
   end subroutine set_update_cadence_C
 
 
-!  !> compute background neutral density, temperature, and wind
-!  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
-!    type(c_ptr), intent(in) :: cfgC
-!    integer(C_INT), intent(in) :: xtype
-!    type(c_ptr), intent(in) :: xC
-!    integer(C_INT), dimension(3), intent(in) :: ymd
-!    real(wp), intent(in) :: UTsec
-!    type(c_ptr), intent(inout) :: intvarsC
-!
-!    type(gemini_cfg), pointer :: cfg
-!    class(curvmesh), pointer :: x
-!    type(gemini_work), pointer :: intvars
-!
-!    call c_f_pointer(cfgC,cfg)
-!    x=>set_gridpointer_dyntype(xtype, xC)
-!    call c_f_pointer(intvarsC,intvars)
-!    call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
-!  end subroutine neutral_atmos_winds_C
+  !> Legacy empirical-background API; file-driven backgrounds use init_neutralBG_input_C.
+  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    integer(C_INT), dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    type(c_ptr), intent(inout) :: intvarsC
+
+    type(gemini_cfg), pointer :: cfg
+    class(curvmesh), pointer :: x
+    type(gemini_work), pointer :: intvars
+
+    if (.not. c_associated(cfgC) .or. .not. c_associated(xC) .or. .not. c_associated(intvarsC)) &
+      error stop "neutral_atmos_winds_C: null configuration, grid or work object"
+    call c_f_pointer(cfgC,cfg)
+    if (cfg%flagneutralBGfile /= 0) &
+      error stop "neutral_atmos_winds_C: file backgrounds require init_neutralBG_input_C"
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(intvarsC,intvars)
+    call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+  end subroutine neutral_atmos_winds_C
 
 
   !> get solar indices from cfg struct
@@ -580,7 +588,7 @@ contains
     type(C_PTR), intent(in) :: xC
     type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
     type(C_PTR), intent(inout) :: intvarsC
-    integer, intent(in) :: lsp
+    integer(C_INT), intent(in) :: lsp
 
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars

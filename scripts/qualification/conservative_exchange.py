@@ -30,8 +30,12 @@ def remap(cell_average,source,target,valid=None):
     value=np.asarray(cell_average,dtype=float);vs=volumes(source);vt=volumes(target)
     if value.ndim!=4 or value.shape[:3]!=vs.shape or not np.isfinite(value).all():
         raise ValueError('Expected finite cell averages with explicit channel axis')
-    if valid is not None and (np.shape(valid)!=vs.shape or not np.asarray(valid,dtype=bool).all()):
-        raise ValueError('Masked or cut cells are outside this exchange contract')
+    if valid is not None:
+        valid=np.asarray(valid)
+        if valid.dtype.kind not in 'biu' or not np.isin(valid,[0,1]).all():
+            raise ValueError('Explicit Boolean or zero/one validity mask required')
+        if valid.shape!=vs.shape or not valid.all():
+            raise ValueError('Masked or cut cells are outside this exchange contract')
     matrices=[overlap(a,b) for a,b in zip(source,target)]
     total=np.einsum('ai,bj,ck,ijkq->abcq',*matrices,value,optimize=True)
     return total/vt[...,None]
