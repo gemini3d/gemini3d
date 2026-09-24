@@ -276,6 +276,10 @@ contains
     integer, intent(in) :: lsp
     integer, intent(in) :: myid
 
+    ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
+    call v12rhov1_in(cfg,fluidvars,fluidauxvars,electrovars)
+    call T2rhoe_in(fluidvars,fluidauxvars)
+
     ! We need to halo fluid variables to compute some of the drifts/currents for electro solvers
     call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
     call halo_fluidvars_in(x,fluidvars,fluidauxvars)
@@ -307,9 +311,10 @@ contains
     ! pull solar indices from module type
     !call get_solar_indices(cfg,f107,f107a)
 
-    ! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
-    call v12rhov1_in(cfg,fluidvars,fluidauxvars,electrovars)
-    call T2rhoe_in(fluidvars,fluidauxvars)
+    !! Prior to advection substep convert velocity and temperature to momentum and enegy density (which are local to this procedure)
+    !call v12rhov1_in(cfg,fluidvars,fluidauxvars,electrovars)
+    !call T2rhoe_in(fluidvars,fluidauxvars)
+    !^ already done in electro code
 
     ! advection substep for all species
     call cpu_time(tstart)
@@ -323,8 +328,9 @@ contains
     ! call halo_allparams_in(x,fluidvars,fluidauxvars)
     !print '(a)', 'Haloing fluidvars and fluidauxvars for advection substep'
     ! New haloing code; probably very little performance penalty here
-    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
-    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    !call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    !call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+    !^ can omit if haloing in electro_adv code since these variables don't change during electro solve
     call interface_vels_allspec_in(x,fluidvars,intvars,lsp)    ! needs to happen regardless of ions v. electron due to energy eqn.
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
