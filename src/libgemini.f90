@@ -378,10 +378,6 @@ contains
     allocate(intvars%solflux)
     allocate(intvars%atmosbackground)
 
-!    ! Here the user needs to allocate any custom variables they want to pass around and/or output
-!    allocate(intvars%sigP(1:lx1,1:lx2,1:lx3))
-!    allocate(intvars%sigH, mold=intvars%sigP)
-
     ! lastly we want to allocate whatever data the user want to store and output for their particular application
     call user_allocate(intvars)
   end function gemini_work_alloc

@@ -135,16 +135,16 @@ contains
     real(wp), dimension(-1:,-1:,-1:), intent(inout) :: E1,E2,E3,J1,J2,J3
     !! intent(out)
     real(wp), dimension(:,:,:), pointer, intent(inout) :: Phiall
-    real(wp), dimension(:,:,:), intent(inout) :: sig0,sigP,sigH,sigNCP,sigNCH
-    integer :: flagdirich
-    real(wp), dimension(:,:), pointer :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
-    real(wp), dimension(:,:) :: Vminx2,Vmaxx2
-    real(wp), dimension(:,:) :: Vminx3,Vmaxx3
-    real(wp), dimension(:,:,:) :: E01,E02,E03
-    real(wp), dimension(:,:) :: Vminx1slab,Vmaxx1slab
+    integer, intent(in) :: flagdirich
+    real(wp), dimension(:,:), pointer, intent(inout) :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+    real(wp), dimension(:,:), intent(inout) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(inout) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
+    real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
     !! inout since it may not be allocated or deallocated in this procedure
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(inout) :: sig0,sigP,sigH,sigNCP,sigNCH
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: sigPgrav,sigHgrav
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
@@ -831,7 +831,7 @@ contains
 
     ! x3 global boundary
     if (.not. flagper) then
-      !! mustn't overwrite ghost cells if perioidc is chosen
+      !^ mustn't overwrite ghost cells if perioidic is chosen; by default other haloing will do periodic
       if (idleft==-1) then
         parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
       end if

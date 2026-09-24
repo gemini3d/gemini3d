@@ -294,13 +294,15 @@ contains
         Phitmp=potential2D_fieldresolved(srctermall,sig0scaledall, &
                           sigPscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2, &
                           x,flagdirich,perflag,it)
-      else if (lx2all==1) then
+      else !if (lx2all==1) then
         Phitmp=potential2D_fieldresolved(srctermall,sig0scaledall, &
                           sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
                           x,flagdirich,perflag,it)
-      else
-        error stop '  potential_mumps.f90:  incorrect gridswap value!!!'
+      !>>  FIXME: seems to be unreachable? 
+      !else 
+      !  error stop '  potential_mumps.f90:  incorrect gridswap value!!!'
       end if
+      !<<
       Phiall(1:lx1,1:lx2all,1:lx3all)=Phitmp
       call cpu_time(tfin)
     end if
@@ -308,7 +310,8 @@ contains
     !!!!!!!!!
 
     !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
-    call bcast_send3D_ghost(Phiall,tag%Phi,Phi)
+    call bcast_send3D_ghost(Phiall,tag%Phi,Phi)     ! FIXME:  does this obviate haloing inside of pot2perpfield?  Apparently no b/c
+                                                    !  pot2perpfield applies a global boundary, as well and this assumes periodic
 
     !-------
     !! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
