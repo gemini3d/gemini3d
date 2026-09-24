@@ -4,6 +4,8 @@ leak:ompi_mpi_init
 leak:orte_finalize
 # OpenMPI 4.x on Ubuntu 24.04 leaves process-lifetime libevent thread allocations visible to LSAN.
 leak:event_base_loop
+# OpenMPI 4.x on Ubuntu 24.04 leaves one component-registration strdup visible to LSAN.
+leak:mca_base_framework_components_register
 # Ubuntu 24.04 OpenBLAS (0.3.26) leaves process-lifetime allocations visible to LSAN.
 leak:libopenblasp-r0.3.26.so
 # Ubuntu 24.04 UBSan runtime leaves process-lifetime allocations visible to LSAN.

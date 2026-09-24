@@ -80,6 +80,7 @@ class HostedEvidence(unittest.TestCase):
         self.assertNotIn('--quick',workflow)
         self.assertIn('host_capabilities.py --only leak',jobs['sanitizers'])
         self.assertIn('detect_leaks=1:halt_on_error=1',jobs['sanitizers'])
+        self.assertIn('fast_unwind_on_malloc=0',jobs['sanitizers'])
         self.assertIn('LSAN_OPTIONS: exitcode=23:suppressions=${{ github.workspace }}/.github/lsan-openmpi.supp',
                       jobs['sanitizers'])
         self.assertIn('PMIX_MCA_gds: hash',jobs['sanitizers'])
@@ -90,6 +91,8 @@ class HostedEvidence(unittest.TestCase):
                           'leak:orte_finalize',
                           '# OpenMPI 4.x on Ubuntu 24.04 leaves process-lifetime libevent thread allocations visible to LSAN.',
                           'leak:event_base_loop',
+                          '# OpenMPI 4.x on Ubuntu 24.04 leaves one component-registration strdup visible to LSAN.',
+                          'leak:mca_base_framework_components_register',
                           '# Ubuntu 24.04 OpenBLAS (0.3.26) leaves process-lifetime allocations visible to LSAN.',
                           'leak:libopenblasp-r0.3.26.so',
                           '# Ubuntu 24.04 UBSan runtime leaves process-lifetime allocations visible to LSAN.',
