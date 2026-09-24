@@ -1,5 +1,6 @@
 add_executable(audit_partition partition_contract.f90)
 target_link_libraries(audit_partition PRIVATE autogrid)
+intel_fortran_main_linker(audit_partition)
 add_test(NAME audit:partition_contract COMMAND audit_partition)
 add_test(NAME audit:partition_cmake COMMAND ${CMAKE_COMMAND}
   -Dsource=${PROJECT_SOURCE_DIR} -P ${CMAKE_CURRENT_LIST_DIR}/partition_contract.cmake)
