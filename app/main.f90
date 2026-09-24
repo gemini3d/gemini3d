@@ -218,7 +218,7 @@ contains
 
       !> compute potential solution
       call cpu_time(tstart)
-      call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec)
+      call electro_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,lsp,myid)
       if (myid==0 .and. debug) then
         call cpu_time(tfin)
         print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -261,6 +261,27 @@ contains
     !call gemini_work_dealloc(cfg,intvars)
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
+
+
+  subroutine electro_adv(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec,lsp,myid)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidvars
+    real(wp), dimension(:,:,:,:), pointer, intent(inout) :: fluidauxvars
+    real(wp), dimension(:,:,:,:), pointer, intent(in) :: electrovars
+    type(gemini_work), intent(inout) :: intvars
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: t,dt
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    integer, intent(in) :: lsp
+    integer, intent(in) :: myid
+
+    ! We need to halo fluid variables to compute some of the drifts/currents for electro solvers
+    call set_global_boundaries_allspec_in(x,fluidvars,fluidauxvars,intvars,lsp)
+    call halo_fluidvars_in(x,fluidvars,fluidauxvars)
+
+    call electrodynamics_in(cfg,fluidvars,fluidauxvars,electrovars,intvars,x,t,dt,ymd,UTsec)
+  end subroutine electro_adv
 
 
   !> this advances the fluid soluation by time interval dt

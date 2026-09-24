@@ -358,8 +358,10 @@ contains
     if (flagdiamagnetic) then
       do isp=1,lsp
         !> this behaves better when we take the gradient of log pressure
-        pressure(1:lx1,1:lx2,1:lx3)=log(ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp))
-        call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+        pressure(-1:lx1+2,-1:lx2+2,-1:lx3+2)=log(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,isp)*kB* &
+                                               Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,isp))
+        !pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)       
+        !call halo_pot(pressure,tag%pressure,x%flagper,.false.)
         gradlp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
         gradlp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
         vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
@@ -545,8 +547,10 @@ contains
     real(wp), dimension(0:lx1+1,0:lx2+1,0:lx3+1) :: gradp2,gradp3
 
     do isp=1,lsp
-      pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
-      call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+      pressure(-1:lx1+2,-1:lx2+2,-1:lx3+2)=log(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,isp)*kB* &
+                                             Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,isp))
+      !pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+      !call halo_pot(pressure,tag%pressure,x%flagper,.false.)
       gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       J2(1:lx1,1:lx2,1:lx3)=J2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)+ &

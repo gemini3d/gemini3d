@@ -152,16 +152,6 @@ contains
                                      dt,x,flagdirich,perflag,it)
               else    ! FIXME:  should be a static periodic solve (not implemented); but for now use the dynamic solver
                       !  with zero capacitance
-
-                !print*, minval(srctermintall), maxval(srctermintall), any(isnan(srctermintall))
-                !print*, minval(SigPint2all), maxval(SigPint2all), any(isnan(SigPint2all))
-                !print*, minval(SigPint3all), maxval(SigPint3all), any(isnan(SigPint3all))
-                !print*, minval(SigHintall), maxval(SigHintall), any(isnan(SigHintall))
-                !print*, minval(incapintall), maxval(incapintall), any(isnan(incapintall))
-                !print*, minval(v2slaball), maxval(v2slaball), any(isnan(v2slaball))
-                !print*, minval(v3slaball), maxval(v3slaball), any(isnan(v3slaball))
-                !error stop
-
                 if (debug) print *, '!!!GEMINI detects static potential solve, periodic...'
                 Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall, &
                                          incapintall,v2slaball,v3slaball, &
