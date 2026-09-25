@@ -17,11 +17,9 @@ if(CMAKE_GENERATOR MATCHES "^Visual Studio")
   message(FATAL_ERROR "${CMAKE_GENERATOR} is not supported. Use \"cmake -G Ninja\" option.")
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.28.0)
-  message(WARNING "CMake 3.26.x and 3.27.x have known bugs causing build failures due to incorrectly graphing Fortran module dependencies,
-regardless of operating system or compiler.
-Suggest CMake 3.28 or newer https://github.com/Kitware/CMake/releases
-If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.")
+if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_LESS 3.28.0)
+  message(WARNING "Ninja with CMake < 3.28 has known bugs causing build failures due to incorrectly graphing Fortran module dependencies.
+Suggest CMake 3.28 or newer or use 'cmake -G \"Unix Makefiles\"'")
 endif()
 
 # --- main Gemini3D build
