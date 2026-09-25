@@ -3,9 +3,9 @@
 #
 # this approach takes about 30 seconds per CMake version on a laptop
 
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.26)
 
-set(cmake_vers 3.25.3 3.26.5 3.27.9 3.28.6)
+set(cmake_vers 3.26.6 3.27.9 3.28.6)
 
 set(CMAKE_FIND_APPBUNDLE NEVER)
 # must have this for macOS or it will open the CMake GUI and fail.
