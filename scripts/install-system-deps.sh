@@ -45,7 +45,7 @@ case "$(uname -s)" in
     }
     run_apt_update_with_fallback() {
       local -a elevate_cmd=("$@")
-      local -a apt_update=("${elevate_cmd[@]}" apt-get -o APT::Update::Error-Mode=any update)
+      local -a apt_update=("${elevate_cmd[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
       local apt_update_ok=0
       local attempt
       for attempt in 1 2 3; do

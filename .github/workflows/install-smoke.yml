@@ -18,7 +18,7 @@ env:
   OMP_NUM_THREADS: 1
   OMPI_MCA_rmaps_base_oversubscribe: 1
   PRTE_MCA_rmaps_base_oversubscribe: 1
-  GEMINI_ALLOW_STALE_APT_INDEX: 1
+  GEMINI_ALLOW_STALE_APT_INDEX: 0
 
 jobs:
   unix:
