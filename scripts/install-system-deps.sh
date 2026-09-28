@@ -20,8 +20,12 @@ case "$(uname -s)" in
       local has_packages=0
       local has_consistent_metadata=1
       while IFS= read -r package_index; do
-        has_packages=1
         release_prefix="${package_index##*/}"
+        case "$release_prefix" in
+          *_Packages|*_Packages.lz4|*_Packages.xz|*_Packages.gz|*_Packages.bz2|*_Packages.zst) ;;
+          *) continue ;;
+        esac
+        has_packages=1
         release_prefix="${release_prefix%_Packages*}"
         release_prefix="${release_prefix%_binary-*}"
         found_release_metadata=0
@@ -40,14 +44,7 @@ case "$(uname -s)" in
           has_consistent_metadata=0
           break
         fi
-      done < <(
-        compgen -G "/var/lib/apt/lists/*_Packages"
-        compgen -G "/var/lib/apt/lists/*_Packages.lz4"
-        compgen -G "/var/lib/apt/lists/*_Packages.xz"
-        compgen -G "/var/lib/apt/lists/*_Packages.gz"
-        compgen -G "/var/lib/apt/lists/*_Packages.bz2"
-        compgen -G "/var/lib/apt/lists/*_Packages.zst"
-      )
+      done < <(compgen -G "/var/lib/apt/lists/*_binary-*_Packages*")
       if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
       fi
