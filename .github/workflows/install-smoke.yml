@@ -18,6 +18,7 @@ env:
   OMP_NUM_THREADS: 1
   OMPI_MCA_rmaps_base_oversubscribe: 1
   PRTE_MCA_rmaps_base_oversubscribe: 1
+  GEMINI_ALLOW_STALE_APT_INDEX: 1
 
 jobs:
   unix:
@@ -93,6 +94,7 @@ jobs:
           $env:OMPI_ALLOW_RUN_AS_ROOT_CONFIRM = "1"
           $forward = @("TMPDIR", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
                        "OMPI_MCA_rmaps_base_oversubscribe", "PRTE_MCA_rmaps_base_oversubscribe",
+                       "GEMINI_ALLOW_STALE_APT_INDEX",
                        "OMPI_ALLOW_RUN_AS_ROOT",
                        "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM")
           $env:WSLENV = ((@($env:WSLENV) + $forward) | Where-Object { $_ }) -join ":"

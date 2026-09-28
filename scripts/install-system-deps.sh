@@ -25,7 +25,11 @@ case "$(uname -s)" in
       fi
     done
     if [[ "$apt_update_ok" -eq 0 ]]; then
-      echo "warning: apt-get update failed after retries; proceeding with existing package indexes" >&2
+      if [[ "${GEMINI_ALLOW_STALE_APT_INDEX:-0}" != 1 ]]; then
+        echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 to continue with existing package indexes" >&2
+        exit 1
+      fi
+      echo "warning: apt-get update failed after retries; proceeding with existing package indexes because GEMINI_ALLOW_STALE_APT_INDEX=1" >&2
     fi
     "${elevate[@]}" apt-get install -y --no-install-recommends \
       build-essential gfortran git python3 python3-venv python3-dev \
