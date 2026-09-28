@@ -29,7 +29,10 @@ case "$(uname -s)" in
           break
         fi
       done
-      for pattern in "/var/lib/apt/lists/*_InRelease" "/var/lib/apt/lists/*_Release"; do
+      for pattern in \
+        "/var/lib/apt/lists/*_InRelease" \
+        "/var/lib/apt/lists/*_Release" \
+        "/var/lib/apt/lists/*_Release.gpg"; do
         if compgen -G "$pattern" >/dev/null; then
           has_release_metadata=1
           break
