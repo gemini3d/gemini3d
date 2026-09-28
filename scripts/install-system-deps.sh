@@ -16,20 +16,26 @@ case "$(uname -s)" in
     has_cached_apt_index_set() {
       local package_index
       local release_prefix
+      local has_packages=0
       shopt -s nullglob
       for package_index in /var/lib/apt/lists/*_Packages*; do
+        has_packages=1
         release_prefix="${package_index##*/}"
         release_prefix="${release_prefix%%_binary-*}"
         release_prefix="${release_prefix%_*}"
         if [[ -f "/var/lib/apt/lists/${release_prefix}_InRelease" ]]; then
-          return 0
+          continue
         fi
         if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" && \
               -f "/var/lib/apt/lists/${release_prefix}_Release.gpg" ]]; then
-          return 0
+          continue
         fi
+        return 1
       done
-      return 1
+      if [[ "$has_packages" -eq 0 ]]; then
+        return 1
+      fi
+      return 0
     }
     apt_update=("${elevate[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
     apt_update_ok=0
