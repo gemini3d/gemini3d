@@ -46,30 +46,36 @@ case "$(uname -s)" in
       fi
       return 0
     }
-    apt_update=("${elevate[@]}" apt-get -o APT::Update::Error-Mode=any update)
-    apt_update_ok=0
-    for attempt in 1 2 3; do
-      if "${apt_update[@]}"; then
-        apt_update_ok=1
-        break
+    run_apt_update_with_fallback() {
+      local -a elevate_cmd=("$@")
+      local -a apt_update=("${elevate_cmd[@]}" apt-get -o APT::Update::Error-Mode=any update)
+      local apt_update_ok=0
+      local attempt
+      for attempt in 1 2 3; do
+        if "${apt_update[@]}"; then
+          apt_update_ok=1
+          break
+        fi
+        if [[ "$attempt" -lt 3 ]]; then
+          sleep "$((attempt * 5))"
+        fi
+      done
+      if [[ "$apt_update_ok" -eq 0 ]]; then
+        local allow_stale_apt_index
+        allow_stale_apt_index="${GEMINI_ALLOW_STALE_APT_INDEX:-0}"
+        allow_stale_apt_index="${allow_stale_apt_index//[[:space:]]/}"
+        if [[ "$allow_stale_apt_index" != 1 ]]; then
+          echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX so its whitespace-trimmed value is 1 to continue with existing package indexes" >&2
+          return 1
+        fi
+        if ! has_cached_apt_index_set; then
+          echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
+          return 1
+        fi
+        echo "warning: apt-get update failed after retries; proceeding with existing package indexes because GEMINI_ALLOW_STALE_APT_INDEX=1" >&2
       fi
-      if [[ "$attempt" -lt 3 ]]; then
-        sleep "$((attempt * 5))"
-      fi
-    done
-    if [[ "$apt_update_ok" -eq 0 ]]; then
-      allow_stale_apt_index="${GEMINI_ALLOW_STALE_APT_INDEX:-0}"
-      allow_stale_apt_index="${allow_stale_apt_index//[[:space:]]/}"
-      if [[ "$allow_stale_apt_index" != 1 ]]; then
-        echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX so its whitespace-trimmed value is 1 to continue with existing package indexes" >&2
-        exit 1
-      fi
-      if ! has_cached_apt_index_set; then
-        echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
-        exit 1
-      fi
-      echo "warning: apt-get update failed after retries; proceeding with existing package indexes because GEMINI_ALLOW_STALE_APT_INDEX=1" >&2
-    fi
+    }
+    run_apt_update_with_fallback "${elevate[@]}"
     "${elevate[@]}" apt-get install -y --no-install-recommends \
       build-essential gfortran git python3 python3-venv python3-dev \
       libopenmpi-dev openmpi-bin libhdf5-dev libopenblas-dev \
