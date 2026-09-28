@@ -42,7 +42,7 @@ case "$(uname -s)" in
       fi
       return 0
     }
-    apt_update=("${elevate[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
+    apt_update=("${elevate[@]}" apt-get -o APT::Update::Error-Mode=any update)
     apt_update_ok=0
     for attempt in 1 2 3; do
       if "${apt_update[@]}"; then
