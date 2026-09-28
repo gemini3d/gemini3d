@@ -34,8 +34,6 @@ jobs:
       CC: ${{ matrix.compiler.c }}
       CXX: ${{ matrix.compiler.cpp }}
       FC: ${{ matrix.compiler.fc }}
-      CMAKE: cmake
-      CTEST: ctest
 
     runs-on: macos-latest
 
