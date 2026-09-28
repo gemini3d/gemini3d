@@ -14,9 +14,18 @@ case "$(uname -s)" in
       elevate=(sudo)
     fi
     apt_update=("${elevate[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
-    if ! "${apt_update[@]}"; then
-      "${elevate[@]}" rm -rf /var/lib/apt/lists/*
-      "${apt_update[@]}"
+    apt_update_ok=0
+    for attempt in 1 2 3; do
+      if "${apt_update[@]}"; then
+        apt_update_ok=1
+        break
+      fi
+      if [[ "$attempt" -lt 3 ]]; then
+        sleep "$((attempt * 5))"
+      fi
+    done
+    if [[ "$apt_update_ok" -eq 0 ]]; then
+      echo "warning: apt-get update failed after retries; proceeding with existing package indexes" >&2
     fi
     "${elevate[@]}" apt-get install -y --no-install-recommends \
       build-essential gfortran git python3 python3-venv python3-dev \
