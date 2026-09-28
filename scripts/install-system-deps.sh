@@ -24,7 +24,7 @@ case "$(uname -s)" in
       for package_index in /var/lib/apt/lists/*_Packages*; do
         has_packages=1
         release_prefix="${package_index##*/}"
-        if [[ "$release_prefix" =~ ^(.+_dists_[^_]+)_[^_]+_binary-[^_]+_Packages ]]; then
+        if [[ "$release_prefix" =~ ^(.+_dists_.+)_[^_]+_binary-[^_]+_Packages ]]; then
           release_prefix="${BASH_REMATCH[1]}"
         else
           has_consistent_metadata=0
