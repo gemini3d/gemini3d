@@ -32,10 +32,18 @@ case "$(uname -s)" in
         exit 1
       fi
       has_packages=0
+      has_inrelease=0
       has_release=0
+      has_release_gpg=0
       compgen -G "/var/lib/apt/lists/*_Packages*" >/dev/null && has_packages=1
-      compgen -G "/var/lib/apt/lists/*InRelease" >/dev/null && has_release=1
-      if [[ "$has_packages" -eq 0 || "$has_release" -eq 0 ]]; then
+      compgen -G "/var/lib/apt/lists/*_InRelease" >/dev/null && has_inrelease=1
+      compgen -G "/var/lib/apt/lists/*_Release" >/dev/null && has_release=1
+      compgen -G "/var/lib/apt/lists/*_Release.gpg" >/dev/null && has_release_gpg=1
+      has_release_metadata=0
+      if [[ "$has_inrelease" -eq 1 || ( "$has_release" -eq 1 && "$has_release_gpg" -eq 1 ) ]]; then
+        has_release_metadata=1
+      fi
+      if [[ "$has_packages" -eq 0 || "$has_release_metadata" -eq 0 ]]; then
         echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
         exit 1
       fi
