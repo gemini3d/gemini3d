@@ -18,6 +18,7 @@ env:
   OMP_NUM_THREADS: 1
   OMPI_MCA_rmaps_base_oversubscribe: 1
   PRTE_MCA_rmaps_base_oversubscribe: 1
+  GEMINI_ALLOW_STALE_APT_INDEX: 0
 
 jobs:
   unix:
@@ -67,6 +68,8 @@ jobs:
     name: install (WSL Ubuntu-24.04)
     runs-on: windows-latest
     timeout-minutes: 90
+    env:
+      GEMINI_ALLOW_STALE_APT_INDEX: 1
     steps:
       - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
         with:
@@ -93,6 +96,7 @@ jobs:
           $env:OMPI_ALLOW_RUN_AS_ROOT_CONFIRM = "1"
           $forward = @("TMPDIR", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
                        "OMPI_MCA_rmaps_base_oversubscribe", "PRTE_MCA_rmaps_base_oversubscribe",
+                       "GEMINI_ALLOW_STALE_APT_INDEX",
                        "OMPI_ALLOW_RUN_AS_ROOT",
                        "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM")
           $env:WSLENV = ((@($env:WSLENV) + $forward) | Where-Object { $_ }) -join ":"
