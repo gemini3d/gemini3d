@@ -212,7 +212,7 @@ endif()
 add_test(NAME gemini_run:${name}:dryrun COMMAND ${test_cmd} -dryrun)
 set_tests_properties(gemini_run:${name}:dryrun PROPERTIES
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
-WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini3d.run>
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini3d.run>"
 PROCESSORS ${Nworker}
 )
 hdf5_dll(gemini_run:${name}:dryrun)
@@ -227,23 +227,25 @@ endif()
 
 # $<TARGET_FILE:${test_cmd}> is essential when using direct command line in add_test
 
-test_mpi_command(${Nworker} "$<TARGET_FILE_DIR:gemini.bin>" mpi_cmd)
+test_mpi_command(${Nworker} "" mpi_cmd)
 add_test(NAME gemini:${name}:dryrun COMMAND ${mpi_cmd} $<TARGET_FILE:${test_cmd}> ${out_dir} -dryrun)
 test_mpi_props(gemini:${name}:dryrun ${Nworker})
 set_tests_properties(gemini:${name}:dryrun PROPERTIES
 FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
 hdf5_dll(gemini:${name}:dryrun)
 
 # --- gemini.bin run ---
 
-test_mpi_command(${Nworker} "$<TARGET_FILE_DIR:gemini.bin>" mpi_cmd)
+test_mpi_command(${Nworker} "" mpi_cmd)
 add_test(NAME gemini:${name} COMMAND ${mpi_cmd} $<TARGET_FILE:${test_cmd}> ${out_dir})
 test_mpi_props(gemini:${name} ${Nworker})
 set_tests_properties(gemini:${name} PROPERTIES
 FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
 hdf5_dll(gemini:${name})
 # WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
