@@ -14,18 +14,23 @@ case "$(uname -s)" in
       elevate=(sudo)
     fi
     has_cached_apt_index_set() {
+      local -a package_indexes
       local package_index
       local release_prefix
       local found_release_metadata
-      local has_packages=0
+      local has_supported_packages=0
       local has_consistent_metadata=1
-      while IFS= read -r package_index; do
+      mapfile -t package_indexes < <(compgen -G "/var/lib/apt/lists/*_Packages*" || true)
+      if [[ "${#package_indexes[@]}" -eq 0 ]]; then
+        return 1
+      fi
+      for package_index in "${package_indexes[@]}"; do
         release_prefix="${package_index##*/}"
         case "$release_prefix" in
           *_Packages|*_Packages.lz4|*_Packages.xz|*_Packages.gz|*_Packages.bz2|*_Packages.zst) ;;
           *) continue ;;
         esac
-        has_packages=1
+        has_supported_packages=1
         release_prefix="${release_prefix%_Packages*}"
         release_prefix="${release_prefix%_binary-*}"
         found_release_metadata=0
@@ -44,8 +49,8 @@ case "$(uname -s)" in
           has_consistent_metadata=0
           break
         fi
-      done < <(compgen -G "/var/lib/apt/lists/*_Packages*")
-      if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
+      done
+      if [[ "$has_supported_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
       fi
       return 0
