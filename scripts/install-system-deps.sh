@@ -30,8 +30,7 @@ case "$(uname -s)" in
             found_release_metadata=1
             break
           fi
-          if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" && \
-                -f "/var/lib/apt/lists/${release_prefix}_Release.gpg" ]]; then
+          if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" ]]; then
             found_release_metadata=1
             break
           fi
