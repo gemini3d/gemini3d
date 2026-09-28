@@ -19,10 +19,7 @@ case "$(uname -s)" in
       local found_release_metadata
       local has_packages=0
       local has_consistent_metadata=1
-      local had_nullglob=0
-      shopt -q nullglob && had_nullglob=1
-      shopt -s nullglob
-      for package_index in /var/lib/apt/lists/*_Packages*; do
+      while IFS= read -r package_index; do
         has_packages=1
         release_prefix="${package_index##*/}"
         release_prefix="${release_prefix%_Packages*}"
@@ -44,12 +41,7 @@ case "$(uname -s)" in
           has_consistent_metadata=0
           break
         fi
-      done
-      if [[ "$had_nullglob" -eq 1 ]]; then
-        shopt -s nullglob
-      else
-        shopt -u nullglob
-      fi
+      done < <(compgen -G "/var/lib/apt/lists/*_Packages*")
       if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
       fi
