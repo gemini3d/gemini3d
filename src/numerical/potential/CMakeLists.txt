@@ -14,12 +14,14 @@ add_library(potential OBJECT
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
 potential_mumps.f90 potential2d.f90
 boundary_conditions/potentialBCs_mumps.f90
-$<TARGET_OBJECTS:grid>
+$<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:gemini3d_config>
 )
 target_link_libraries(potential PRIVATE PDEelliptic calculus collision meshobj efielddata interp timeutils mpimod reader const
 inputdata grid
 MPI::MPI_Fortran
 )
 
-add_library(potential_nompi OBJECT potential_nompi.f90 boundary_conditions/potentialBCs_nompi.f90)
+add_library(potential_nompi OBJECT potential_nompi.f90 boundary_conditions/potentialBCs_nompi.f90
+$<TARGET_OBJECTS:gemini3d_config>
+)
 target_link_libraries(potential_nompi PRIVATE calculus meshobj const grid efielddata)
