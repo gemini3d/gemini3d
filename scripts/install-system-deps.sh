@@ -13,6 +13,24 @@ case "$(uname -s)" in
       command -v sudo >/dev/null || { echo "sudo is required for system packages." >&2; exit 1; }
       elevate=(sudo)
     fi
+    has_cached_apt_index_set() {
+      local package_index
+      local release_prefix
+      shopt -s nullglob
+      for package_index in /var/lib/apt/lists/*_Packages*; do
+        release_prefix="${package_index##*/}"
+        release_prefix="${release_prefix%%_binary-*}"
+        release_prefix="${release_prefix%_*}"
+        if [[ -f "/var/lib/apt/lists/${release_prefix}_InRelease" ]]; then
+          return 0
+        fi
+        if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" && \
+              -f "/var/lib/apt/lists/${release_prefix}_Release.gpg" ]]; then
+          return 0
+        fi
+      done
+      return 1
+    }
     apt_update=("${elevate[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
     apt_update_ok=0
     for attempt in 1 2 3; do
@@ -31,19 +49,7 @@ case "$(uname -s)" in
         echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 to continue with existing package indexes" >&2
         exit 1
       fi
-      has_packages=0
-      has_inrelease=0
-      has_release=0
-      has_release_gpg=0
-      compgen -G "/var/lib/apt/lists/*_Packages*" >/dev/null && has_packages=1
-      compgen -G "/var/lib/apt/lists/*_InRelease" >/dev/null && has_inrelease=1
-      compgen -G "/var/lib/apt/lists/*_Release" >/dev/null && has_release=1
-      compgen -G "/var/lib/apt/lists/*_Release.gpg" >/dev/null && has_release_gpg=1
-      has_release_metadata=0
-      if [[ "$has_inrelease" -eq 1 || ( "$has_release" -eq 1 && "$has_release_gpg" -eq 1 ) ]]; then
-        has_release_metadata=1
-      fi
-      if [[ "$has_packages" -eq 0 || "$has_release_metadata" -eq 0 ]]; then
+      if ! has_cached_apt_index_set; then
         echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
         exit 1
       fi
