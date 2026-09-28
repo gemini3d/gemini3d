@@ -68,6 +68,8 @@ jobs:
     name: install (WSL Ubuntu-24.04)
     runs-on: windows-latest
     timeout-minutes: 90
+    env:
+      GEMINI_ALLOW_STALE_APT_INDEX: 1
     steps:
       - uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
         with:
