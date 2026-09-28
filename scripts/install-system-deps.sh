@@ -16,10 +16,10 @@ case "$(uname -s)" in
     has_cached_apt_index_set() {
       local package_index
       local release_prefix
-      local nullglob_state
       local has_packages=0
       local has_consistent_metadata=1
-      nullglob_state="$(shopt -p nullglob)"
+      local had_nullglob=0
+      shopt -q nullglob && had_nullglob=1
       shopt -s nullglob
       for package_index in /var/lib/apt/lists/*_Packages*; do
         has_packages=1
@@ -36,7 +36,11 @@ case "$(uname -s)" in
         has_consistent_metadata=0
         break
       done
-      eval "$nullglob_state"
+      if [[ "$had_nullglob" -eq 1 ]]; then
+        shopt -s nullglob
+      else
+        shopt -u nullglob
+      fi
       if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
       fi
