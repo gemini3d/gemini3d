@@ -31,9 +31,12 @@ case "$(uname -s)" in
         echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 to continue with existing package indexes" >&2
         exit 1
       fi
-      if ! compgen -G "/var/lib/apt/lists/*_Packages*" >/dev/null && \
-         ! compgen -G "/var/lib/apt/lists/*InRelease" >/dev/null; then
-        echo "apt-get update failed after retries and no cached apt package indexes were found" >&2
+      has_packages=0
+      has_release=0
+      compgen -G "/var/lib/apt/lists/*_Packages*" >/dev/null && has_packages=1
+      compgen -G "/var/lib/apt/lists/*InRelease" >/dev/null && has_release=1
+      if [[ "$has_packages" -eq 0 || "$has_release" -eq 0 ]]; then
+        echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
         exit 1
       fi
       echo "warning: apt-get update failed after retries; proceeding with existing package indexes because GEMINI_ALLOW_STALE_APT_INDEX=1" >&2
