@@ -16,4 +16,4 @@ add_executable(test_expand_envvar test_expand_envvar.f90)
 target_link_libraries(test_expand_envvar PRIVATE gemini3d_config ffilesystem::filesystem)
 
 add_test(NAME ExpandEnvvar COMMAND test_expand_envvar)
-set_property(TEST ExpandEnvvar PROPERTY ENVIRONMENT test__gem=hello)
+set_property(TEST ExpandEnvvar PROPERTY ENVIRONMENT_MODIFICATION "test__gem=set:hello")
