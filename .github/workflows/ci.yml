@@ -78,9 +78,9 @@ jobs:
 
 
   cmake-oldest:
-    timeout-minutes: 30
+    timeout-minutes: 20
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -92,16 +92,8 @@ jobs:
 
     - *pkg
 
-    - uses: ./.github/workflows/composite-cmake
+    - name: Install CMake ${{ matrix.cmake_version }}
+      timeout-minutes: 10
+      uses: ./.github/workflows/composite-cmake
 
-    - *linux-build
-
-  gnu_make:
-    timeout-minutes: 15
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - *checkout
-    - *pkg
     - run: cmake --workflow gmake
