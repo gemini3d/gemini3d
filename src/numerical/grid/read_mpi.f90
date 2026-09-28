@@ -120,20 +120,16 @@ subroutine enforce_gridmpi_periodic(flagperiodic,x)
 
   refalt=0.0; refglon=0.0; refglat=0.0     ! these not used unless flagperiodic==1, which then will overwrite
   if (flagperiodic/=0) then
-    select case (flagperiodic)
-      case(1)
-        refalt=x%alt(1:lx1,1:lx2,1); refglon=x%glon(1:lx1,1:lx2,1); refglat=x%glat(1:lx1,1:lx2,1);
-        call gather_ref_meridian(refalt,refglon,refglat)
-        call x%set_periodic(flagperiodic,refalt,refglon,refglat)
-      case default
-        call x%set_periodic(flagperiodic,refalt,refglon,refglat)
-    end select
+    refalt=x%alt(1:lx1,1:lx2,1); refglon=x%glon(1:lx1,1:lx2,1); refglat=x%glat(1:lx1,1:lx2,1);
+    call gather_ref_meridian(refalt,refglon,refglat)
+    call x%set_periodic(flagperiodic,refalt,refglon,refglat)
   end if
 end subroutine enforce_gridmpi_periodic
 
 
 !> grab reference meridian data from first column of workers, input ref varables should be prepoluated
 !    with the first x3 slice of alt,lon,lat
+!  What this actually does is replace all workers ref data with roots
 subroutine gather_ref_meridian(refalt,refglon,refglat)
   real(wp), dimension(:,:), intent(inout) :: refalt,refglon,refglat
   integer :: iid,iid3
