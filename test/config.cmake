@@ -201,7 +201,7 @@ RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
 )
 
-# --- gemini3d.run ---
+# --- gemini3d.run frontend ---
 set(test_cmd gemini3d.run ${out_dir} -mpiexec ${MPIEXEC_EXECUTABLE})
 if(name MATCHES "_cpp$")
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini_c.bin>)
