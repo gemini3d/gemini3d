@@ -16,6 +16,7 @@ case "$(uname -s)" in
     has_cached_apt_index_set() {
       local package_index
       local release_prefix
+      local found_release_metadata
       local has_packages=0
       local has_consistent_metadata=1
       local had_nullglob=0
@@ -24,21 +25,25 @@ case "$(uname -s)" in
       for package_index in /var/lib/apt/lists/*_Packages*; do
         has_packages=1
         release_prefix="${package_index##*/}"
-        if [[ "$release_prefix" =~ ^(.+_dists_.+)_[^_]+_binary-[^_]+_Packages(\..+)?$ ]]; then
-          release_prefix="${BASH_REMATCH[1]}"
-        else
+        release_prefix="${release_prefix%_Packages*}"
+        release_prefix="${release_prefix%_binary-*}"
+        found_release_metadata=0
+        while [[ "$release_prefix" == *"_dists_"* && "$release_prefix" == *_* ]]; do
+          if [[ -f "/var/lib/apt/lists/${release_prefix}_InRelease" ]]; then
+            found_release_metadata=1
+            break
+          fi
+          if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" && \
+                -f "/var/lib/apt/lists/${release_prefix}_Release.gpg" ]]; then
+            found_release_metadata=1
+            break
+          fi
+          release_prefix="${release_prefix%_*}"
+        done
+        if [[ "$found_release_metadata" -eq 0 ]]; then
           has_consistent_metadata=0
           break
         fi
-        if [[ -f "/var/lib/apt/lists/${release_prefix}_InRelease" ]]; then
-          continue
-        fi
-        if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" && \
-              -f "/var/lib/apt/lists/${release_prefix}_Release.gpg" ]]; then
-          continue
-        fi
-        has_consistent_metadata=0
-        break
       done
       if [[ "$had_nullglob" -eq 1 ]]; then
         shopt -s nullglob
