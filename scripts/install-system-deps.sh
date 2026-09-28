@@ -74,7 +74,7 @@ case "$(uname -s)" in
         allow_stale_apt_index="${GEMINI_ALLOW_STALE_APT_INDEX:-0}"
         allow_stale_apt_index="${allow_stale_apt_index//[[:space:]]/}"
         if [[ "$allow_stale_apt_index" != 1 ]]; then
-          echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX so its whitespace-trimmed value is 1 to continue with existing package indexes" >&2
+          echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 (whitespace is ignored) to continue with existing package indexes" >&2
           return 1
         fi
         if ! has_cached_apt_index_set; then
