@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-# .zst requires CMake 3.15+, JSON Cmake 3.19
+# string(JSON) requires CMake 3.19
 
 function(download_archive url archive exp_hash)
 
@@ -75,5 +75,5 @@ set(ref_dir ${refroot}/${name})
 
 gemini_download_ref_data(${name} ${refroot} ${arc_json_file})
 
-# copy sim inputs into build/${name}/inputs
+# copy sim inputs into sim output directory
 file(COPY ${ref_dir}/inputs DESTINATION ${outdir})
