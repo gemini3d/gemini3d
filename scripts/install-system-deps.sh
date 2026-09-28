@@ -40,7 +40,12 @@ case "$(uname -s)" in
           has_consistent_metadata=0
           break
         fi
-      done < <(compgen -G "/var/lib/apt/lists/*_Packages")
+      done < <(
+        compgen -G "/var/lib/apt/lists/*_Packages"
+        compgen -G "/var/lib/apt/lists/*_Packages.lz4"
+        compgen -G "/var/lib/apt/lists/*_Packages.xz"
+        compgen -G "/var/lib/apt/lists/*_Packages.gz"
+      )
       if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
       fi
