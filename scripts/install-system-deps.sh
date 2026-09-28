@@ -45,6 +45,8 @@ case "$(uname -s)" in
         compgen -G "/var/lib/apt/lists/*_Packages.lz4"
         compgen -G "/var/lib/apt/lists/*_Packages.xz"
         compgen -G "/var/lib/apt/lists/*_Packages.gz"
+        compgen -G "/var/lib/apt/lists/*_Packages.bz2"
+        compgen -G "/var/lib/apt/lists/*_Packages.zst"
       )
       if [[ "$has_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
         return 1
