@@ -14,43 +14,28 @@ case "$(uname -s)" in
       elevate=(sudo)
     fi
     has_cached_apt_index_set() {
-      local -a package_indexes
-      local package_index
-      local release_prefix
-      local found_release_metadata
-      local has_supported_packages=0
-      local has_consistent_metadata=1
-      mapfile -t package_indexes < <(compgen -G "/var/lib/apt/lists/*_Packages*" || true)
-      if [[ "${#package_indexes[@]}" -eq 0 ]]; then
-        return 1
-      fi
-      for package_index in "${package_indexes[@]}"; do
-        release_prefix="${package_index##*/}"
-        case "$release_prefix" in
-          *_Packages|*_Packages.lz4|*_Packages.xz|*_Packages.gz|*_Packages.bz2|*_Packages.zst) ;;
-          *) continue ;;
-        esac
-        has_supported_packages=1
-        release_prefix="${release_prefix%_Packages*}"
-        release_prefix="${release_prefix%_binary-*}"
-        found_release_metadata=0
-        while [[ "$release_prefix" == *"_dists_"* && "$release_prefix" == *_* ]]; do
-          if [[ -f "/var/lib/apt/lists/${release_prefix}_InRelease" ]]; then
-            found_release_metadata=1
-            break
-          fi
-          if [[ -f "/var/lib/apt/lists/${release_prefix}_Release" ]]; then
-            found_release_metadata=1
-            break
-          fi
-          release_prefix="${release_prefix%_*}"
-        done
-        if [[ "$found_release_metadata" -eq 0 ]]; then
-          has_consistent_metadata=0
+      local pattern
+      local has_package_lists=0
+      local has_release_metadata=0
+      for pattern in \
+        "/var/lib/apt/lists/*_Packages" \
+        "/var/lib/apt/lists/*_Packages.lz4" \
+        "/var/lib/apt/lists/*_Packages.xz" \
+        "/var/lib/apt/lists/*_Packages.gz" \
+        "/var/lib/apt/lists/*_Packages.bz2" \
+        "/var/lib/apt/lists/*_Packages.zst"; do
+        if compgen -G "$pattern" >/dev/null; then
+          has_package_lists=1
           break
         fi
       done
-      if [[ "$has_supported_packages" -eq 0 || "$has_consistent_metadata" -eq 0 ]]; then
+      for pattern in "/var/lib/apt/lists/*_InRelease" "/var/lib/apt/lists/*_Release"; do
+        if compgen -G "$pattern" >/dev/null; then
+          has_release_metadata=1
+          break
+        fi
+      done
+      if [[ "$has_package_lists" -eq 0 || "$has_release_metadata" -eq 0 ]]; then
         return 1
       fi
       return 0
