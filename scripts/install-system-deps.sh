@@ -25,7 +25,9 @@ case "$(uname -s)" in
       fi
     done
     if [[ "$apt_update_ok" -eq 0 ]]; then
-      if [[ "${GEMINI_ALLOW_STALE_APT_INDEX:-0}" != 1 ]]; then
+      allow_stale_apt_index="${GEMINI_ALLOW_STALE_APT_INDEX:-0}"
+      allow_stale_apt_index="${allow_stale_apt_index//[[:space:]]/}"
+      if [[ "$allow_stale_apt_index" != 1 ]]; then
         echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 to continue with existing package indexes" >&2
         exit 1
       fi
