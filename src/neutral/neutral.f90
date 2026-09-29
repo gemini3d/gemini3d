@@ -5,7 +5,7 @@ module neutral
 !    are handled in separate modules
 
 use phys_consts, only: wp, lnchem, pi, Re, debug
-use grid, only: lx1, lx2, lx3
+use grid, only: lx1, lx2, lx3, enforce_parm_periodic
 use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use neutraldataobj, only: neutraldata
@@ -200,7 +200,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglon,eglat
     type(neutral_info), intent(inout) :: atmos
-    real(wp), dimension(:,:,:,:,:), intent(inout), optional :: rotmat    ! for debugging purposes
+    real(wp), dimension(:,:,:,:,:), intent(inout), optional :: rotmat    ! for debugging and testing purposes
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
     !! allocate module-scope space for the projection factors

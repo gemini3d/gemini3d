@@ -9,7 +9,7 @@ use meshobj, only: curvmesh
 use gemini3d_config, only: gemini_cfg
 use io, only: output_plasma,output_aur,find_milestone,input_plasma,create_outdir
 use potential_comm, only: get_BGEfields,velocities
-use grid, only: lx1,lx2,lx3, grid_drift, read_grid, calc_subgrid_size
+use grid, only: lx1,lx2,lx3, grid_drift, read_grid, calc_subgrid_size, enforce_parm_periodic
 use collisions, only: conductivities
 use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : pot2perpfield, electrodynamics, BGfields_boundaries_root, BGfields_boundaries_worker
@@ -523,7 +523,7 @@ contains
   end subroutine inputdata_perturb_in
 
 
-  !> update the solar flux inputdata if present
+  !> update the background neutral atmosphere; enforce periodicity as needed.  
   subroutine neutral_background_in(cfg,intvars,x,dt,t,ymd,UTsec)
     real(wp), intent(in) :: t,dt
     type(gemini_cfg), intent(in) :: cfg
@@ -531,42 +531,40 @@ contains
     real(wp), intent(in) :: UTsec
     class(curvmesh), intent(inout) :: x
     type(gemini_work), intent(inout) :: intvars
+    integer :: ineu,ln
 
-!    if (cfg%flagneutralBGfile==1) then
-!      !print*, 'File-based neutral background...'
-!      call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
-!      call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
-!    else
-!      if ( get_it()==1 ) then     ! on first time step; assume we initialize using beginning date in config file
-!        print*, 'Initializing emprical background from start date in config file...'
-!        call neutral_background_empirical(cfg,cfg%ymd0,cfg%UTsec0,x,v2grid,v3grid,intvars%atmos)
-!        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
-!        tneuBG=tneuBG+cfg%dtneuBG
-!      elseif (cfg%flagneuBG .and. t>tneuBG ) then   ! update BG to current time
-!        call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
-!        call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
-!        tneuBG=tneuBG+cfg%dtneuBG
-!      end if
-!    end if
-
+    ln=size(intvars%atmos%nn,4)
     if (cfg%flagneutralBGfile==1) then
       !print*, 'File-based neutral background...'
       call neutral_background_fileinput(dt,t,cfg,ymd,UTsec,x,intvars%atmos,intvars%atmosbackground)    ! load into base array variables
+        if (cfg%flagperiodic/=0) then ! must enforce periodicity if background changed
+          !do ineu=1,ln
+          !  call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%nn(:,:,:,ineu))
+          !end do
+          !call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%Tn)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3)          
+        end if
       call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     else
       !> get neutral background
-!      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then
       if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then
-        print*, 'Updating neutrals...'
+        !print*, 'Updating neutrals...'
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
         call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
+        if (cfg%flagperiodic/=0) then ! must enforce periodicity if background changed
+          !do ineu=1,ln
+          !  call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%nn(:,:,:,ineu))
+          !end do
+          !call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%Tn)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3)          
+        end if
         call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
-        !if (myid==0) then
-        !  call cpu_time(tfin)
-        !  print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
-        !end if
       end if
     end if
   end subroutine neutral_background_in
