@@ -31,7 +31,9 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
              x1lims,x2alllims,x3alllims,get_fullgrid_lims, &
              read_grid, grid_check, grid_drift, calc_subgrid_size, &
-             isglobalx1min,isglobalx1max,isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max
+             isglobalx1min,isglobalx1max,isglobalx2min,isglobalx2max, &
+             isglobalx3min,isglobalx3max, &
+             enforce_parm_periodic
 
              !, generate_worker_grid
 
@@ -44,30 +46,36 @@ interface ! readgrid_*.f90
 end interface
 
 interface !< grid_mpi.f90
-module subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
-  !1 read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size().
-  !!    this is only to be used when GEMINI is run using functionality that depends on fullgrid data like
-  !!    potential solutions etc.
-  character(*), intent(in) :: indatsize,indatgrid
-  integer, intent(in) :: flagperiodic
-  class(curvmesh), pointer, intent(inout) :: x
-  integer(C_INT), intent(inout), optional :: xtype
-  type(C_PTR), intent(inout), optional :: xC
-end subroutine
-
-module subroutine calc_subgrid_size(lx2all, lx3all)
-  !! worker subgrid sizes; requires knowledge of mpi, though not any direct mpi calls
-  integer, intent(in) :: lx2all, lx3all
-end subroutine
-
-module subroutine grid_drift(x,E02,E03,v2grid,v3grid)
-  !1 Compute grid drift speed; requires that we exchange some data through mpi
-  !! Compute the speed the grid is moving at given a background electric field
-  class(curvmesh), intent(in) :: x
-  reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
-  real(wp), intent(inout) :: v2grid,v3grid
-  !! intent(out)
-end subroutine
+  module subroutine read_grid(indatsize,indatgrid,flagperiodic, x, xtype, xC)
+    !1 read in grid and set subgrid sizes; total size must already be set in the grid module via grid_size().
+    !!    this is only to be used when GEMINI is run using functionality that depends on fullgrid data like
+    !!    potential solutions etc.
+    character(*), intent(in) :: indatsize,indatgrid
+    integer, intent(in) :: flagperiodic
+    class(curvmesh), pointer, intent(inout) :: x
+    integer(C_INT), intent(inout), optional :: xtype
+    type(C_PTR), intent(inout), optional :: xC
+  end subroutine
+  
+  module subroutine calc_subgrid_size(lx2all, lx3all)
+    !! worker subgrid sizes; requires knowledge of mpi, though not any direct mpi calls
+    integer, intent(in) :: lx2all, lx3all
+  end subroutine
+  
+  module subroutine grid_drift(x,E02,E03,v2grid,v3grid)
+    !1 Compute grid drift speed; requires that we exchange some data through mpi
+    !! Compute the speed the grid is moving at given a background electric field
+    class(curvmesh), intent(in) :: x
+    reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
+    real(wp), intent(inout) :: v2grid,v3grid
+    !! intent(out)
+  end subroutine
+  
+  module subroutine enforce_parm_periodic(flagperiodic,x,parm)
+      integer, intent(in) :: flagperiodic
+      class(curvmesh), intent(inout) :: x
+      real(wp), dimension(:,:,:) :: parm    ! no ghost cells    
+  end subroutine
 end interface
 
 interface !< check.f90
