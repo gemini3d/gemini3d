@@ -121,38 +121,57 @@ subroutine enforce_gridmpi_periodic(flagperiodic,x)
   refalt=0.0; refglon=0.0; refglat=0.0     ! these not used unless flagperiodic==1, which then will overwrite
   if (flagperiodic/=0) then
     refalt=x%alt(1:lx1,1:lx2,1); refglon=x%glon(1:lx1,1:lx2,1); refglat=x%glat(1:lx1,1:lx2,1);
-    call gather_ref_meridian(refalt,refglon,refglat)
+    call gather_ref_meridian_parm(refalt)
+    call gather_ref_meridian_parm(refglon)
+    call gather_ref_meridian_parm(refglat)
     call x%set_periodic(flagperiodic,refalt,refglon,refglat)
   end if
 end subroutine enforce_gridmpi_periodic
 
 
+!> Enforce some data quantity to be periodic in the x3 direction in the same sense as the geographic
+!    coordinates are made periodic by enforce_grid_mpi_periodic
+subroutine enforce_parm_periodic(flagperiodic,x,parm)
+  integer, intent(in) :: flagperiodic
+  class(curvmesh), intent(inout) :: x
+  real(wp), dimension(:,:,:) :: parm    ! no ghost cells
+  real(wp), dimension(1:lx1,1:lx2) :: refparm
+  integer :: ix3
+
+  refparm=0.0    ! these not used unless flagperiodic==1, which then will overwrite
+  if (flagperiodic/=0) then
+    refparm=parm(1:lx1,1:lx2,1)
+    call gather_ref_meridian_parm(refparm)
+    do ix3=1,lx3    ! copy reference meridian across all x3 locations
+      parm(1:lx1,1:lx2,ix3)=refparm(:,:)
+    end do
+  end if
+end subroutine enforce_parm_periodic
+
+
 !> grab reference meridian data from first column of workers, input ref varables should be prepoluated
 !    with the first x3 slice of alt,lon,lat
-!  What this actually does is replace all workers ref data with roots
-subroutine gather_ref_meridian(refalt,refglon,refglat)
-  real(wp), dimension(:,:), intent(inout) :: refalt,refglon,refglat
+!  What this actually does is populate all workers with reference data
+subroutine gather_ref_meridian_parm(refparm)
+  real(wp), dimension(:,:), intent(inout) :: refparm
   integer :: iid,iid3
   integer :: lx1,lx2
 
   ! set sizes for convenience
-  lx1=size(refalt,1); lx2=size(refalt,2);
+  lx1=size(refparm,1); lx2=size(refparm,2);
 
-  ! loop over all processes, find reference data copy into arrays
+  ! loop over all processes, find reference data copy into arrays.
+  ! FIXME: probably should be non-blocking isend, irecv?  
   if (mpi_cfg%myid3==0) then
     do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid
       iid=grid2ID(mpi_cfg%myid2,iid3)
-      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD)
-      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD)
-      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD)
+      call mpi_send(refparm,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD)
     end do
   else
     iid=grid2ID(mpi_cfg%myid2,0)
-    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
-    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
+    call mpi_recv(refparm,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE)
   end if
-end subroutine gather_ref_meridian
+end subroutine gather_ref_meridian_parm
 
 
 !> pull full grid vars. from workers into root arrays
