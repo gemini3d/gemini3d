@@ -38,7 +38,7 @@ WORKING_DIRECTORY ${matgemini_SOURCE_DIR}
 set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
 FIXTURES_REQUIRED "${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-ENVIRONMENT "MATLABPATH=${MATLABPATH}"
+ENVIRONMENT_MODIFICATION "MATLABPATH=set:${MATLABPATH}"
 LABELS "gemini3d:compare;gemini3d:matlab"
 )
 

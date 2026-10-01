@@ -99,6 +99,11 @@ endif()
 
 # --- setup test
 set(out_dir ${gemini3d_test_run_root}/${name})
+# used for gemini.bin tests
+
+set(out_dir_frontend ${PROJECT_BINARY_DIR}/test_frontend/${name})
+# used for gemini3d.run tests
+
 set(ref_root ${PROJECT_BINARY_DIR}/test_data/compare)
 set(ref_dir ${ref_root}/${name})
 set(arc_json_file ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data_snapshot.json)
@@ -148,8 +153,20 @@ RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
 LABELS download
 )
 
-# --- gemini3d.run ---
-set(test_cmd gemini3d.run ${out_dir} -mpiexec ${MPIEXEC_EXECUTABLE})
+# --- gemini3d.run frontend ---
+# we make a separate test directory for gemini3d.run as its dryrun interferes with the gemini:*:dryrun tests
+# normally the end user uses one or the other, not both. Rather than complicate the test dependency graph,
+# we isolate the gemini3d.run tests in their own directory to avoid conflicts with gemini.bin tests.
+
+add_test(NAME ${name}:copy_data_frontend
+COMMAND ${CMAKE_COMMAND} -Doutdir:PATH=${out_dir_frontend} -Drefdir:PATH=${ref_dir} -P ${CMAKE_CURRENT_LIST_DIR}/copy_data_frontend.cmake
+)
+set_tests_properties(${name}:copy_data_frontend PROPERTIES
+FIXTURES_SETUP ${name}:frontend_copy_fxt
+FIXTURES_REQUIRED ${name}:download_fxt
+)
+
+set(test_cmd gemini3d.run ${out_dir_frontend} -mpiexec ${MPIEXEC_EXECUTABLE})
 if(name MATCHES "_cpp$")
   list(APPEND test_cmd -exe $<TARGET_FILE:gemini_c.bin>)
 else()
@@ -158,12 +175,13 @@ endif()
 
 add_test(NAME gemini_run:${name}:dryrun COMMAND ${test_cmd} -dryrun)
 set_tests_properties(gemini_run:${name}:dryrun PROPERTIES
-FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
-FIXTURES_SETUP ${name}:frontend_dryrun
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:frontend_copy_fxt"
 RESOURCE_LOCK cpu_mpi
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini3d.run>
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini3d.run>"
 PROCESSORS ${Nworker}
 )
+# MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini_run:${name}:dryrun)
 
 # --- gemini.bin dryrun ---
@@ -176,26 +194,31 @@ endif()
 
 # $<TARGET_FILE:${test_cmd}> is essential when using direct command line in add_test
 
-test_mpi_command(${Nworker} "$<TARGET_FILE_DIR:gemini.bin>" mpi_cmd)
+test_mpi_command(${Nworker} "" mpi_cmd)
 add_test(NAME gemini:${name}:dryrun COMMAND ${mpi_cmd} $<TARGET_FILE:${test_cmd}> ${out_dir} -dryrun)
 test_mpi_props(gemini:${name}:dryrun ${Nworker})
 set_tests_properties(gemini:${name}:dryrun PROPERTIES
 FIXTURES_SETUP ${name}:dryrun
-FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt;${name}:frontend_dryrun"
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
+# MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini:${name}:dryrun)
 
 # --- gemini.bin run ---
 
-test_mpi_command(${Nworker} "$<TARGET_FILE_DIR:gemini.bin>" mpi_cmd)
+test_mpi_command(${Nworker} "" mpi_cmd)
 add_test(NAME gemini:${name} COMMAND ${mpi_cmd} $<TARGET_FILE:${test_cmd}> ${out_dir})
 test_mpi_props(gemini:${name} ${Nworker})
 set_tests_properties(gemini:${name} PROPERTIES
 FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
+WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
+# MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini:${name})
-# WORKING_DIRECTORY is needed for tests like HWM14 that need data files in binary directory.
 set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${out_dir}/inputs/config.nml

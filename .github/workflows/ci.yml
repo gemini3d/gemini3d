@@ -40,8 +40,6 @@ jobs:
       CC: gcc-${{ matrix.gcc }}
       CXX: g++-${{ matrix.gcc }}
       FC: gfortran-${{ matrix.gcc }}
-      CMAKE: cmake
-      CTEST: ctest
 
     runs-on: ${{ matrix.os }}
 
@@ -61,13 +59,10 @@ jobs:
       uses: ./.github/workflows/composite-unix
 
   hwm-msis:
+    timeout-minutes: 15
     strategy:
       matrix:
         model: [msis2]
-
-    env:
-      CMAKE: cmake
-      CTEST: ctest
 
     runs-on: ubuntu-latest
 
@@ -81,30 +76,22 @@ jobs:
 
 
   cmake-oldest:
-    timeout-minutes: 30
-
-    runs-on: ubuntu-24.04
-
-    strategy:
-      matrix:
-        cmake_version: ["3.25.3"]
-
-    steps:
-
-    - *checkout
-
-    - *pkg
-
-    - uses: ./.github/workflows/composite-cmake
-
-    - *linux-build
-
-  gnu_make:
     timeout-minutes: 15
 
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        cmake_version: ["3.26.6"]
+
     steps:
+
     - *checkout
+
     - *pkg
-    - run: cmake --workflow gmake
+
+    - name: Install CMake ${{ matrix.cmake_version }}
+      timeout-minutes: 10
+      uses: ./.github/workflows/composite-cmake
+
+    - run: $CMAKE --workflow --preset gmake
