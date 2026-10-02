@@ -58,7 +58,7 @@ if(Python_Interpreter_FOUND)
     add_test(NAME audit:test_configuration COMMAND ${Python_EXECUTABLE}
       ${CMAKE_CURRENT_SOURCE_DIR}/test_configuration.py
       --ctest ${CMAKE_CTEST_COMMAND} --build ${PROJECT_BINARY_DIR}
-      --mpi-tmpdir "${mpi_tmpdir}")
+      --config "$<CONFIG>" --mpi-tmpdir "${mpi_tmpdir}")
     set_tests_properties(audit:test_configuration PROPERTIES TIMEOUT 60 LABELS "unit;audit")
   endif()
 endif()

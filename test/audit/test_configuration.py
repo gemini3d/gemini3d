@@ -11,9 +11,9 @@ def properties(test):
     return {prop["name"]: prop["value"] for prop in test.get("properties", [])}
 
 
-def check_configuration(ctest, build, mpi_tmpdir, windows=False):
+def check_configuration(ctest, build, mpi_tmpdir, windows=False, config="Release"):
     result = subprocess.run(
-        [ctest, "--test-dir", str(build), "--show-only=json-v1"],
+        [ctest, "--test-dir", str(build), "-C", config, "--show-only=json-v1"],
         check=True, capture_output=True, text=True, timeout=30,
     )
     tests = {test["name"]: test for test in json.loads(result.stdout)["tests"]}
@@ -68,11 +68,11 @@ def check_fixture(cmake, ctest):
             mpi_tmpdir = root / "mpi tmp"
             subprocess.run(
                 [cmake, "-S", str(source), "-B", str(build),
-                 f"-Dmpi_tmpdir:PATH={mpi_tmpdir}",
+                 f"-Dmpi_tmpdir:PATH={mpi_tmpdir.as_posix()}",
                  f"-Dtest_windows:BOOL={'ON' if windows else 'OFF'}"],
                 check=True, capture_output=True, text=True, timeout=30,
             )
-            check_configuration(ctest, build, str(mpi_tmpdir), windows=windows)
+            check_configuration(ctest, build, mpi_tmpdir.as_posix(), windows=windows)
 
 
 if __name__ == "__main__":
@@ -80,9 +80,11 @@ if __name__ == "__main__":
     parser.add_argument("--ctest", default="ctest")
     parser.add_argument("--cmake", default="cmake")
     parser.add_argument("--build", type=Path)
+    parser.add_argument("--config", default="Release")
     parser.add_argument("--mpi-tmpdir", default="")
     args = parser.parse_args()
     if args.build:
-        check_configuration(args.ctest, args.build, args.mpi_tmpdir, windows=os.name == "nt")
+        check_configuration(args.ctest, args.build, args.mpi_tmpdir,
+                            windows=os.name == "nt", config=args.config)
     else:
         check_fixture(args.cmake, args.ctest)
