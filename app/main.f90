@@ -63,6 +63,7 @@ integer :: myid
 
 !> initialize mpi
 call mpi_init()
+call mpi_comm_rank(MPI_COMM_WORLD,myid)  ! initialize the outer termination-log rank
 p%fortran_cli = 1
 p%fortran_nml = 1
 p%out_dir(1) = c_null_char
@@ -259,6 +260,7 @@ contains
     call gemini_dealloc(cfg,fluidvars,fluidauxvars,electrovars,intvars)    ! same as following two lines
     !call gemini_double_dealloc(fluidvars,fluidauxvars,electrovars)
     !call gemini_work_dealloc(cfg,intvars)
+    deallocate(x)    ! finalizes the mesh after all input-data borrowers are gone
     call gemini_cfg_dealloc(cfg)
   end subroutine gemini_main
 

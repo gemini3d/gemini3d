@@ -1,3 +1,4 @@
+# Audit modification 2026-09-16: declare real64 scope and explicit simulation-test gate
 include(GNUInstallDirs)
 
 message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION} CMake ${CMAKE_VERSION}  Toolchain ${CMAKE_TOOLCHAIN_FILE}")
@@ -12,6 +13,12 @@ if(host_ramGB LESS 2)
   message(STATUS "Minimum RAM is about 2 GB--some tests or simulations may fail due to small memory (RAM)")
 endif()
 
+
+if(DEFINED gemini3d_realbits AND NOT gemini3d_realbits EQUAL 64)
+  message(FATAL_ERROR "Audited profile requires gemini3d_realbits=64; C wrappers and density floors require separate real32 qualification.")
+endif()
+
+option(gemini3d_test_simulations "register required reference simulations (OFF is unit-only, not release verification)" ON)
 
 if(gemini3d_realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
@@ -44,6 +51,10 @@ file(MAKE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
 
 option(gemini3d_BUILD_TESTING "build Gemini3D tests" ${gemini3d_IS_TOP_LEVEL})
+option(gemini3d_require_qualification "require the complete Python qualification test dependencies" OFF)
+if(gemini3d_require_qualification AND (NOT BUILD_TESTING OR NOT gemini3d_BUILD_TESTING))
+  message(FATAL_ERROR "gemini3d_require_qualification requires BUILD_TESTING=ON and gemini3d_BUILD_TESTING=ON")
+endif()
 
 if(gemini3d_IS_TOP_LEVEL AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "${PROJECT_BINARY_DIR}/local")

@@ -190,7 +190,7 @@ contains
           grad3D2_curv_3(ix1,1,ix3)=(f(ix1,2,ix3)-f(ix1,1,ix3))/dx2(2)/h2(ix1,1,ix3)
           grad3D2_curv_3(ix1,2:lx2-1,ix3)=(f(ix1,3:lx2,ix3)-f(ix1,1:lx2-2,ix3)) &
                                    /(dx2(3:lx2)+dx2(2:lx2-1))/h2(ix1,2:lx2-1,ix3)
-          grad3D2_curv_3(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,lx3)
+          grad3D2_curv_3(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,ix3)
         end do
       end do
     else
@@ -243,7 +243,7 @@ contains
           grad3D2_curv_23(ix1,1,ix3)=(f(ix1,2,ix3)-f(ix1,1,ix3))/dx2(2)/h2(ix1,1,ix3)
           grad3D2_curv_23(ix1,2:lx2-1,ix3)=(f(ix1,3:lx2,ix3)-f(ix1,1:lx2-2,ix3)) &
                                    /(dx2(3:lx2)+dx2(2:lx2-1))/h2(ix1,2:lx2-1,ix3)
-          grad3D2_curv_23(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,lx3)
+          grad3D2_curv_23(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,ix3)
         end do
       end do
     else

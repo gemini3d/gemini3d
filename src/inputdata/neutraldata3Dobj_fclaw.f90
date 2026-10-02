@@ -43,6 +43,7 @@ type, extends(neutraldata3D), abstract :: neutraldata3D_fclaw
     procedure :: get_locationsi       ! get a list of interpolation sites that are in bounds with regards to the neutral model
     procedure :: get_datainow_ptr     ! grab a pointer to where data need to be fed
     procedure :: set_datainow         ! place a set of interpolated data into the data array at indices corresponding to locations
+    procedure :: dissociate_fclaw_pointers
 
     ! Defined in class extensions
     !procedure :: rotate_winds         ! FIXME: hardcoded axisymmetric
@@ -64,6 +65,21 @@ end type neutraldata3D_fclaw
 
 
 contains
+  subroutine dissociate_fclaw_pointers(self)
+    class(neutraldata3D_fclaw), intent(inout) :: self
+
+    call self%dissociate_pointers()
+    call self%dissociate_neutral_pointers()
+    if (associated(self%zlocsi)) deallocate(self%zlocsi)
+    if (associated(self%xlocsi)) deallocate(self%xlocsi)
+    if (associated(self%ylocsi)) deallocate(self%ylocsi)
+    if (associated(self%ilocsi)) deallocate(self%ilocsi)
+    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
+    nullify(self%lxn,self%lyn,self%lzn,self%xn,self%yn,self%zn,self%xi,self%yi,self%zi)
+    nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
+  end subroutine dissociate_fclaw_pointers
+
+
   !> just force the size flag to be set
   subroutine set_sizeflag(self,x)
     class(neutraldata3D_fclaw), intent(inout) :: self

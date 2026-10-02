@@ -1,5 +1,8 @@
 name: ci
 
+permissions:
+  contents: read
+
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 

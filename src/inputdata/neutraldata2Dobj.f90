@@ -343,13 +343,19 @@ contains
     call self%dissociate_neutral_pointers()
 
     ! now deallocate arrays specific to this extension
-    deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
-    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)
-    deallocate(self%horzimat,self%zimat)
+    if (allocated(self%proj_ezp_e1)) deallocate(self%proj_ezp_e1)
+    if (allocated(self%proj_ezp_e2)) deallocate(self%proj_ezp_e2)
+    if (allocated(self%proj_ezp_e3)) deallocate(self%proj_ezp_e3)
+    if (allocated(self%proj_ehorzp_e1)) deallocate(self%proj_ehorzp_e1)
+    if (allocated(self%proj_ehorzp_e2)) deallocate(self%proj_ehorzp_e2)
+    if (allocated(self%proj_ehorzp_e3)) deallocate(self%proj_ehorzp_e3)
+    if (allocated(self%horzimat)) deallocate(self%horzimat)
+    if (allocated(self%zimat)) deallocate(self%zimat)
 
     ! set pointers to null
     nullify(self%horzi,self%zi);
     nullify(self%horzn,self%zn);
+    nullify(self%lhorzn,self%lxn,self%lzn)
     nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnhorz,self%dTn)
   end subroutine dissociate_neutral2D_pointers
 end module neutraldata2Dobj

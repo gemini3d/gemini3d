@@ -260,51 +260,9 @@ contains
   subroutine destructor(self)
     type(neutraldata3D_fclaw_axisymm) :: self
 
-    deallocate(self%coord1,self%coord2,self%coord3)
-    deallocate(self%lc1,self%lc2,self%lc3)
-
-    ! deallocate arrays from base inputdata class
-    !call self%dissociate_pointers()
-
-    ! null pointers specific to parent neutraldata class
-    !call self%dissociate_neutral_pointers()
-
-!    ! I don't know why this causes a segfault...
-!    if (associated(self%zlocsi)) deallocate(self%zlocsi)
-!    if (associated(self%xlocsi)) deallocate(self%xlocsi)
-!    if (associated(self%ylocsi)) deallocate(self%ylocsi)
-!    if (associated(self%ilocsi)) deallocate(self%ilocsi)
-!    if (associated(self%dataxyzinow)) deallocate(self%dataxyzinow)
-
-    ! due to the nature of this object we cannot rely on base class deallocation
-    deallocate(self%data0Dinow)
-    deallocate(self%data1Dax1inow, self%data1Dax2inow, self%data1Dax3inow)
-    deallocate(self%data2Dax23inow, self%data2Dax12inow, self%data2Dax13inow)
-    deallocate(self%data3Dinow)
-    deallocate(self%coord1i,self%coord2i,self%coord3i)
-
-    ! now deallocate arrays specific to this extension
-    deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
-    deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
-    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
-    deallocate(self%ximat,self%yimat,self%zimat)
-
-    ! FIXME: axisymmetric
-    deallocate(self%proj_ehorzp_e1,self%proj_ehorzp_e2,self%proj_ehorzp_e3)
-
-    ! root has some extra data
-!    if (mpi_cfg%myid==0) then
-!      deallocate(self%extents,self%indx,self%slabsizes)
-!      deallocate(self%xnall,self%ynall)
-!    end if
-
-    ! set pointers to null
-    nullify(self%xi,self%yi,self%zi);
-    !nullify(self%xn,self%yn,self%zn);
-    !nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnx,self%dvny,self%dTn)
-
-    self%flagalloc=.false.
-    self%flagprimed=.false.
-    self%flagcoordsi=.false.
+call self%dissociate_fclaw_pointers()
+if (allocated(self%proj_ehorzp_e1)) deallocate(self%proj_ehorzp_e1)
+if (allocated(self%proj_ehorzp_e2)) deallocate(self%proj_ehorzp_e2)
+if (allocated(self%proj_ehorzp_e3)) deallocate(self%proj_ehorzp_e3)
   end subroutine destructor
 end module neutraldata3Dobj_fclaw_axisymm

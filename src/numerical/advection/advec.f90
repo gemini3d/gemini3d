@@ -2,6 +2,7 @@ module advec
 
 !> this module contains advection-related procedures that are independent on mpi library calls
 
+use transport_audit, only: audit_transport_enabled,audit_begin,audit_slice,audit_finish
 use phys_consts, only: lsp,ms,wp
 use grid, only : gridflag, x1lims,x2alllims,x3alllims, isglobalx1min,isglobalx1max, &
         isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max
@@ -10,7 +11,7 @@ use meshobj, only: curvmesh
 
 implicit none (type, external)
 private
-public :: interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec,set_global_boundaries_allspec
+public :: advec1D_MC_curv, interface_vels_allspec,sweep3_allspec,sweep1_allspec,sweep2_allspec,set_global_boundaries_allspec
 
 contains
   !> set values in global boundary ghost cells based on extrapolation, can be done by each worker
@@ -230,51 +231,66 @@ contains
 
 
   !> sweep all species along the 1 axis
-  subroutine sweep1_allspec(fs,vs1i,dt,x,lsp)
+  subroutine sweep1_allspec(fs,vs1i,dt,x,lsp,quantity)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: fs    !fs includes ghost cells and all species
     real(wp), dimension(:,:,:,:), intent(in) :: vs1i           ! includes all species velocities
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lsp                                 ! sweep the first "lsp" species only
-    integer :: isp
+    integer, optional, intent(in) :: quantity
+    integer :: isp,q
 
     if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
+    q=0
+    if(present(quantity)) q=quantity
     do isp=1,lsp
+      if(audit_transport_enabled) call audit_begin(q,isp,1)
       call sweep1(fs(:,:,:,isp),vs1i(:,:,:,isp),dt,x)
+      if(audit_transport_enabled) call audit_finish()
     end do
   end subroutine sweep1_allspec
 
 
   !> 2-dimensionally split transport for all species
-  subroutine sweep2_allspec(fs,vs2i,dt,x,frank,lsp)
+  subroutine sweep2_allspec(fs,vs2i,dt,x,frank,lsp,quantity)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: fs    !fs includes ghost cells and all species
     real(wp), dimension(:,:,:,:), intent(in) :: vs2i           ! includes all species velocities
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: frank
     integer, intent(in) :: lsp
-    integer :: isp
+    integer, optional, intent(in) :: quantity
+    integer :: isp,q
 
     if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
+    q=0
+    if(present(quantity)) q=quantity
     do isp=1,lsp
+      if(audit_transport_enabled) call audit_begin(q,isp,2)
       call sweep2(fs(:,:,:,isp),vs2i(:,:,:,isp),dt,x,frank)
+      if(audit_transport_enabled) call audit_finish()
     end do
   end subroutine sweep2_allspec
 
 
   !> 3-dimensionally split transport for all species
-  subroutine sweep3_allspec(fs,vs3i,dt,x,frank,lsp)
+  subroutine sweep3_allspec(fs,vs3i,dt,x,frank,lsp,quantity)
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: fs    !fs includes ghost cells and all species
     real(wp), dimension(:,:,:,:), intent(in) :: vs3i           ! includes all species velocities
     real(wp), intent(in) :: dt
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: frank
     integer, intent(in) :: lsp
-    integer :: isp
+    integer, optional, intent(in) :: quantity
+    integer :: isp,q
 
     if (lsp>size(fs,4)) error stop 'number of swept species must be less than or equal to total species number'
+    q=0
+    if(present(quantity)) q=quantity
     do isp=1,lsp
+      if(audit_transport_enabled) call audit_begin(q,isp,3)
       call sweep3(fs(:,:,:,isp),vs3i(:,:,:,isp),dt,x,frank)
+      if(audit_transport_enabled) call audit_finish()
     end do
   end subroutine sweep3_allspec
 
@@ -290,6 +306,7 @@ contains
     real(wp), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
     real(wp), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
     real(wp), dimension(1:size(f,1)-3) :: h1ix1slice
+    real(wp) :: numerical_flux(size(f,1)-3)
     integer :: ix2,ix3,lx2,lx3
 
     lx2=size(f,2)-4
@@ -302,7 +319,15 @@ contains
         h11x1slice=x%h1(:,ix2,ix3)*x%h2(:,ix2,ix3)*x%h3(:,ix2,ix3)
         h12ix1slice=x%h2x1i(:,ix2,ix3)*x%h3x1i(:,ix2,ix3)
         h1ix1slice=x%h1x1i(:,ix2,ix3)
-        fx1slice=advec1D_MC_curv(fx1slice,v1slice,dt,x%dx1,x%dx1i,h11x1slice,h12ix1slice,h1ix1slice)
+        if(audit_transport_enabled) then
+          fx1slice=advec1D_MC_curv(fx1slice,v1slice,dt,x%dx1,x%dx1i, &
+                h11x1slice,h12ix1slice,h1ix1slice,numerical_flux)
+          call audit_slice(f(1:size(f,1)-4,ix2,ix3),fx1slice(1:size(f,1)-4), &
+                x%dx1i*h11x1slice(1:size(f,1)-4),numerical_flux, &
+                .not.x%nullpts(1:size(f,1)-4,ix2,ix3), x%dx2i(ix2)*x%dx3i(ix3))
+        else
+          fx1slice=advec1D_MC_curv(fx1slice,v1slice,dt,x%dx1,x%dx1i,h11x1slice,h12ix1slice,h1ix1slice)
+        endif
         f(:,ix2,ix3)=fx1slice;
       end do
     end do
@@ -321,6 +346,7 @@ contains
     real(wp), dimension(-1:size(f,2)-2) :: h21x2slice    !includes ghost cells
     real(wp), dimension(1:size(f,2)-3) :: h22ix2slice    !just includes interface info
     real(wp), dimension(1:size(f,2)-3) :: h2ix2slice
+    real(wp) :: numerical_flux(size(f,2)-3)
     integer :: ix1,ix3,lx1,lx3
 
     lx1=size(f,1)-4
@@ -338,7 +364,15 @@ contains
           h22ix2slice=x%h1x2i(ix1,:,ix3)**2*x%h3x2i(ix1,:,ix3)
         end if
         h2ix2slice=x%h2x2i(ix1,:,ix3)
-        fx2slice=advec1D_MC_curv(fx2slice,v2slice,dt,x%dx2,x%dx2i,h21x2slice,h22ix2slice,h2ix2slice)
+        if(audit_transport_enabled) then
+          fx2slice=advec1D_MC_curv(fx2slice,v2slice,dt,x%dx2,x%dx2i, &
+                h21x2slice,h22ix2slice,h2ix2slice,numerical_flux)
+          call audit_slice(f(ix1,1:size(f,2)-4,ix3),fx2slice(1:size(f,2)-4), &
+                x%dx2i*h21x2slice(1:size(f,2)-4),numerical_flux, &
+                .not.x%nullpts(ix1,1:size(f,2)-4,ix3), x%dx1i(ix1)*x%dx3i(ix3))
+        else
+          fx2slice=advec1D_MC_curv(fx2slice,v2slice,dt,x%dx2,x%dx2i,h21x2slice,h22ix2slice,h2ix2slice)
+        endif
         f(ix1,:,ix3)=fx2slice
       end do
     end do
@@ -357,6 +391,7 @@ contains
     real(wp), dimension(-1:size(f,3)-2) :: h31x3slice    !includes ghost cells
     real(wp), dimension(1:size(f,3)-3) :: h32ix3slice    !just includes interface info
     real(wp), dimension(1:size(f,3)-3) :: h3ix3slice
+    real(wp) :: numerical_flux(size(f,3)-3)
     integer :: ix1,ix2,lx1,lx2
 
     lx1=size(f,1)-4
@@ -374,14 +409,22 @@ contains
           h32ix3slice=x%h1x3i(ix1,ix2,:)**2*x%h2x3i(ix1,ix2,:)
         end if
         h3ix3slice=x%h3x3i(ix1,ix2,:)
-        fx3slice=advec1D_MC_curv(fx3slice,v3slice,dt,x%dx3,x%dx3i,h31x3slice,h32ix3slice,h3ix3slice)
+        if(audit_transport_enabled) then
+          fx3slice=advec1D_MC_curv(fx3slice,v3slice,dt,x%dx3,x%dx3i, &
+                h31x3slice,h32ix3slice,h3ix3slice,numerical_flux)
+          call audit_slice(f(ix1,ix2,1:size(f,3)-4),fx3slice(1:size(f,3)-4), &
+                x%dx3i*h31x3slice(1:size(f,3)-4),numerical_flux, &
+                .not.x%nullpts(ix1,ix2,1:size(f,3)-4), x%dx1i(ix1)*x%dx2i(ix2))
+        else
+          fx3slice=advec1D_MC_curv(fx3slice,v3slice,dt,x%dx3,x%dx3i,h31x3slice,h32ix3slice,h3ix3slice)
+        endif
         f(ix1,ix2,:)=fx3slice
       end do
     end do
   end subroutine sweep3
 
 
-  function advec1D_MC_curv(f,v1i,dt,dx1,dx1i,ha1,ha2i,h1i)
+  function advec1D_MC_curv(f,v1i,dt,dx1,dx1i,ha1,ha2i,h1i,integrated_flux)
   !----------------------------------------------------------------
   !---- Generic advection routine, can account for metric factors
   !-----  via arguments including for vector quantities.
@@ -394,12 +437,17 @@ contains
     real(wp), dimension(-1:), intent(in) :: ha1    !cell-centered metric factor product 1; includes ghost cells
     real(wp), dimension(:), intent(in) :: ha2i   !cell interface metric factor product 2
     real(wp), dimension(:), intent(in) :: h1i    !cell interface metric factor for dimension being advected
+    real(wp), optional, intent(out) :: integrated_flux(:)
     integer :: ix1,lx1                          !overwrite grid module lx1 in this function's scope, since it gets called for x1,x2,x3
     real(wp), dimension(size(v1i)) :: phi
     real(wp), dimension(0:size(v1i)) :: slope         !slopes only need through first layer of ghosts
     real(wp) :: lslope,rslope,cslope
     real(wp), dimension(-1:size(f)-2) :: advec1D_MC_curv
 
+    if(present(integrated_flux)) then
+      if(size(integrated_flux)/=size(v1i)) error stop "Advection flux shape mismatch"
+      integrated_flux=0
+    endif
     lx1=size(f)-4     ! we don't know what dimension this is so we actually do need to compute the size
 
     if (lx1>1) then     ! don't advect a single computational point
@@ -422,6 +470,8 @@ contains
           phi(ix1)=f(ix1-1)*v1i(ix1) + 0.5_wp*v1i(ix1)*(dx1(ix1)-v1i(ix1)/h1i(ix1)*dt)*slope(ix1-1)
         end if
       end do
+
+      if(present(integrated_flux)) integrated_flux=dt*ha2i*phi
 
       !flux differencing form
       advec1D_MC_curv(1:lx1)=f(1:lx1)-dt*(ha2i(2:lx1+1)*phi(2:lx1+1)-ha2i(1:lx1)*phi(1:lx1))/dx1i/ha1(1:lx1)

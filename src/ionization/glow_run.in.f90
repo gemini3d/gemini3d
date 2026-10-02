@@ -58,9 +58,11 @@ integer :: j
 character(:), allocatable  :: iri90_dir
 
 !! glow_data_dir assignment defines the GLOW data directory for consumption by GLOW
-glow_data_dir = "@glow_data_dir@"
+! Audit correction 2026-09-16: GLOW concatenates filenames directly.
+! Its consumers require the trailing slash even if CMake normalizes it away.
+glow_data_dir = "@glow_data_dir@/"
 
-iri90_dir = trim(glow_data_dir) // '/iri90/'
+iri90_dir = trim(glow_data_dir) // 'iri90/'
 
 
 !! Execute:  Allocate arrays in other modules (formerly in common blocks):

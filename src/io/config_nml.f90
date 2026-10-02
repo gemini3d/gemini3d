@@ -1,9 +1,13 @@
+! Audit modification 2026-09-16: deterministic namelist defaults, robust headers and required-value checks.
+! Audit modification 2026-09-16: preserve the positive real64 density floor
 submodule(gemini3d_config) config_nml
 
 use, intrinsic :: iso_fortran_env, only : stderr => error_unit
 use gemini3d_sysinfo, only : expand_envvar, get_compiler_vendor
 use filesystem, only : absolute
 use phys_consts, only: mindens, mindensnull, mindensdiv
+use timeutils, only: ymd2doy
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type, external)
 
@@ -15,6 +19,7 @@ contains
     !! past the group of interest it will (may?) miss that group and return junk.
 
     integer :: u, i
+    logical :: allow_missing_spatial
 
     integer :: ymd(3)
     real(wp) :: UTsec0
@@ -74,7 +79,7 @@ contains
     logical :: flagnightQ = .false.
 
     ! in case the user wants to specify minimum allowed density
-    real(wp) :: mindens_userval=1.0e-100
+    real(wp) :: mindens_userval=1.0e-100_wp
     real(wp) :: mindensnull_userval=1.0e-20
     real(wp) :: mindensdiv_userval=1.0e-5
 
@@ -106,7 +111,25 @@ contains
     namelist /magpole/ flagmagpole
     namelist /J1ve/ flagJ1ve
     namelist /nightQ/ flagnightQ
+    namelist /input_coverage/ allow_missing_spatial
     namelist /mindens_user/ mindens_userval, mindensnull_userval, mindensdiv_userval
+
+    allow_missing_spatial=.false.
+
+    ! Initialize on every read: declaration initializers have SAVE semantics.
+    ymd=0; UTsec0=-1; tdur=-1; dtout=-1; activ=-1; tcfl=-1; Teinf=-1
+    potsolve=-1; flagperiodic=0; flagoutput=-1; flagcap=0; flag_fang=2008; flagdneu=1
+    interptype=0; sourcemlat=0; sourcemlon=0; dtneu=0; dxn=0; drhon=0; dzn=0
+    dtprec=0; dtE0=0; dtglow=0; dtglowout=0; dtsolflux=0; dtneuBGfile=0
+    indat_size=""; indat_grid=""; indat_file=""; file_format=""
+    source_dir=""; prec_dir=""; E0_dir=""; solfluxdir=""; neutralBGdir=""
+    flagEIA=.false.; v0equator=10._wp; flagneuBG=.false.; dtneuBG=900._wp; msis_version=0
+    PhiWBG=1e-3_wp; W0BG=3000._wp; flagJpar=.true.; magcap=5._wp
+    diffsolvetype=2; mcadence=-1; flaggravdrift=.false.; flaglagrangian=.false.
+    flagdiamagnetic=.false.; flagtwoway=.false.; flagnodivJ0=.false.
+    diff_num_flux=0; kappa=1e4_wp; bimax_frac=1._wp; W0_char=3000._wp
+    flagFBI=0; flagevibcool=0; flagmagpole=.false.; flagJ1ve=.false.; flagnightQ=.false.
+    mindens_userval=1e-100_wp; mindensnull_userval=1e-20_wp; mindensdiv_userval=1e-5_wp
 
     if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
     if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
@@ -115,6 +138,14 @@ contains
 
     read(u, nml=base, iostat=i)
     call check_nml_io(i, cfg%infile, "base")
+    if (any(ymd <= 0)) error stop "config: base must specify a positive ymd"
+    if (ymd2doy(ymd(1),ymd(2),ymd(3))<1) error stop "config: invalid calendar date"
+    if (.not. all(ieee_is_finite([UTsec0,tdur,dtout,activ,tcfl,Teinf]))) &
+      error stop "config: nonfinite base value"
+    if (UTsec0 < 0 .or. UTsec0 >= 86400 .or. tdur <= 0 .or. dtout <= 0) &
+      error stop "config: require 0<=UTsec0<86400 and positive tdur/dtout"
+    if (tcfl <= 0 .or. tcfl > 1 .or. Teinf <= 0 .or. any(activ < 0)) &
+      error stop "config: invalid/missing tcfl, Teinf or activity indices"
     cfg%ymd0 = ymd
     cfg%UTsec0 = UTsec0
     cfg%tdur = tdur
@@ -126,6 +157,9 @@ contains
     rewind(u)
     read(u, nml=flags, iostat=i)
     call check_nml_io(i, cfg%infile, "flags")
+    if (.not. any(potsolve == [0,1,3])) &
+      error stop "config: potsolve must be 0,1,3; inductive mode 2 is not implemented"
+    if (flagoutput < 1 .or. flagoutput > 3) error stop "config: flagoutput must be 1,2,3"
     cfg%potsolve = potsolve
     cfg%flagperiodic = flagperiodic
     cfg%flagoutput = flagoutput
@@ -133,6 +167,9 @@ contains
     rewind(u)
     read(u, nml=files, iostat=i)
     call check_nml_io(i, cfg%infile, "files")
+
+    if (len_trim(indat_size)==0 .or. len_trim(indat_grid)==0 .or. len_trim(indat_file)==0) &
+      error stop "config: files must specify indat_size, indat_grid, indat_file"
 
     !> auto file_format if not specified
     if (len_trim(file_format) > 0) then
@@ -155,6 +192,7 @@ contains
       rewind(u)
       read(u, nml=neutral_perturb, iostat=i)
       call check_nml_io(i, cfg%infile, "neutral_perturb")
+      if (len_trim(source_dir)==0) error stop "config: missing source_dir"
       cfg%sourcedir = absolute(expand_envvar(source_dir), cfg%outdir)
       cfg%interptype = interptype
       cfg%sourcemlat = sourcemlat
@@ -173,6 +211,7 @@ contains
       rewind(u)
       read(u, nml=precip, iostat=i)
       call check_nml_io(i, cfg%infile, "precip")
+      if (len_trim(prec_dir)==0) error stop "config: missing prec_dir"
       cfg%precdir = absolute(expand_envvar(prec_dir), cfg%outdir)
       cfg%dtprec = dtprec
     else
@@ -185,6 +224,7 @@ contains
       rewind(u)
       read(u, nml=efield, iostat=i)
       call check_nml_io(i, cfg%infile, "efield")
+      if (len_trim(E0_dir)==0) error stop "config: missing E0_dir"
       cfg%E0dir = absolute(expand_envvar(E0_dir), cfg%outdir)
       cfg%dtE0 = dtE0
     else
@@ -197,6 +237,7 @@ contains
       rewind(u)
       read(u, nml=solflux, iostat=i)
       call check_nml_io(i, cfg%infile, "solflux")
+      if (len_trim(solfluxdir)==0) error stop "config: missing solfluxdir"
       cfg%solfluxdir = absolute(expand_envvar(solfluxdir), cfg%outdir)
       cfg%dtsolflux = dtsolflux
     else
@@ -222,6 +263,7 @@ contains
       rewind(u)
       read(u, nml=neutralBG_file, iostat=i)
       call check_nml_io(i, cfg%infile, "neutralBG_file")
+      if (len_trim(neutralBGdir)==0) error stop "config: missing neutralBGdir"
       cfg%neutralBGdir = absolute(expand_envvar(neutralBGdir), cfg%outdir)
       cfg%dtneuBGfile = dtneuBGfile
     else
@@ -423,6 +465,13 @@ contains
       cfg%W0_char = 3000._wp ! same as W0BG default
     endif
 
+    if (namelist_exists(u, 'input_coverage')) then
+      rewind(u)
+      read(u,nml=input_coverage,iostat=i)
+      call check_nml_io(i,cfg%infile,'input_coverage')
+    endif
+    cfg%allow_missing_spatial=allow_missing_spatial
+
     if (namelist_exists(u, 'mindens_user')) then
       rewind(u)
       read(u, nml=mindens_user, iostat=i)
@@ -431,13 +480,52 @@ contains
       mindensnull = mindensnull_userval
       mindensdiv = mindensdiv_userval
     else
-      mindens = 1.0e-100
+      mindens = 1.0e-100_wp
       mindensnull = 1.0e-20_wp
       mindensdiv  = 1.0e-5_wp
     end if
 
+    if (cfg%flagperiodic<0 .or. cfg%flagperiodic>1) error stop "config: flagperiodic must be 0 or 1"
+    if (.not.any(cfg%msis_version==[0,21])) error stop "config: msis_version must be 0 or 21"
+    if (.not.any(cfg%flag_fang==[0,2008,2010])) error stop "config: unsupported Fang model"
+    if (.not.any(cfg%diffsolvetype==[1,2])) error stop "config: diffusion type must be 1 or 2"
+    if (cfg%flagcap<0 .or. cfg%flagcap>2) error stop "config: flagcap must be 0,1,2"
+    if (cfg%flagFBI<0 .or. cfg%flagFBI>2) error stop "config: flagFBI must be 0,1,2"
+    if (.not.any(cfg%flagevibcool==[0,1])) error stop "config: flagevibcool must be 0 or 1"
+    if (cfg%mcadence==0) error stop "config: mcadence must be negative (disabled) or positive"
+    if (.not.all(ieee_is_finite([cfg%magcap,cfg%v0equator,cfg%PhiWBG,cfg%W0BG, &
+        cfg%kappa,cfg%bimax_frac,cfg%W0_char]))) error stop "config: nonfinite optional value"
+    if (cfg%magcap<0 .or. cfg%PhiWBG<0 .or. cfg%W0BG<=0) error stop "config: invalid background/capacitance"
+    if (cfg%diff_num_flux<0 .or. cfg%diff_num_flux>4) error stop "config: unsupported spectral distribution"
+    if (cfg%kappa<=2 .or. cfg%bimax_frac<=0 .or. cfg%W0_char<=0) error stop "config: invalid Fang parameters"
+    if (cfg%flagdneu/=0) then
+      if (.not.any(cfg%interptype==[0,1,3,4,5,6])) error stop "config: unsupported neutral interpolation"
+      if (.not.all(ieee_is_finite([cfg%sourcemlat,cfg%sourcemlon,cfg%dxn,cfg%drhon,cfg%dzn]))) &
+        error stop "config: nonfinite neutral geometry"
+      if (abs(cfg%sourcemlat)>90) error stop "config: neutral latitude outside [-90,90]"
+    endif
+    if (cfg%flagprecfile/=0) call positive_cadence(cfg%dtprec, "dtprec")
+    if (cfg%flagE0file/=0) call positive_cadence(cfg%dtE0, "dtE0")
+    if (cfg%flagdneu/=0) call positive_cadence(cfg%dtneu, "dtneu")
+    if (cfg%flagsolfluxfile/=0) call positive_cadence(cfg%dtsolflux, "dtsolflux")
+    if (cfg%flagneutralBGfile/=0) call positive_cadence(cfg%dtneuBGfile, "dtneuBGfile")
+    if (cfg%flagneuBG) call positive_cadence(cfg%dtneuBG, "dtneuBG")
+    if (cfg%flagglow/=0) then
+      call positive_cadence(cfg%dtglow, "dtglow")
+      call positive_cadence(cfg%dtglowout, "dtglowout")
+    endif
+    if (.not.all(ieee_is_finite([mindens,mindensnull,mindensdiv]))) &
+      error stop "config: density floors must be finite"
+    if (min(mindens,mindensnull,mindensdiv)<=0) error stop "config: density floors must be positive"
     close(u)
   end procedure read_nml
+
+  subroutine positive_cadence(value, name)
+    real(wp), intent(in) :: value
+    character(*), intent(in) :: name
+    if (.not.ieee_is_finite(value)) error stop "config: nonfinite cadence: " // name
+    if (value<=0 .or. value>86400) error stop "config: cadence must be in (0,86400]: " // name
+  end subroutine positive_cadence
 
 
   logical function namelist_exists(u, nml, verbose)
@@ -448,7 +536,8 @@ contains
     logical, intent(in), optional :: verbose
 
     logical :: debug
-    integer :: i
+    integer :: i, j, code, n
+    character(:), allocatable :: token
     character(256) :: line  !< arbitrary length
 
     debug = .false.
@@ -461,11 +550,27 @@ contains
     do
       read(u, '(A)', iostat=i) line
       if(i/=0) exit
+      line = adjustl(line)
       if (line(1:1) /= '&') cycle
-      if (line(2:) == nml) then
-        namelist_exists = .true.
-        exit
-      end if
+      n = scan(line(2:), " " // achar(9) // "/,!=" )
+      if (n==0) n=len_trim(line)
+      token = line(2:n)
+      do j=1,len(token)
+        code=iachar(token(j:j))
+        if (code>=iachar('A') .and. code<=iachar('Z')) token(j:j)=achar(code+32)
+      enddo
+      block
+        character(len(nml)) :: expected
+        expected=nml
+        do j=1,len(expected)
+          code=iachar(expected(j:j))
+          if (code>=iachar('A') .and. code<=iachar('Z')) expected(j:j)=achar(code+32)
+        enddo
+        if (token == expected) then
+          namelist_exists = .true.
+          exit
+        endif
+      end block
     end do
     rewind(u)
 

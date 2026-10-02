@@ -35,7 +35,7 @@ private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
             parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker, &
-            acc_perpBGconductioncurrents
+            acc_perpBGconductioncurrents, validate_capacitance_mode
 
 !! overloading to deal with vestigial cartesian->curvilinear code
 interface electrodynamics
@@ -149,11 +149,13 @@ contains
     real(wp), dimension(1:lx1,1:lx2,1:lx3,1:lsp) :: muP,muH,nusn
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: incap
     real(wp) :: tstart,tfin
-    real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
     ! background variables and boundary conditions, full grid sized variables
 
     ! slab-sized background variables
     real(wp), dimension(1:lx1,1:lx2,1:lx3) :: E02src,E03src
+
+    ! Reject combinations whose potential equations do not include capacitance.
+    call validate_capacitance_mode(cfg,x,flagdirich)
 
     !> update conductivities and mobilities
     call cpu_time(tstart)
@@ -175,14 +177,6 @@ contains
     !> error checking for cap. vs. grid types - viz. we do not support capacitive solves on anything other than Cartesian grids
     if (cfg%flagcap/=0) then      ! some sort of capacitance is being used in the simulation
       call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
-      if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
-        minh1=minval(x%h1); maxh1=maxval(x%h1);
-        minh2=minval(x%h2); maxh2=maxval(x%h2);
-        minh3=minval(x%h3); maxh3=maxval(x%h3);
-        if (minh1<0.99d0 .or. maxh1>1.01d0 .or. minh2<0.99d0 .or. maxh2>1.01d0 .or. minh3<0.99d0 .or. maxh3>1.01d0) then
-          error stop 'Capacitance is being calculated for possibly unsupported grid type. Please check input file settings.'
-        end if
-      end if
     else
       incap=0d0
     end if
@@ -711,6 +705,24 @@ contains
     end if
   end subroutine parallel_currents
 
+
+  subroutine validate_capacitance_mode(cfg,x,flagdirich)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+
+    if (cfg%flagcap==0) return
+    if (cfg%flagcap<0 .or. cfg%flagcap>2) error stop 'capacitance: flagcap must be 0, 1 or 2'
+    if (cfg%potsolve/=1 .or. x%lx2all<=1 .or. x%lx3all<=1) &
+      error stop 'capacitance: requires a 3D domain with field-integrated potsolve=1'
+    ! Only this boundary formulation calls the dynamic polarization solver.
+    ! The field-resolved, prescribed-potential and current-BC paths omit it.
+    if (flagdirich/=0) error stop 'capacitance: requires potential-gradient boundary flagdirich=0'
+    if (.not.all(ieee_is_finite(x%h1)) .or. .not.all(ieee_is_finite(x%h2)) .or. &
+        .not.all(ieee_is_finite(x%h3))) error stop 'capacitance: nonfinite mesh metrics'
+    if (any(abs(x%h1-1._wp)>0.01_wp) .or. any(abs(x%h2-1._wp)>0.01_wp) .or. &
+        any(abs(x%h3-1._wp)>0.01_wp)) error stop 'capacitance: requires Cartesian mesh metrics'
+  end subroutine validate_capacitance_mode
 
   subroutine polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
     !> Computes the polarization currents resulting from time-dependence and shearing of the plasma

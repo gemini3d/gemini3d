@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: honor the requested species index
 submodule (compare_h5) compare_out_h5
 
 implicit none (type, external)
@@ -54,6 +55,7 @@ class(params), intent(in) :: P
 
 type(hdf5_file) :: hnew, href
 integer :: i, bad
+character(32) :: species_name
 
 character(7), parameter :: varsT(2) = [character(7) :: 'Tavgall', 'TEall']
 character(8), parameter :: varsV(3) = ['v1avgall', 'v2avgall', 'v3avgall']
@@ -110,11 +112,19 @@ case (1)
     bad = bad + check_var(varsV(i), hnew, href, rtolV, atolV, lx1, lx2all, lx3all, P)
   enddo
 
-  !> Ne
-  bad = bad + check_var('nsall', hnew, href, rtolN, atolN, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="ne")
-
-  !> Te
-  bad = bad + check_var('Tsall', hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P, ionly=lsp, derived_name="Te")
+  ! Audit correction: full output must compare all saved species, not just
+  ! electrons and density-weighted averages. Existing field tolerances remain.
+  do i=1,lsp
+    write(species_name,'(A,I0)') 'ns_species_',i
+    bad = bad + check_var('nsall', hnew, href, rtolN, atolN, lx1, lx2all, lx3all, P, &
+      ionly=i, derived_name=trim(species_name))
+    write(species_name,'(A,I0)') 'Ts_species_',i
+    bad = bad + check_var('Tsall', hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P, &
+      ionly=i, derived_name=trim(species_name))
+    write(species_name,'(A,I0)') 'vs1_species_',i
+    bad = bad + check_var('vs1all', hnew, href, rtolV, atolV, lx1, lx2all, lx3all, P, &
+      ionly=i, derived_name=trim(species_name))
+  enddo
 
   !> Ti
   bad = bad + check_derived('Tsall', "Ti", hnew, href, rtolT, atolT, lx1, lx2all, lx3all, P)
@@ -200,8 +210,9 @@ if(present(ionly)) then
   call hnew%read(name, new4)
   call href%read(name, ref4)
 
-  new = new4(:,:,:,lsp)
-  ref = ref4(:,:,:,lsp)
+  if (ionly < 1 .or. ionly > lsp) error stop "compare: species index out of range"
+  new = new4(:,:,:,ionly)
+  ref = ref4(:,:,:,ionly)
 else
   call hnew%read(name, new)
   call href%read(name, ref)

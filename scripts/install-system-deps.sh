@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# System-wide prerequisites are installed only by explicit user request.
+set -euo pipefail
+
+case "$(uname -s)" in
+  Linux)
+    if ! command -v apt-get >/dev/null; then
+      echo "Automatic setup supports Debian/Ubuntu (including WSL). On other Linux systems install GCC, MPI, HDF5, LAPACK/ScaLAPACK and Python 3.11+ with venv, then rerun without --system-deps." >&2
+      exit 1
+    fi
+    elevate=()
+    if [[ "$(id -u)" != 0 ]]; then
+      command -v sudo >/dev/null || { echo "sudo is required for system packages." >&2; exit 1; }
+      elevate=(sudo)
+    fi
+    has_cached_apt_index_set() {
+      local pattern
+      local has_package_lists=0
+      local has_release_metadata=0
+      for pattern in \
+        "/var/lib/apt/lists/*_Packages" \
+        "/var/lib/apt/lists/*_Packages.lz4" \
+        "/var/lib/apt/lists/*_Packages.xz" \
+        "/var/lib/apt/lists/*_Packages.gz" \
+        "/var/lib/apt/lists/*_Packages.bz2" \
+        "/var/lib/apt/lists/*_Packages.zst"; do
+        if compgen -G "$pattern" >/dev/null; then
+          has_package_lists=1
+          break
+        fi
+      done
+      for pattern in \
+        "/var/lib/apt/lists/*_InRelease" \
+        "/var/lib/apt/lists/*_Release" \
+        "/var/lib/apt/lists/*_Release.gpg"; do
+        if compgen -G "$pattern" >/dev/null; then
+          has_release_metadata=1
+          break
+        fi
+      done
+      if [[ "$has_package_lists" -eq 0 || "$has_release_metadata" -eq 0 ]]; then
+        return 1
+      fi
+      return 0
+    }
+    run_apt_update_with_fallback() {
+      local -a elevate_cmd=("$@")
+      local -a apt_update=("${elevate_cmd[@]}" apt-get -o Acquire::Retries=3 -o APT::Update::Error-Mode=any update)
+      local apt_update_ok=0
+      local attempt
+      for attempt in 1 2 3; do
+        if "${apt_update[@]}"; then
+          apt_update_ok=1
+          break
+        fi
+        if [[ "$attempt" -lt 3 ]]; then
+          sleep "$((attempt * 5))"
+        fi
+      done
+      if [[ "$apt_update_ok" -eq 0 ]]; then
+        local allow_stale_apt_index
+        allow_stale_apt_index="${GEMINI_ALLOW_STALE_APT_INDEX:-0}"
+        allow_stale_apt_index="${allow_stale_apt_index//[[:space:]]/}"
+        if [[ "$allow_stale_apt_index" != 1 ]]; then
+          echo "apt-get update failed after retries; set GEMINI_ALLOW_STALE_APT_INDEX=1 (whitespace is ignored) to continue with existing package indexes" >&2
+          return 1
+        fi
+        if ! has_cached_apt_index_set; then
+          echo "apt-get update failed after retries and cached apt indexes are incomplete" >&2
+          return 1
+        fi
+        echo "warning: apt-get update failed after retries; proceeding with existing package indexes because GEMINI_ALLOW_STALE_APT_INDEX=1" >&2
+      fi
+    }
+    run_apt_update_with_fallback "${elevate[@]}"
+    "${elevate[@]}" apt-get install -y --no-install-recommends \
+      build-essential gfortran git python3 python3-venv python3-dev \
+      libopenmpi-dev openmpi-bin libhdf5-dev libopenblas-dev \
+      libscalapack-openmpi-dev zlib1g-dev
+    ;;
+  Darwin)
+    command -v brew >/dev/null || { echo "Install Homebrew from https://brew.sh first." >&2; exit 1; }
+    xcode-select -p >/dev/null || { echo "Run xcode-select --install first." >&2; exit 1; }
+    brew install gcc git python@3.12 open-mpi hdf5 openblas scalapack
+    ;;
+  *)
+    echo "Use Windows WSL with Ubuntu, or provision a supported Unix toolchain manually." >&2
+    exit 1
+    ;;
+esac

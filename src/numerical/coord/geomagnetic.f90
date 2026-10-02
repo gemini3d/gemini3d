@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: reject years outside the calibrated pole table
 module geomagnetic
 
 !> transformations and data relevant to converting geographic to geomagnetic coordinates
@@ -46,8 +47,7 @@ contains
         thetan = 9.4105_wp * pi / 180
         phin = 287.32_wp * pi / 180
       case default
-        thetan = 11.000_wp * pi / 180
-        phin = 289.00_wp * pi / 180
+        error stop 'set_magnetic_pole: supported table is 1920:2025; provide an epoch-consistent updated grid/model.'
     end select
   end subroutine set_magnetic_pole
 
@@ -60,11 +60,11 @@ contains
     real(wp) :: phig
     real(wp) :: argtmp,alpha
 
-    glonwrap=mod(glon,360._wp)
+    glonwrap=modulo(glon,360._wp)
     thetag = pi/2 - glat*pi/180
     phig = glonwrap*pi/180
 
-    theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
+    theta = acos(max(-1._wp,min(1._wp,cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))))
     argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
     alpha = acos( max(min(argtmp,1._wp),-1._wp) )
 
@@ -85,8 +85,8 @@ contains
     real(wp) :: phig2,phiwrap
     real(wp) :: argtmp
 
-    phiwrap=mod(phi,2*pi)
-    thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
+    phiwrap=modulo(phi,2*pi)
+    thetag2p=acos(max(-1._wp,min(1._wp,cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))))
     argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
     beta=acos( max(min(argtmp,1._wp),-1._wp) )
 
@@ -95,7 +95,7 @@ contains
     else
       phig2=phin+beta
     end if
-    phig2=mod(phig2,2*pi)
+    phig2=modulo(phig2,2*pi)
     thetag2=pi/2-thetag2p
 
     glon=phig2*180._wp/pi
@@ -173,14 +173,13 @@ contains
     real(wp) :: xp,yp
     real(wp) :: theta2,theta3,gamma1,gamma2,phi2,phi3
     integer :: lx1,lx2,lx3,ix1,ix2,ix3    ! local copies
-    logical :: flag3D=.false.
+    logical :: flag3D
 
     lx1=size(alt,1)
     lx2=size(alt,2)
     lx3=size(alt,3)
     if (size(z,1)/=lx1 .or. size(z,2)/=lx2 .or. size(z,3)/=lx3) error stop 'ECEFspher2ENU:  inconsistent input array sizes'
-
-    if (size(alt,2)/=1 .and. size(alt,3)/=1) flag3D=.true.
+    flag3D=lx2/=1 .and. lx3/=1
 
     z(:,:,:)=alt(:,:,:)
     do ix3=1,lx3
@@ -197,14 +196,6 @@ contains
           !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
           theta3=theta2
           phi3=phi1
-          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-          if (gamma1 > 1) then     !handles weird precision issues in 2D
-            gamma1 = 1
-          else if (gamma1 < -1) then
-            gamma1 = -1
-          end if
-          gamma1=acos(gamma1)
-
           gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
           if (gamma2 > 1) then     !handles weird precision issues in 2D
             gamma2= 1
@@ -212,14 +203,25 @@ contains
             gamma2= -1
           end if
           gamma2=acos(gamma2)
-          xp=Re*gamma1
+          if (flag3D) then
+            gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
+            if (gamma1 > 1) then     !handles weird precision issues in 2D
+              gamma1 = 1
+            else if (gamma1 < -1) then
+              gamma1 = -1
+            end if
+            gamma1=acos(gamma1)
+            xp=Re*gamma1
+          else
+            xp=0._wp
+          end if
           yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
 
           ! coordinates from distances
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
             yp=-yp            !do we want an abs here to be safe
           end if
-          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
+          if (flag3D .and. phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
             xp=-xp
           end if
 
@@ -238,7 +240,7 @@ contains
     real(wp), intent(inout), dimension(:,:,:) :: alt,theta,phi
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
     real(wp) :: gamma1,gamma2
-    logical :: flag3D=.false.
+    logical :: flag3D
 
     lx1=size(x,1)
     lx2=size(x,2)

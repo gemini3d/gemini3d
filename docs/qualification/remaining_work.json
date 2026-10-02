@@ -1,0 +1,220 @@
+[
+  {
+    "id": "R01",
+    "status": "open_with_component_progress",
+    "owner": "Numerical maintainer",
+    "required_change": "Maintainer reviews both the case-specific ESF floor and stable ETD correction; approval must identify the actual branch.",
+    "acceptance": "Keep all nine native reference cases green with unchanged tolerances and archives.",
+    "completed": "Nine original native reference cases preserved; stable ETD analytic probes and review notes added.",
+    "required_inputs": [
+      "Maintainer approval record"
+    ]
+  },
+  {
+    "id": "R02",
+    "status": "closed",
+    "owner": "Project owner and plasma physicist",
+    "required_change": "No additional scope/budget approval requested. Independent physics review remains R07.",
+    "acceptance": "A specific ionospheric use case and quantitative acceptance budgets are signed off.",
+    "completed": "Application scope and budgets selected under the latest user authorization; see MODEL_CARD.md and ACCEPTANCE_BUDGETS.json.",
+    "required_inputs": []
+  },
+  {
+    "id": "R03",
+    "status": "open_with_component_progress",
+    "owner": "Geomagnetic and grid specialist",
+    "required_change": "Replace the inaccurate vertical-field approximation with a reviewed, coordinated field/basis/metric/driver formulation and validate the complete domain.",
+    "acceptance": "Independent official-calculator comparison over the declared 2026-2030 domain.",
+    "completed": "Full-grid IGRF-14 screen added for 2026-2030, with proposed 5% magnitude / 1 degree direction limits; production epoch guard retained.",
+    "required_inputs": [
+      "Stage B modern application domain and field-approximation budget",
+      "Coordinated orthogonal approximation or generalized geometry implementation"
+    ]
+  },
+  {
+    "id": "R04",
+    "status": "open_with_component_progress",
+    "owner": "Numerical lead",
+    "required_change": "Finish individual chemistry/collision channels, work and conductive boundary terms, all cleanup/kinetic/internal-energy accounting, and full coupled space/time refinement.",
+    "acceptance": "Predeclared mass/species/charge/momentum/energy and convergence budgets pass.",
+    "completed": "Stable ETD correction; independent aggregate number/momentum/internal-energy production and loss ledgers; explicit standard-energy temperature-floor additions; strict per-step coverage checks.",
+    "required_inputs": [
+      "Full momentum/energy source and heat-flux instrumentation",
+      "Three-level coupled grid/time refinement",
+      "Independent physics review"
+    ]
+  },
+  {
+    "id": "R05",
+    "status": "maintain_selected_profile_qualification",
+    "owner": "Solver engineer",
+    "required_change": "Maintain the unchanged scoped contract; exact-candidate execution evidence is supplied by the issued package register.",
+    "acceptance": "Missing coverage cannot become an unlabelled physical zero; tests cover target MPI layouts.",
+    "completed": "Strict efield/precip required-field schemas, axis ordering, categorical flags, positive precipitation, full input hashes, native coverage and declared MPI layouts are covered by the research profile.",
+    "required_inputs": [
+      "Exact-commit research matrix"
+    ]
+  },
+  {
+    "id": "R06",
+    "status": "maintain_selected_profile_qualification",
+    "owner": "I/O engineer and numerical lead",
+    "required_change": "Maintain the unchanged scoped contract; exact-candidate execution evidence is supplied by the issued package register.",
+    "acceptance": "Restart trajectories meet declared budgets; field-resolved modes have full-potential checkpoints.",
+    "completed": "Atomic root publication plus rank-local full-step state; saved fluid/electric/interface arrays, dt/deadlines; reconstructed frozen backgrounds and immutable drivers. Native trajectory/fault matrix targets frozen bounds.",
+    "required_inputs": [
+      "Exact-commit research matrix",
+      "Supported filesystem semantics"
+    ]
+  },
+  {
+    "id": "R07",
+    "status": "open_with_component_progress",
+    "owner": "Independent plasma-physics reviewer",
+    "required_change": "Independent specialist must review closures/rates and compare actual held-out matched events or independent models with calibration and uncertainty metadata.",
+    "acceptance": "Independent review and held-out benchmarks meet the approved application budgets.",
+    "completed": "Observation and lineage tooling, unchanged physical targets, public AMISR access route and current model-validation publications reviewed.",
+    "required_inputs": [
+      "Independent reviewer",
+      "Held-out benchmark data and instrument metadata",
+      "R02 acceptance budgets"
+    ]
+  },
+  {
+    "id": "R08",
+    "status": "open_with_component_progress",
+    "owner": "Build engineer",
+    "required_change": "Execute required workflows at the user-designated writable GitHub destination, including LeakSanitizer on a capable host.",
+    "acceptance": "Green required hosted jobs without skipped native scenarios; sanitizer and embedding reports.",
+    "completed": "Current-HDF5, native, sanitizer and standalone leak workflows retained; kernel-memory workload jobs added.",
+    "required_inputs": [
+      "Writable GitHub destination/hosted runner execution",
+      "Leak-capable host"
+    ]
+  },
+  {
+    "id": "R09",
+    "status": "open_with_component_progress",
+    "owner": "Release owner",
+    "required_change": "Distribution owner reviews the actual target inventory, relevant advisories and component/data notices; parser containment is a separate deployment requirement.",
+    "acceptance": "Approved inventory/notices/advisory record for the actual distribution.",
+    "completed": "Current inventories/notices retained; September 2026 HDF5 audit reviewed; numeric HDF5 policy rejects VDS, external storage, indirect paths, unsupported filters and excessive allocation.",
+    "required_inputs": [
+      "Release-owner notice/advisory review for actual distribution"
+    ]
+  },
+  {
+    "id": "R10",
+    "status": "open_with_component_progress",
+    "owner": "Data/ML engineer",
+    "required_change": "Close R04/R07 and generate the actual physical-regime corpus with complete verified metadata before scientific training.",
+    "acceptance": "Disjoint event/forcing splits and complete manifests.",
+    "completed": "Event/forcing/initial-state/content lineage, artifact hashes, four nonempty splits and training-only normalization validators implemented; prerequisite admission fails closed.",
+    "required_inputs": [
+      "Approved events/forcing regimes",
+      "R02/R04/R07"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  },
+  {
+    "id": "R11",
+    "status": "open_with_component_progress",
+    "owner": "Instrument/assimilation lead",
+    "required_change": "Bind the operator to a calibrated actual instrument, its beam/range/time response and independent event data; validate innovations and physical budgets.",
+    "acceptance": "Independent observation and innovation diagnostics pass.",
+    "completed": "Masked normalized ECEF radar-LOS quadrature and Joseph-form linear analysis with innovation diagnostics implemented and analytically tested.",
+    "required_inputs": [
+      "Instrument selection and calibration",
+      "Independent measurements",
+      "R02/R07"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  },
+  {
+    "id": "R12",
+    "status": "open_with_component_progress",
+    "owner": "ML lead",
+    "required_change": "Train the specified surrogate on an admitted corpus and run fixed-budget matched numerical/simple baseline and held-out rollout comparisons.",
+    "acceptance": "Matched error/latency/compute and held-out rollout criteria pass.",
+    "completed": "Complete-rollout and measured-cost benchmark evaluator with persistence and provenance requirements implemented.",
+    "required_inputs": [
+      "R10 corpus",
+      "Surrogate design and compute budget"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  },
+  {
+    "id": "R13",
+    "status": "open_with_component_progress",
+    "owner": "UQ lead",
+    "required_change": "Collect independent target-population calibration/test events, fix coverage and useful-width targets before evaluation, and demonstrate the targets under distribution-shift challenges.",
+    "acceptance": "Coverage/width criteria pass on the target population.",
+    "completed": "Independent-event conformal quantiles, held-out coverage and width/population/feature-excursion abstention implemented; insufficient finite calibration is rejected.",
+    "required_inputs": [
+      "Target population",
+      "R10/R12",
+      "Approved UQ criteria"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  },
+  {
+    "id": "R14",
+    "status": "open_with_component_progress",
+    "owner": "HPC/runtime engineer",
+    "required_change": "Run on a capable delegated host under the unchanged 600 s / 2048 MiB bounds; this local cgroup mount is read-only.",
+    "acceptance": "Tail-latency and memory budgets met under declared workload.",
+    "completed": "Fresh delegated-cgroup kernel memory.peak runner and three-run hosted workload job implemented, with no sampled-memory fallback.",
+    "required_inputs": [
+      "Exact-commit performance measurements"
+    ]
+  },
+  {
+    "id": "R15",
+    "status": "scope_excluded",
+    "owner": "Systems owner",
+    "required_change": "No physical-control implementation or qualification in this scope; reopen if a controller is proposed.",
+    "acceptance": "Application-specific physical/closed-loop evidence and independent safing review.",
+    "completed": "Physical control explicitly excluded from the research-only path selected under the latest user authorization.",
+    "required_inputs": []
+  },
+  {
+    "id": "R16",
+    "status": "open_with_component_progress",
+    "owner": "Coupling specialist",
+    "required_change": "Specify a physically justified two-way GEMINI/CVTWIN exchange law including reservoirs, closure and boundaries; then validate a stable coupled model benchmark.",
+    "acceptance": "Manufactured exchange, conservation and stable coupled benchmark.",
+    "completed": "Overlap-volume Cartesian conservative remap and exact passive two-reservoir exchange component tests implemented.",
+    "required_inputs": [
+      "Approved coupled physics",
+      "R02/R04/R07"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  },
+  {
+    "id": "R17",
+    "status": "open_with_component_progress",
+    "owner": "Maintainer and specialist reviewers",
+    "required_change": "Supply independent optional-mode references including HWM14 full simulations, then qualify each newly admitted geometry/BC, non-GNU compiler and multi-node layout.",
+    "acceptance": "Explicit supported-feature matrix and corresponding targeted validation.",
+    "completed": "Exact-restart admission now rejects alternate-energy and density/potential-only executables before work. Existing mode regression evidence retained.",
+    "required_inputs": [
+      "Reviewed HWM14 reference corpus",
+      "Optional-mode physical acceptance criteria",
+      "Selected target platform/multi-node access"
+    ]
+  },
+  {
+    "id": "R18",
+    "status": "open_with_component_progress",
+    "owner": "Platform engineer",
+    "required_change": "Validate the agreed physical adapter after upstream scientific gates; no evolved magnetic perturbation or species-resolved perpendicular velocity may be fabricated.",
+    "acceptance": "Schema/unit/basis/mask contracts and supported-output round trips pass.",
+    "completed": "Versioned Cartesian full-output exchange schema preserves nine science fields, native precision, SI units, UTC, axes/species, mask and explicit native basis. Direct unsupported MHD6 conversion is rejected.",
+    "required_inputs": [
+      "Physically specified and reviewed integration boundary",
+      "R02/R04/R06/R07",
+      "Both model audits accepted"
+    ],
+    "phase": "Implementation authorized by the latest fourteen-gate request; scientific admission remains dependent on the listed prerequisite evidence."
+  }
+]

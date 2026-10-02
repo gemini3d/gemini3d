@@ -1,0 +1,238 @@
+# GEMINI branch handoff - 17 September 2026
+
+## 22 September 2026 audit remediation
+
+This addendum supersedes the historical delivery/status statements below for
+the new source-audit work. The starting revision was
+`bc9d1a17ff89074586d7f6064b21ceab638dbbb3`. A file inventory is not an exhaustive
+code review or scientific certification.
+
+The implementation plan now includes a local installation stage: provision
+native prerequisites explicitly, create an isolated Python/build/install tree,
+test before declaring installation successful, and check the recorded
+environment before model execution. See
+[local installation](Readme_prereqs.md#verified-local-environment).
+Debian/Ubuntu and macOS use the shell entry point; Windows uses Ubuntu WSL through
+the PowerShell entry point. Native Windows and additional Linux distributions
+are not automatically provisioned by these scripts.
+
+Implemented components:
+
+- A1–A3: valid Cartesian coordinate lifetimes, completed MPI corner receives,
+  corrected magnetic boundary integration and boundary-current cleanup.
+- A4–A7: guarded neutral extrapolation and current-background winds,
+  nondestructive launching, explicit diffusion solver errors, and a 10 ms
+  minimum cadence for legacy timestamped files.
+- A8–A10: owned input-data/grid teardown, restored neutral C API entry points
+  and explicit interoperable integer kinds, valid odd/small-grid MPI selection.
+- A11–A13: required qualification dependencies, hosted qualification definitions,
+  and strict conservative-remapping validity masks.
+- Exact-restart schema 2 binds sidecars to rank, layout, root/generation, inputs
+  and executable, and rejects nonfinite state. This intentionally rejects old
+  schema-1 exact-state checkpoints; it is not cryptographic payload authentication
+  or a new power-loss durability guarantee.
+- Targeted CTest regressions, source/dependency inventories, installation
+  records, and existing scientific/optional-mode guards are retained.
+
+Validation and remaining acceptance:
+
+- The local isolated Python packages installed successfully; dependency checks
+  and nine installer orchestration regressions passed. The standard full native
+  installer stopped when `mumps-solver.org` could not resolve for the pinned
+  MUMPS 5.9.1 archive. No successful installation record was emitted.
+- Eleven isolated GNU numerical/runtime checks passed, including one-, two- and
+  four-rank MPI and diffusion convergence; restoring the original defects caused
+  their targeted regressions to fail. These are not full native reference runs.
+- Thirty-four qualification/dependency/mask tests passed. Workflow syntax and
+  shell checks are definition validation, not hosted execution evidence.
+- Additional **diagnostic, non-qualifying** builds exercised 11 contract tests
+  (40,248 native/CMake partition cases, 45 cadence cases, 16 launcher cases,
+  neutral ABI behavior and public-symbol linking), and 72 synthetic restart
+  checks on two/four ranks, including 62 expected corruption rejections.
+  The contract build used system MUMPS 5.6.2; restart/lifecycle builds used a
+  version-5.9.1 mirror not verified against the pinned archive. These results
+  must be repeated with approved source provenance.
+- Lifecycle diagnostics passed 23 Debug checks and 18 ASan/UBSan/leak checks,
+  including 800 input-object states and 40 meshes, with optional physical models
+  disabled. Review identified an additional temperature-placeholder regression;
+  the correction admits zero-filled cells only until extrapolation/filling and
+  validates the resulting temperatures. Four zero-placeholder follow-up cases
+  (ascending, descending, closed and below-ground) passed with floating-point traps.
+- LeakSanitizer accepted the clean control and detected the intentional
+  1237-byte leak. Actual full-application leak qualification remains separate.
+  Kernel-memory measurement was blocked by unavailable cgroup delegation.
+- Complete pinned builds, all nine original reference cases, final-candidate
+  restart/numerical-accounting campaigns, hosted Debug/Release/current-HDF5/
+  sanitizer jobs, macOS/WSL/Intel execution, and target-host performance remain
+  required before release acceptance.
+- The first pushed candidate's hosted runs returned `action_required`, with no
+  jobs or failure logs; maintainers must approve workflow execution. This is not
+  a passing or failing test result.
+  Separate local-installation smoke jobs exercise the installer and subsequent
+  runtime preflight on Ubuntu, macOS and Windows WSL; their execution is also
+  required before claiming those installation paths verified.
+- Automated combined review/security validation timed out. Do not interpret
+  that as a clean security result; complete it on a capable CI host.
+- Independent physical review, current-epoch geometry, full coupled conservation
+  and refinement, optional-mode reference evidence, and target-specific
+  dependency/license/advisory approval remain open in the
+  [qualification register](qualification/REMAINING_WORK.md).
+
+Reference archives, hashes and comparison tolerances were not relaxed. No
+software-only result closes the independent scientific gates.
+
+### Follow-up installation and acceptance verification
+
+The follow-up started from `0c759dacdba497a74cad50fedc811123c8a42e4a`;
+the results below supersede assumptions that the installation or hosted
+qualification had already completed:
+
+- Exercised the actual Linux `install-local.sh --system-deps` entry point on
+  Ubuntu 24.04. Native prerequisites and all five pinned local Python packages
+  installed, and `pip check` passed. Configuration detected GNU 13.3, OpenMPI and
+  HDF5 1.10.10, but the approved MUMPS 5.9.1 URL still failed DNS resolution.
+  The installer exited unsuccessfully, emitted no success record, and both
+  `check` and `run` refused this incomplete environment. No replacement archive
+  or weakened provenance check was used.
+- The PowerShell installer now forwards local-root, jobs, Debug/Release,
+  reference-test and offline-source-cache options. Its orchestration regression
+  checks argument boundaries with spaces, invalid options, and a failed WSL
+  installation. All ten local-environment tests passed on Linux with PowerShell.
+  This is wrapper validation, not a successful installation inside Windows WSL.
+- The Windows smoke workflow now invokes the actual PowerShell entry point.
+  macOS and Windows end-to-end execution remain pending on their target hosts.
+- Fixed the remaining unquoted manual-grid/start/end-time values in the native
+  launcher and expanded its preservation/argument regression from 16 to 36
+  cases. Running that regression remains blocked on the native build. The
+  existing native and CMake partition probes passed 34,848 and 5,400 cases,
+  respectively; review of the other A1–A10/restart corrections found no further
+  high-confidence defects in this pass.
+- Preintegration now explicitly uses Bash with pipeline failure propagation,
+  so a failed build or test cannot be hidden by successful log capture.
+  Hosted evidence also requires Debug restart/numerical-budget execution, not
+  just Release. Fifty-four tests passed across fourteen standalone Python
+  qualification modules, including all eight hosted-evidence tests, with no
+  skips. These are component/contract checks, not native simulation evidence.
+- Recorded an inventory of 355 source files and a partial native dependency/
+  toolchain inventory. Hash inventories identify the reviewed source but are
+  not exhaustive line coverage, complete build output, or scientific approval.
+- Hosted installation and preintegration runs for the starting candidate reported
+  `action_required`; the installation run had zero jobs and no failure logs.
+  Maintainer approval is needed before these can supply execution evidence.
+- LeakSanitizer again accepted the clean control and detected the intentional
+  1237-byte leak. The delegated-cgroup probe was blocked by permissions.
+  Neither control substitutes for full-application leak or performance results.
+- The advisory lookup found no reported vulnerabilities for the five pinned
+  local Python requirements. Native/transitive and target-distribution advisory
+  and license approval remain open.
+
+Release acceptance is therefore still blocked on an approved, reachable MUMPS
+archive/cache, complete native reference/restart/accounting and sanitizer runs,
+approved hosted platform execution, and the independent scientific gates above.
+
+### Release decision boundary
+
+The next continuation starts from
+`2e050c50d5a3d33920926ecf24831afa77c53b76`. The approved MUMPS archive still
+fails DNS resolution. The exact-candidate
+[preintegration run](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35771770031)
+and [installation run](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35771769791)
+are `action_required`; the preintegration log query reports zero jobs, not
+failed tests. Repeating these blocked attempts cannot establish qualification.
+
+Additional engineering checks and corrections in this continuation:
+
+- The optional four-rank matrix was rejected by the source and energy ledger
+  checkers even when its simulations succeeded. Both now admit the existing
+  2×2 regression without changing the frozen scientific profile. Seven ledger
+  tests pass, including two new tests that failed before the correction;
+  missing/extra ranks, missing stages/clocks/floors and corrupted balances still
+  reject the evidence.
+- The restart matrix now rewrites exactly one duration assignment, including
+  indented assignments, validates positive finite values, and requires the
+  continuation duration to increase. Continuations must preserve seed frames
+  and produce a later checkpoint. The original indentation bug prevented the
+  intended split; a successful native no-op restart was not demonstrated
+  (the native solver already rejects final-time restarts). Seven profile tests
+  pass, including malformed/duplicate duration rejection and Fortran `D`/`d`
+  exponent handling; the related 23-test component suite also passed before
+  the exponent-only follow-up.
+- Ten installer regressions and fifty-four existing standalone qualification
+  tests passed before these focused changes. Dependency pins, scientific budgets,
+  reference data and comparison tolerances are unchanged by the matrix fixes.
+- CodeQL completed for Actions, Python and C/C++ with zero alerts. This does
+  not cover Fortran physics correctness. The combined tool's automated review
+  component reported an unavailable model despite its success heading, so it
+  is not counted as a completed review. A separate read-only reviewer found no
+  further high-confidence issues in the prior follow-up diff or four-rank fix.
+- LeakSanitizer controls passed again; delegated memory accounting is still
+  denied. The pinned Python advisory lookup returned no reported vulnerabilities,
+  which is not target-distribution approval.
+
+The remaining decisions and required evidence are:
+
+| Owner | Required action or decision | Closure evidence |
+| --- | --- | --- |
+| Dependency/release maintainer | Restore access to the approved MUMPS archive or supply the existing offline installer with the archive matching `cmake/libraries.json`. Any different source/version requires a reviewed dependency decision. | Successful pinned installation, all nine unchanged native references, launcher regressions, restart/accounting matrix and application sanitizer results. |
+| Repository maintainer | Approve the waiting workflows for the final candidate; do not count an agent-task success as a model test. | Successful Debug/Release/current-HDF5/sanitizer and Linux/macOS/WSL/Intel runs, with their exact-commit evidence artifacts. |
+| HPC/runtime administrator | Provide a host with delegated cgroup v2 memory accounting and the declared runtime/toolchain. | Three complete workloads meet the existing memory/latency budgets; actual application leak checks pass alongside the controls. |
+| Numerical maintainer and independent plasma physicist | Review the floor/ETD changes and agree a physically complete source/work/flux ledger and coupled refinement cases. Supply independent matched reference observations/models. | R01/R04/R07 approvals and results meeting unchanged acceptance budgets; aggregate component ledgers alone are insufficient. |
+| Geomagnetic/grid specialist | Choose and review a consistent field, basis, metrics and driver formulation for the proposed current-epoch domain. | R03 domain-wide independent validation; retain the production epoch guard until then. |
+| Optional-mode and distribution owners | Approve supported mode/platform combinations and actual target dependency/data licenses, advisories and deployment isolation. | R09/R17 inventory and independent optional-mode references, including HWM14 where proposed. |
+
+Corpus training, calibrated assimilation, uncertainty claims and physical
+coupling remain downstream of these decisions (R10–R13/R16/R18); no synthetic
+fixture or generated approval can close them. Physical control remains excluded.
+The status is **blocked pending release qualification and specialist decisions**,
+not release-qualified. No archive hash, scientific budget, reference tolerance
+or safety guard is relaxed to turn a blocked gate into a pass.
+
+### Delegated engineering decisions and execution receipts
+
+The continuation from `01bbfeab3df39107a67554f1b45bd409856c4d09` accepts
+delegated approval for engineering decisions. Additional permission to execute
+the existing qualification workflows is no longer requested. Approval to do the
+work is not independent physical evidence, target-platform execution, or a
+successful release result.
+
+- Retain the approved dependency pins, nine reference cases, acceptance budgets
+  and frozen one/two-rank scientific scope. Exercise the already supported
+  four-rank regression in both hosted native Debug and Release jobs, without
+  admitting additional scientific modes. Eight workflow/evidence contract tests
+  passed.
+- Installation now verifies fresh CTest JUnit results against the selected test
+  inventory. All four library checks are mandatory; reference installation also
+  requires all nine comparisons. Explicitly disabled optional tests are recorded
+  separately; runtime skips, missing/duplicate cases and failed results cannot
+  publish a successful installation. Hashed JUnit reports are retained in all
+  installation-smoke artifacts. Fourteen installer regressions passed, including
+  real CTest pass/disabled/skipped/failure controls and successful default and
+  reference receipt orchestration. These controls are not native model results.
+- Requested an ordinary rerun of
+  [preintegration run 35774340798, attempt 2](https://github.com/CatalystNexusLLC/gemini3d/actions/runs/35774340798).
+  It progressed beyond the previous approval block and built both native
+  Debug/Release profiles and the verified current HDF5 library. Its remaining
+  tests were still executing when this update was recorded. This run identifies
+  the starting commit, not the later execution-receipt changes.
+- Local access to the pinned MUMPS host still fails DNS resolution; no archive
+  substitution was made. A separate read-only review found no significant
+  issues in the execution-receipt changes.
+
+Remaining obligations are **measured release qualification**, not a request to
+repeat engineering approval: final-candidate hosted/platform/sanitizer results,
+delegated-host memory/performance measurements, actual target dependency/data
+review, and independent scientific benchmarks and complete coupled accounting.
+The production epoch guard and physical-control exclusion remain in force.
+No downstream scientific gate is closed by delegation alone.
+
+## Historical handoff
+
+Branch `fix/preintegration-validation-2026-09-16` now merges upstream `9320b8912343ebd9bfb10a68c1e987f2278ff147` and retains the earlier remediation commit `ec5a1382a69e616e698aa36538958d38eb423e2d`. The delivered verification manifest identifies the final candidate commit, tree, test results, artifact hashes and any environment-limited checks.
+
+The new [qualification profile](qualification/README.md) is the authoritative continuation guide. It covers strict driver coverage, timestamp preflight, precision-preserving core restarts, the frozen-background restart correction, curved-gradient and diffusion checks, capacitance-mode validation, an IGRF-14 oracle, GNU sanitizers, a C17 consumer, HDF5 2.2.0 and actual environment inventories. The nine pinned reference cases, archive hashes and comparison tolerances are retained. All seven saved species remain mandatory in full-output comparisons.
+
+The [remaining-work register](qualification/REMAINING_WORK.md) retains all 18 gates with completed work and specific closure requirements. A [provisional model card](qualification/MODEL_CARD.md) makes the missing application decisions concrete. [Primary sources](qualification/RESEARCH.md) explain the current dependency and scientific evidence choices.
+
+This is a branch-review handoff. Full scientific qualification and parallel-model integration are not approved by local software tests. Hosted CI, independent physical benchmarks, current-epoch production geometry, full-system source/flux budgets and complete-state restart acceptance, platform/target qualification and distribution approval remain explicit. HWM14 and optional-mode smoke results are not promoted to independently reviewed reference truth.
+
+To review the supplied bundle, clone its named branch and inspect the two-parent merge and changes against `origin/main` at the pinned upstream commit. The package includes a patch against that upstream base, source snapshot, dependency/reference archives, notices, evidence and commands. No remote push has been performed.

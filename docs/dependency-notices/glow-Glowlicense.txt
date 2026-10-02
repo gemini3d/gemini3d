@@ -1,0 +1,95 @@
+GLOW MODEL OPEN SOURCE ACADEMIC RESEARCH LICENSE AGREEMENT
+
+
+1. License.  The University Corporation for Atmospheric Research (UCAR) 
+grants you a non-exclusive, nontransferable, world-wide, royalty-free 
+license to use, reproduce, and prepare derivative works of the GLOW model 
+software ("Software") for research, academic, and non-profit purposes
+
+2. Basis.  This software was written by Stanley C. Solomon and colleagues, 
+as noted in the individual files.  Some of the routines are based on 
+source code obtained from a variety of sources, including the 2-stream 
+electron transport algorithm by A. F. Nagy and P. M. Banks, and geomagnetic
+field specifications from the International Reference Ionosphere.
+
+3. Restrictions and Use. 
+a. No Sales.  You shall not sell, or license or transfer for a fee the 
+Software, or any work that in any manner contains the Software. 
+b. Modifications.  All modifications or changes to the Software and 
+derivative works that incorporate or utilize the Software, shall carry 
+prominent notices stating that you changed the files and the date of the 
+change. Any reproductions of derivative works shall also be on an open 
+source basis. You are requested to transfer such modifications, changes, 
+and/or derivative works back to UCAR.
+c. Copyright/Notices.  Each copy of the Software, modification, or 
+derivative work shall include a file containing this Agreement.  Reference 
+to this file will be displayed on any documents, media, printouts, or on 
+any other electronic or tangible expressions associated with, related to 
+or derived from the Software, as follows:  "This software is part of the 
+GLOW model.  Use is governed by the Open Source Academic Research License 
+Agreement contained in the file glowlicense.txt."
+d. "Rules of the Road."  The academic standards and practices with respect 
+to notification, citation, co-authorship, etc., are specified by the 
+"rules of the road" of the NSF CEDAR project and the NASA TIMED mission  
+(cf., cedarweb.hao.ucar.edu, www.timed.jhuapl.edu.) 
+
+4. Termination.  Your rights under this Agreement will terminate 
+automatically without notice from UCAR if you fail to comply with any 
+term(s) of this Agreement.  The following provisions shall survive 
+termination: Sections 3, 6, 7, and 11. 
+
+5. Proprietary Rights.  Title, ownership rights, and intellectual property 
+rights in the Software shall remain in UCAR.  You acknowledge such 
+ownership and intellectual property rights and will not take any action to 
+jeopardize, limit or interfere in any manner with UCAR's ownership of or 
+rights with respect to the Software. 
+
+6. Disclaimer of Warranty on Software. You expressly acknowledge and agree 
+that use of the Software is at your sole risk. The Software is provided 
+"as is" and without warranty of any kind and UCAR expressly disclaims all 
+warranties and/or conditions of any kind, express or implied, including, 
+but not limited to, any warranties or conditions of title, non-
+infringement of a third party's intellectual property, merchantability or 
+satisfactory quality and fitness for a particular purpose. UCAR does not 
+warrant that the functions contained in the software will meet your 
+requirements, or that the operation of the software will be uninterrupted 
+or error-free, or that defects in the software will be corrected.  
+Furthermore, UCAR does not warrant or make any representations and you 
+assume all risk regarding the use or the results of the use of the 
+software or related documentation in terms of their correctness, accuracy, 
+reliability, or otherwise. the parties expressly disclaim that the uniform 
+computer information transactions act (UCITA) applies to or governs this 
+agreement.  No oral or written information or advice given by UCAR shall 
+create a warranty or in any way increase the scope of this warranty. 
+Should the Software prove defective, you (and not UCAR or any UCAR 
+representative) assume the cost of all necessary correction. 
+
+7. Limitation of Liability.  Under no circumstances, including negligence, 
+shall UCAR be liable for any direct, incidental, special, indirect or 
+consequential damages including lost revenue, profit or data, whether in 
+an action in contract or tort arising out of or relating to the use of or 
+inability to use the software, even if UCAR has been advised of the 
+possibility of such damages. 
+
+8. Export Law Assurances. All Software and any technical data delivered 
+under this Agreement are subject to U.S. export control laws and may be 
+subject to export or import regulations in other countries.  You agree to 
+comply strictly with all such laws and regulations and you acknowledge 
+that you have responsibility to obtain such license to export, re-export, 
+or import as may be required after delivery to you.    
+
+9. No Support/Modifications. The Software is provided without any support 
+or maintenance, and without any obligation to provide you with 
+modifications, improvements, enhancements, or updates of the Software.
+
+10. Controlling Law and Severability.  This Agreement shall be governed by 
+the laws of the United States. If for any reason a court of competent 
+jurisdiction finds any provision, or portion thereof, to be unenforceable, 
+the remainder of this Agreement shall continue in full force and effect. 
+This Agreement shall not be governed by the United Nations Convention on 
+Contracts for the International Sale of Goods, the application of which is 
+hereby expressly excluded.
+
+11. Complete Agreement. This Agreement constitutes the entire agreement 
+between the parties with respect to the use of the Software and supersedes 
+all prior or contemporaneous understandings regarding such subject matter. 

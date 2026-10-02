@@ -37,7 +37,7 @@ else()
   target_sources(ionization PRIVATE glow_dummy.f90)
 endif()
 
-target_link_libraries(ionization PRIVATE const meshobj timeutils fang
+target_link_libraries(ionization PRIVATE const gemini3d_config meshobj timeutils fang
 $<$<BOOL:${gemini3d_glow}>:glow::glow>
 )
 

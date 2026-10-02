@@ -27,7 +27,7 @@ function(test_mpi_props test Nworker)
 set_property(TEST ${test} PROPERTY PROCESSORS ${Nworker})
 
 if(DEFINED mpi_tmpdir)
-  set_property(TEST ${test} PROPERTY ENVIRONMENT_MODIFICATION "TMPDIR=set:${mpi_tmpdir}")
+  set_property(TEST ${test} APPEND PROPERTY ENVIRONMENT_MODIFICATION "TMPDIR=set:${mpi_tmpdir}")
 endif()
 
 endfunction()

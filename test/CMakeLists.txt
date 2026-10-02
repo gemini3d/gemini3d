@@ -1,3 +1,4 @@
+# Audit modification 2026-09-16: make unit-only verification explicit
 set_property(DIRECTORY PROPERTY LABELS standalone_libraries)
 
 if(gemini3d_matlab)
@@ -11,24 +12,7 @@ add_compile_options(${gemini3d_flags})
 # we test each standalone to mitigate confusing build or runtime errors
 # if a particular library isn't working.
 
-function(hdf5_dll test)
-
-if(WIN32)
-  set(_h5fortran_dll_mdir "PATH=path_list_prepend:${CMAKE_INSTALL_FULL_BINDIR};PATH=path_list_prepend:${PROJECT_BINARY_DIR}")
-  FetchContent_GetProperties(hdf5_zlib)
-  if(IS_DIRECTORY "${hdf5_zlib_BINARY_DIR}")
-    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${hdf5_zlib_BINARY_DIR}")
-  endif()
-  if(IS_DIRECTORY "${CMAKE_PREFIX_PATH}/bin")
-    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${CMAKE_PREFIX_PATH}/bin")
-  endif()
-  if(IS_DIRECTORY "${ZLIB_INCLUDE_DIRS}/../bin")
-    string(APPEND _h5fortran_dll_mdir ";PATH=path_list_prepend:${ZLIB_INCLUDE_DIRS}/../bin")
-  endif()
-  set_property(TEST ${test} PROPERTY ENVIRONMENT_MODIFICATION "${_h5fortran_dll_mdir}")
-endif()
-
-endfunction()
+include(${CMAKE_CURRENT_SOURCE_DIR}/hdf5_dll.cmake)
 
 
 # --- HDF5
@@ -137,9 +121,14 @@ add_subdirectory(mpi)
 add_subdirectory(neutral)
 add_subdirectory(potential)
 add_subdirectory(temporal)
+add_subdirectory(audit)
 
 # self-test simulations -- after all targets for if(TARGET ...)
 include(${CMAKE_CURRENT_SOURCE_DIR}/config.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+if(gemini3d_test_simulations)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/sim.cmake)
+else()
+  message(WARNING "Reference simulations explicitly disabled: this build cannot provide release verification.")
+endif()
 
 endif()

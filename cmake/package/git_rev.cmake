@@ -4,6 +4,16 @@
 # a possible workaround is in
 # https://github.com/rpavlik/cmake-modules/blob/main/GetGitRevisionDescription.cmake
 
+# Audit modification 2026-09-16: explicit identity for this source archive.
+if(EXISTS "${PROJECT_SOURCE_DIR}/audit_revision.txt" AND NOT EXISTS "${PROJECT_SOURCE_DIR}/.git")
+  file(STRINGS "${PROJECT_SOURCE_DIR}/audit_revision.txt" git_rev LIMIT_COUNT 1)
+  set(git_branch "audited-source-archive")
+  set(git_porcelain "audit-patched")
+  set(git_remote "https://github.com/gemini3d/gemini3d")
+  set(git_version "archive")
+  return()
+endif()
+
 find_package(Git)
 
 set(_max_len 80) # arbitrary limit, so as not to exceed maximum 132 character Fortran line length.
@@ -31,7 +41,7 @@ else()
 endif()
 
 
-execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} describe --tags
+execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} describe --tags --always --dirty
 OUTPUT_VARIABLE git_rev
 OUTPUT_STRIP_TRAILING_WHITESPACE
 RESULT_VARIABLE _err

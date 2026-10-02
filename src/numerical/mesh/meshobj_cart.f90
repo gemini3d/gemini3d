@@ -111,11 +111,10 @@ subroutine make_cartmesh(self)
 
   call self%native2ECEFspher(self%glonctr,self%glatctr,self%z,self%x,self%y,r,theta,phispher)
 
-  ! now assign structure elements and deallocate unneeded temp variables
+  ! now assign structure elements
 !  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
   self%r=r(-1:lz+2,-1:lx+2,-1:ly+2); self%theta=theta(-1:lz+2,-1:lx+2,-1:ly+2);
   self%phi=phispher(-1:lz+2,-1:lx+2,-1:ly+2)
-  deallocate(r,theta,phispher)
 
   ! compute the geographic coordinates
   !print*, ' make_cartmesh:  geographic coordinates from magnetic...'
@@ -127,6 +126,7 @@ subroutine make_cartmesh(self)
   self%hz(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h1(r,theta,phispher)
   self%hx(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h2(r,theta,phispher)
   self%hy(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h3(r,theta,phispher)
+  deallocate(r,theta,phispher)
 
   ! q cell interface metric factors
   !print*, ' make_cartmesh:  metric factors for cell q-interfaces...'

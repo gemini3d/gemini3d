@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: do not read uninitialized output flags
 ! Copyright 2021 Matthew Zettergren
 
 ! Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +23,7 @@
 module gemini3d_C
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, wp => C_DOUBLE
+use, intrinsic :: iso_c_binding, only : C_INT, C_LOC, c_null_ptr, c_ptr, c_f_pointer, c_associated, wp => C_DOUBLE
 
 use phys_consts, only: lnchem,lwave,lsp
 use grid, only: lx1,lx2,lx3, detect_gridtype
@@ -32,6 +33,8 @@ use meshobj_dipole, only: dipolemesh
 use precipdataobj, only: precipdata
 use efielddataobj, only: efielddata
 use neutraldataobj, only: neutraldata
+use neutral_background, only: msisinit_in, neutral_background_empirical
+use neutral, only: neutral_aggregate
 use gemini3d_config, only: gemini_cfg
 use gemini3d, only: c_params, init_precipinput_in, &
             set_start_values_auxtimevars, set_start_values_auxvars, set_start_timefromcfg, &
@@ -54,7 +57,7 @@ use gemini3d, only: c_params, init_precipinput_in, &
             set_global_boundaries_allspec_in, get_fullgrid_lims_in, get_cfg_timevars,electrodynamics_test, &
             precip_perturb_in, interp3_in, interp2_in, check_finite_output_in, get_it, itinc, &
             set_electrodynamics_commtype, init_efieldinput_nompi_in, efield_perturb_nompi_in, &
-            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in
+            init_solfluxinput_in, solflux_perturb_in, source_neut_in, set_magnetic_pole_in, v2grid, v3grid
 
 implicit none (type, external)
 
@@ -147,10 +150,11 @@ contains
     type(c_ptr), intent(inout) :: cfgC
     type(gemini_cfg), pointer :: cfg
 
+    if (.not.c_associated(cfgC)) return
     call c_f_pointer(cfgC,cfg)
     deallocate(cfg)
-    cfg=>null()
-    cfgC=c_loc(cfg)     ! send back a null pointer as a precaution
+    nullify(cfg)
+    cfgC=c_null_ptr
   end subroutine gemini_cfg_dealloc_C
 
 
@@ -164,7 +168,7 @@ contains
     type(gemini_cfg), pointer :: cfg
     logical :: neuBG
 
-    neuBG = flagneuBG /= 0
+    neuBG = .false.  ! output-only native value
 
     call c_f_pointer(cfgC,cfg)
     call get_config_vars(cfg, neuBG, flagdneu,dtneuBG,dtneu)
@@ -232,6 +236,8 @@ contains
     real(wp), dimension(:,:,:,:), pointer :: electrovars
     type(gemini_work), pointer :: intvars
 
+    if (.not.c_associated(intvarsC)) return
+    if (.not.c_associated(cfgC)) error stop "gemini_work_dealloc_C: null configuration"
     call c_f_pointer(cfgC,cfg)
     call c_f_pointer(intvarsC,intvars)
 
@@ -239,6 +245,7 @@ contains
     !    when passed back and forth with C so only deallocate the derived types
     !call gemini_dealloc_nodouble(cfg,intvars)
     call gemini_work_dealloc(cfg,intvars)
+    intvarsC=c_null_ptr
   end subroutine gemini_work_dealloc_C
 
 
@@ -254,19 +261,20 @@ contains
 
   !> C wrapper to deallocate grid
   subroutine gemini_grid_dealloc_C(xtype,xC) bind(C, name='gemini_grid_dealloc_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(inout) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
-    !print*, 'gemini_grid_dealloc_C:  ',xtype
+    if (.not.c_associated(xC)) return
     x=>set_gridpointer_dyntype(xtype,xC)
     call gemini_grid_dealloc(x,xtype,xC)
+    xC=c_null_ptr
   end subroutine gemini_grid_dealloc_C
 
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_C(xtype,xC) bind(C, name='gemini_grid_generate_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     class(curvmesh), pointer :: x
 
@@ -277,7 +285,7 @@ contains
 
   !> C wrapper to force generate of grid internal data quantities
   subroutine gemini_grid_generate_altnull_C(xtype,xC,altnullC) bind(C, name='gemini_grid_generate_altnull_C')
-    integer, intent(inout) :: xtype
+    integer(C_INT), intent(in) :: xtype
     type(c_ptr), intent(inout) :: xC
     real(wp), intent(inout) :: altnullC
     class(curvmesh), pointer :: x
@@ -291,11 +299,11 @@ contains
   subroutine plasma_output_nompi_C(cfgC,ymd,UTsec,fluidvarsC,electrovarsC, &
                                      identifier,x1lims,x2lims,x3lims) bind(C,name="plasma_output_nompi_C")
     type(c_ptr), intent(in) :: cfgC
-    integer, dimension(3), intent(in) :: ymd
+    integer(C_INT), dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
     type(c_ptr), intent(inout) :: fluidvarsC
     type(c_ptr), intent(inout) :: electrovarsC
-    integer, intent(in) :: identifier
+    integer(C_INT), intent(in) :: identifier
     real(wp), dimension(2), intent(in) :: x1lims,x2lims,x3lims
     type(gemini_cfg), pointer :: cfg
     real(wp), dimension(:,:,:,:), pointer :: fluidvars
@@ -356,7 +364,7 @@ contains
 
     logical :: flagneuBG_f
 
-    flagneuBG_f = flagneuBG /= 0
+    flagneuBG_f = .false.  ! output-only native value
 
     call c_f_pointer(cfgC,cfg)
     call get_cfg_timevars(cfg,tmilestone, flagneuBG_f, dtneuBG,flagdneu,flagoutput)
@@ -423,13 +431,14 @@ contains
 
 
   !> initialization procedure needed for MSIS 2.0
-!  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
-!    type(c_ptr), intent(in) :: cfgC
-!    type(gemini_cfg), pointer :: cfg
-!
-!    call c_f_pointer(cfgC,cfg)
-!    call msisinit_in(cfg)
-!  end subroutine msisinit_C
+  subroutine msisinit_C(cfgC) bind(C, name='msisinit_C')
+    type(c_ptr), intent(in) :: cfgC
+    type(gemini_cfg), pointer :: cfg
+
+    if (.not. c_associated(cfgC)) error stop "msisinit_C: null configuration"
+    call c_f_pointer(cfgC,cfg)
+    call msisinit_in(cfg)
+  end subroutine msisinit_C
 
 
   !> call to initialize the neutral background information
@@ -482,24 +491,29 @@ contains
   end subroutine set_update_cadence_C
 
 
-!  !> compute background neutral density, temperature, and wind
-!  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
-!    type(c_ptr), intent(in) :: cfgC
-!    integer(C_INT), intent(in) :: xtype
-!    type(c_ptr), intent(in) :: xC
-!    integer(C_INT), dimension(3), intent(in) :: ymd
-!    real(wp), intent(in) :: UTsec
-!    type(c_ptr), intent(inout) :: intvarsC
-!
-!    type(gemini_cfg), pointer :: cfg
-!    class(curvmesh), pointer :: x
-!    type(gemini_work), pointer :: intvars
-!
-!    call c_f_pointer(cfgC,cfg)
-!    x=>set_gridpointer_dyntype(xtype, xC)
-!    call c_f_pointer(intvarsC,intvars)
-!    call neutral_atmos_winds(cfg,x,ymd,UTsec,intvars)
-!  end subroutine neutral_atmos_winds_C
+  !> Legacy empirical-background API; file-driven backgrounds use init_neutralBG_input_C.
+  subroutine neutral_atmos_winds_C(cfgC,xtype,xC,ymd,UTsec,intvarsC) bind(C, name='neutral_atmos_winds_C')
+    type(c_ptr), intent(in) :: cfgC
+    integer(C_INT), intent(in) :: xtype
+    type(c_ptr), intent(in) :: xC
+    integer(C_INT), dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
+    type(c_ptr), intent(inout) :: intvarsC
+
+    type(gemini_cfg), pointer :: cfg
+    class(curvmesh), pointer :: x
+    type(gemini_work), pointer :: intvars
+
+    if (.not. c_associated(cfgC) .or. .not. c_associated(xC) .or. .not. c_associated(intvarsC)) &
+      error stop "neutral_atmos_winds_C: null configuration, grid or work object"
+    call c_f_pointer(cfgC,cfg)
+    if (cfg%flagneutralBGfile /= 0) &
+      error stop "neutral_atmos_winds_C: file backgrounds require init_neutralBG_input_C"
+    x=>set_gridpointer_dyntype(xtype, xC)
+    call c_f_pointer(intvarsC,intvars)
+    call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+    call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
+  end subroutine neutral_atmos_winds_C
 
 
   !> get solar indices from cfg struct
@@ -574,7 +588,7 @@ contains
     type(C_PTR), intent(in) :: xC
     type(C_PTR), intent(inout) :: fluidvarsC, fluidauxvarsC
     type(C_PTR), intent(inout) :: intvarsC
-    integer, intent(in) :: lsp
+    integer(C_INT), intent(in) :: lsp
 
     class(curvmesh), pointer :: x
     real(wp), dimension(:,:,:,:), pointer :: fluidvars, fluidauxvars
@@ -1376,7 +1390,7 @@ contains
 
     call c_f_pointer(cfgC, cfg)
     call c_f_pointer(fluidvarsC,fluidvars,[(lx1+4),(lx2+4),(lx3+4),(5*lsp)])
-    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),(2*lsp+9)])
+    call c_f_pointer(electrovarsC,electrovars,[(lx1+4),(lx2+4),(lx3+4),7])
 
     call check_finite_output_in(cfg, fluidvars, electrovars, t)
   end subroutine check_finite_output_C
