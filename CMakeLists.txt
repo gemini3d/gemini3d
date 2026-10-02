@@ -1,8 +1,9 @@
 # CMake >= 3.28 strongly suggested for CMake build graph reliability.
+# CMake >= 3.26 required by HDF5 and Scalapack, confusing errors with older CMake
 # CMake >= 3.25 required for fine-grained scope with block() and enabling configure time tests
 # CMake >= 3.24: find_package(... GLOBAL) and FetchContent_Declare(... FIND_PACKAGE_ARGS)
 # CMake >= 3.21:  *_IS_TOP_LEVEL variable used to manage subproject dependencies
-cmake_minimum_required(VERSION 3.25...4.3)
+cmake_minimum_required(VERSION 3.26...4.3)
 
 # --- CMAKE_BUILD_TYPE default
 # The simulations are 10x slower for default to Debug.
@@ -16,10 +17,9 @@ if(CMAKE_GENERATOR MATCHES "^Visual Studio")
   message(FATAL_ERROR "${CMAKE_GENERATOR} is not supported. Use \"cmake -G Ninja\" option.")
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26.0 AND CMAKE_VERSION VERSION_LESS 3.28.0)
-  message(WARNING "CMake 3.26 and 3.27 have known bugs causing build failures due to incorrectly graphing Fortran module dependencies, regardless of operating system or compiler.
-Suggest CMake 3.28 or newer https://github.com/Kitware/CMake/releases
-If on Linux HPC, do like 'module avail cmake' to see if a suitable CMake version is available.")
+if(CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_VERSION VERSION_LESS 3.28.0)
+  message(WARNING "Ninja with CMake < 3.28 has known bugs causing build failures due to incorrectly graphing Fortran module dependencies.
+Suggest CMake 3.28 or newer or use 'cmake -G \"Unix Makefiles\"'")
 endif()
 
 # --- main Gemini3D build
@@ -111,11 +111,7 @@ endif()
 include(cmake/compilers.cmake)
 
 # --- linear algebra libraries
-# CMake 3.25 misparses FetchContent FIND_PACKAGE_ARGS when it auto-appends GLOBAL.
-# Keep the old-CMake path working by resolving parent-scope LAPACK directly below.
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.26)
-  set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
-endif()
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL true)
 # we'll get LAPACK and SCALAPACK from MUMPS to avoid duplication of CMake script in this project
 
 set(BUILD_SINGLE off)
@@ -128,10 +124,6 @@ string(JSON _archive GET "${json}" "mumps" "archive")
 string(JSON _sha256 GET "${json}" "mumps" "sha256")
 fetchcontent_github_with_codeload(mumps "${_stem}" "${_archive}" "${_sha256}")
 FetchContent_MakeAvailable(mumps)
-
-if(CMAKE_VERSION VERSION_LESS 3.26)
-  find_package(LAPACK REQUIRED)
-endif()
 
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL false)
 

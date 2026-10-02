@@ -7,7 +7,7 @@ add_library(fang_run OBJECT fang_run.f90)
 target_link_libraries(fang_run PRIVATE fang msis::msis const)
 
 add_library(ionization OBJECT ionization.f90
-$<TARGET_OBJECTS:grid>
+$<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:gemini3d_config>
 )
 
 if(gemini3d_glow)

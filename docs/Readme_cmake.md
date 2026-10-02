@@ -1,5 +1,9 @@
 # CMake options
 
+CMake 3.26 or newer is required. For Ninja builds, use CMake 3.28 or newer
+to avoid known Fortran module dependency bugs; use Unix Makefiles with older
+supported CMake versions.
+
 Note: a common convention is to compile (build) project in the "build/" directory.
 That is, the Gemini.bin executable and other libraries and test executables will be created under gemini3d/build.
 Feel free to use any directory name you like.
