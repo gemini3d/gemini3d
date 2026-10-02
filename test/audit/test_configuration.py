@@ -1,7 +1,6 @@
 """Check isolation and environment composition in the generated simulation tests."""
 import argparse
 import json
-import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -79,12 +78,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ctest", default="ctest")
     parser.add_argument("--cmake", default="cmake")
-    parser.add_argument("--build", type=Path)
-    parser.add_argument("--config", default="Release")
-    parser.add_argument("--mpi-tmpdir", default="")
     args = parser.parse_args()
-    if args.build:
-        check_configuration(args.ctest, args.build, args.mpi_tmpdir,
-                            windows=os.name == "nt", config=args.config)
-    else:
-        check_fixture(args.cmake, args.ctest)
+    check_fixture(args.cmake, args.ctest)

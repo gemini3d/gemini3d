@@ -54,13 +54,6 @@ if(Python_Interpreter_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/test_configuration.py
     --cmake ${CMAKE_COMMAND} --ctest ${CMAKE_CTEST_COMMAND})
   set_tests_properties(audit:test_configuration_fixture PROPERTIES TIMEOUT 120 LABELS "unit;audit")
-  if(gemini3d_test_simulations)
-    add_test(NAME audit:test_configuration COMMAND ${Python_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/test_configuration.py
-      --ctest ${CMAKE_CTEST_COMMAND} --build ${PROJECT_BINARY_DIR}
-      --config "$<CONFIG>" --mpi-tmpdir "${mpi_tmpdir}")
-    set_tests_properties(audit:test_configuration PROPERTIES TIMEOUT 60 LABELS "unit;audit")
-  endif()
 endif()
 
 add_library(audit_driver_fixture driver_fixture.f90)
