@@ -174,13 +174,14 @@ else()
 endif()
 
 add_test(NAME gemini_run:${name}:dryrun COMMAND ${test_cmd} -dryrun)
+test_mpi_props(gemini_run:${name}:dryrun ${Nworker})
 set_tests_properties(gemini_run:${name}:dryrun PROPERTIES
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:frontend_copy_fxt"
 RESOURCE_LOCK cpu_mpi
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini3d.run>
-ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini3d.run>"
-PROCESSORS ${Nworker}
 )
+set_property(TEST gemini_run:${name}:dryrun APPEND PROPERTY
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini3d.run>")
 # MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini_run:${name}:dryrun)
 
@@ -201,8 +202,9 @@ set_tests_properties(gemini:${name}:dryrun PROPERTIES
 FIXTURES_SETUP ${name}:dryrun
 FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
-ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
+set_property(TEST gemini:${name}:dryrun APPEND PROPERTY
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>")
 # MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini:${name}:dryrun)
 
@@ -215,8 +217,9 @@ set_tests_properties(gemini:${name} PROPERTIES
 FIXTURES_REQUIRED ${name}:dryrun
 FIXTURES_SETUP ${name}:run_fxt
 WORKING_DIRECTORY $<TARGET_FILE_DIR:gemini.bin>
-ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>"
 )
+set_property(TEST gemini:${name} APPEND PROPERTY
+ENVIRONMENT_MODIFICATION "HWMPATH=set:$<TARGET_FILE_DIR:gemini.bin>")
 # MSIS2 requires WORKING_DIRECTORY. HWM14 uses HWMPATH, which can be distinct
 hdf5_dll(gemini:${name})
 set_tests_properties(gemini:${name}:dryrun gemini:${name} PROPERTIES
