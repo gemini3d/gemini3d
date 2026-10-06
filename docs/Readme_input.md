@@ -501,7 +501,7 @@ Each frame precipitation input file has variables:
 
 ```
 "E0p"         ! (llon,llat) Characteristic energy (Maxwellian differential number flux), units of eV
-"Qp"          ! (llon,llat) Total energy flux in this energy bin, units of W/m^2
+"Qp"          ! (llon,llat) Total energy flux in this energy bin, units of mW/m^2
 ```
 
 The number of cells in the precipitation files is in general different than the number of simulation cells.
