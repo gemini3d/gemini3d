@@ -2,13 +2,36 @@
 # this is to debug simulations e.g. from gemini3d/gemini-examples repo
 #
 # Usage: ./debug_example.sh <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]
+# Requires realpath and a non-Conda mpiexec on PATH.
+# Uses the first non-Conda mpiexec in PATH order.
 #
 # Example from gemini3d/ directory:
 #
-#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $HOME/gemci/varHWM
+#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM
 
 
 [[ $# -lt 2 ]] && { echo "Usage: $0 <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]"; exit 1; }
+
+mpiexec=
+while IFS= read -r mpi_candidate; do
+  mpi_candidate=$(realpath "$mpi_candidate") ||
+    { echo "Cannot resolve mpiexec with realpath" >&2; exit 1; }
+  mpi_dir=$(dirname "$mpi_candidate")
+
+  # Conda environments have conda-meta, even when they are not activated.
+  while [[ "$mpi_dir" != / && ! -d "$mpi_dir/conda-meta" ]]; do
+    mpi_dir=$(dirname "$mpi_dir")
+  done
+  if [[ "$mpi_dir" != / ]]; then
+    echo "Skipping Conda mpiexec: $mpi_candidate" >&2
+    continue
+  fi
+
+  mpiexec=$mpi_candidate
+  break
+done < <(type -aP mpiexec)
+
+[[ -n "$mpiexec" ]] || { echo "No non-Conda mpiexec found on PATH" >&2; exit 1; }
 
 config_nml_to_copy=$1
 simulation_output_dir=$2
@@ -83,4 +106,4 @@ fi
 
 echo "running simulation with $Ncpu MPI workers..."
 
-mpiexec -np $Ncpu -wdir "$builddir" "$builddir/gemini.bin" "$simulation_output_dir"
+"$mpiexec" -np "$Ncpu" -wdir "$builddir" "$builddir/gemini.bin" "$simulation_output_dir"
