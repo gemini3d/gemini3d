@@ -35,8 +35,8 @@ check_source_compiles(Fortran
 program test
 use mpi_f08, only : mpi_comm_rank, mpi_real, mpi_comm_world, mpi_init, mpi_finalize
 implicit none
-call mpi_init
-call mpi_finalize
+call mpi_init()
+call mpi_finalize()
 end program
 ]=]
 MPI_Fortran_HAVE_F08_MODULE
@@ -46,5 +46,10 @@ if(MPI_Fortran_HAVE_F08_MODULE)
   message(CHECK_PASS "yes")
 else()
   message(CHECK_FAIL "no")
-  message(WARNING "MPI-3 Fortran module mpi_f08 not found, builds may fail.")
+  if(gemini3d_fail_mpif08)
+    set(_mpif08_message_type FATAL_ERROR)
+  else()
+    set(_mpif08_message_type WARNING)
+  endif()
+  message(${_mpif08_message_type} "MPI-3 Fortran module mpi_f08 not found with the current MPI installation and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}, build would fail.")
 endif()
