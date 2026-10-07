@@ -1,5 +1,5 @@
 #!/bin/bash
-# this is to debug simulations from gemini3d/gemini-examples repo
+# this is to debug simulations e.g. from gemini3d/gemini-examples repo
 #
 # Usage: ./debug_example.sh <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]
 
@@ -28,15 +28,17 @@ builddir="$simulation_output_dir/build"
 
 copied_config="$simulation_output_dir/$(basename "$config_nml_to_copy")"
 if [[ ! -f "$copied_config" ]] || ! diff -q -- "$config_nml_to_copy" "$copied_config" >/dev/null; then
-  cp -v "$config_nml_to_copy" "$simulation_output_dir/" || { echo "Failed to copy '$config_nml_to_copy' to '$simulation_output_dir'"; exit 1; }
+  \cp -v "$config_nml_to_copy" "$simulation_output_dir/" || { echo "Failed to copy '$config_nml_to_copy' to '$simulation_output_dir'"; exit 1; }
 fi
 
 if [[ ! -f "$builddir/gemini.bin" ]]; then
 
-cmake -S "$this_script_dir/.." -B "$builddir" $cmake_opts ||
+cmake=$(command -v cmake) || { echo "CMake not found or working" >&2; exit 1; }
+
+$cmake -S "$this_script_dir/.." -B "$builddir" $cmake_opts ||
   { echo "CMake configuration failed" >&2; exit 1; }
 
-cmake --build "$builddir" ||
+$cmake --build "$builddir" ||
   { echo "CMake build failed" >&2; exit 1; }
 
 fi
@@ -62,10 +64,18 @@ esac
 }
 
 if [[ ! -f $simulation_output_dir/inputs/initial_conditions.h5 ]]; then
+  py3=$(command -v python3) ||
+    { echo "Python not found" >&2; exit 1; }
+
+  "$py3" -m gemini3d --help ||
+    { echo "PyGemini not available - get it from https://github.com/gemini3d/pygemini" >&2; exit 1; }
+
   echo "Setting up simulation inputs in '$simulation_output_dir'..."
 
-  GEMINI_ROOT="$builddir" python3 -m gemini3d.model "$copied_config" "$simulation_output_dir" ||
+  GEMINI_ROOT="$builddir" "$py3" -m gemini3d.model "$copied_config" "$simulation_output_dir" ||
     { echo "Failed to set up simulation inputs in '$simulation_output_dir'" >&2; exit 1; }
 fi
+
+echo "running simulation with $Ncpu MPI workers..."
 
 mpiexec -np $Ncpu -wdir "$builddir" "$builddir/gemini.bin" "$simulation_output_dir"
