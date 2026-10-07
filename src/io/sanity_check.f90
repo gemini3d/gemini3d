@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: check every species; trim only spatial ghost cells
 module sanity_check
 !! check that variables are within realm of possible values,
 !! at least that they're finite (not NaN or infinite)
@@ -5,7 +6,7 @@ module sanity_check
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite,ieee_is_nan
 
-use phys_consts, only : wp
+use phys_consts, only : wp,lsp
 use errors, only : error_stop
 
 implicit none (type, external)
@@ -27,6 +28,8 @@ contains
     if (r > 4 .or. r < 3) error stop "sanity_check:ghost_bound: only for rank 3,4 for now"
     if (r == 4 .and. .not. (present(j4) .and. present(k4))) error stop "sanity_check:ghost_bound: 4d needs j4, k4"
 
+    if (min(size(A,1),size(A,2),size(A,3))<5) &
+      error stop "sanity_check: missing physical cells or ghost layers"
     j1 = lbound(A, 1) + ig
     k1 = ubound(A, 1) - ig
     j2 = lbound(A, 2) + ig
@@ -34,8 +37,10 @@ contains
     j3 = lbound(A, 3) + ig
     k3 = ubound(A, 3) - ig
     if (r >= 4) then
-      j4 = lbound(A, 4) + ig
-      k4 = ubound(A, 4) - ig
+      if (size(A,4)/=lsp) error stop "sanity_check: incorrect species count"
+      ! The species dimension has no spatial ghost cells.
+      j4 = lbound(A, 4)
+      k4 = ubound(A, 4)
     endif
   end subroutine ghost_bound
 
@@ -96,6 +101,8 @@ contains
             any(Ts(i1:k1, i2:k2, i3:k3, i4:k4)/=Ts(i1:k1, i2:k2, i3:k3, i4:k4)) ) then
       call error_stop(dump_filename, 'output: non-finite Ts', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
     end if
+    if (any(Ts(i1:k1,i2:k2,i3:k3,i4:k4)<0)) &
+      call error_stop(dump_filename, 'output: negative temperature', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
     call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
     if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3))) .or.  &
@@ -142,11 +149,15 @@ contains
     if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
       call error_stop(dump_filename, 'input:plasma: non-finite Ts', ns, vs1, Ts)
 
+    if (any(Ts(i1:k1,i2:k2,i3:k3,i4:k4)<0)) &
+      call error_stop(dump_filename, 'input:plasma: negative temperature', ns, vs1, Ts)
+
     if (any(ns(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
       call error_stop(dump_filename, 'input:plasma: negative density Ns', ns, vs1, Ts)
 
-    if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) < 1e3) &
-      call error_stop(dump_filename, 'input:plasma: too low maximum density', ns, vs1, Ts)
+    ! A worker can contain only underground/null cells.  A local density
+    ! maximum is not a valid global plausibility test (upstream issue #117).
+    ! Keep finite/nonnegative checks; physical-domain bounds require a mask.
 
     if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e16) &
       call error_stop(dump_filename, 'input:plasma: too high maximum density', ns, vs1, Ts)

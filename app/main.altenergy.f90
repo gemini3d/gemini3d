@@ -17,6 +17,7 @@ program Gemini3D_main
 use, intrinsic :: iso_c_binding, only : C_INT, C_NULL_CHAR
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : wp, debug
+use restart_runtime, only: runtime_exclude_model
 use mpi_f08, only: MPI_COMM_WORLD, mpi_init,mpi_finalize,mpi_comm_rank
 
 !> type definitions
@@ -62,7 +63,9 @@ type(c_params) :: p
 integer :: myid
 
 !> initialize mpi
+call runtime_exclude_model('alternate energy')
 call mpi_init()
+call mpi_comm_rank(MPI_COMM_WORLD,myid)  ! initialize the outer termination-log rank
 p%fortran_cli = 1
 p%fortran_nml = 1
 p%out_dir(1) = c_null_char

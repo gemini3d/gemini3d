@@ -49,8 +49,8 @@ contains
 
     if(hf%exist('/llon')) then
       call hf%read('/llon', llon)
-    elseif(hf%exist('/Nlat')) then
-      call hf%read('/Nlat', llon)
+    elseif(hf%exist('/Nlon')) then
+      call hf%read('/Nlon', llon)
     elseif(hf%exist('/lx3')) then
       call hf%read('/lx3', llon)
     else

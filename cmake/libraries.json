@@ -1,26 +1,37 @@
 {
   "ffilesystem": {
     "stem": "https://github.com/ECLAIRWaveS/ffilesystem/archive/",
-    "archive": "8a9ad4b213a8fbdb19816451a714f54017170109.tar.gz"
+    "archive": "8a9ad4b213a8fbdb19816451a714f54017170109.tar.gz",
+    "sha256": "b0d9dfa00f6fa0977209352cff03634d71999b5f8ab4274b4ce07e56d6953e5c"
   },
   "glow": {
     "stem": "https://github.com/gemini3d/glow/archive/",
-    "archive": "7e72b33104a9b71aae7bb9c81df930e07f4723d0.tar.gz"
+    "archive": "62ce006692b8e16c403c995568ecc3403113d788.tar.gz",
+    "sha256": "ee3d70dbba76ed50d1dc5fefe1ddcaae6532ab855315a5108392d2983effc1e3"
   },
   "h5fortran": {
     "stem": "https://github.com/ECLAIRWaveS/h5fortran/archive/",
-    "archive": "04c7dd39405b43eac922319b6f4b74ea04b97043.tar.gz"
+    "archive": "04c7dd39405b43eac922319b6f4b74ea04b97043.tar.gz",
+    "sha256": "9b1f546c65690ba782e7973f10b7d14b098d5f9bab83c90655a7b7e151f52281"
   },
   "hwm14": {
     "stem": "https://github.com/gemini3d/hwm14/archive/",
-    "archive": "1f289bfc101235cea1d8ebb58253dab736d4fd56.tar.gz"
+    "archive": "1f289bfc101235cea1d8ebb58253dab736d4fd56.tar.gz",
+    "sha256": "5b6c83425acc87febf01acc3dea6c313bd5bd4c0883640fba517d3a7bda04ed8"
   },
   "msis": {
     "stem": "https://github.com/gemini3d/msis/archive/",
-    "archive": "e8437eb61ff0bdb3ef336d96fd279dd75d9aec98.tar.gz"
+    "archive": "e8437eb61ff0bdb3ef336d96fd279dd75d9aec98.tar.gz",
+    "sha256": "d3354a3a910ecfaa5fdb512e731647798d57b35085ff4c411264f0ddb69e013c"
   },
   "mumps": {
     "stem": "https://github.com/scivision/mumps-superbuild/archive/",
-    "archive": "7be1414e8bdbaf4b3c20e7264b97b2709bdf248f.tar.gz"
+    "archive": "7be1414e8bdbaf4b3c20e7264b97b2709bdf248f.tar.gz",
+    "sha256": "b8803c736a29aa10c8f4ad60839342db4ab0428ce34d9dd304d3dc67b08dcbce"
+  },
+  "mumps_upstream": {
+    "stem": "https://mumps-solver.org/",
+    "archive": "MUMPS_5.9.1.tar.gz",
+    "sha256": "659c9b57646b5a003ac618baa1faf9dd2044e46c732b3daaccbc7158003e1b46"
   }
 }

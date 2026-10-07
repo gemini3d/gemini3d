@@ -1,0 +1,38 @@
+{
+  "schema": "gemini.stage_c.protocol.1",
+  "declared_on": "2026-09-17",
+  "baseline_commit": "a412224317eb57010cd4b2ed25889a1729636828",
+  "existing_budgets": "ACCEPTANCE_BUDGETS.json and STAGE_B_PROTOCOL.json unchanged",
+  "energy_operators": {
+    "normalized_residual_max": 1e-11,
+    "per_step_species": 7,
+    "required_stages": [
+      "compression",
+      "standard_energy_diffusion"
+    ],
+    "ranks": [
+      1,
+      2
+    ],
+    "interpretation": "Split operator accounting; prescribed endpoint changes are boundary reservoirs, not residual-defined interior sources or whole coupled energy conservation"
+  },
+  "uq_acceptance_extension": {
+    "target_population": "Independent auroral events with matched calibrated observations; actual event inventory still required by R07/R10/R11",
+    "simultaneous_event_coverage_target": 0.95,
+    "one_sided_confidence": 0.95,
+    "full_width_cap_in_frozen_error_scales": 2.0,
+    "calibration_alpha": 0.05,
+    "test_event_min_if_all_covered": 59,
+    "meaning": "Targets fixed before any real held-out measurements; component fixture scores are not physical population evidence"
+  },
+  "host_qualification": {
+    "leak_control": "Both clean control success and deliberate 1237-byte leak detection required",
+    "application_leaks": "Unsuppressed native MPI application required on a capable host",
+    "hosted_evidence": "Exact candidate, attempt-specific GitHub API results, mandatory job and step success; no stale runs"
+  },
+  "non_claims": [
+    "No new upstream commit since 9320b891",
+    "No change to production epoch guard",
+    "No independent approval, observed event, scientific corpus or physical coupling fabricated"
+  ]
+}

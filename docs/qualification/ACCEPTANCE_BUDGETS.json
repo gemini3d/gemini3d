@@ -1,0 +1,119 @@
+{
+  "schema": "gemini.acceptance.1",
+  "set_on": "2026-09-17",
+  "baseline_commit": "220cd1e390e52a28c5ddae0343337477f41fd4b8",
+  "authorization": {
+    "source": "Latest user message in this conversation",
+    "text": "Please continue all work that remains incomplete with approval for the path forward and application scope and acceptance budgets.",
+    "meaning": "Delegation to select scope and budgets; not independent scientific or maintainer approval."
+  },
+  "application": {
+    "stage": "GEMINI-only research branch qualification",
+    "use": "Reproducible idealized regional auroral-response experiments and numerical method development before model integration",
+    "quantities": [
+      "all seven species densities",
+      "all seven temperatures",
+      "parallel velocities",
+      "electrostatic potential",
+      "numerical transport balances"
+    ],
+    "primary_workload": "Pinned mini2dns_fang and mini3d_fang inputs, 300 simulated seconds; strict complete 60-second electric and precipitation drivers; additional shifted-midnight copy for calendar tests",
+    "epoch": "20-21 February 2013 benchmark epoch; future 2026-2030 applications remain blocked on R03",
+    "geometry": "Existing pinned Cartesian auroral grids; no claim of IGRF field alignment",
+    "modes": [
+      "real64",
+      "potsolve=1",
+      "flagcap=0",
+      "standard energy",
+      "FANG precipitation",
+      "frozen empirical neutrals",
+      "fixed grid",
+      "full output"
+    ],
+    "platform": "Linux x86-64, GNU Fortran 13.2/GCC 13.3, OpenMPI 4.1.6, one node, 1 and 2 ranks; HDF5 2.2.0 current and 1.10.10 compatibility",
+    "policy": "Strict coverage, stop on invalid CFL, no imputation or automatic retry; offline research use, no operational forecast or physical control",
+    "later_scope": [
+      "observation-assimilation",
+      "surrogate/UQ",
+      "CVTWIN adapter and coupling",
+      "multi-node and other compilers",
+      "optional-mode scientific validation",
+      "2026-2030 production geometry"
+    ]
+  },
+  "budgets": {
+    "native_references": {
+      "required_cases": 9,
+      "policy": "Unchanged pinned archives and existing field tolerances; zero failed, skipped or unlaunched required tests"
+    },
+    "forcing": {
+      "cadence_time_atol_s": 1e-06,
+      "missing_required_fields": 0,
+      "nonfinite_values": 0,
+      "missing_targets": 0,
+      "schema": "Explicit efield or precip, disk ordering latitude x longitude; scalar categorical BC flag"
+    },
+    "checkpoint": {
+      "serialization": "bitwise values at float64",
+      "trajectory_relative_l2": 1e-10,
+      "absolute_floor": {
+        "ns": 0.01,
+        "Ts": 1e-07,
+        "vs1": 1e-07,
+        "Phi": 1e-08
+      },
+      "norm": "RMS difference <= absolute_floor + 1e-10 * RMS continuous field; each species independently; all output frames after restart",
+      "atomicity": "Final .h5 name visible only after HDF5 close and successful same-directory rename; interruption leaves prior final file intact",
+      "rationale": "A deterministic same-build, same-layout continuation should agree within accumulated float64 roundoff. These bounds are intentionally tighter than the previously measured drift."
+    },
+    "advection_balance": {
+      "normalized_residual_max": 1e-11,
+      "norm": "abs(sum((after-before)*cell_weight)+dt*outward_face_flux)/max(sum(abs(before)*weight),sum(abs(after)*weight),abs(dt*outward_face_flux),tiny)",
+      "rationale": "Conservative flux differencing must telescope to a floating-point summation budget, independent of physical model accuracy."
+    },
+    "operator_convergence": {
+      "space_order_min": 1.8,
+      "first_order_time_min": 0.9,
+      "second_order_time_min": 1.8,
+      "levels": 3,
+      "source_boundary_max_abs": 1e-11
+    },
+    "research_physical_targets": {
+      "electron_density_relative_rms": 0.15,
+      "temperature_relative_rms": 0.1,
+      "parallel_velocity_rmse_m_s": 50,
+      "status": "Future held-out matched-regime physical-validation targets; not measured or claimed for the idealized numerical benchmark",
+      "rationale": "Explicit initial research targets, to be assessed alongside instrument uncertainty and representativeness; no alteration after looking at held-out results without a versioned requalification."
+    },
+    "performance": {
+      "workload": "300-second mini3d_fang, 2 ranks, current workspace CPU allocation, complete I/O",
+      "runs": 3,
+      "wall_seconds_max_each": 600,
+      "peak_rss_mib_max_each": 2048,
+      "claim": "Local bounded batch workload only; three repetitions do not establish a production tail percentile"
+    },
+    "fault_tests": {
+      "false_success_allowed": 0,
+      "required": [
+        "missing forcing field",
+        "wrong axis layout",
+        "invalid BC flag",
+        "negative precipitation",
+        "partial checkpoint",
+        "failed atomic publish",
+        "incompatible runtime layout",
+        "changed restart input"
+      ]
+    },
+    "ion_continuity": {
+      "normalized_residual_max": 1e-11,
+      "charge_fraction_max": 1e-12,
+      "norm": "For each ion species, delta-number minus applied chemical/ionization increment plus actual numerical face transport minus cleanup increment, scaled by largest state/source/transport/cleanup integral. Electron quasi-neutrality checked separately.",
+      "rationale": "Same roundoff accounting budget as the split flux check, declared before the first native full-step continuity measurement. This does not validate chemical-rate physics."
+    }
+  },
+  "non_claims": [
+    "Original R01-R18 program gates are preserved; this stage does not close independent physics review, hosted CI or integration work by reclassification.",
+    "Numerical regression and synthetic observations are not independent physical validation."
+  ]
+}

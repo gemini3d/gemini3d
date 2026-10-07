@@ -1,0 +1,16 @@
+{
+  "source": "IAGA IGRF-14 distributed by NOAA/NCEI",
+  "retrieved": "2026-09-16",
+  "purpose": "Independent qualification oracle only; not the production grid model",
+  "files": [
+    {
+      "url": "https://www.ngdc.noaa.gov/IAGA/vmod/igrf14.f",
+      "sha256": "0c4fe0664d837b86c1d1fb4d2a354d6a14a29bbf028b550ab1342e1b828dd2c0"
+    },
+    {
+      "url": "https://www.ngdc.noaa.gov/IAGA/vmod/coeffs/igrf14coeffs.txt",
+      "sha256": "8f8d88403028fc4ee92c4f38d97b46e0a87e2cfc496045b43c9e26c1d6b0903c"
+    }
+  ],
+  "extraction": "igrf14syn.f is the unchanged igrf14syn subroutine through end of original igrf14.f"
+}

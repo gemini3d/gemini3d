@@ -2,6 +2,8 @@ submodule (io:plasma_output) plasma_output_hdf5
 
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
+use atomic_file, only: publish_file
+use restart_runtime, only: runtime_output_path, runtime_output_header
 
 implicit none (type, external)
 
@@ -10,14 +12,15 @@ contains
 module procedure output_root_stream_mpi_hdf5
   !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
   !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
-  character(:), allocatable :: filenamefull
+  character(:), allocatable :: filenamefull, temporary
   type(hdf5_file) :: hout
 
   !> FIGURE OUT THE FILENAME
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
   print *, 'HDF5 Output file name:  ', filenamefull
 
-  call hout%open(filenamefull, action='w',comp_lvl=comp_lvl)
+  temporary=runtime_output_path(filenamefull)
+  call hout%open(temporary, action='w',comp_lvl=comp_lvl)
 
   call hout%write("/flagoutput", flagoutput)
   call hout%write('/time/ymd', ymd)
@@ -69,7 +72,22 @@ module procedure output_root_stream_mpi_hdf5
     call hout%write('Phiall',       real(Phiall(lx1,1:lx2all,1:lx3all)))
   end if
 
+  if (flagoutput==1) then
+    ! Analysis arrays retain their historical layout and precision. The core
+    ! restart record preserves solver precision and the full field potential.
+    ! This is not a claim that mode-specific auxiliary state is complete.
+    call hout%write('/restart_core/schema',1)
+    call hout%write('/restart_core/realbits',storage_size(UTsec))
+    call hout%write('/restart_core/ns',nsall(1:lx1,1:lx2all,1:lx3all,:))
+    call hout%write('/restart_core/vs1',vs1all(1:lx1,1:lx2all,1:lx3all,:))
+    call hout%write('/restart_core/Ts',Tsall(1:lx1,1:lx2all,1:lx3all,:))
+    call hout%write('/restart_core/Phi',Phiall(1:lx1,1:lx2all,1:lx3all))
+    ! Written last so an interrupted record is rejected on restart.
+    call hout%write('/restart_core/complete',1)
+  endif
+  call runtime_output_header(hout)
   call hout%close()
+  call publish_file(temporary,filenamefull)
 end procedure output_root_stream_mpi_hdf5
 
 end submodule plasma_output_hdf5

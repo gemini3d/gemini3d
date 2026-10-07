@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: initialize interpolation upper-bin indices at two.
 submodule (interpolation) interpolation2d
 
 implicit none (type, external)
@@ -19,16 +20,21 @@ integer :: ix10,ix1fin,ix20,ix2fin
 
 
 
+if (.not.all(ieee_is_finite(f))) error stop "interp2: nonfinite source data"
+call check_axis(x1); call check_axis(x2)
+if (any(shape(f)/=[size(x1),size(x2)])) error stop "interp2: shape mismatch"
+if (.not.all(ieee_is_finite(x1i)) .or. .not.all(ieee_is_finite(x2i))) error stop "interp2: nonfinite query"
 lx1=size(x1,1)
 lx2=size(x2,1)
 lxi=size(x1i,1)    !only one size since this a flat list of grid points
+if (size(x2i)/=lxi) error stop "interp2: query shape mismatch"
 
 allocate(interp2(lxi))
 
 do ixi=1,lxi
   !find the x1 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
   ix10=1
-  ix1=lx1/2
+  ix1=max(2,lx1/2)
   ix1fin=lx1
   if (x1i(ixi)>=x1(1) .and. x1i(ixi)<=x1(lx1)) then    !in bounds
     do while(.not.(x1i(ixi)>=x1(ix1-1) .and. x1i(ixi)<=x1(ix1)))    !keep going until we are in the interval we want
@@ -51,7 +57,7 @@ do ixi=1,lxi
 
   !find the x2 'bin' for this point; i.e. find ix2 s.t. x2i(ix2i) is between x2(ix2-1) and x2(ix2)
   ix20=1
-  ix2=lx2/2
+  ix2=max(2,lx2/2)
   ix2fin=lx2
   if (x2i(ixi)>=x2(1) .and. x2i(ixi)<=x2(lx2)) then    !in bounds
     do while(.not.(x2i(ixi)>=x2(ix2-1) .and. x2i(ixi)<=x2(ix2)))    !keep going until we are in the interval we want
@@ -115,6 +121,10 @@ real(wp) :: slope
 
 integer :: lx1,lx2,lx1i,lx2i,ix1,ix2,ix1i,ix2i
 
+if (.not.all(ieee_is_finite(f))) error stop "interp2: nonfinite source data"
+call check_axis(x1); call check_axis(x2)
+if (any(shape(f)/=[size(x1),size(x2)])) error stop "interp2: shape mismatch"
+if (.not.all(ieee_is_finite(x1i)) .or. .not.all(ieee_is_finite(x2i))) error stop "interp2: nonfinite query"
 lx1=size(x1,1)
 lx2=size(x2,1)
 lx1i=size(x1i,1)
@@ -124,19 +134,25 @@ lx2i=size(x2i,1)
 do ix2i=1,lx2i
   do ix1i=1,lx1i
     !find the x1 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
-    ix1=1
-    do while(x1i(ix1i)>x1(ix1) .and. ix1<=lx1)
+    ix1=2
+    do while(ix1<lx1)
+      if (x1i(ix1i)<=x1(ix1)) exit
       ix1=ix1+1
     end do
 
 
     !find the x2 'bin' for this point; i.e. find ix2 s.t. x2i(ix2i) is between x2(ix2-1) and x2(ix2)
-    ix2=1
-    do while(x2i(ix2i)>x2(ix2) .and. ix2<=lx2)
+    ix2=2
+    do while(ix2<lx2)
+      if (x2i(ix2i)<=x2(ix2)) exit
       ix2=ix2+1
     end do
 
 
+    if (x1i(ix1i)<x1(1) .or. x1i(ix1i)>x1(lx1) .or. x2i(ix2i)<x2(1) .or. x2i(ix2i)>x2(lx2)) then
+      interp2_plaid(ix1i,ix2i)=0._wp
+      cycle
+    endif
     !execute interpolations in x1 for fixed values of x2 at this point
     if (ix1>1 .and. ix1<=lx1 .and. ix2>1 .and. ix2<=lx2) then   !interpolation
       !first the "prev" x2 value

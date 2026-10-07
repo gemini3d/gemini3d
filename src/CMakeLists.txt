@@ -29,7 +29,7 @@ add_library(multifluid OBJECT multifluid/multifluid.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(multifluid PRIVATE
-advec calculus collision const diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
+advec transport_audit calculus collision const diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
 
 add_library(gemini_work_def OBJECT intvars/gemini_work_def.f90)
 target_link_libraries(gemini_work_def PRIVATE const inputdata neutral precipdata efielddata
@@ -52,6 +52,7 @@ $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(gemini3d PUBLIC
 h5fortran::h5fortran
+LAPACK::LAPACK
 ${MPI_Fortran_LIBRARIES}
 $<$<BOOL:${gemini3d_glow}>:glow::glow>
 $<$<BOOL:${gemini3d_hwm14}>:hwm14::hwm_ifc>
@@ -70,7 +71,7 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 
 set(gemini_internal_mods
-advec
+advec transport_audit
 calculus gemini3d_config
 const
 collision
@@ -89,7 +90,7 @@ multifluid
 PDEparabolic gbsv
 precipBCs solfluxBCs reader sanity_check errors sources temporal timeutils
 exe_frontend
-grid io
+grid io atomic_file restart_runtime
 mpimod
 autogrid
 io_nompi

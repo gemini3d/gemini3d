@@ -7,16 +7,25 @@ use phys_consts, only : wp
 use gemini3d_config, only: gemini_cfg
 use meshobj, only : curvmesh
 use meshobj_dipole, only: dipolemesh
-use interpolation, only : interp1,interp2,interp3
-use timeutils, only : dateinc, date_filename, find_lastdate
+use interpolation, only : interp1,interp2,interp3,coverage_mask
+use timeutils, only : dateinc, date_filename, find_lastdate, elapsed_seconds, shift_datetime
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type, external)
 private
 public :: inputdata
 
 
+! Each mask describes target sites; values remain distinguishable from physical zero.
+type :: spatial_coverage
+  logical, allocatable :: valid(:)
+end type spatial_coverage
+
 !> this is a generic class for an data object being input into the model and interpolated in space and time
 type, abstract :: inputdata
+  type(spatial_coverage) :: coverage(7) ! axes 1,2,3,23,12,13,123
+  integer :: spatial_missing_count=0
+  logical :: allow_missing_spatial=.false., coverage_warning_sent=.false.
   character(:), allocatable :: dataname     ! string description of dataset
   character(:), allocatable :: sourcedir    ! source location containing data input files
 
@@ -37,44 +46,45 @@ type, abstract :: inputdata
                                         !   the base class will never change this -- extensions must handle
 
   !! here we store data that have already been received but not yet interpolated
-  real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
-  integer, pointer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
-  real(wp), dimension(:), pointer :: data0D
-  real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
-  real(wp), dimension(:,:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
-  real(wp), dimension(:,:,:,:), pointer :: data3D
+  ! These pointers own their allocations; extensions only alias them.
+  real(wp), dimension(:), pointer :: coord1=>null(),coord2=>null(),coord3=>null()
+  integer, pointer :: lc1=>null(),lc2=>null(),lc3=>null()
+  real(wp), dimension(:), pointer :: data0D=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax1=>null(),data1Dax2=>null(),data1Dax3=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax23=>null(),data2Dax12=>null(),data2Dax13=>null()
+  real(wp), dimension(:,:,:,:), pointer :: data3D=>null()
 
   !! here we store data that have already been spatially interpolated
-  real(wp), dimension(:,:), pointer :: data0Di                    ! array for storing a "stack" of scalar data (only interpolated in time)
+  real(wp), dimension(:,:), pointer :: data0Di=>null()             ! scalar data, interpolated only in time
                                                                      !  last axis is for prev,next copies of data for interp in time
                                                                      !  second to last axis is for number of datasets of this dimension
   integer :: l0D                                                     ! length/number of scalar datasets
-  real(wp), dimension(:,:,:), pointer :: data1Dax1i                  ! array for storing series of 1D data, array varies along non-singleton axis
-  real(wp), dimension(:,:,:), pointer :: data1Dax2i,data1Dax3i       ! 1D data arrays varying along coordinates (axes) 2 and 3
+  real(wp), dimension(:,:,:), pointer :: data1Dax1i=>null()         ! 1D data varying along axis 1
+  real(wp), dimension(:,:,:), pointer :: data1Dax2i=>null(),data1Dax3i=>null()
   integer :: l1Dax1,l1Dax2,l1Dax3
-  real(wp), dimension(:,:,:,:), pointer :: data2Dax23i               ! array for storing series of 2D data, varies along two non-singleton axes
-  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i,data2dax13i   !2D arrays varying along 1,2 and 1,3 axes
+  real(wp), dimension(:,:,:,:), pointer :: data2Dax23i=>null()      ! 2D data varying along axes 2,3
+  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i=>null(),data2dax13i=>null()
   integer :: l2Dax23,l2Dax12,l2Dax13
-  real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
+  real(wp), dimension(:,:,:,:,:), pointer :: data3Di=>null()        ! array for storing series of 3D data
   integer :: l3D
 
   !! by default we have one set of target coordinates; extension can define others, if needed; note these are "flat" arrays (rank 1)
-  real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i             ! coordinates of the interpolation sites, full 3D, size lc1i*lc2i*lc3i
-  real(wp), dimension(:), pointer :: coord1iax1                          ! 1D target coords for variations along axis 1
-  real(wp), dimension(:), pointer :: coord2iax2                          ! 1D target coords for variations along axis 2
-  real(wp), dimension(:), pointer :: coord3iax3                          ! 1D target coords for variations along axis 3
-  real(wp), dimension(:), pointer :: coord2iax23,coord3iax23             ! 2D target along axes 2,3
-  real(wp), dimension(:), pointer :: coord1iax12,coord2iax12             ! 2D target along axes 1,2
-  real(wp), dimension(:), pointer :: coord1iax13,coord3iax13             ! 2D target along axes 1,3
+  real(wp), dimension(:), pointer :: coord1i=>null(),coord2i=>null(),coord3i=>null()
+  real(wp), dimension(:), pointer :: coord1iax1=>null()                 ! 1D target coords for variations along axis 1
+  real(wp), dimension(:), pointer :: coord2iax2=>null()                 ! 1D target coords for variations along axis 2
+  real(wp), dimension(:), pointer :: coord3iax3=>null()                 ! 1D target coords for variations along axis 3
+  real(wp), dimension(:), pointer :: coord2iax23=>null(),coord3iax23=>null()
+  real(wp), dimension(:), pointer :: coord1iax12=>null(),coord2iax12=>null()
+  real(wp), dimension(:), pointer :: coord1iax13=>null(),coord3iax13=>null()
   integer :: lc1i,lc2i,lc3i                                              ! dataset length along the 3 coordinate axes
 
   !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
-  real(wp), dimension(:), pointer :: data0Dinow
-  real(wp), dimension(:,:), pointer :: data1Dax1inow
-  real(wp), dimension(:,:), pointer :: data1Dax2inow,data1Dax3inow
-  real(wp), dimension(:,:,:), pointer :: data2Dax23inow
-  real(wp), dimension(:,:,:), pointer :: data2Dax12inow,data2dax13inow
-  real(wp), dimension(:,:,:,:), pointer :: data3Dinow
+  real(wp), dimension(:), pointer :: data0Dinow=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax1inow=>null()
+  real(wp), dimension(:,:), pointer :: data1Dax2inow=>null(),data1Dax3inow=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax23inow=>null()
+  real(wp), dimension(:,:,:), pointer :: data2Dax12inow=>null(),data2dax13inow=>null()
+  real(wp), dimension(:,:,:,:), pointer :: data3Dinow=>null()
 
   real(wp), dimension(2) :: tref                                     ! times for two input frames bracketting current time
   real(wp) :: tnow                                                   ! time corresponding to data in *now arrays, viz current time insofar as this object knows
@@ -98,6 +108,7 @@ type, abstract :: inputdata
     procedure :: set_name              ! assign a character string name to our dataset
     procedure :: set_source            ! set the source directory for the input data
     procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
+    procedure :: validate_spatial_coverage
     procedure :: spaceinterp           ! interpolate spatially
     procedure :: nospaceinterp         ! do not interpolate; fill arrays directly from input data (assuming flag checks pass)
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
@@ -290,6 +301,8 @@ contains
     class(inputdata), intent(inout) :: self
     real(wp), intent(in) :: dtdata
 
+    if (.not.ieee_is_finite(dtdata)) error stop "inputdata: nonfinite cadence"
+    if (dtdata<=0 .or. dtdata>86400) error stop "inputdata: cadence must be in (0,86400]"
     self%dt=dtdata
     self%flagcadence=.true.
   end subroutine set_cadence
@@ -354,18 +367,19 @@ contains
       !self%tref(1)=UTsectmp-UTsec-2*self%dt
       !self%tref(2)=self%tref(1)+self%dt
 
-      self%tref(1)=(UTsectmp-cfg%UTsec0)-2*self%dt
+      self%tref(1)=elapsed_seconds(cfg%ymd0,cfg%UTsec0,ymdtmp,UTsectmp)-2*self%dt
       self%tref(2)=self%tref(1)+self%dt
 
       !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
       !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
       !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
+      call shift_datetime(-self%dt,ymdtmp,UTsectmp)
+      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp)  !abs time arg to be < 0
 
       !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
       !  loads up a current state so that we get a proper interpolation for the first time step.
       !call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
-      call self%update(cfg,dtmodel,self%tref(2)+3/2*self%dt,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
+      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
 
       self%flagprimed=.true.
 
@@ -402,6 +416,8 @@ contains
     integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
     real(wp) :: UTsectmp
 
+    self%allow_missing_spatial=cfg%allow_missing_spatial
+
     !! basic error checking
     if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
     if (.not. self%flagcadence) error stop 'inputdata:update() - must define cadence first...'
@@ -411,7 +427,7 @@ contains
     !print*, '    ',self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
 
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
-    if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then
+    do while (t+dtmodel/2 >= self%tref(2) .or. .not.self%flagprimed)
       !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
       if (self%flagfirst) then
         !initialize dates
@@ -430,6 +446,9 @@ contains
       !Read in neutral data from a file
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
 
+      if (abs(elapsed_seconds(self%ymdref(:,2),self%UTsecref(2),ymdtmp,UTsectmp)-self%dt) &
+          > 1e-6_wp) error stop 'inputdata: missing or nonuniform frame; resample to declared cadence'
+
       !Spatial interpolation for the frame we just read in (or copying)
       if (self%flagnointerp) then
         call self%nospaceinterp()
@@ -445,7 +464,8 @@ contains
       self%tref(2)=self%tref(1)+self%dt
       self%UTsecref(2)=UTsectmp
       self%ymdref(:,2)=ymdtmp
-    end if !done loading frame data...
+      if (.not.self%flagprimed) exit  ! priming loads exactly one frame on each call
+    end do !done loading frame data...
 
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
@@ -588,6 +608,36 @@ contains
 
   !> use data stored in input arrays to interpolate onto grid sites for "next" dataset.  There may be a need here to
   !    accommodate singleton dimension naturally to void having to define extensions for different types of interp...
+  subroutine validate_spatial_coverage(self)
+    class(inputdata),intent(inout) :: self
+    integer :: i
+    if (self%l1Dax1>0) self%coverage(1)%valid=coverage_mask(self%coord1,self%coord1iax1)
+    if (self%l1Dax2>0) self%coverage(2)%valid=coverage_mask(self%coord2,self%coord2iax2)
+    if (self%l1Dax3>0) self%coverage(3)%valid=coverage_mask(self%coord3,self%coord3iax3)
+    if (self%l2Dax23>0) self%coverage(4)%valid= &
+      coverage_mask(self%coord2,self%coord2iax23).and.coverage_mask(self%coord3,self%coord3iax23)
+    if (self%l2Dax12>0) self%coverage(5)%valid= &
+      coverage_mask(self%coord1,self%coord1iax12).and.coverage_mask(self%coord2,self%coord2iax12)
+    if (self%l2Dax13>0) self%coverage(6)%valid= &
+      coverage_mask(self%coord1,self%coord1iax13).and.coverage_mask(self%coord3,self%coord3iax13)
+    if (self%l3D>0) self%coverage(7)%valid=coverage_mask(self%coord1,self%coord1i) &
+      .and.coverage_mask(self%coord2,self%coord2i).and.coverage_mask(self%coord3,self%coord3i)
+    self%spatial_missing_count=0
+    do i=1,7
+      if (allocated(self%coverage(i)%valid)) &
+        self%spatial_missing_count=self%spatial_missing_count+count(.not.self%coverage(i)%valid)
+    enddo
+    if (self%spatial_missing_count>0) then
+      if (allocated(self%dataname).and..not.self%coverage_warning_sent) &
+        write(stderr,*) 'Spatial coverage missing: ',self%dataname,self%spatial_missing_count
+      if (.not.self%allow_missing_spatial) &
+        error stop 'inputdata: uncovered target sites; extend input grid or explicitly allow flagged zero fill'
+      if (.not.self%coverage_warning_sent) write(stderr,*) &
+        'WARNING: explicitly allowed zero fill; coverage masks mark missing values, not physical zeros.'
+      self%coverage_warning_sent=.true.
+    endif
+  end subroutine validate_spatial_coverage
+
   subroutine spaceinterp(self)
     class(inputdata),intent(inout) :: self
     integer :: iparm
@@ -611,6 +661,8 @@ contains
     coord2iax23=>self%coord2iax23; coord3iax23=>self%coord3iax23;
     coord1iax12=>self%coord1iax12; coord2iax12=>self%coord2iax12;
     coord1iax13=>self%coord1iax13; coord3iax13=>self%coord3iax13;
+
+    call self%validate_spatial_coverage()
 
     !> 1D arrays varying along the 1-axis
     if (self%l1Dax1>0) then
@@ -785,6 +837,12 @@ contains
     integer :: ic1,ic2,ic3,iparm
     integer :: lc1i,lc2i,lc3i
 
+    if (.not.all(ieee_is_finite([t,dt,self%tref]))) error stop "inputdata: nonfinite interpolation time"
+    if (dt<0 .or. self%tref(2)<=self%tref(1)) error stop "inputdata: invalid interpolation interval"
+    if (self%flagprimed) then
+      if (t+dt/2<self%tref(1) .or. t+dt/2>self%tref(2)) &
+        error stop "inputdata: query is outside temporal driver coverage"
+    endif
     ! convenience vars
     lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
 
@@ -898,21 +956,64 @@ contains
   !> deallocate memory and dissociated pointers for generic array data
   subroutine dissociate_pointers(self)
     class(inputdata), intent(inout) :: self
+    integer :: i
 
-    if (self%flagalloc) then
-      deallocate(self%data0D)
-      deallocate(self%data1Dax1, self%data1Dax2, self%data1Dax3)
-      deallocate(self%data2Dax23, self%data2Dax12, self%data2Dax13)
-      deallocate(self%data3D)
+    ! Some extensions allocate only current-time storage or stop after dimensions.
+    ! Deallocate owners individually, never the aliases in the derived types.
+    if (associated(self%lc1)) deallocate(self%lc1)
+    if (associated(self%lc2)) deallocate(self%lc2)
+    if (associated(self%lc3)) deallocate(self%lc3)
+    if (associated(self%coord1)) deallocate(self%coord1)
+    if (associated(self%coord2)) deallocate(self%coord2)
+    if (associated(self%coord3)) deallocate(self%coord3)
+    if (associated(self%coord1i)) deallocate(self%coord1i)
+    if (associated(self%coord2i)) deallocate(self%coord2i)
+    if (associated(self%coord3i)) deallocate(self%coord3i)
+    if (associated(self%coord1iax1)) deallocate(self%coord1iax1)
+    if (associated(self%coord2iax2)) deallocate(self%coord2iax2)
+    if (associated(self%coord3iax3)) deallocate(self%coord3iax3)
+    if (associated(self%coord2iax23)) deallocate(self%coord2iax23)
+    if (associated(self%coord3iax23)) deallocate(self%coord3iax23)
+    if (associated(self%coord1iax12)) deallocate(self%coord1iax12)
+    if (associated(self%coord2iax12)) deallocate(self%coord2iax12)
+    if (associated(self%coord1iax13)) deallocate(self%coord1iax13)
+    if (associated(self%coord3iax13)) deallocate(self%coord3iax13)
 
-      deallocate(self%data0Di)
-      deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
-      deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
-      deallocate(self%data3Di)
-    end if
+    if (associated(self%data0D)) deallocate(self%data0D)
+    if (associated(self%data1Dax1)) deallocate(self%data1Dax1)
+    if (associated(self%data1Dax2)) deallocate(self%data1Dax2)
+    if (associated(self%data1Dax3)) deallocate(self%data1Dax3)
+    if (associated(self%data2Dax23)) deallocate(self%data2Dax23)
+    if (associated(self%data2Dax12)) deallocate(self%data2Dax12)
+    if (associated(self%data2Dax13)) deallocate(self%data2Dax13)
+    if (associated(self%data3D)) deallocate(self%data3D)
+    if (associated(self%data0Di)) deallocate(self%data0Di)
+    if (associated(self%data1Dax1i)) deallocate(self%data1Dax1i)
+    if (associated(self%data1Dax2i)) deallocate(self%data1Dax2i)
+    if (associated(self%data1Dax3i)) deallocate(self%data1Dax3i)
+    if (associated(self%data2Dax23i)) deallocate(self%data2Dax23i)
+    if (associated(self%data2Dax12i)) deallocate(self%data2Dax12i)
+    if (associated(self%data2Dax13i)) deallocate(self%data2Dax13i)
+    if (associated(self%data3Di)) deallocate(self%data3Di)
+    if (associated(self%data0Dinow)) deallocate(self%data0Dinow)
+    if (associated(self%data1Dax1inow)) deallocate(self%data1Dax1inow)
+    if (associated(self%data1Dax2inow)) deallocate(self%data1Dax2inow)
+    if (associated(self%data1Dax3inow)) deallocate(self%data1Dax3inow)
+    if (associated(self%data2Dax23inow)) deallocate(self%data2Dax23inow)
+    if (associated(self%data2Dax12inow)) deallocate(self%data2Dax12inow)
+    if (associated(self%data2Dax13inow)) deallocate(self%data2Dax13inow)
+    if (associated(self%data3Dinow)) deallocate(self%data3Dinow)
+    do i=1,size(self%coverage)
+      if (allocated(self%coverage(i)%valid)) deallocate(self%coverage(i)%valid)
+    end do
 
+    self%flagdatasize=.false.
+    self%flagsizes=.false.
     self%flagalloc=.false.
     self%flagprimed=.false.
     self%flagcoordsi=.false.
+    self%flagfirst=.true.
+    self%spatial_missing_count=0
+    self%coverage_warning_sent=.false.
   end subroutine dissociate_pointers
 end module inputdataobj

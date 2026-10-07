@@ -2,6 +2,7 @@ submodule (io:plasma_input) plasma_input_hdf5
 
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
+use hdf5, only: H5T_NATIVE_DOUBLE, h5tequal_f
 use mpimod, only : bcast_send3D_ghost, bcast_send
 
 implicit none (type, external)
@@ -89,7 +90,10 @@ contains
     type(hdf5_file) :: hf
     integer :: lx1,lx2all,lx3all
     integer :: ix1
-    integer :: lx1in,lx2in,lx3in
+    integer :: lx1in,lx2in,lx3in, schema, complete, realbits,i
+    integer :: type_error
+    logical :: is_double
+    character(3), parameter :: core_fields(4)=[character(3)::'ns','Ts','vs1','Phi']
     real(wp), dimension(:,:), allocatable :: Phislab
     real(wp), allocatable :: tmpPhi(:)
 
@@ -116,6 +120,25 @@ contains
     !> this helps users identify problems with their HDF5 library.
     call hf%open(indatfile, action='r', debug=.true.)
     print '(a)', "File handle opened for reading initial conditions: "//indatfile
+    if (hf%exist('/restart_core')) then
+      if (.not.hf%exist('/restart_core/complete')) error stop 'Incomplete core restart record'
+      call hf%read('/restart_core/schema',schema)
+      call hf%read('/restart_core/complete',complete)
+      call hf%read('/restart_core/realbits',realbits)
+      if (schema/=1 .or. complete/=1 .or. realbits/=storage_size(1._wp)) &
+        error stop 'Unsupported core restart schema or precision'
+      do i=1,size(core_fields)
+        call h5tequal_f(hf%dtype('/restart_core/'//trim(core_fields(i))),H5T_NATIVE_DOUBLE,is_double,type_error)
+        if (type_error/=0) error stop 'Cannot compare core restart datatype'
+        if (.not.is_double) error stop 'Core restart fields must contain float64 data'
+      enddo
+      call hf%read('/restart_core/ns',nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+      call hf%read('/restart_core/vs1',vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
+      call hf%read('/restart_core/Ts',Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+      call hf%read('/restart_core/Phi',Phiall(1:lx1,1:lx2all,1:lx3all))
+      call hf%close()
+      return
+    endif
     call hf%read('/nsall', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
     call hf%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
     call hf%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))

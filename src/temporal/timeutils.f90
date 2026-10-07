@@ -1,9 +1,11 @@
 module timeutils
 use phys_consts, only: wp
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 
 implicit none (type, external)
 private
+public :: elapsed_seconds, shift_datetime
 public :: ymd2doy, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate, find_time_elapsed
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
@@ -90,7 +92,8 @@ integer :: year,month,day
 
 year=ymd(1); month=ymd(2); day=ymd(3);
 
-if (day < 1) error stop 'temporal:timeutils:dateinc(): days are positive integers'
+if (ymd2doy(year,month,day)<1) error stop 'timeutils: invalid date'
+if (.not.all(ieee_is_finite([dtsec,UTsec]))) error stop 'timeutils: nonfinite time'
 if (utsec < 0) error stop 'negative UTsec, simulation should go forward in time only!'
 if (dtsec < 0) error stop 'negative dtsec, simulation should go forward in time only!'
 if (dtsec > 86400) error stop 'excessively large dtsec > 86400, simulation step should be small enough!'
@@ -189,7 +192,7 @@ if (seconds == 86400) then
   call day_wrap(year, month, day)
 endif
 
-frac = millisec*1000 - seconds * 1000000  !< microseconds
+frac = modulo(millisec,1000) * 1000  ! microseconds without signed integer overflow
 
 write(sec_str, '(I5.5, A1, I6.6)') seconds, '.', frac
 
@@ -198,67 +201,80 @@ write(utsec2filestem, '(i4,I2.2,I2.2,a13)') year, month, day, '_' // sec_str
 end function utsec2filestem
 
 
+!> Gregorian day number, with input validation through ymd2doy.
+pure integer(int64) function day_number(ymd) result(n)
+integer, intent(in) :: ymd(3)
+integer(int64) :: y
+y=int(ymd(1)-1,int64)
+n=365_int64*y+y/4-y/100+y/400+ymd2doy(ymd(1),ymd(2),ymd(3))
+end function day_number
+
+!> Signed elapsed seconds; no iteration over time steps and no loss of date at midnight.
+pure real(wp) function elapsed_seconds(ymd0,ut0,ymd1,ut1) result(dt)
+integer, intent(in) :: ymd0(3),ymd1(3)
+real(wp), intent(in) :: ut0,ut1
+if (.not.all(ieee_is_finite([ut0,ut1]))) error stop 'timeutils: nonfinite UTC'
+if (min(ut0,ut1)<0 .or. max(ut0,ut1)>=86400) error stop 'timeutils: UTC outside [0,86400)'
+dt=real(day_number(ymd1)-day_number(ymd0),wp)*86400._wp+ut1-ut0
+end function elapsed_seconds
+
+!> Shift a normalized UTC date in either direction, including month/year boundaries.
+pure subroutine shift_datetime(offset,ymd,utsec)
+real(wp), intent(in) :: offset
+integer, intent(inout) :: ymd(3)
+real(wp), intent(inout) :: utsec
+integer :: ndays,i
+real(wp) :: total
+if (.not.all(ieee_is_finite([offset,utsec]))) error stop 'timeutils: nonfinite offset'
+if (abs(offset)>366._wp*86400*900) error stop 'timeutils: offset exceeds supported calendar'
+if (ymd2doy(ymd(1),ymd(2),ymd(3))<1) error stop 'timeutils: invalid date'
+if (utsec<0 .or. utsec>=86400) error stop 'timeutils: UTC outside [0,86400)'
+total=utsec+offset
+ndays=floor(total/86400._wp)
+utsec=total-real(ndays,wp)*86400._wp
+do i=1,abs(ndays)
+  if (ndays>0) then
+    ymd(3)=ymd(3)+1
+    call day_wrap(ymd(1),ymd(2),ymd(3))
+  else
+    ymd(3)=ymd(3)-1
+    if (ymd(3)==0) then
+      ymd(2)=ymd(2)-1
+      if (ymd(2)==0) then
+        ymd(1)=ymd(1)-1; ymd(2)=12
+      endif
+      ymd(3)=daysmonth(ymd(1),ymd(2))
+    endif
+  endif
+enddo
+if (ymd2doy(ymd(1),ymd(2),ymd(3))<1) error stop 'timeutils: date outside supported range'
+end subroutine shift_datetime
+
+!> Latest cadence timestamp at or before target; return start when target precedes it.
 pure subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
-
-!> Compute the last date before the target date based on a start date and date cadence.  The
-!  file is assumed to exist and programmer needs to check for existence outside this
-!  procedure.
-! FIXME:  this will occasionally hang and may need to be re-examined at some point...
-
-integer, dimension(3), intent(in) :: ymd0
-real(wp), intent(in) :: UTsec0
-integer, dimension(3), intent(in) :: ymdtarget
-real(wp), intent(in) :: UTsectarget
-real(wp), intent(in) :: cadence
-integer, dimension(3), intent(out) :: ymd
+integer, intent(in) :: ymd0(3),ymdtarget(3)
+real(wp), intent(in) :: UTsec0,UTsectarget,cadence
+integer, intent(out) :: ymd(3)
 real(wp), intent(out) :: UTsec
-
-integer, dimension(3) :: ymdnext
-real(wp) :: UTsecnext
-logical :: flagend
-
-
-ymd=ymd0
-UTsec=UTsec0
-ymdnext=ymd0
-UTsecnext=UTsec0
-flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget &
-          .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3) ! in case the first time step is the last before target
-do while ( .not.(flagend) )
-  ymd=ymdnext
-  UTsec=UTsecnext
-  call dateinc(cadence,ymdnext,UTsecnext)
-  flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget &
-            .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3)
-end do
-! When the loops exits ymd,UTsec have the date of the last output file before the given target time OR the first output file in the case that the target date is before the begin date...
-
+real(wp) :: dt,offset
+if (.not.ieee_is_finite(cadence)) error stop 'timeutils: nonfinite cadence'
+if (cadence<=0 .or. cadence>86400) error stop 'timeutils: cadence must be in (0,86400]'
+dt=max(0._wp,elapsed_seconds(ymd0,UTsec0,ymdtarget,UTsectarget))
+offset=real(floor(dt/cadence,kind=int64),wp)*cadence
+ymd=ymd0; UTsec=UTsec0
+call shift_datetime(offset,ymd,UTsec)
 end subroutine find_lastdate
 
-
-pure function find_time_elapsed(ymdstart,UTsecstart,ymdend,UTsecend,dt) result(telapsed)
-
-! finds the amount of time that has elapsed between a given start and end date, using a given dt increment
-! the resulting elapsed time will be the smallest multiple of dt that is >= true elapsed time
-
-!! inputs
-integer, dimension(3), intent(in) :: ymdstart,ymdend
-real(wp), intent(in) :: UTsecstart,UTsecend
-reaL(wp), intent(in) :: dt
-
-integer, dimension(3) :: ymdnow
-real(wp) :: UTsecnow
-
-real(wp) :: telapsed  !! output
-
-telapsed=0._wp; ymdnow=ymdstart; UTsecnow=UTsecstart;
-do while (.not. (all(ymdend==ymdnow) .and. UTsecnow>UTsecend) )
-  call dateinc(dt,ymdnow,UTsecnow)
-  telapsed=telapsed+dt
-end do
-telapsed=telapsed-dt
-
+!> Greatest nonnegative multiple of dt not exceeding elapsed time (legacy semantics).
+pure real(wp) function find_time_elapsed(ymdstart,UTsecstart,ymdend,UTsecend,dt) result(telapsed)
+integer, intent(in) :: ymdstart(3),ymdend(3)
+real(wp), intent(in) :: UTsecstart,UTsecend,dt
+real(wp) :: actual
+if (.not.ieee_is_finite(dt)) error stop 'timeutils: nonfinite cadence'
+if (dt<=0 .or. dt>86400) error stop 'timeutils: cadence must be in (0,86400]'
+actual=elapsed_seconds(ymdstart,UTsecstart,ymdend,UTsecend)
+if (actual<0) error stop 'timeutils: end precedes start'
+telapsed=real(floor(actual/dt,kind=int64),wp)*dt
 end function find_time_elapsed
-
 
 end module timeutils

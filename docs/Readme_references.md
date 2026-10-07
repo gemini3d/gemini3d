@@ -54,3 +54,8 @@ Gutow, J. (2020).  Relating Flows and Currents in Auroral Arcs.  Undergraduate H
 
 
 ## Other references
+
+
+## Qualification update (2026)
+
+[Huyghebaert et al. (2025), Simulation of interferometric imaging with EISCAT_3D for fine-scale in-beam incoherent scatter spectra measurements](https://doi.org/10.5194/angeo-43-99-2025) supplies a GEMINI-based synthetic observation-operator example. This is not independent physical validation of this branch. See [the targeted research review](qualification/RESEARCH.md) for current IGRF and dependency sources.

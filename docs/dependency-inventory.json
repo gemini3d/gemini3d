@@ -1,0 +1,75 @@
+[
+  {
+    "name": "ffilesystem",
+    "url": "https://github.com/ECLAIRWaveS/ffilesystem/archive/8a9ad4b213a8fbdb19816451a714f54017170109.tar.gz",
+    "sha256": "b0d9dfa00f6fa0977209352cff03634d71999b5f8ab4274b4ce07e56d6953e5c",
+    "license_observed": "MIT",
+    "notice": "docs/dependency-notices/ffilesystem-LICENSE",
+    "notice_sha256": "de5d760d5cab8f20c24bb9002e399ca9a640a4438d6ca7c8d84be663ccc096f5",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "glow",
+    "url": "https://github.com/gemini3d/glow/archive/62ce006692b8e16c403c995568ecc3403113d788.tar.gz",
+    "sha256": "ee3d70dbba76ed50d1dc5fefe1ddcaae6532ab855315a5108392d2983effc1e3",
+    "license_observed": "GLOW Open Source Academic Research License Agreement",
+    "notice": "docs/dependency-notices/glow-Glowlicense.txt",
+    "notice_sha256": "6336997691f134ffea7792ed392c4558754288e33abc3998b015557f6ea924ca",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "h5fortran",
+    "url": "https://github.com/ECLAIRWaveS/h5fortran/archive/04c7dd39405b43eac922319b6f4b74ea04b97043.tar.gz",
+    "sha256": "9b1f546c65690ba782e7973f10b7d14b098d5f9bab83c90655a7b7e151f52281",
+    "license_observed": "BSD-3-Clause",
+    "notice": "docs/dependency-notices/h5fortran-LICENSE",
+    "notice_sha256": "5941058448ead49006d58c737cf989646c1fc22662469cbbcc7f4af4148a1dad",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "hwm14",
+    "url": "https://github.com/gemini3d/hwm14/archive/a3092641ee4fdc7cc1a6fd42eaa45c2abc4891c2.tar.gz",
+    "sha256": "e057b2bc96b59525f13677a3db66429ef00ead7e93d2f0ce71b701dbe6caa97f",
+    "license_observed": "Apache-2.0",
+    "notice": "docs/dependency-notices/hwm14-LICENSE.txt",
+    "notice_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "enabled_in_local_profile": false,
+    "qualification_profile": "enabled for separate unit/smoke tests; disabled in nine-case reference profile"
+  },
+  {
+    "name": "msis",
+    "url": "https://github.com/gemini3d/msis/archive/e8437eb61ff0bdb3ef336d96fd279dd75d9aec98.tar.gz",
+    "sha256": "d3354a3a910ecfaa5fdb512e731647798d57b35085ff4c411264f0ddb69e013c",
+    "license_observed": "Apache-2.0 wrapper; review bundled model notices",
+    "notice": "docs/dependency-notices/msis-LICENSE",
+    "notice_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "mumps",
+    "url": "https://github.com/scivision/mumps-superbuild/archive/31999e0f398d7f486c23c265ba5c40f8e1288a3c.tar.gz",
+    "sha256": "a4cc5c87d618543af9e41ef1bea877b08bb4b3160e36bf2c602110fe4519aea2",
+    "license_observed": "MIT",
+    "notice": "docs/dependency-notices/mumps-LICENSE",
+    "notice_sha256": "f259cbc7a6764ded8aafa6901d360492d68b3437ac15c1ba0e3ed5d9947c4a02",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "mumps_upstream",
+    "url": "https://mumps-solver.org/MUMPS_5.9.1.tar.gz",
+    "sha256": "659c9b57646b5a003ac618baa1faf9dd2044e46c732b3daaccbc7158003e1b46",
+    "license_observed": "CeCILL-C with bundled exceptions",
+    "notice": "docs/dependency-notices/mumps_upstream-LICENSE",
+    "notice_sha256": "5813fefd30a36fd7550cd2b62274be6586a0db51c11c3f2d4b852283e22ccc42",
+    "enabled_in_local_profile": true
+  },
+  {
+    "name": "HDF5 qualification profile",
+    "url": "https://support.hdfgroup.org/releases/hdf5/2.2.0/downloads/hdf5-2.2.0.tar.gz",
+    "sha256": "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16",
+    "license_observed": "HDF5 license; see exact notice",
+    "notice": "docs/dependency-notices/HDF5-2.2.0-LICENSE.txt",
+    "notice_sha256": "b384492d25c6e4a49f371b646d9a81bc0a4b97cf0c66c2f3ed1b35f78a148732",
+    "enabled_in_local_profile": true
+  }
+]

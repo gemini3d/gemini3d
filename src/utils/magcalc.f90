@@ -459,7 +459,7 @@ main : do while (t < cfg%tdur)
 
       !Bz
       integrand(:,:,:)=mu0/4/pi*2*(Jx*Ry-Jy*Rx)
-      integrandend(:,:)=mu0/4/pi*2*(Jxend*Ryend-Jyend*Rxend)/Rcubedend
+      integrandend(:,:)=mu0/4/pi*2*(Jxend*Ryend-Jyend*Rxend)
       Bphi(ipoints) = integrate2D(integrand,integrandend)
     end if
   end do
@@ -589,7 +589,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
         J1(:,lx2,:)=J1(:,lx2-2,:)
       else
         J1(:,lx2-1,:)=0
-        J1(:,lx2-1,:)=0
+        J1(:,lx2,:)=0
       end if
     end if
     if (mpi_cfg%myid2==0) then
@@ -760,14 +760,16 @@ contains    ! declare integral functions as internal subprograms; too specific t
 
     lx1=size(integrand,1); lx2=size(integrand,2); lx3=size(integrand,3);
 
-    allocate(integrandavg(lx1-1,max(lx2-1,1),max(lx3-1,1)), &
-             integrandavgend(lx1-1,max(lx2-1,1)) )
+    allocate(integrandavg(lx1-1,lx2,lx3-1), integrandavgend(lx1-1,lx2))
 
     integrandavg(:,:,:)=1/4._wp*( integrand(1:lx1-1,:,1:lx3-1) + integrand(2:lx1,:,1:lx3-1) + &
                          integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )/Rcubed(2:lx1,:,2:lx3)
 
-    integrandavgend(:,:)=1/4._wp*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
-                         integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )/Rcubedend(2:lx1,:)
+    integrandavgend = 0
+    if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
+      integrandavgend(:,:)=1/4._wp*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
+                           integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )/Rcubedend(2:lx1,:)
+    end if
 
     integrate2D=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))
 

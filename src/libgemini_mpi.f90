@@ -17,7 +17,7 @@ use neutral_perturbations, only: init_neutral_perturb,neutral_perturb,clear_neut
 use neutral_background, only: init_neutral_background, neutral_background_fileinput, neutral_background_empirical, &
         clear_neutral_background_fileinput
 use neutral, only: neutral_aggregate, neutral_wind_aggregate
-use temporal_mpi, only : dt_comm
+use temporal_mpi, only : dt_comm, enforce_post_update_cfl
 use advec_mpi, only: halo_interface_vels_allspec
 use multifluid_mpi, only: halo_allparams, halo_fluidvars
 use sources_mpi, only: RK2_prep_mpi_allspec, RK2_global_boundary_allspec
@@ -26,6 +26,8 @@ use gemini3d, only: fluidvar_pointers,fluidauxvar_pointers, electrovar_pointers,
                       v2grid, v3grid, setv2v3, set_start_timefromcfg, init_precipinput_in, precip_perturb_in, &
                       solflux_perturb_in, init_solfluxinput_in, &
                       get_it, tneuBG, user_populate
+use transport_audit, only: audit_transport_init,audit_step,audit_mass_start,audit_mass_finish
+use restart_runtime, only: runtime_select,runtime_read,runtime_save,runtime_restore,runtime_dt,runtime_ready
 use sanity_check, only : check_finite_perturb
 !=======
 !                      v2grid, v3grid, setv2v3, set_start_timefromcfg
@@ -172,6 +174,7 @@ contains
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
 
+    call runtime_select(cfg)
     call find_milestone(cfg, t, ymdtmp, UTsectmp, filetmp)
     if ( t > 0 ) then
       !! Set start variables accordingly and read in the milestone
@@ -194,6 +197,7 @@ contains
 
       !cfg%tdur=tdur         ! just to insure consistency
       call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,intvars%Phiall)
+      call runtime_read(filetmp,cfg,t)
     else !! start at the beginning
       ! UTsec = cfg%UTsec0
       ! ymd = cfg%ymd0
@@ -226,6 +230,7 @@ contains
 
     call fluidvar_pointers(fluidvars,ns,vs1,vs2,vs3,Ts)
     call electrovar_pointers(electrovars,E1,E2,E3,J1,J2,J3,Phi)
+    call audit_mass_finish(ns)
     if (abs(t-tout) < 1d-5) then
       tout = tout + cfg%dtout
       if (cfg%nooutput ) then
@@ -238,6 +243,8 @@ contains
       !! We may need to adjust flagoutput if we are hitting a milestone
       flagoutput=cfg%flagoutput
       call user_populate(fluidvars,electrovars,intvars)    ! custom user data
+      call runtime_save(cfg,ymd,UTsec,fluidvars,electrovars,intvars%vs1i,intvars%vs2i,intvars%vs3i, &
+                        get_it(),tneuBG,tout,tglowout)
       if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
         flagoutput=1                   !force a full output at the milestone
         call output_plasma(cfg%outdir,flagoutput,ymd, &
@@ -347,7 +354,8 @@ contains
 
     real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
     real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
-    integer :: lx1,lx2,lx3,lsp
+    integer :: lx1,lx2,lx3,lsp,restored_it
+    real(wp) :: restored_neutral
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
@@ -371,6 +379,11 @@ contains
       print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
       print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs3(1:lx1,1:lx2,1:lx3,1:lsp))
     end if
+    call audit_transport_init(cfg%outdir,mpi_cfg%myid)
+    restored_it=get_it();restored_neutral=tneuBG
+    call runtime_restore(fluidvars,electrovars,intvars%vs1i,intvars%vs2i,intvars%vs3i,restored_it,restored_neutral)
+    ! it is a process-local initialization counter (MUMPS/neutrals), not simulation state.
+    ! Keep it at one; the saved dt still constrains the first continuation step.
   end subroutine get_initial_drifts
 
 
@@ -479,6 +492,7 @@ contains
     real(wp), intent(inout) :: dt
 
     real(wp) :: dtprev
+    logical :: continuing
     real(wp), dimension(:,:,:,:), pointer :: ns,vs1,vs2,vs3,Ts
     real(wp), dimension(:,:,:,:), pointer :: rhovs1,rhoes
     real(wp), dimension(:,:,:), pointer :: rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom
@@ -488,13 +502,15 @@ contains
     call fluidauxvar_pointers(fluidauxvars,rhovs1,rhoes,rhov2,rhov3,B1,B2,B3,v1,v2,v3,rhom)
 
     !> save prior time step
+    continuing=runtime_ready
+    call runtime_dt(dt,.true.)
     dtprev = dt
 
     !> time step calculation, requires workers to report their most stringent local stability constraint
     call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
 
     !> do not allow the time step to change too rapidly
-    if (get_it()>1) then
+    if (get_it()>1.or.continuing) then
       if(dt/dtprev > dtscale) then
         !! throttle how quickly we allow dt to increase
         dt=dtscale*dtprev
@@ -503,6 +519,9 @@ contains
         end if
       end if
     end if
+    call runtime_dt(dt,.false.)
+    call audit_step(t,dt)
+    call audit_mass_start(ns,x)
   end subroutine dt_select
 
 
@@ -560,7 +579,12 @@ contains
         print*, 'Updating neutrals...'
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
-        call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)          ! load background states from empirical models into base array variables
+        if (cfg%flagneuBG) then
+          call neutral_background_empirical(cfg,ymd,UTsec,x,v2grid,v3grid,intvars%atmos)
+        else
+          ! Frozen means the same background before and after restart.
+          call neutral_background_empirical(cfg,cfg%ymd0,cfg%UTsec0,x,v2grid,v3grid,intvars%atmos)
+        endif
         call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
         !if (myid==0) then
@@ -645,6 +669,7 @@ contains
                            intvars%Vminx3,intvars%Vmaxx3,intvars%Vminx1slab,intvars%Vmaxx1slab, &
                            intvars%E01,intvars%E02,intvars%E03, &
                            ymd,UTsec,intvars%sig0,intvars%sigP,intvars%sigH,intvars%sigNCP,intvars%sigNCH)
+    call enforce_post_update_cfl(Ts,vs1,vs2,vs3,x,dt)
   end subroutine electrodynamics_in
 
 

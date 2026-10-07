@@ -1,10 +1,14 @@
+! Audit modification 2026-09-16: initialize interpolation upper-bin indices at two.
 module interpolation
 
 use phys_consts, only: wp
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none (type, external)
 private
 public :: interp1, interp2, interp3
+! The separately compiled interp2 submodule needs an externally emitted symbol.
+public :: check_axis, coverage_mask
 
 interface ! interp2d.f90
   module pure function interp2_plaid(x1,x2,f,x1i,x2i)
@@ -20,6 +24,27 @@ interface ! interp2d.f90
 end interface
 
 contains
+  pure function coverage_mask(x,xi) result(covered)
+    real(wp), intent(in) :: x(:),xi(:)
+    logical :: covered(size(xi))
+    call check_axis(x,1)
+    if (.not.all(ieee_is_finite(xi))) error stop 'coverage: nonfinite target coordinate'
+    ! A singleton is an explicitly invariant dimension, not a finite-width cell.
+    covered=.true.
+    if (size(x)>1) covered=xi>=x(1) .and. xi<=x(size(x))
+  end function coverage_mask
+
+  pure subroutine check_axis(x, min_points)
+    real(wp), intent(in) :: x(:)
+    integer, intent(in), optional :: min_points
+    integer :: nmin
+    nmin=2
+    if (present(min_points)) nmin=min_points
+    if (size(x)<nmin) error stop "interpolation: insufficient source coordinates"
+    if (.not.all(ieee_is_finite(x))) error stop "interpolation: nonfinite axis"
+    if (any(x(2:)<=x(:size(x)-1))) error stop "interpolation: axis must be strictly increasing"
+  end subroutine check_axis
+
   pure real(wp) function interp1(x1,f,x1i)
     !------------------------------------------------------------
     !-------A 1D LINEAR INTERPOLATION FUNCTION.  THE INDEPENDENT
@@ -35,13 +60,23 @@ contains
     real(wp) :: slope
     integer :: ix10,ix1fin
 
+    if (.not.all(ieee_is_finite(f))) error stop "interp1: nonfinite source data"
+    call check_axis(x1,1)
+    if (size(f)/=size(x1)) error stop "interp1: shape mismatch"
+    if (.not.all(ieee_is_finite(x1i))) error stop "interp1: nonfinite query"
+    ! Singleton input axes occur in 2D driver boundary data. They represent
+    ! an invariant dimension, consistent with inputdata's collapsed-axis rules.
+    if (size(x1)==1) then
+      interp1=f(1)
+      return
+    endif
     lx1=size(x1,1)
     lx1i=size(x1i,1)
 
     do ix1i=1,lx1i
     !      !find the 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
       ix10=1
-      ix1=lx1/2
+      ix1=max(2,lx1/2)
       ix1fin=lx1
       if (x1i(ix1i)>=x1(1) .and. x1i(ix1i)<=x1(lx1)) then    !in bounds
         do while(.not.(x1i(ix1i)>=x1(ix1-1) .and. x1i(ix1i)<=x1(ix1)))    !keep going until we are in the interval we want
@@ -97,6 +132,12 @@ contains
     integer :: ix10,ix1fin,ix20,ix2fin,ix30,ix3fin
     integer :: interptype     ! set to zero for nearest neighbor, anything else will be trilinear
 
+    if (.not.all(ieee_is_finite(f))) error stop "interp3: nonfinite source data"
+    call check_axis(x1); call check_axis(x2); call check_axis(x3)
+    if (any(shape(f)/=[size(x1),size(x2),size(x3)])) error stop "interp3: shape mismatch"
+    if (size(x1i)/=size(x2i) .or. size(x1i)/=size(x3i)) error stop "interp3: query shape mismatch"
+    if (.not.all(ieee_is_finite(x1i)) .or. .not.all(ieee_is_finite(x2i)) .or. &
+        .not.all(ieee_is_finite(x3i))) error stop "interp3: nonfinite query"
     ! alter the default interpolation type if the user has provided an input
     if (present(interptypein)) then
       interptype=interptypein
@@ -112,7 +153,7 @@ contains
     do ixi=1,lxi
       !find the x1 'bin' for this point; i.e. find ix1 s.t. xi(ix1i) is between x(ix1-1) and x(ix1)
       ix10=1
-      ix1=lx1/2
+      ix1=max(2,lx1/2)
       ix1fin=lx1
       if (x1i(ixi)>=x1(1) .and. x1i(ixi)<=x1(lx1)) then    !in bounds
         do while(.not.(x1i(ixi)>=x1(ix1-1) .and. x1i(ixi)<=x1(ix1)))    !keep going until we are in the interval we want

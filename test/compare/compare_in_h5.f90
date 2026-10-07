@@ -1,3 +1,4 @@
+! Audit modification 2026-09-16: read the reference configuration from the reference tree
 submodule (compare_h5) compare_in_h5
 
 implicit none (type, external)
@@ -12,7 +13,7 @@ type(hdf5_file) :: hnew, href
 type(gemini_cfg) :: ref_cfg, cfg
 
 !> get input filename
-ref_cfg%infile = new_path // '/inputs/config.nml'
+ref_cfg%infile = ref_path // '/inputs/config.nml'
 ref_cfg%outdir = ref_path  !< not used, just to pass checks
 call read_configfile(ref_cfg)
 if(.not. is_file(ref_cfg%indatfile)) error stop "compare: ref initcond file not found: " // ref_cfg%indatfile

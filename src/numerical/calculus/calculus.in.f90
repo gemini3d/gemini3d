@@ -181,17 +181,32 @@ pure function ETD_uncoupled(f,P,L,dt)
 real(wp), dimension(:,:,:), intent(in) :: f,P,L
 real(wp), intent(in) :: dt
 
-real(wp), dimension(size(f,1),size(f,2),size(f,3)) :: Ldt,expL
+real(wp) :: z,phi,term
+integer :: i,j,k,n
 
 real(wp), dimension(size(f,1),size(f,2),size(f,3)) :: ETD_uncoupled
 
-Ldt=L*dt
-expL=exp(-1.0_wp*Ldt)
-where (Ldt>1e-10_wp)
-  ETD_uncoupled=f*expL+P/L*(1-expL)    !fast but could be inaccurate in dynamic situations
-elsewhere
-  ETD_uncoupled=f+P*dt
-end where
+! phi_1(-z)=(1-exp(-z))/z.  Direct subtraction loses accuracy near zero;
+! dropping the loss below a threshold also discards legitimate dynamics.
+! The convergent series covers both signs and the exact zero-loss limit.
+do k=1,size(f,3)
+  do j=1,size(f,2)
+    do i=1,size(f,1)
+      z=L(i,j,k)*dt
+      if(abs(z)<0.01_wp) then
+        phi=1;term=1
+        do n=1,8
+          term=-term*z/real(n+1,wp)
+          phi=phi+term
+        enddo
+        ETD_uncoupled(i,j,k)=f(i,j,k)+(P(i,j,k)-L(i,j,k)*f(i,j,k))*dt*phi
+      else
+        phi=(1-exp(-z))/z
+        ETD_uncoupled(i,j,k)=f(i,j,k)*exp(-z)+P(i,j,k)*dt*phi
+      endif
+    enddo
+  enddo
+enddo
 
 end function ETD_uncoupled
 

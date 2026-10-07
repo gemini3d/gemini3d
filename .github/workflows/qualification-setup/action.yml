@@ -1,0 +1,32 @@
+name: Qualification prerequisites
+description: Install explicit native and pinned Python qualification prerequisites
+runs:
+  using: composite
+  steps:
+    - name: Install qualification prerequisites
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          gcc g++ gfortran ninja-build openmpi-bin libopenmpi-dev \
+          libhdf5-dev libopenblas-dev libscalapack-openmpi-dev zlib1g-dev \
+          python3 python3-venv
+        mkdir -p build/scratch build/evidence
+        echo "TMPDIR=$GITHUB_WORKSPACE/build/scratch" >> "$GITHUB_ENV"
+        python3 -m venv build/tooling
+        build/tooling/bin/python -m pip install -r docs/qualification/requirements.txt
+        echo "$GITHUB_WORKSPACE/build/tooling/bin" >> "$GITHUB_PATH"
+    - name: Bind qualification to the exact candidate
+      shell: bash
+      run: |
+        test "$(git rev-parse HEAD)" = "$CANDIDATE_COMMIT"
+        python3 - <<'PY'
+        import json, os, subprocess
+        from pathlib import Path
+        record = {key: os.environ[key] for key in
+                  ("CANDIDATE_COMMIT", "GITHUB_REPOSITORY", "GITHUB_RUN_ID",
+                   "GITHUB_RUN_ATTEMPT", "GITHUB_EVENT_NAME")}
+        record["source_commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+        record["source_tree"] = subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], text=True).strip()
+        Path("build/evidence/candidate.json").write_text(json.dumps(record, indent=2) + "\n")
+        PY
