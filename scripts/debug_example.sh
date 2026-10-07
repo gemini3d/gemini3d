@@ -2,6 +2,11 @@
 # this is to debug simulations e.g. from gemini3d/gemini-examples repo
 #
 # Usage: ./debug_example.sh <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]
+#
+# Example from gemini3d/ directory:
+#
+#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $HOME/gemci/varHWM
+
 
 [[ $# -lt 2 ]] && { echo "Usage: $0 <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]"; exit 1; }
 
