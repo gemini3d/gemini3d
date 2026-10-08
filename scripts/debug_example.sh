@@ -2,12 +2,19 @@
 # this is to debug simulations e.g. from gemini3d/gemini-examples repo
 #
 # Usage: ./debug_example.sh <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]
+# Pass --fresh among cmake_opts to configure and build even if gemini.bin exists.
 # Requires realpath and a non-Conda mpiexec on PATH.
 # Uses the first non-Conda mpiexec in PATH order.
 #
 # Example from gemini3d/ directory:
 #
-#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM
+#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM \
+#     -Dgemini3d_hwm14=true
+#
+# to use a local package within Gemini3D for development do like
+#
+#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM \
+#     -Dgemini3d_hwm14=true -DFETCHCONTENT_SOURCE_DIR_HWM14=../hwm14
 
 
 [[ $# -lt 2 ]] && { echo "Usage: $0 <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]"; exit 1; }
@@ -39,6 +46,14 @@ if [[ $# -ge 3 ]]; then
   cmake_opts="${@:3}"
 fi
 
+fresh=0
+for arg in "${@:3}"; do
+  if [[ "$arg" == --fresh ]]; then
+    fresh=1
+    break
+  fi
+done
+
 # if CMAKE_BUILD_TYPE not set in variable cmake_opts, default to Release
 if [[ ! "$cmake_opts" =~ -DCMAKE_BUILD_TYPE= ]]; then
   cmake_opts="-DCMAKE_BUILD_TYPE=Release $cmake_opts"
@@ -59,7 +74,7 @@ if [[ ! -f "$copied_config" ]] || ! diff -q -- "$config_nml_to_copy" "$copied_co
   \cp -v "$config_nml_to_copy" "$simulation_output_dir/" || { echo "Failed to copy '$config_nml_to_copy' to '$simulation_output_dir'"; exit 1; }
 fi
 
-if [[ ! -f "$builddir/gemini.bin" ]]; then
+if [[ ! -f "$builddir/gemini.bin" ]] || (( fresh )); then
 
 cmake=$(command -v cmake) || { echo "CMake not found or working" >&2; exit 1; }
 
