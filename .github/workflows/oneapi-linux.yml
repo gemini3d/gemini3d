@@ -15,6 +15,8 @@ on:
       - "docs/**"
       - "cmake/cray.cmake"
       - "**.md"
+      - "**.py"
+      - "**.sh"
   workflow_dispatch:
 
 # avoid wasted runs
