@@ -542,9 +542,9 @@ contains
           !  call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%nn(:,:,:,ineu))
           !end do
           !call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%Tn)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3)          
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1BG)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2BG)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3BG)          
         end if
       call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)
     else
@@ -559,9 +559,9 @@ contains
           !  call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%nn(:,:,:,ineu))
           !end do
           !call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%Tn)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2)
-          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3)          
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn1BG)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn2BG)
+          call enforce_parm_periodic(cfg%flagperiodic,x,intvars%atmos%vn3BG)          
         end if
         call neutral_aggregate(v2grid,v3grid,intvars%atmos,intvars%atmosperturb)    ! apply to variables in this program unit
         tneuBG=tneuBG+cfg%dtneuBG
