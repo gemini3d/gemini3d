@@ -50,10 +50,10 @@ jobs:
       run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
 
     - &pkg
-      uses: ./.github/workflows/composite-pkg
+      uses: ./.github/actions/composite-pkg
 
     - &linux-build
-      uses: ./.github/workflows/composite-unix
+      uses: ./.github/actions/composite-unix
 
   hwm-msis:
     timeout-minutes: 15
@@ -89,6 +89,6 @@ jobs:
 
     - name: Install CMake ${{ matrix.cmake_version }}
       timeout-minutes: 10
-      uses: ./.github/workflows/composite-cmake
+      uses: ./.github/actions/composite-cmake
 
     - run: $CMAKE --workflow --preset gmake

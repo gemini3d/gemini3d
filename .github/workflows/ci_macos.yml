@@ -47,9 +47,9 @@ jobs:
       uses: actions/checkout@v7
 
     - &pkg
-      uses: ./.github/workflows/composite-pkg
+      uses: ./.github/actions/composite-pkg
 
-    - uses: ./.github/workflows/composite-unix
+    - uses: ./.github/actions/composite-unix
 
   gnu_make:
     timeout-minutes: 15
