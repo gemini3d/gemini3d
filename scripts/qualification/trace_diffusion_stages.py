@@ -40,30 +40,14 @@ commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','PDE
 compile_tokens=None
 for line in commands.splitlines():
     tok=shlex.split(line)
-    if '-c' in tok and Path(tok[tok.index('-c')+1]).name in (
-            a.source.name, a.source.name+'-pp.f90'):
+    if '-fpreprocessed' in tok and '-c' in tok:
         compile_tokens=tok
 assert compile_tokens is not None
 cc=compile_tokens
 cc[cc.index('-c')+1]=str(source)
 cc[cc.index('-o')+1]=str(obj)
-intel=Path(cc[0]).name in ('ifx','ifort')
-flags=[]
-skip=False
-for t in cc:
-    if skip:
-        skip=False
-        continue
-    if t in ('-J','-module'):
-        skip=True
-    elif t!='-fpreprocessed' and not t.startswith(('-J','-module=')):
-        flags.append(t)
-cc=flags
-cc.append('-I'+str(a.build/'include'))
-if intel:
-    cc.extend(['-module',str(a.work)])
-else:
-    cc.extend(['-ffree-line-length-none','-J'+str(a.work)])
+cc=[t for t in cc if t!='-fpreprocessed' and not t.startswith('-J')]
+cc.extend(['-ffree-line-length-none','-I'+str(a.build/'include'),'-J'+str(a.work)])
 with (a.work/'compile.log').open('w') as f:subprocess.run(cc,cwd=a.build,stdout=f,stderr=subprocess.STDOUT,check=True)
 commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','qualification_continuity_floor'],text=True)
 tokens=shlex.split(commands.splitlines()[-1]);start=tokens.index('&&')+1;end=tokens.index('&&',start)
