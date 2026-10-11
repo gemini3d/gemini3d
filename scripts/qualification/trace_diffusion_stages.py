@@ -40,14 +40,18 @@ commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','PDE
 compile_tokens=None
 for line in commands.splitlines():
     tok=shlex.split(line)
-    if '-fpreprocessed' in tok and '-c' in tok:
+    if '-c' in tok and '-o' in tok and Path(tok[tok.index('-o')+1]).name=='PDEparabolic.f90.o':
         compile_tokens=tok
 assert compile_tokens is not None
 cc=compile_tokens
 cc[cc.index('-c')+1]=str(source)
 cc[cc.index('-o')+1]=str(obj)
 cc=[t for t in cc if t!='-fpreprocessed' and not t.startswith('-J')]
-cc.extend(['-ffree-line-length-none','-I'+str(a.build/'include'),'-J'+str(a.work)])
+if '-module' in cc:
+    cc[cc.index('-module')+1]=str(a.work)
+else:
+    cc.append('-J'+str(a.work))
+cc.append('-I'+str(a.build/'include'))
 with (a.work/'compile.log').open('w') as f:subprocess.run(cc,cwd=a.build,stdout=f,stderr=subprocess.STDOUT,check=True)
 commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','qualification_continuity_floor'],text=True)
 tokens=shlex.split(commands.splitlines()[-1]);start=tokens.index('&&')+1;end=tokens.index('&&',start)
