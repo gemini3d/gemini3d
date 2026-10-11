@@ -46,12 +46,23 @@ assert compile_tokens is not None
 cc=compile_tokens
 cc[cc.index('-c')+1]=str(source)
 cc[cc.index('-o')+1]=str(obj)
-cc=[t for t in cc if t!='-fpreprocessed' and not t.startswith('-J')]
-if '-module' in cc:
-    cc[cc.index('-module')+1]=str(a.work)
-else:
-    cc.append('-J'+str(a.work))
+intel=Path(cc[0]).name in ('ifx','ifort')
+flags=[]
+skip=False
+for t in cc:
+    if skip:
+        skip=False
+        continue
+    if t in ('-J','-module'):
+        skip=True
+    elif t!='-fpreprocessed' and not t.startswith(('-J','-module=')):
+        flags.append(t)
+cc=flags
 cc.append('-I'+str(a.build/'include'))
+if intel:
+    cc.extend(['-module',str(a.work)])
+else:
+    cc.extend(['-ffree-line-length-none','-J'+str(a.work)])
 with (a.work/'compile.log').open('w') as f:subprocess.run(cc,cwd=a.build,stdout=f,stderr=subprocess.STDOUT,check=True)
 commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','qualification_continuity_floor'],text=True)
 tokens=shlex.split(commands.splitlines()[-1]);start=tokens.index('&&')+1;end=tokens.index('&&',start)
