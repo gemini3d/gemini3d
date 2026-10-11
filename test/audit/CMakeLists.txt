@@ -183,7 +183,7 @@ if(Python_Interpreter_FOUND)
     ${PROJECT_SOURCE_DIR}/test/qualification/test_etd.py --exe $<TARGET_FILE:qualification_etd>
     --output ${CMAKE_CURRENT_BINARY_DIR}/etd-oracle.json)
   set_tests_properties(qualification:etd_oracle PROPERTIES LABELS "unit;qualification")
-  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory)
+  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory trace_diffusion_stages)
     add_test(NAME qualification:${probe} COMMAND ${Python_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/test/qualification/test_${probe}.py)
     set_tests_properties(qualification:${probe} PROPERTIES LABELS "unit;qualification")
@@ -234,7 +234,7 @@ foreach(audit_extension IN ITEMS numerics lifecycle contracts restart installati
 endforeach()
 
 add_executable(qualification_diffusion_scale ../qualification/diffusion_scale.f90)
-target_link_libraries(qualification_diffusion_scale PRIVATE PDEparabolic const)
+target_link_libraries(qualification_diffusion_scale PRIVATE PDEparabolic const MPI::MPI_Fortran)
 intel_fortran_main_linker(qualification_diffusion_scale)
 add_test(NAME qualification:diffusion_scale COMMAND qualification_diffusion_scale)
 set_tests_properties(qualification:diffusion_scale PROPERTIES LABELS "unit;qualification;numerics")
