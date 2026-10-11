@@ -176,7 +176,11 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
           sqrt(2*kB*Teff/mred)
     Psisj=exp(-Wsj**2)
     where (Wsj<0.1_wp)
-      Phisj=1
+      ! 3/W**3 * integral(0:W, x**2*exp(-x**2) dx). The constant
+      ! approximation produced a jump at W=0.1. This convergent expansion
+      ! retains the exact zero-drift limit without subtractive cancellation.
+      Phisj=1-Wsj**2*(3._wp/5-Wsj**2*(3._wp/14-Wsj**2*(1._wp/18 &
+        -Wsj**2*(1._wp/88-Wsj**2*(1._wp/520-Wsj**2/3600)))))
     elsewhere
       Phisj=3.0_wp/4*sqrt(pi)*erf(Wsj)/Wsj**3 - 3.0_wp/2/Wsj**2*Psisj
     end where

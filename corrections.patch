@@ -1,0 +1,2127 @@
+diff --git a/.github/workflows/composite-cmake/action.yml b/.github/actions/composite-cmake/action.yml
+similarity index 89%
+rename from .github/workflows/composite-cmake/action.yml
+rename to .github/actions/composite-cmake/action.yml
+index 51a51bf4..94629de7 100644
+--- a/.github/workflows/composite-cmake/action.yml
++++ b/.github/actions/composite-cmake/action.yml
+@@ -8,7 +8,7 @@ runs:
+   steps:
+   - name: Install CMake ${{ matrix.cmake_version }}
+     shell: bash
+-    run: cmake -Dversion=${{ matrix.cmake_version }} -P .github/workflows/composite-cmake/install_cmake.cmake
++    run: cmake -Dversion=${{ matrix.cmake_version }} -P .github/actions/composite-cmake/install_cmake.cmake
+ 
+   - name: CMake path
+     shell: bash
+diff --git a/.github/workflows/composite-cmake/install_cmake.cmake b/.github/actions/composite-cmake/install_cmake.cmake
+similarity index 100%
+rename from .github/workflows/composite-cmake/install_cmake.cmake
+rename to .github/actions/composite-cmake/install_cmake.cmake
+diff --git a/.github/workflows/composite-pkg/action.yml b/.github/actions/composite-pkg/action.yml
+similarity index 90%
+rename from .github/workflows/composite-pkg/action.yml
+rename to .github/actions/composite-pkg/action.yml
+index 131b0afd..af487251 100644
+--- a/.github/workflows/composite-pkg/action.yml
++++ b/.github/actions/composite-pkg/action.yml
+@@ -1,5 +1,5 @@
+-name: Install dependencies
+-description: Install dependencies for Linux and macOS
++name: Install Gemini3D build dependencies
++description: Install dependencies for Gemini3D build
+ 
+ runs:
+ 
+diff --git a/.github/workflows/composite-unix/action.yml b/.github/actions/composite-unix/action.yml
+similarity index 100%
+rename from .github/workflows/composite-unix/action.yml
+rename to .github/actions/composite-unix/action.yml
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index bf6393ce..dec14f31 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -53,10 +53,10 @@ jobs:
+       run: sudo apt install -y --no-install-recommends gcc-${{ matrix.gcc }} g++-${{ matrix.gcc }} gfortran-${{ matrix.gcc }}
+ 
+     - &pkg
+-      uses: ./.github/workflows/composite-pkg
++      uses: ./.github/actions/composite-pkg
+ 
+     - &linux-build
+-      uses: ./.github/workflows/composite-unix
++      uses: ./.github/actions/composite-unix
+ 
+   hwm-msis:
+     timeout-minutes: 15
+@@ -92,6 +92,6 @@ jobs:
+ 
+     - name: Install CMake ${{ matrix.cmake_version }}
+       timeout-minutes: 10
+-      uses: ./.github/workflows/composite-cmake
++      uses: ./.github/actions/composite-cmake
+ 
+     - run: $CMAKE --workflow --preset gmake
+diff --git a/.github/workflows/ci_macos.yml b/.github/workflows/ci_macos.yml
+index d90a3f69..d9885e83 100644
+--- a/.github/workflows/ci_macos.yml
++++ b/.github/workflows/ci_macos.yml
+@@ -49,9 +49,9 @@ jobs:
+       uses: actions/checkout@v7
+ 
+     - &pkg
+-      uses: ./.github/workflows/composite-pkg
++      uses: ./.github/actions/composite-pkg
+ 
+-    - uses: ./.github/workflows/composite-unix
++    - uses: ./.github/actions/composite-unix
+ 
+   gnu_make:
+     timeout-minutes: 15
+diff --git a/.github/workflows/oneapi-linux.yml b/.github/workflows/oneapi-linux.yml
+index e13b6db5..6927c55f 100644
+--- a/.github/workflows/oneapi-linux.yml
++++ b/.github/workflows/oneapi-linux.yml
+@@ -15,6 +15,8 @@ on:
+       - "docs/**"
+       - "cmake/cray.cmake"
+       - "**.md"
++      - "**.py"
++      - "**.sh"
+   workflow_dispatch:
+ 
+ permissions:
+diff --git a/.gitignore b/.gitignore
+index 053a0d2b..8f78e547 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,4 +1,5 @@
+ *.log.txt
++*.log
+ *.job
+ *.job.*
+ .DS_Store
+diff --git a/cmake/libraries.json b/cmake/libraries.json
+index 5aab1d56..e47f6d73 100644
+--- a/cmake/libraries.json
++++ b/cmake/libraries.json
+@@ -16,8 +16,8 @@
+   },
+   "hwm14": {
+     "stem": "https://github.com/gemini3d/hwm14/archive/",
+-    "archive": "1f289bfc101235cea1d8ebb58253dab736d4fd56.tar.gz",
+-    "sha256": "5b6c83425acc87febf01acc3dea6c313bd5bd4c0883640fba517d3a7bda04ed8"
++    "archive": "f8f07c9becb9b2b33c13f8df8907e89981999776.tar.gz",
++    "sha256": "a62f58c04a8ed8e58279df57e0be2719122064fe65b8398a2e3beac9c4b8041a"
+   },
+   "msis": {
+     "stem": "https://github.com/gemini3d/msis/archive/",
+diff --git a/cmake/mpi.cmake b/cmake/mpi.cmake
+index 0874005f..27da26be 100644
+--- a/cmake/mpi.cmake
++++ b/cmake/mpi.cmake
+@@ -38,8 +38,8 @@ check_source_compiles(Fortran
+ program test
+ use mpi_f08, only : mpi_comm_rank, mpi_real, mpi_comm_world, mpi_init, mpi_finalize
+ implicit none
+-call mpi_init
+-call mpi_finalize
++call mpi_init()
++call mpi_finalize()
+ end program
+ ]=]
+ MPI_Fortran_HAVE_F08_MODULE
+@@ -49,5 +49,10 @@ if(MPI_Fortran_HAVE_F08_MODULE)
+   message(CHECK_PASS "yes")
+ else()
+   message(CHECK_FAIL "no")
+-  message(WARNING "MPI-3 Fortran module mpi_f08 not found, builds may fail.")
++  if(gemini3d_fail_mpif08)
++    set(_mpif08_message_type FATAL_ERROR)
++  else()
++    set(_mpif08_message_type WARNING)
++  endif()
++  message(${_mpif08_message_type} "MPI-3 Fortran module mpi_f08 not found with the current MPI installation and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}, build would fail.")
+ endif()
+diff --git a/cmake/summary.cmake b/cmake/summary.cmake
+index 01df7ab8..35c41797 100644
+--- a/cmake/summary.cmake
++++ b/cmake/summary.cmake
+@@ -7,7 +7,6 @@ add_feature_info(HWM14 gemini3d_hwm14 "HWM14 neutral winds model")
+ add_feature_info(MSIS2 gemini3d_msis2 "enable MSIS 2.x neutral atmosphere model")
+ 
+ add_feature_info(PyGemini gemini3d_python "simulation generation, HPC script generator and plotting")
+-add_feature_info(MatGemini gemini3d_matlab "checks not as extensive as Python, and slow")
+ 
+ # print to screen
+ feature_summary(WHAT ENABLED_FEATURES DISABLED_FEATURES)
+diff --git a/docs/qualification/ACCOUNTING_CONTINUATION_REVIEW.md b/docs/qualification/ACCOUNTING_CONTINUATION_REVIEW.md
+new file mode 100644
+index 00000000..1794d1ec
+--- /dev/null
++++ b/docs/qualification/ACCOUNTING_CONTINUATION_REVIEW.md
+@@ -0,0 +1,26 @@
++# Qualification review continuation, 10 October 2026
++
++The existing acceptance budgets, native comparator, and reference archives remain
++unchanged. This work adds evidence checks and optional diagnostics. No scientific
++gate is closed by these component changes.
++
++Deleting the same middle time step from every native ledger previously left all
++four checkers green. The checkers now require contiguous float64 clocks, a zero
++start, and the final `tdur` from the retained input configuration. Cross-ledger
++coverage remains required. Clock comparisons allow only 64 float64 ULPs for
++clock accumulation; no mass, charge, transport, source, or energy budget changes.
++
++The temperature conversion after compression enforces a 100 K lower floor but
++previously recorded no addition for this stage. Optional diagnostics now record
++stage 3, using actual species density for physical internal-energy capacity.
++The source checker requires all seven species at each of the three standard
++energy floor stages. A native activation oracle checks a known 50-to-100 K
++addition over 183 m3, excludes a null cell and ghosts, and compares the complete
++temperature/internal-energy arrays with diagnostics enabled and disabled.
++
++This does not complete R04. Individual chemistry/collision channels, coupled
++kinetic/internal-energy exchanges, density/velocity cleanup and conversion
++effects, independently measured conductive boundary power, and full coupled
++space/time refinement remain distinct obligations. Endpoint reservoir changes
++are not reclassified as conductive flux. Numerical regression does not supply
++R01 maintainer acceptance or R07 independent matched-event physics validation.
+diff --git a/options.cmake b/options.cmake
+index 0d57cc28..599d52bd 100644
+--- a/options.cmake
++++ b/options.cmake
+@@ -20,6 +20,10 @@ endif()
+ 
+ option(gemini3d_test_simulations "register required reference simulations (OFF is unit-only, not release verification)" ON)
+ 
++# The frozen reference profile remains the default. This switch selects the
++# proposed nonlinear time-centering update for the standard energy path.
++option(gemini3d_midpoint_conduction "use experimental midpoint conductivity in standard TRBDF2 energy diffusion" OFF)
++
+ if(gemini3d_realbits EQUAL 32)
+   message(VERBOSE " 32-bit real precision")
+   set(gemini3d_arith s)
+@@ -39,6 +43,8 @@ option(gemini3d_matlab "Matlab-based self-checks")
+ 
+ option(gemini3d_msis2 "enable MSIS2 neutral atmosphere model (must specify in config.nml as well)" on)
+ 
++option(gemini3d_fail_mpif08 "Fail the build if MPI-3 Fortran module mpi_f08 is not found" ON)
++
+ # append .debug to debug libraries, because the computation speed penalty is so great
+ set(CMAKE_DEBUG_POSTFIX .debug)
+ 
+diff --git a/scripts/debug_example.sh b/scripts/debug_example.sh
+new file mode 100755
+index 00000000..d710b3d5
+--- /dev/null
++++ b/scripts/debug_example.sh
+@@ -0,0 +1,124 @@
++#!/bin/bash
++# this is to debug simulations e.g. from gemini3d/gemini-examples repo
++#
++# Usage: ./debug_example.sh <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]
++# Pass --fresh among cmake_opts to configure and build even if gemini.bin exists.
++# Requires realpath and a non-Conda mpiexec on PATH.
++# Uses the first non-Conda mpiexec in PATH order.
++#
++# Example from gemini3d/ directory:
++#
++#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM \
++#     -Dgemini3d_hwm14=true
++#
++# to use a local package within Gemini3D for development do like
++#
++#   scripts/debug_example.sh ../gemini-examples/init/CI-staging/varHWM/eq/config.nml $TMPDIR/varHWM \
++#     -Dgemini3d_hwm14=true -DFETCHCONTENT_SOURCE_DIR_HWM14=../hwm14
++
++
++[[ $# -lt 2 ]] && { echo "Usage: $0 <config_nml_to_copy> <simulation_output_dir> [cmake_opts...]"; exit 1; }
++
++mpiexec=
++while IFS= read -r mpi_candidate; do
++  mpi_candidate=$(realpath "$mpi_candidate") ||
++    { echo "Cannot resolve mpiexec with realpath" >&2; exit 1; }
++  mpi_dir=$(dirname "$mpi_candidate")
++
++  # Conda environments have conda-meta, even when they are not activated.
++  while [[ "$mpi_dir" != / && ! -d "$mpi_dir/conda-meta" ]]; do
++    mpi_dir=$(dirname "$mpi_dir")
++  done
++  if [[ "$mpi_dir" != / ]]; then
++    echo "Skipping Conda mpiexec: $mpi_candidate" >&2
++    continue
++  fi
++
++  mpiexec=$mpi_candidate
++  break
++done < <(type -aP mpiexec)
++
++[[ -n "$mpiexec" ]] || { echo "No non-Conda mpiexec found on PATH" >&2; exit 1; }
++
++config_nml_to_copy=$1
++simulation_output_dir=$2
++if [[ $# -ge 3 ]]; then
++  cmake_opts="${@:3}"
++fi
++
++fresh=0
++for arg in "${@:3}"; do
++  if [[ "$arg" == --fresh ]]; then
++    fresh=1
++    break
++  fi
++done
++
++# if CMAKE_BUILD_TYPE not set in variable cmake_opts, default to Release
++if [[ ! "$cmake_opts" =~ -DCMAKE_BUILD_TYPE= ]]; then
++  cmake_opts="-DCMAKE_BUILD_TYPE=Release $cmake_opts"
++fi
++
++[[ -f "$config_nml_to_copy" ]] || { echo "Config NML file '$config_nml_to_copy' does not exist"; exit 1; }
++
++if [[ ! -d "$simulation_output_dir" ]]; then
++  mkdir -p "$simulation_output_dir" || { echo "Failed to create simulation output directory '$simulation_output_dir'"; exit 1; }
++fi
++
++this_script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
++
++builddir="$simulation_output_dir/build"
++
++copied_config="$simulation_output_dir/$(basename "$config_nml_to_copy")"
++if [[ ! -f "$copied_config" ]] || ! diff -q -- "$config_nml_to_copy" "$copied_config" >/dev/null; then
++  \cp -v "$config_nml_to_copy" "$simulation_output_dir/" || { echo "Failed to copy '$config_nml_to_copy' to '$simulation_output_dir'"; exit 1; }
++fi
++
++if [[ ! -f "$builddir/gemini.bin" ]] || (( fresh )); then
++
++cmake=$(command -v cmake) || { echo "CMake not found or working" >&2; exit 1; }
++
++$cmake -S "$this_script_dir/.." -B "$builddir" $cmake_opts ||
++  { echo "CMake configuration failed" >&2; exit 1; }
++
++$cmake --build "$builddir" ||
++  { echo "CMake build failed" >&2; exit 1; }
++
++fi
++
++case $OSTYPE in
++  darwin*)
++    Ncpu=$(sysctl -n hw.physicalcpu)
++    ;;
++  linux*)
++    Ncpu=$(lscpu -p=CORE,SOCKET |
++    awk -F, '!/^#/ { cores[$1 "," $2]=1 }
++            END { for (core in cores) n++; print n }')
++    ;;
++  *)
++    echo "Cannot determine the number of CPUs on: $OSTYPE; using 1" >&2
++    Ncpu=1
++    ;;
++esac
++
++[[ $Ncpu =~ ^[1-9][0-9]*$ ]] || {
++  echo "Failed to determine physical CPU count" >&2
++  exit 1
++}
++
++if [[ ! -f $simulation_output_dir/inputs/initial_conditions.h5 ]]; then
++  py3=$(command -v python3) ||
++    { echo "Python not found" >&2; exit 1; }
++
++  "$py3" -m gemini3d --help ||
++    { echo "PyGemini not available - get it from https://github.com/gemini3d/pygemini" >&2; exit 1; }
++
++  echo "Setting up simulation inputs in '$simulation_output_dir'..."
++
++  GEMINI_ROOT="$builddir" "$py3" -m gemini3d.model "$copied_config" "$simulation_output_dir" ||
++    { echo "Failed to set up simulation inputs in '$simulation_output_dir'" >&2; exit 1; }
++fi
++
++echo "running simulation with $Ncpu MPI workers..."
++
++"$mpiexec" -np "$Ncpu" -wdir "$builddir" "$builddir/gemini.bin" "$simulation_output_dir"
+diff --git a/scripts/qualification/check_energy_operators.py b/scripts/qualification/check_energy_operators.py
+index 4561adcb..6b02f224 100644
+--- a/scripts/qualification/check_energy_operators.py
++++ b/scripts/qualification/check_energy_operators.py
+@@ -10,7 +10,7 @@ import argparse
+ import json
+ import math
+ from pathlib import Path
+-from check_sources import rows
++from check_sources import rows,check_clock_inventory
+ 
+ EXPECTED={(stage,s) for stage in (1,2) for s in range(1,8)}
+ 
+@@ -49,6 +49,7 @@ def check(directory,ranks,budget=1e-11):
+         clocks=these
+         continuity={(r['t'],r['dt']) for r in rows(directory/f'continuity-r{rank:08d}.csv')}
+         if these!=continuity:raise ValueError('Energy/continuity step inventory differs')
++        check_clock_inventory(directory,these)
+     return dict(schema='gemini.energy.operators.1',passed=max(worst,row_residual)<=budget,
+         ranks=ranks,rows=count,steps=len(clocks),budget=budget,max_normalized_residual=worst,
+         max_reported_residual_inconsistency=row_residual,integrated_channels_J=totals,
+diff --git a/scripts/qualification/check_sources.py b/scripts/qualification/check_sources.py
+index e6d480b4..dd07c522 100644
+--- a/scripts/qualification/check_sources.py
++++ b/scripts/qualification/check_sources.py
+@@ -8,11 +8,43 @@ import argparse
+ import csv
+ import json
+ import math
++import re
+ from pathlib import Path
+ 
+ EXPECTED={(q,s) for q in (1,2,3) for s in range(1,8 if q==3 else 7)}
+ 
+ 
++def check_clock_inventory(directory,clocks):
++    """Require contiguous whole-run evidence, with float64 clock roundoff only.
++
++    Cross-ledger agreement cannot reveal a step deleted from every file. The
++    admitted whole-run profile starts at zero. Its immutable configuration
++    supplies the final duration when present; synthetic unit fixtures may omit
++    it. This check changes no scientific or numerical residual budget.
++    """
++    ordered=sorted(clocks)
++    if not ordered:raise ValueError('No numerical ledger clocks')
++    for t,dt in ordered:
++        if not all(math.isfinite(v) for v in (t,dt)) or t<0 or dt<=0 or t+dt<=t:
++            raise ValueError('Invalid numerical ledger clock')
++    def same(a,b):
++        return abs(a-b)<=64*math.ulp(max(1.,abs(a),abs(b)))
++    if not same(ordered[0][0],0.):
++        raise ValueError('Numerical ledger does not begin at zero')
++    for (t,dt),(next_t,_) in zip(ordered,ordered[1:]):
++        if not same(t+dt,next_t):
++            raise ValueError('Noncontiguous numerical ledger clocks')
++    cfg=Path(directory)/'inputs/config.nml'
++    if cfg.is_file():
++        values=re.findall(r'(?im)^[ \t]*tdur[ \t]*=([^!\r\n]*)',cfg.read_text())
++        if len(values)!=1:raise ValueError('Exactly one declared duration required')
++        try:stop=float(values[0].strip().removesuffix(',').strip().replace('D','e').replace('d','e'))
++        except ValueError as e:raise ValueError('Invalid declared duration') from e
++        if not math.isfinite(stop) or stop<=0:raise ValueError('Invalid declared duration')
++        if not same(sum(ordered[-1]),stop):
++            raise ValueError('Numerical ledger does not reach declared duration')
++
++
+ def rows(path):
+     with path.open() as stream:
+         for raw in csv.DictReader(stream):
+@@ -51,6 +83,7 @@ def check(directory,ranks,budget=1e-11):
+         common=clocks
+         continuity={(r['t'],r['dt']) for r in rows(directory/f'continuity-r{rank:08d}.csv')}
+         if clocks!=continuity:raise ValueError('Source/continuity steps do not match')
++        check_clock_inventory(directory,clocks)
+         seen=set()
+         for row in rows(directory/f'temperature-floor-r{rank:08d}.csv'):
+             clock=(row['t'],row['dt']);key=(*clock,int(row['stage']),int(row['species']))
+@@ -58,7 +91,7 @@ def check(directory,ranks,budget=1e-11):
+             if row['energy_added_J']<0:raise ValueError('Negative energy attributed to a lower floor')
+             seen.add(key);label=f"{int(row['stage'])}:{int(row['species'])}"
+             floors[label]=floors.get(label,0.)+row['energy_added_J'];floor_rows+=1
+-        expected={(*clock,stage,s) for clock in clocks for stage in (1,2) for s in range(1,8)}
++        expected={(*clock,stage,s) for clock in clocks for stage in (1,2,3) for s in range(1,8)}
+         if seen!=expected:raise ValueError('Missing standard-energy temperature-floor stages')
+     return dict(schema='gemini.native.sources.1',passed=max(worst,worst_state)<=budget,
+                 ranks=ranks,rows=count,steps=len(common),budget=budget,max_normalized_residual=worst,
+diff --git a/scripts/qualification/check_transport.py b/scripts/qualification/check_transport.py
+index 045a343d..e83d0ad7 100644
+--- a/scripts/qualification/check_transport.py
++++ b/scripts/qualification/check_transport.py
+@@ -3,15 +3,19 @@
+ Quantity: 1 species number, 2 parallel momentum (covariant weighting in curved
+ perpendicular sweeps), 3 internal energy. Null cells and ghosts are excluded.
+ min_face/max_face include MPI subdomain faces; they are not global boundaries.
++Requires the independently recorded continuity ledger for the step inventory.
+ """
+ import argparse
+ import csv
+ import json
+ from pathlib import Path
+ import math
++from check_sources import rows as ledger_rows,check_clock_inventory
+ 
+ 
+ def check(directory,budget=1e-11,layout=None):
++    if not math.isfinite(budget) or budget<=0:
++        raise ValueError('Positive finite transport budget required')
+     files=sorted(directory.glob('transport-r*.csv'))
+     if not files:raise ValueError('No native transport evidence')
+     count=0;worst=0;coverage=set();worst_row=None;by_rank={}
+@@ -24,10 +28,13 @@ def check(directory,budget=1e-11,layout=None):
+                 r={k:float(v) for k,v in row.items()}
+                 if not all(math.isfinite(v) for v in r.values()):raise ValueError('Nonfinite budget row')
+                 if r['dt']<=0 or r['scale']<=0:raise ValueError('Nonpositive time/scale')
++                if r['scale']<(1-1e-12)*max(abs(r['before']),abs(r['after'])):
++                    raise ValueError('Invalid transport scale')
+                 if any(r[k]!=int(r[k]) for k in ('quantity','species','axis')):raise ValueError('Noninteger stage identifier')
+                 scale=max(r['scale'],abs(r['outward']),2.2250738585072014e-308)
+                 # Recompute using independently recorded state change and actual face transport.
+-                residual=abs(r['delta']+r['outward'])/scale
++                residual=max(abs(r['delta']+r['outward']),
++                             abs(r['after']-r['before']-r['delta']))/scale
+                 if residual>worst:worst=residual;worst_row={'file':path.name,'t':r['t'],'quantity':r['quantity'],'species':r['species'],'axis':r['axis']}
+                 key=(r['t'],r['dt'],int(r['quantity']),int(r['species']),int(r['axis']))
+                 if key in by_rank[rank]:raise ValueError('Duplicate native transport stage')
+@@ -36,8 +43,14 @@ def check(directory,budget=1e-11,layout=None):
+                 count+=1
+     expected={(q,s,a) for q in (1,2,3) for s in range(1,8 if q==3 else 7) for a in (1,2,3)}
+     complete=True
+-    for data in by_rank.values():
++    for rank,data in by_rank.items():
+         clocks={key[:2] for key in data}
++        # A whole missing clock leaves each surviving clock internally complete.
++        # Use the separately recorded whole-step ledger as the clock inventory.
++        continuity={(r['t'],r['dt']) for r in ledger_rows(directory/f'continuity-r{rank:08d}.csv')}
++        if clocks!=continuity:
++            raise ValueError('Transport/continuity step inventory differs')
++        check_clock_inventory(directory,clocks)
+         complete=complete and bool(clocks) and all({key[2:] for key in data if key[:2]==clock}==expected for clock in clocks)
+     paired=None;global_worst=None;interfaces=0
+     if layout is not None:
+@@ -90,6 +103,7 @@ def check_continuity(directory,budget=1e-11,charge_budget=1e-12):
+                 coverage.add(species);cleanup[str(species)]+=r['cleanup'];rows+=1
+     complete=set(by_rank)==set(range(len(files))) and all(bool(clocks) and all(s==set(range(1,7)) for s in clocks.values()) for clocks in by_rank.values())
+     if complete:complete=all(set(clocks)==set(by_rank[0]) for clocks in by_rank.values())
++    for clocks in by_rank.values():check_clock_inventory(directory,set(clocks))
+     return dict(schema='gemini.native.continuity.1',passed=rows>0 and complete and coverage==set(range(1,7)) and worst<=budget and charge<=charge_budget,
+         rank_files=len(files),rows=rows,per_step_coverage_complete=complete,max_normalized_residual=worst,max_charge_fraction=charge,
+         budget=budget,charge_budget=charge_budget,total_cleanup_number_by_species=cleanup,
+diff --git a/scripts/qualification/run_physics_native.py b/scripts/qualification/run_physics_native.py
+new file mode 100644
+index 00000000..2891591f
+--- /dev/null
++++ b/scripts/qualification/run_physics_native.py
+@@ -0,0 +1,65 @@
++"""Compile probes against unmodified GEMINI objects, preserving execution receipts."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import shlex
++import subprocess
++
++p = argparse.ArgumentParser()
++p.add_argument('--build', type=Path, required=True)
++p.add_argument('--source', type=Path, required=True)
++p.add_argument('--work', type=Path, required=True)
++a = p.parse_args()
++a.build = a.build.absolute()
++a.source = a.source.absolute()
++a.work = a.work.absolute()
++a.work.mkdir(parents=True, exist_ok=False)
++obj = a.work / 'physics_native.o'
++exe = a.work / 'physics_native'
++compile_command = [os.environ['FC'], '-g', '-fcheck=all', '-ffree-line-length-none',
++                   '-I'+str(a.build/'include'), '-c', str(a.source), '-o', str(obj)]
++with (a.work/'compile.log').open('w') as f:
++    r = subprocess.run(compile_command, stdout=f, stderr=subprocess.STDOUT)
++if r.returncode:
++    raise SystemExit(f'Compile failed; see {a.work}/compile.log')
++commands = subprocess.check_output(['ninja', '-C', str(a.build), '-t', 'commands',
++                                    'qualification_continuity_floor'], text=True)
++tokens = shlex.split(commands.splitlines()[-1])
++start = tokens.index('&&')+1
++end = tokens.index('&&', start)
++command = tokens[start:end]
++assert sum(t.endswith('continuity_floor.f90.o') for t in command) == 1
++command = [str(obj) if t.endswith('continuity_floor.f90.o') else t for t in command]
++command[command.index('-o')+1] = str(exe)
++command = [t for t in command if not t.startswith('-Wl,--dependency-file=')]
++with (a.work/'link.log').open('w') as f:
++    r = subprocess.run(command, cwd=a.build, stdout=f, stderr=subprocess.STDOUT)
++if r.returncode:
++    raise SystemExit(f'Link failed; see {a.work}/link.log')
++r = subprocess.run([str(exe), str(a.work)], env=dict(os.environ, GEMINI_NUMERICAL_AUDIT='0'),
++                   capture_output=True, text=True)
++(a.work/'native.log').write_text(r.stdout+r.stderr)
++receipt = {
++    'schema': 'gemini.physics.native.receipt.1',
++    'native_returncode': r.returncode,
++    'probe_source_sha256': hashlib.sha256(a.source.read_bytes()).hexdigest(),
++    'probe_executable_sha256': hashlib.sha256(exe.read_bytes()).hexdigest(),
++    'compile_command': compile_command,
++    'link_command': command,
++    'objects': [],
++    'files': []
++}
++for t in command:
++    q = a.build/t
++    if t.endswith('.o') or t.endswith('.a') or '.so' in t:
++        if q.is_file():
++            receipt['objects'].append({'file': str(q), 'sha256': hashlib.sha256(q.read_bytes()).hexdigest()})
++for q in sorted(a.work.glob('*.csv')):
++    receipt['files'].append({'file':q.name, 'bytes':q.stat().st_size,
++                            'sha256':hashlib.sha256(q.read_bytes()).hexdigest()})
++(a.work/'execution.json').write_text(json.dumps(receipt, indent=2)+'\n')
++print(json.dumps({'native_returncode':r.returncode, 'output_files':len(receipt['files']),
++                  'work': str(a.work)}))
++raise SystemExit(r.returncode)
+diff --git a/scripts/qualification/trace_diffusion_stages.py b/scripts/qualification/trace_diffusion_stages.py
+new file mode 100644
+index 00000000..e03e0c18
+--- /dev/null
++++ b/scripts/qualification/trace_diffusion_stages.py
+@@ -0,0 +1,78 @@
++"""Build an observational TR-stage trace copy without changing the native algorithm."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import shlex
++import subprocess
++
++p=argparse.ArgumentParser()
++p.add_argument('--source',type=Path,required=True)
++p.add_argument('--build',type=Path,required=True)
++p.add_argument('--probe',type=Path,required=True)
++p.add_argument('--work',type=Path,required=True)
++a=p.parse_args();a.build=a.build.absolute();a.work=a.work.absolute();a.work.mkdir(parents=True,exist_ok=False)
++original=a.source.read_text()
++needle="call check_solver_info(info,'TRBDF21D BDF2 stage')"
++assert original.count(needle)==1
++modified=original.replace(needle,needle+'\ncall trace_stage(Ts,TR,TRBDF21D)')
++trace='''
++subroutine trace_stage(old,tr,new)
++real(wp),intent(in)::old(:),tr(:),new(:)
++integer::u,i,stat
++character(4096)::path
++call get_environment_variable('GEMINI_PHYSICAL_TR_TRACE',path,status=stat)
++if(stat/=0.or.len_trim(path)==0)return
++open(newunit=u,file=trim(path),status='unknown',position='append')
++do i=1,size(old)
++  write(u,'(i0,3(",",es25.17))')i,old(i),tr(i),new(i)
++enddo
++close(u)
++end subroutine
++'''
++assert modified.count('end module PDEparabolic')==1
++modified=modified.replace('end module PDEparabolic',trace+'\nend module PDEparabolic')
++source=a.work/'PDEparabolic_trace.f90';source.write_text(modified)
++obj=a.work/'PDEparabolic_trace.o';exe=a.work/'physics_trace'
++# Use the compiler's actual native flags, including Debug bounds checking.
++commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','PDEparabolic'],text=True)
++compile_tokens=None
++for line in commands.splitlines():
++    tok=shlex.split(line)
++    if '-fpreprocessed' in tok and '-c' in tok:
++        compile_tokens=tok
++assert compile_tokens is not None
++cc=compile_tokens
++cc[cc.index('-c')+1]=str(source)
++cc[cc.index('-o')+1]=str(obj)
++cc=[t for t in cc if t!='-fpreprocessed' and not t.startswith('-J')]
++cc.extend(['-ffree-line-length-none','-I'+str(a.build/'include'),'-J'+str(a.work)])
++with (a.work/'compile.log').open('w') as f:subprocess.run(cc,cwd=a.build,stdout=f,stderr=subprocess.STDOUT,check=True)
++commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','qualification_continuity_floor'],text=True)
++tokens=shlex.split(commands.splitlines()[-1]);start=tokens.index('&&')+1;end=tokens.index('&&',start)
++cmd=tokens[start:end]
++libraries=[t for t in cmd if Path(t).name in ('libgemini3d.a','libgemini3d.debug.a')]
++assert len(libraries)==1
++library=libraries[0]
++cmd=[str(a.probe.absolute()) if t.endswith('continuity_floor.f90.o') else t for t in cmd]
++cmd.insert(cmd.index(library),str(obj))
++cmd[cmd.index('-o')+1]=str(exe);cmd=[t for t in cmd if not t.startswith('-Wl,--dependency-file=')]
++with (a.work/'link.log').open('w') as f:subprocess.run(cmd,cwd=a.build,stdout=f,stderr=subprocess.STDOUT,check=True)
++tracepath=a.work/'tr-stages.csv'
++r=subprocess.run([str(exe),str(a.work)],capture_output=True,text=True,env=dict(os.environ,GEMINI_PHYSICAL_TR_TRACE=str(tracepath)))
++(a.work/'native.log').write_text(r.stdout+r.stderr)
++baseline=a.probe.parent
++comparisons={}
++for q in sorted(baseline.glob('*.csv')):
++    copy=a.work/q.name
++    comparisons[q.name]={'bitwise_equal':q.read_bytes()==copy.read_bytes(),
++                         'sha256':hashlib.sha256(copy.read_bytes()).hexdigest()}
++result={'returncode':r.returncode,'observational_copy':True,
++        'original_source_sha256':hashlib.sha256(original.encode()).hexdigest(),
++        'traced_source_sha256':hashlib.sha256(modified.encode()).hexdigest(),
++        'compile_command':cc,'link_command':cmd,'comparisons':comparisons,
++        'all_unmodified_outputs_bitwise_equal':all(v['bitwise_equal'] for v in comparisons.values())}
++(a.work/'trace-receipt.json').write_text(json.dumps(result,indent=2)+'\n')
++print(json.dumps({k:v for k,v in result.items() if k in ('returncode','all_unmodified_outputs_bitwise_equal')}))
++if r.returncode or not result['all_unmodified_outputs_bitwise_equal']:raise SystemExit(1)
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index af2a77a0..3268bc81 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -17,6 +17,16 @@ add_subdirectory(temporal)
+ add_library(collision OBJECT collisions/collisions.f90)
+ target_link_libraries(collision PRIVATE const gemini3d_config meshobj)
+ 
++if(gemini3d_midpoint_conduction)
++  set(midpoint_conduction_fortran ".true.")
++else()
++  set(midpoint_conduction_fortran ".false.")
++endif()
++configure_file(numerical/diffusion/diffusion_features.in.f90 diffusion_features.f90 @ONLY)
++add_library(nonlinear_diffusion OBJECT numerical/diffusion/nonlinear_diffusion.f90
++  ${CMAKE_CURRENT_BINARY_DIR}/diffusion_features.f90)
++target_link_libraries(nonlinear_diffusion PRIVATE collision const diffusion meshobj)
++
+ # --- other libs
+ 
+ add_subdirectory(neutral)
+@@ -29,7 +39,7 @@ add_library(multifluid OBJECT multifluid/multifluid.f90
+ $<TARGET_OBJECTS:grid>
+ )
+ target_link_libraries(multifluid PRIVATE
+-advec transport_audit calculus collision const diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
++advec transport_audit calculus collision const diffusion nonlinear_diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
+ 
+ add_library(gemini_work_def OBJECT intvars/gemini_work_def.f90)
+ target_link_libraries(gemini_work_def PRIVATE const inputdata neutral precipdata efielddata
+@@ -75,7 +85,7 @@ advec transport_audit
+ calculus gemini3d_config
+ const
+ collision
+-diffusion fang interp
++diffusion nonlinear_diffusion pair_exchange fang interp
+ ionization
+ inputdata precipdata efielddata solfluxdata
+ gemini3d_sysinfo
+@@ -103,7 +113,7 @@ advec_mpi
+ calculus gemini3d_config
+ const
+ collision
+-diffusion fang interp
++diffusion nonlinear_diffusion pair_exchange fang interp
+ ionization
+ ionization_mpi
+ inputdata precipdata efielddata solfluxdata
+diff --git a/src/collisions/collisions.f90 b/src/collisions/collisions.f90
+index 4a334b5e..6784ecbf 100644
+--- a/src/collisions/collisions.f90
++++ b/src/collisions/collisions.f90
+@@ -176,7 +176,11 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
+           sqrt(2*kB*Teff/mred)
+     Psisj=exp(-Wsj**2)
+     where (Wsj<0.1_wp)
+-      Phisj=1
++      ! 3/W**3 * integral(0:W, x**2*exp(-x**2) dx). The constant
++      ! approximation produced a jump at W=0.1. This convergent expansion
++      ! retains the exact zero-drift limit without subtractive cancellation.
++      Phisj=1-Wsj**2*(3._wp/5-Wsj**2*(3._wp/14-Wsj**2*(1._wp/18 &
++        -Wsj**2*(1._wp/88-Wsj**2*(1._wp/520-Wsj**2/3600)))))
+     elsewhere
+       Phisj=3.0_wp/4*sqrt(pi)*erf(Wsj)/Wsj**3 - 3.0_wp/2/Wsj**2*Psisj
+     end where
+diff --git a/src/libgemini_mpi.f90 b/src/libgemini_mpi.f90
+index d6084a18..66b59df8 100644
+--- a/src/libgemini_mpi.f90
++++ b/src/libgemini_mpi.f90
+@@ -576,7 +576,7 @@ contains
+       !> get neutral background
+ !      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then
+       if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then
+-        print*, 'Updating neutrals...'
++        !print*, 'Updating neutrals...'
+         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
+         !call cpu_time(tstart)
+         if (cfg%flagneuBG) then
+diff --git a/src/multifluid/multifluid.f90 b/src/multifluid/multifluid.f90
+index 66df3526..df2f47c5 100644
+--- a/src/multifluid/multifluid.f90
++++ b/src/multifluid/multifluid.f90
+@@ -24,6 +24,8 @@ use calculus, only: etd_uncoupled, div3d
+ use collisions, only:  thermal_conduct, thermal_conduct_new
+ use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
+ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
++use nonlinear_diffusion, only: midpoint_TRBDF23D
++use diffusion_features, only: midpoint_conduction_enabled
+ use grid, only: lx1, lx2, lx3, gridflag
+ use meshobj, only: curvmesh
+ use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
+@@ -274,11 +276,18 @@ end subroutine source_neut
+ subroutine rhoe2T(ns,rhoes,Ts)
+   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhoes,Ts
+   integer :: isp,lsp
++  integer :: n1,n2,n3
++  real(wp), allocatable :: before(:,:,:)
+ 
+   lsp=size(rhoes,4)
++  n1=size(Ts,1)-4;n2=size(Ts,2)-4;n3=size(Ts,3)-4
++  if(audit_transport_enabled) allocate(before(n1,n2,n3))
+   do isp=1,lsp
+     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
++    if(audit_transport_enabled) before=Ts(1:n1,1:n2,1:n3,isp)
+     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
++    if(audit_transport_enabled) call audit_temperature_floor(3,isp,before,Ts(1:n1,1:n2,1:n3,isp), &
++      ns(1:n1,1:n2,1:n3,isp)*kB/(gammas(isp)-1))
+     !! convert internal specific energy density back into temperature
+   end do
+ end subroutine rhoe2T
+@@ -455,7 +464,11 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
+       case (1)
+         param=backEuler3D(param,A,B,C,D,E,dt,x,increments)    !1st order method
+       case (2)
+-        param=TRBDF23D(param,A,B,C,D,E,dt,x,increments)       !2nd order method
++        if(midpoint_conduction_enabled) then
++          param=midpoint_TRBDF23D(isp,x,ns(:,:,:,isp),Ts(:,:,:,isp),nn,J1,Tn,Teinf,dt,increments)
++        else
++          param=TRBDF23D(param,A,B,C,D,E,dt,x,increments)
++        endif
+       case default
+         print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
+         error stop
+diff --git a/src/numerical/diffusion/PDEparabolic.f90 b/src/numerical/diffusion/PDEparabolic.f90
+index 345e8630..5e317088 100644
+--- a/src/numerical/diffusion/PDEparabolic.f90
++++ b/src/numerical/diffusion/PDEparabolic.f90
+@@ -170,6 +170,8 @@ if (present(Tsmax_mid)) TR(lx1)=Tsmax_mid
+ !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
+ 
+ !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
++call eliminate_dirichlet_columns(M,TR,BCtype)
++call scale_interior_rows(M,TR,dt/2)
+ call gbsv(M,TR,kl=2,info=info)
+ call check_solver_info(info,'TRBDF21D TR stage')
+ 
+@@ -259,6 +261,8 @@ end if
+ !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
+ 
+ !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
++call eliminate_dirichlet_columns(M,TRBDF21D,BCtype)
++call scale_interior_rows(M,TRBDF21D,dt/3)
+ call gbsv(M,TRBDF21D,kl=2,info=info)
+ call check_solver_info(info,'TRBDF21D BDF2 stage')
+ 
+@@ -392,6 +396,8 @@ end if
+ 
+ !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
+ !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
++call eliminate_dirichlet_columns(M,backEuler1D,BCtype)
++call scale_interior_rows(M,backEuler1D,dt)
+ call gbsv(M,backEuler1D,kl=2,info=info)
+ call check_solver_info(info,'backEuler1D')
+ 
+@@ -435,4 +441,43 @@ pure function parabolic_terms(T,A,B,C,D,E,dx,dxi) result(terms)
+   enddo
+ end function parabolic_terms
+ 
++! Keep the algebraic endpoint rows at unit scale while bringing each interior
++! stage equation to dimensionless time. SI diffusion coefficients at low
++! density can otherwise dwarf the endpoint rows and lose prescribed values
++! through banded-LU pivoting. The equation and the method are unchanged.
++! Move known Dirichlet values into the interior RHS before pivoting. This
++! decouples endpoint rows from the stiff interior and preserves prescribed
++! values exactly; Neumann endpoint equations retain their coupled columns.
++pure subroutine eliminate_dirichlet_columns(matrix,rhs,bc_type)
++real(wp),intent(inout)::matrix(:,:),rhs(:)
++integer,intent(in)::bc_type(2)
++integer::i,n
++n=size(rhs)
++if(bc_type(1)==0)then
++  do i=2,min(3,n-1)
++    rhs(i)=rhs(i)-matrix(4+i,1)*rhs(1)
++    matrix(4+i,1)=0
++  enddo
++endif
++if(bc_type(2)==0)then
++  do i=max(2,n-2),n-1
++    rhs(i)=rhs(i)-matrix(5+i-n,n)*rhs(n)
++    matrix(5+i-n,n)=0
++  enddo
++endif
++end subroutine eliminate_dirichlet_columns
++
++pure subroutine scale_interior_rows(matrix,rhs,stage_dt)
++real(wp),intent(inout)::matrix(:,:),rhs(:)
++real(wp),intent(in)::stage_dt
++integer::i,j,n
++n=size(rhs)
++do i=2,n-1
++  do j=max(1,i-2),min(n,i+2)
++    matrix(5+i-j,j)=matrix(5+i-j,j)*stage_dt
++  enddo
++  rhs(i)=rhs(i)*stage_dt
++enddo
++end subroutine scale_interior_rows
++
+ end module PDEparabolic
+diff --git a/src/numerical/diffusion/diffusion_features.in.f90 b/src/numerical/diffusion/diffusion_features.in.f90
+new file mode 100644
+index 00000000..38efb216
+--- /dev/null
++++ b/src/numerical/diffusion/diffusion_features.in.f90
+@@ -0,0 +1,6 @@
++module diffusion_features
++implicit none(type,external)
++private
++public :: midpoint_conduction_enabled
++logical, parameter :: midpoint_conduction_enabled=@midpoint_conduction_fortran@
++end module diffusion_features
+diff --git a/src/numerical/diffusion/nonlinear_diffusion.f90 b/src/numerical/diffusion/nonlinear_diffusion.f90
+new file mode 100644
+index 00000000..1db886e7
+--- /dev/null
++++ b/src/numerical/diffusion/nonlinear_diffusion.f90
+@@ -0,0 +1,47 @@
++module nonlinear_diffusion
++! Proposed nonlinear time centering. The predictor is virtual: only the final
++! TRBDF2 increments describe applied changes and enter the numerical ledger.
++use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
++use phys_consts, only: wp
++use meshobj, only: curvmesh
++use collisions, only: thermal_conduct
++use diffusion, only: diffusion_prep, backEuler3D, TRBDF23D
++implicit none(type,external)
++private
++public :: midpoint_TRBDF23D
++contains
++function midpoint_TRBDF23D(isp,x,ns,T,nn,J1,Tn,Teinf,dt,increments,lambda_applied) result(Tnew)
++  integer, intent(in) :: isp
++  class(curvmesh), intent(in) :: x
++  real(wp), intent(in) :: ns(-1:,-1:,-1:),T(-1:,-1:,-1:),nn(:,:,:,:),J1(-1:,-1:,-1:),Tn(:,:,:)
++  real(wp), intent(in) :: Teinf,dt
++  real(wp), intent(out), optional :: increments(size(T,1)-4,size(T,2)-4,size(T,3)-4,5)
++  real(wp), intent(out), optional :: lambda_applied(size(T,1)-4,size(T,2)-4,size(T,3)-4)
++  real(wp) :: Tnew(-1:size(T,1)-2,-1:size(T,2)-2,-1:size(T,3)-2)
++  real(wp), allocatable :: initial(:,:,:),predictor(:,:,:),lambda(:,:,:),beta(:,:,:)
++  real(wp), allocatable :: A(:,:,:),B(:,:,:),C(:,:,:),D(:,:,:),E(:,:,:)
++  integer :: n1,n2,n3
++  n1=size(T,1)-4;n2=size(T,2)-4;n3=size(T,3)-4
++  if(.not.ieee_is_finite(dt).or.dt<=0) error stop 'midpoint diffusion requires positive finite dt'
++  allocate(initial(-1:n1+2,-1:n2+2,-1:n3+2),predictor(-1:n1+2,-1:n2+2,-1:n3+2))
++  allocate(lambda(n1,n2,n3),beta(n1,n2,n3),A(n1,n2,n3),B(n1,n2,n3),C(n1,n2,n3),D(n1,n2,n3),E(n1,n2,n3))
++  initial=T
++  call thermal_conduct(isp,initial,ns,nn,J1,lambda,beta)
++  call diffusion_prep(isp,x,lambda,beta,ns,initial,A,B,C,D,E,Tn,Teinf)
++  predictor=backEuler3D(initial,A,B,C,D,E,dt/2,x)
++  ! Do not quietly introduce a new temperature floor in the virtual stage.
++  if(any(.not.ieee_is_finite(predictor(1:n1,1:n2,1:n3))).or. &
++     any(predictor(1:n1,1:n2,1:n3)<=0)) error stop 'nonpositive or nonfinite midpoint temperature'
++  call thermal_conduct(isp,predictor,ns,nn,J1,lambda,beta)
++  if(any(.not.ieee_is_finite(lambda)).or.any(lambda<=0)) error stop 'invalid midpoint conductivity'
++  ! Rebuild geometry and conductivity-dependent Neumann ghost differences.
++  ! Start the applied step from the original temperature, not the predictor.
++  call diffusion_prep(isp,x,lambda,beta,ns,initial,A,B,C,D,E,Tn,Teinf)
++  if(present(increments)) then
++    Tnew=TRBDF23D(initial,A,B,C,D,E,dt,x,increments)
++  else
++    Tnew=TRBDF23D(initial,A,B,C,D,E,dt,x)
++  endif
++  if(present(lambda_applied)) lambda_applied=lambda
++end function midpoint_TRBDF23D
++end module nonlinear_diffusion
+diff --git a/src/sources/CMakeLists.txt b/src/sources/CMakeLists.txt
+index f13b6e06..afd32fc6 100644
+--- a/src/sources/CMakeLists.txt
++++ b/src/sources/CMakeLists.txt
+@@ -3,5 +3,10 @@ $<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:gemini3d_config>
+ )
+ target_link_libraries(sources PRIVATE calculus collision const meshobj grid)
+ 
++# A callable conservative pair operator for qualification and later coupling.
++# It is not substituted into the existing split source driver implicitly.
++add_library(pair_exchange OBJECT pair_exchange.f90)
++target_link_libraries(pair_exchange PRIVATE const)
++
+ add_library(sources_mpi OBJECT sources_mpi.f90)
+ target_link_libraries(sources_mpi PRIVATE mpimod)
+diff --git a/src/sources/pair_exchange.f90 b/src/sources/pair_exchange.f90
+new file mode 100644
+index 00000000..d28678d5
+--- /dev/null
++++ b/src/sources/pair_exchange.f90
+@@ -0,0 +1,89 @@
++module pair_exchange
++! Constant-rate, closed two-reservoir model. SI: rho [kg/m^3], Cv [J/m^3/K],
++! drag [kg/m^3/s], conductance [J/m^3/s/K]. Rates are explicitly supplied:
++! this operator enforces laws, but does not validate their physical magnitudes.
++use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
++use phys_consts, only: wp,kB
++implicit none(type,external)
++private
++public :: shared_pair_coefficients, pair_exchange_rates, advance_pair_exchange
++contains
++pure subroutine shared_pair_coefficients(ma,mb,na,nb,nuab,nuba,phi,psi,drag,conductance)
++  real(wp), intent(in) :: ma,mb,na,nb,nuab,nuba,phi,psi
++  real(wp), intent(out) :: drag,conductance
++  real(wp) :: reciprocal_rate
++  if(any(.not.ieee_is_finite([ma,mb,na,nb,nuab,nuba,phi,psi]))) error stop 'nonfinite pair coefficient'
++  if(min(ma,mb)<=0.or.min(na,nb,nuab,nuba,phi,psi)<0) error stop 'invalid pair coefficient'
++  ! Explicit model proposal: average the two rounded directional momentum
++  ! rates once, then use this identical rate in both species equations.
++  reciprocal_rate=(ma*na*nuab+mb*nb*nuba)/2
++  drag=reciprocal_rate*phi
++  ! Three translational degrees of freedom determine the exchanged POWER.
++  ! Species-specific heat capacities determine temperature response separately.
++  conductance=3*kB*reciprocal_rate*psi/(ma+mb)
++end subroutine shared_pair_coefficients
++
++pure subroutine pair_exchange_rates(ma,mb,drag,conductance,Ta,Tb,va,vb,Fa,Fb,Qa,Qb)
++  real(wp), intent(in) :: ma,mb,drag,conductance,Ta,Tb,va(3),vb(3)
++  real(wp), intent(out) :: Fa(3),Fb(3),Qa,Qb
++  real(wp) :: heating,transfer,fraction_a
++  if(min(ma,mb)<=0.or.min(drag,conductance)<0) error stop 'invalid pair rate'
++  fraction_a=mb/(ma+mb)
++  Fa=drag*(vb-va);Fb=-Fa
++  heating=drag*sum((va-vb)**2)
++  transfer=conductance*(Tb-Ta)
++  Qa=transfer+fraction_a*heating
++  Qb=-transfer+(1-fraction_a)*heating
++end subroutine pair_exchange_rates
++
++pure subroutine advance_pair_exchange(rhoa,rhob,Ca,Cb,fraction_a,drag,conductance,dt,va,vb,Ua,Ub)
++  real(wp), intent(in) :: rhoa,rhob,Ca,Cb,fraction_a,drag,conductance,dt
++  real(wp), intent(inout) :: va(3),vb(3),Ua,Ub
++  real(wp) :: reduced_rho, reduced_C, rate_v,rate_T,delta(3),dP(3),kinetic_heat
++  real(wp) :: difference0,friction0,integral,thermal_transfer
++  real(wp) :: heat_a,heat_b,friction_difference,thermal_fraction
++  if(any(.not.ieee_is_finite([rhoa,rhob,Ca,Cb,fraction_a,drag,conductance,dt,va,vb,Ua,Ub]))) &
++    error stop 'nonfinite pair state'
++  if(min(rhoa,rhob,Ca,Cb)<=0.or.min(drag,conductance,dt,Ua,Ub)<0.or. &
++     fraction_a<0.or.fraction_a>1) error stop 'invalid pair state'
++  if(dt==0.or.(drag==0.and.conductance==0)) return
++  reduced_rho=rhoa*(rhob/(rhoa+rhob))
++  reduced_C=Ca*(Cb/(Ca+Cb))
++  rate_v=drag/reduced_rho
++  rate_T=conductance/reduced_C
++  delta=va-vb
++  difference0=Ua/Ca-Ub/Cb
++  dP=-reduced_rho*delta*decay_fraction(rate_v*dt)
++  va=va+dP/rhoa;vb=vb-dP/rhob
++  ! Account for the actual finite-step loss of relative bulk kinetic energy,
++  ! rather than integrating frozen velocities as if the loss stayed constant.
++  kinetic_heat=(reduced_rho*sum(delta**2)/2)*decay_fraction(2*rate_v*dt)
++  friction0=drag*sum(delta**2)
++  ! Stable convolution of e^(-rate_T*t) with e^(-2*rate_v*t).
++  integral=dt*exp(-min(rate_T,2*rate_v)*dt)*phi_negative(abs(rate_T-2*rate_v)*dt)
++  friction_difference=friction0*(fraction_a/Ca-(1-fraction_a)/Cb)*integral
++  thermal_fraction=decay_fraction(rate_T*dt)
++  ! A single opposite transfer retains small changes without reconstructing
++  ! each large reservoir from its equilibrium value.
++  thermal_transfer=reduced_C*(-difference0*thermal_fraction+friction_difference)
++  heat_a=Ca/(Ca+Cb)*kinetic_heat+thermal_transfer
++  heat_b=kinetic_heat-heat_a
++  Ua=Ua+heat_a;Ub=Ub+heat_b
++end subroutine advance_pair_exchange
++
++pure elemental function phi_negative(z) result(phi)
++  real(wp), intent(in) :: z
++  real(wp) :: phi
++  if(z<1e-3_wp) then
++    phi=1-z*(1._wp/2-z*(1._wp/6-z*(1._wp/24-z*(1._wp/120-z*(1._wp/720-z/5040)))))
++  else
++    phi=(1-exp(-z))/z
++  endif
++end function phi_negative
++
++pure elemental function decay_fraction(z) result(fraction)
++  real(wp), intent(in) :: z
++  real(wp) :: fraction
++  fraction=z*phi_negative(z)
++end function decay_fraction
++end module pair_exchange
+diff --git a/test/audit/CMakeLists.txt b/test/audit/CMakeLists.txt
+index cb893eef..571f7931 100644
+--- a/test/audit/CMakeLists.txt
++++ b/test/audit/CMakeLists.txt
+@@ -183,7 +183,7 @@ if(Python_Interpreter_FOUND)
+     ${PROJECT_SOURCE_DIR}/test/qualification/test_etd.py --exe $<TARGET_FILE:qualification_etd>
+     --output ${CMAKE_CURRENT_BINARY_DIR}/etd-oracle.json)
+   set_tests_properties(qualification:etd_oracle PROPERTIES LABELS "unit;qualification")
+-  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies)
++  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory)
+     add_test(NAME qualification:${probe} COMMAND ${Python_EXECUTABLE}
+       ${PROJECT_SOURCE_DIR}/test/qualification/test_${probe}.py)
+     set_tests_properties(qualification:${probe} PROPERTIES LABELS "unit;qualification")
+@@ -214,6 +214,15 @@ target_link_libraries(qualification_energy_operators PRIVATE diffusion PDEparabo
+ intel_fortran_main_linker(qualification_energy_operators)
+ add_test(NAME qualification:energy_operators COMMAND qualification_energy_operators)
+ set_tests_properties(qualification:energy_operators PROPERTIES LABELS "unit;qualification")
++
++add_executable(qualification_temperature_floor ../qualification/temperature_floor.f90)
++target_link_libraries(qualification_temperature_floor PRIVATE transport_audit multifluid meshobj_cart grid const gemini3d)
++intel_fortran_main_linker(qualification_temperature_floor)
++if(Python_Interpreter_FOUND)
++  add_test(NAME qualification:temperature_floor COMMAND ${Python_EXECUTABLE}
++    ${PROJECT_SOURCE_DIR}/test/qualification/test_temperature_floor.py --exe $<TARGET_FILE:qualification_temperature_floor>)
++  set_tests_properties(qualification:temperature_floor PROPERTIES LABELS "unit;qualification")
++endif()
+ if(Python_Interpreter_FOUND)
+   add_test(NAME qualification:energy_ledger COMMAND ${Python_EXECUTABLE}
+     ${PROJECT_SOURCE_DIR}/test/qualification/test_energy_ledger.py)
+@@ -223,3 +232,31 @@ endif()
+ foreach(audit_extension IN ITEMS numerics lifecycle contracts restart installation)
+   include("${CMAKE_CURRENT_LIST_DIR}/${audit_extension}.cmake" OPTIONAL)
+ endforeach()
++
++add_executable(qualification_diffusion_scale ../qualification/diffusion_scale.f90)
++target_link_libraries(qualification_diffusion_scale PRIVATE PDEparabolic const)
++intel_fortran_main_linker(qualification_diffusion_scale)
++add_test(NAME qualification:diffusion_scale COMMAND qualification_diffusion_scale)
++set_tests_properties(qualification:diffusion_scale PROPERTIES LABELS "unit;qualification;numerics")
++
++add_executable(qualification_coulomb_curve ../qualification/coulomb_curve.f90)
++target_link_libraries(qualification_coulomb_curve PRIVATE gemini3d)
++intel_fortran_main_linker(qualification_coulomb_curve)
++add_test(NAME qualification:coulomb_curve COMMAND qualification_coulomb_curve)
++set_tests_properties(qualification:coulomb_curve PROPERTIES LABELS "unit;qualification;numerics")
++
++add_executable(qualification_pair_exchange ../qualification/pair_exchange_probe.f90)
++target_link_libraries(qualification_pair_exchange PRIVATE gemini3d)
++intel_fortran_main_linker(qualification_pair_exchange)
++if(SCIPY_FOUND AND NUMPY_FOUND)
++  add_test(NAME qualification:pair_exchange COMMAND ${Python_EXECUTABLE}
++    ${PROJECT_SOURCE_DIR}/test/qualification/test_pair_exchange.py
++    --exe $<TARGET_FILE:qualification_pair_exchange> --output ${CMAKE_CURRENT_BINARY_DIR}/pair-exchange-results.json)
++  set_tests_properties(qualification:pair_exchange PROPERTIES LABELS "unit;qualification;physics" TIMEOUT 180)
++  add_test(NAME qualification:midpoint_diffusion COMMAND ${Python_EXECUTABLE}
++    ${PROJECT_SOURCE_DIR}/test/qualification/test_midpoint_diffusion.py
++    --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR}
++    --work ${CMAKE_CURRENT_BINARY_DIR}/midpoint-diffusion)
++  set_tests_properties(qualification:midpoint_diffusion PROPERTIES LABELS "unit;qualification;physics" TIMEOUT 180
++    ENVIRONMENT "FC=${CMAKE_Fortran_COMPILER}")
++endif()
+diff --git a/test/potential/plot_potential2d_aurora.py b/test/potential/plot_potential2d_aurora.py
+new file mode 100644
+index 00000000..129a825b
+--- /dev/null
++++ b/test/potential/plot_potential2d_aurora.py
+@@ -0,0 +1,127 @@
++#!/usr/bin/env python3
++"""
++Created on Mon Apr 20 18:13:14 2026
++
++@author: zettergm
++"""
++
++import argparse
++import numpy as np
++import h5py
++
++from matplotlib.pyplot import figure,pcolormesh,xlabel,ylabel,title,colorbar
++
++
++def read_potential(fn) -> dict:
++    with h5py.File(fn, "r") as f:
++        out = {"lx1": f["/lx1"][()],
++               "lx2": f["/lx2"][()],
++               "lx3": f["/lx3"][()],
++               "x1": f["/x1"][:],
++               "x2": f["/x2"][:],
++               "x3": f["/x3"][:],
++               "Phi": f["/Phi"][:],
++               "A": f["/A"][:],
++               "Ap": f["/Ap"][:],
++               "SigH": f["/SigH"][:],
++               "B": f["/B"][:],
++               "C": f["/C"][:],
++               "srcterm": f["/srcterm"][:]}
++
++    assert out["lx1"] == out["x1"].size
++    assert out["lx2"] == out["x2"].size
++    assert out["lx3"] == out["x3"].size
++
++    return out
++
++
++def plot_potential(data):
++
++    x2 = data["x2"]
++    x3 = data["x3"]
++    Phi = data["Phi"]
++    srcterm = data["srcterm"]
++
++    figure(figsize=(6, 6))
++    pcolormesh(x2, x3, Phi)
++    colorbar()
++    ylabel("distance [m]")
++    xlabel("distance [m]")
++    title("2D potential (numerical)")
++
++    #figure()
++    #pcolormesh(x2,x3,data["A"])
++    #colorbar()
++    #title("Pedersen")
++
++    figure()
++    pcolormesh(x2,x3,data["Ap"])
++    colorbar()
++    title("Ap")
++
++    # figure()
++    # pcolormesh(x2,x3,data["SigH"])
++    # colorbar()
++
++    # figure()
++    # pcolormesh(x2,x3,data["B"])
++    # colorbar()
++
++    # figure()
++    # pcolormesh(x2,x3,data["C"])
++    # colorbar()
++
++    figure()
++    pcolormesh(x2,x3,srcterm)   # srcterm is -Jpar
++    colorbar()
++    title("Jpar")
++
++    ## Apparently hdf5 mangles array axes???
++    Ex,Ey = np.gradient(-1*Phi.transpose(),x2,x3)   # WHYYYYY
++    SigP=data["A"].transpose()
++    SigH=data["SigH"].transpose()
++    Jx=SigP*Ex-SigH*Ey
++    Jy=SigH*Ex+SigP*Ey
++    Jxx,_ = np.gradient(Jx,x2,x3)
++    _,Jyy = np.gradient(Jy,x2,x3)
++    divJ=Jxx+Jyy
++    Jpartest=-divJ
++    errterm=Jpartest-srcterm
++    print("Max error in Jpar:", np.max(np.abs(errterm)))
++
++    figure()
++    pcolormesh(x2,x3,Ex.transpose())
++    colorbar()
++    title("Ex")
++
++    figure()
++    pcolormesh(x2,x3,Ey.transpose())
++    colorbar()
++    title("Ey")
++
++    figure()
++    pcolormesh(x2,x3,Jx.transpose())
++    colorbar()
++    title("Jx")
++
++    figure()
++    pcolormesh(x2,x3,Jy.transpose())
++    colorbar()
++    title("Jy")
++
++    figure()
++    pcolormesh(x2,x3,Jpartest.transpose())
++    colorbar()
++    title("div J")
++
++
++if __name__ == "__main__":
++    parser = argparse.ArgumentParser()
++    parser.add_argument("fn", help="HDF5 file containing potential data")
++    parser.add_argument("--noplot", action="store_true", help="Do not display plots")
++    args = parser.parse_args()
++    fn = args.fn
++
++    data = read_potential(fn)
++    if not args.noplot:
++        plot_potential(data)
+diff --git a/test/potential/test_potential2d_auroral.py b/test/potential/test_potential2d_auroral.py
+deleted file mode 100644
+index 954a864b..00000000
+--- a/test/potential/test_potential2d_auroral.py
++++ /dev/null
+@@ -1,116 +0,0 @@
+-#!/usr/bin/env python3
+-# -*- coding: utf-8 -*-
+-"""
+-Created on Mon Apr 20 18:13:14 2026
+-
+-@author: zettergm
+-"""
+-
+-#!/usr/bin/env python3
+-#from pathlib import Path
+-#import argparse
+-import sys
+-import typing
+-
+-import numpy as np
+-import h5py
+-
+-from matplotlib.pyplot import figure,pcolormesh,xlabel,ylabel,title,colorbar
+-
+-fn = "/Users/zettergm/Projects/gemini3d/build/test/potential/output.h5"
+-doplot = True
+-
+-# if not fn.is_file():
+-#     print(fn, "not found", file=sys.stderr)
+-#     raise SystemExit(77)
+-
+-with h5py.File(fn, "r") as f:
+-    lx1 = f["/lx1"][()]
+-    lx2 = f["/lx2"][()]
+-    lx3 = f["/lx3"][()]
+-    x1 = f["/x1"][:]
+-    x2 = f["/x2"][:]
+-    x3 = f["/x3"][:]
+-    Phi = f["/Phi"][:]
+-    A = f["/A"][:]
+-    Ap = f["/Ap"][:]
+-    SigH = f["/SigH"][:]
+-    B = f["/B"][:]
+-    C = f["/C"][:]
+-    srcterm = f["/srcterm"][:]
+-assert lx1 == x1.size
+-assert lx2 == x2.size
+-assert lx3 == x3.size
+-
+-if not doplot:
+-    exit
+-
+-fg = figure(figsize=(6, 6))
+-h = pcolormesh(x2, x3, Phi)
+-colorbar()
+-ylabel("distance [m]")
+-xlabel("distance [m]")
+-title("2D potential (numerical)")
+-
+-#figure()
+-#pcolormesh(x2,x3,A)
+-#colorbar()
+-#title("Pedersen")
+-
+-# figure()
+-# pcolormesh(x2,x3,Ap)
+-# colorbar()
+-
+-# figure()
+-# pcolormesh(x2,x3,SigH)
+-# colorbar()
+-
+-# figure()
+-# pcolormesh(x2,x3,B)
+-# colorbar()
+-
+-# figure()
+-# pcolormesh(x2,x3,C)
+-# colorbar()
+-
+-figure()
+-pcolormesh(x2,x3,srcterm)   # srcterm is -Jpar
+-colorbar()
+-title("Jpar")
+-
+-## Apparently hdf5 mangles array axes???
+-Ex,Ey = np.gradient(-1*Phi.transpose(),x2,x3)   # WHYYYYY
+-SigP=A.transpose()
+-SigH=SigH.transpose()
+-Jx=SigP*Ex-SigH*Ey
+-Jy=SigH*Ex+SigP*Ey
+-Jxx,_ = np.gradient(Jx,x2,x3)
+-_,Jyy = np.gradient(Jy,x2,x3)
+-divJ=Jxx+Jyy
+-Jpartest=-divJ
+-errterm=Jpartest-srcterm
+-
+-figure()
+-pcolormesh(x2,x3,Ex.transpose())
+-colorbar()
+-title("Ex")
+-
+-figure()
+-pcolormesh(x2,x3,Ey.transpose())
+-colorbar()
+-title("Ey")
+-
+-figure()
+-pcolormesh(x2,x3,Jx.transpose())
+-colorbar()
+-title("Jx")
+-
+-figure()
+-pcolormesh(x2,x3,Jy.transpose())
+-colorbar()
+-title("Jy")
+-
+-figure()
+-pcolormesh(x2,x3,Jpartest.transpose())
+-colorbar()
+-title("div J")
+diff --git a/test/qualification/analyze_midpoint_diffusion.py b/test/qualification/analyze_midpoint_diffusion.py
+new file mode 100644
+index 00000000..d8acd712
+--- /dev/null
++++ b/test/qualification/analyze_midpoint_diffusion.py
+@@ -0,0 +1,147 @@
++"""Independent conservative balances and theoretical observables for native probes."""
++import argparse
++import csv
++import hashlib
++import json
++from pathlib import Path
++import numpy as np
++from scipy.integrate import solve_ivp
++from scipy.linalg import solve_banded
++
++p=argparse.ArgumentParser()
++p.add_argument('--work', type=Path, required=True)
++p.add_argument('--trace', type=Path)
++p.add_argument('--candidate',required=True)
++a=p.parse_args()
++w=a.work
++LIMIT=1e-11
++def rows(path):
++    with path.open() as f:
++        return [{k:float(v) for k,v in r.items()} for r in csv.DictReader(f)]
++def norm_res(terms):
++    return abs(sum(terms))/max(sum(abs(x) for x in terms), np.finfo(float).tiny)
++def orders(errors):
++    return [float(np.log2(errors[i]/errors[i+1])) for i in range(2)]
++
++conduct=[]
++traces={}
++if a.trace:
++    native_trace=np.loadtxt(a.trace,delimiter=',')
++    offset=0
++    for path in sorted(w.glob('conduction_*_m[23]_*.csv')):
++        rs=rows(path);nodes=int(max(r['node'] for r in rs));steps=int(max(r['step'] for r in rs))
++        count=steps*nodes
++        traces[path.name]=native_trace[offset:offset+count].reshape(steps,nodes,4)
++        offset+=count
++    assert offset==len(native_trace)
++oracle_cache={}
++for path in sorted(w.glob('conduction_*.csv')):
++    data=rows(path)
++    n=int(max(r['node'] for r in data));steps=int(max(r['step'] for r in data));r=data[0]
++    dt,dx,cv=r['dt'],r['dx'],r['Cv']
++    window=int(path.stem.split('_w')[1][0]);method=int(path.stem.split('_m')[1][0]);level=int(path.stem.split('_l')[1][0])
++    density=r['ns'];total=dt*steps
++    initial=np.linspace(600.,1500.,n)
++    scale=density/1e5
++    # Density scaling uses tau=t/scale so both cases independently share the
++    # same mathematically defined problem; retain each physical native result.
++    key=(n,window,total/scale)
++    if key not in oracle_cache:
++        def rhs(t, interior):
++            temp=np.r_[600.,interior,1500.]
++            lam=.3986e-12*temp**2.5
++            flux=-.5*(lam[:-1]+lam[1:])*np.diff(temp)/dx
++            return -(flux[1:]-flux[:-1])/(cv/scale*dx)
++        sol=solve_ivp(rhs,[0.,total/scale],initial[1:-1],method='Radau',rtol=1e-11,atol=1e-9)
++        tight=solve_ivp(rhs,[0.,total/scale],initial[1:-1],method='Radau',rtol=2e-13,atol=2e-11)
++        if not sol.success or not tight.success:
++            raise RuntimeError('Independent MOL oracle failed: '+sol.message+' / '+tight.message)
++        reference=np.r_[600.,tight.y[:,-1],1500.]
++        control=float(np.linalg.norm(sol.y[:,-1]-tight.y[:,-1])/np.linalg.norm(tight.y[:,-1]))
++        oracle_cache[key]={'temperature_K':reference,'control_relative_rms':control,
++                           'nfev':int(tight.nfev),'njev':int(tight.njev)}
++    oracle=oracle_cache[key]
++    step_balances=[];telescoping=[];diagnostic_balances=[];stage_mismatches=[];floors=0
++    for it in range(1,steps+1):
++        rs=[r for r in data if r['step']==it]
++        old=np.array([r['Told'] for r in rs]);new=np.array([r['Tnew'] for r in rs]);raw=np.array([r['Traw'] for r in rs])
++        lam=np.array([r['lambda_applied'] if 'lambda_applied' in r else r['lambda_old'] for r in rs]);face=.5*(lam[:-1]+lam[1:])
++        alpha=face/(cv*dx**2)
++        def flux(temp):return -face*np.diff(temp)/dx
++        if method==1:
++            integrated=dt*flux(raw)
++        else:
++            # Independent tridiagonal Crank-Nicolson half-stage for native
++            # TR-BDF2 (frozen lambda). No native residual is used as heat input.
++            c=dt/4
++            band=np.zeros((3,n-2));diagonal=alpha[:-1]+alpha[1:]
++            band[1]=1+c*diagonal
++            band[0,1:]=-c*alpha[1:-1];band[2,:-1]=-c*alpha[1:-1]
++            old_rhs=old[1:-1]+c*(alpha[1:]*np.diff(old)[1:]-alpha[:-1]*np.diff(old)[:-1])
++            old_rhs[0]+=c*alpha[0]*600;old_rhs[-1]+=c*alpha[-1]*1500
++            tr=np.r_[600.,solve_banded((1,1),band,old_rhs),1500.]
++            if path.name in traces:
++                native=traces[path.name][it-1]
++                assert np.array_equal(native[:,1],old) and np.array_equal(native[:,3],raw)
++                independent_tr=tr
++                tr=native[:,2]
++                stage_mismatches.append(float(np.max(abs(independent_tr-tr))/np.max(abs(tr))))
++            integrated=dt/3*(flux(old)+flux(tr)+flux(raw))
++            derived=(4*tr[1:-1]-old[1:-1])/3+dt/3*(alpha[1:]*np.diff(raw)[1:]-alpha[:-1]*np.diff(raw)[:-1])
++            stage_mismatches.append(float(np.max(abs(derived-raw[1:-1]))/np.max(abs(raw))))
++        change=float(cv*dx*np.sum(raw[1:-1]-old[1:-1]))
++        incoming=float(integrated[0]-integrated[-1])
++        power_cells=-(integrated[1:]-integrated[:-1])
++        scale_balance=max(float(np.sum(abs(cv*dx*(raw[1:-1]-old[1:-1])))),
++                          float(np.sum(abs(power_cells))),abs(integrated[0])+abs(integrated[-1]),np.finfo(float).tiny)
++        step_balances.append(abs(change-incoming)/scale_balance)
++        telescoping.append(abs(np.sum(power_cells)-incoming)/scale_balance)
++        inc=np.array([[r[k] for k in ('reaction','drift','conduction','source','reservoir')] for r in rs])
++        diagnostic_balances.append(float(np.max(abs(raw-old-np.sum(inc,axis=1)))/max(np.max(abs(raw-old)),np.finfo(float).tiny)))
++        floors+=int(np.count_nonzero(new!=raw))
++    final=np.array([r['Tnew'] for r in data if r['step']==steps])
++    error=float(np.linalg.norm(final[1:-1]-oracle['temperature_K'][1:-1])/np.linalg.norm(oracle['temperature_K'][1:-1]))
++    entry={'file':path.name,'density_m3':density,'window':window,'method':method,'level':level,
++           'steps':steps,'dt_s':dt,'duration_s':total,'temperature_relative_rms':error,
++           'oracle_control_relative_rms':oracle['control_relative_rms'],
++           'maximum_energy_balance_normalized':max(step_balances),
++           'maximum_face_telescoping_normalized':max(telescoping),
++           'maximum_diagnostic_increment_relative':max(diagnostic_balances),
++           'maximum_independent_TR_stage_relative':max(stage_mismatches,default=0),
++           'native_stage_trace_used':method==1 or path.name in traces,
++           'fixed_boundary_max_error_K':max(abs(r['Traw']-(600 if r['node']==1 else 1500)) for r in data if r['node'] in (1,n)),
++           'floor_cell_events':floors,'temperature_K':final.tolist(),
++           'oracle_temperature_K':oracle['temperature_K'].tolist(),
++           'energy_pass':max(step_balances)<=LIMIT,'temperature_pass':error<=.1}
++    conduct.append(entry)
++groups=[]
++for density,window,method in sorted(set((r['density_m3'],r['window'],r['method']) for r in conduct)):
++    levels=sorted([r for r in conduct if (r['density_m3'],r['window'],r['method'])==(density,window,method)],key=lambda r:r['level'])
++    os=orders([r['temperature_relative_rms'] for r in levels])
++    minorder=.9 if method==1 else 1.8
++    groups.append({'density_m3':density,'window':window,'method':method,'errors':[r['temperature_relative_rms'] for r in levels],
++                   'orders':os,'required_order':minorder,
++                   'energy_pass':all(r['energy_pass'] for r in levels),
++                   'temperature_pass':all(r['temperature_pass'] for r in levels),
++                   'order_pass':min(os)>=minorder})
++pc03={'cases':conduct,'groups':groups,'passed':all(r['energy_pass'] and r['temperature_pass'] and r['order_pass'] for r in groups)}
++
++kir=rows(w/'kirchhoff_flux.csv');steady=[]
++qexact=-.3986e-12*(1500.**3.5-600.**3.5)/(3.5*1e5)
++for level in range(3):
++    rs=[r for r in kir if r['level']==level]
++    temp=np.array([r['T'] for r in rs]);lam=np.array([r['lambda'] for r in rs]);dx=rs[0]['dx']
++    q=-.5*(lam[:-1]+lam[1:])*np.diff(temp)/dx
++    err=float(np.sqrt(np.mean((q-qexact)**2))/abs(qexact))
++    steady.append({'level':level,'nodes':len(rs),'dx_m':dx,'exact_flux_Wm2':qexact,
++                   'relative_l2_face_flux_error':err,'minimum_flux_Wm2':float(min(q)),'maximum_flux_Wm2':float(max(q))})
++pc04={'levels':steady,'orders':orders([r['relative_l2_face_flux_error'] for r in steady])}
++pc04['passed']=min(pc04['orders'])>=1.8
++result={'schema':'gemini.physical.closure.results.1','budget':LIMIT,
++        'native_source_revision':a.candidate,
++        'PC03':pc03,'PC04':pc04, 'passed':pc03['passed'] and pc04['passed']}
++(w/'physics-results.json').write_text(json.dumps(result,indent=2,allow_nan=False,default=lambda v:v.item() if isinstance(v,np.generic) else str(v))+'\n')
++print(json.dumps({k:{s:v for s,v in result[k].items() if s in ('passed','case_count','passing_cases','orders','groups')}
++                  for k in ('PC03','PC04')},indent=2))
++
++raise SystemExit(0 if result['passed'] else 1)
+diff --git a/test/qualification/coulomb_curve.f90 b/test/qualification/coulomb_curve.f90
+new file mode 100644
+index 00000000..71a2aaa0
+--- /dev/null
++++ b/test/qualification/coulomb_curve.f90
+@@ -0,0 +1,37 @@
++program coulomb_curve
++use phys_consts,only:wp,lsp,kb,ms
++use collisions,only:coulomb_colln
++implicit none(type,external)
++real(wp),parameter::values(13)=[0._wp,1e-8_wp,1e-6_wp,.001_wp,.01_wp,.05_wp, &
++ .09999999_wp,.1_wp,.10000001_wp,.5_wp,1._wp,3._wp,10._wp]
++real(wp)::ns(-1:3,-1:3,-1:3,lsp),ts(-1:3,-1:3,-1:3,lsp),v(-1:3,-1:3,-1:3,lsp)
++real(wp)::nu(1,1,1),phi(1,1,1),psi(1,1,1),speed,w,oracle,error
++integer::i
++ns=0;ts=1000;v=0;ns(:,:,:,1)=2e11_wp;ns(:,:,:,6)=8e10_wp
++speed=sqrt(2*kb*1000/(ms(1)*ms(6)/(ms(1)+ms(6))))
++do i=1,size(values)
++ v(:,:,:,1)=values(i)*speed;w=abs(v(1,1,1,1))/speed
++ call coulomb_colln(1,6,ns,ts,v,nu,phi,psi)
++ ! Independent numerical integral on a fixed interval. This does not reuse
++ ! either production power-series coefficients or the erf expression.
++ oracle=integral(w);error=abs(phi(1,1,1)-oracle)
++ print '(2(es25.17,1x))',w,error
++ if(error>5e-14_wp)error stop 'Coulomb drag integral and continuity'
++enddo
++contains
++pure function integral(w)result(value)
++real(wp),intent(in)::w
++real(wp)::value,total,compensation,term,y,next,x,weight
++integer,parameter::n=4096
++integer::j
++total=exp(-w*w);compensation=0
++do j=1,n-1
++ x=real(j,wp)/n;weight=2
++ if(modulo(j,2)==1)weight=4
++ term=weight*x*x*exp(-(w*x)**2)
++ y=term-compensation;next=total+y
++ compensation=(next-total)-y;total=next
++enddo
++value=total/n
++end function
++end program
+diff --git a/test/qualification/diffusion_scale.f90 b/test/qualification/diffusion_scale.f90
+new file mode 100644
+index 00000000..035ea757
+--- /dev/null
++++ b/test/qualification/diffusion_scale.f90
+@@ -0,0 +1,25 @@
++program diffusion_scale
++use phys_consts, only: wp
++use PDEparabolic, only: backEuler1D,TRBDF21D
++implicit none(type,external)
++integer,parameter::n=49
++real(wp)::u(n),initial(n),a(n),b(n),c(n),d(n),e(n),dx(0:n+2),dxi(n),dt,err,bcerr
++integer::i,method
++logical::passed
++a=0;b=0;c=1e18_wp;d=3e-5_wp;e=0
++dx=1e5_wp/(n-1);dxi=dx(1);dt=6.25e-5_wp
++initial=[(600+900._wp*(i-1)/(n-1),i=1,n)]
++passed=.true.
++do method=1,2
++ u=initial
++ if(method==1)then
++   u=backEuler1D(u,a,b,c,d,e,600._wp,1500._wp,dt,[0,0],dx,dxi)
++ else
++   u=TRBDF21D(u,a,b,c,d,e,600._wp,1500._wp,dt,[0,0],dx,dxi)
++ endif
++ err=maxval(abs(u-initial));bcerr=max(abs(u(1)-600),abs(u(n)-1500))
++ print '(i0,2(1x,es25.17))',method,err,bcerr
++ passed=passed.and.bcerr<=1e-11_wp
++enddo
++if(.not.passed)error stop 'prescribed boundary temperature lost under SI coefficient scaling'
++end program
+diff --git a/test/qualification/midpoint_diffusion_probe.f90 b/test/qualification/midpoint_diffusion_probe.f90
+new file mode 100644
+index 00000000..84845548
+--- /dev/null
++++ b/test/qualification/midpoint_diffusion_probe.f90
+@@ -0,0 +1,130 @@
++program physics_native
++use phys_consts, only: wp,lsp,ln,kb,ms,gammas
++use collisions, only: coulomb_colln,thermal_conduct
++use sources, only: srcsEnergy
++use calculus, only: ETD_uncoupled
++use meshobj_cart, only: cartmesh
++use grid, only: set_total_grid_sizes,set_subgrid_sizes,set_gridflag
++use diffusion, only: diffusion_prep,backEuler3D,TRBDF23D
++use nonlinear_diffusion, only: midpoint_TRBDF23D
++use diffusion_features, only: midpoint_conduction_enabled
++use multifluid, only: energy_diffusion
++implicit none(type,external)
++character(4096) :: directory,trace_name
++integer :: trace_status
++call get_command_argument(1,directory)
++if(len_trim(directory)==0) error stop 'output directory required'
++call nonlinear_conduction()
++call kirchhoff_flux()
++call get_environment_variable('GEMINI_PHYSICAL_TR_TRACE',trace_name,status=trace_status)
++if(trace_status/=0) call wrapper_checks()
++contains
++
++subroutine nonlinear_conduction()
++integer,parameter :: n=49
++type(cartmesh) :: x
++real(wp) :: ns(-1:n+2,-1:3,-1:3),temp(-1:n+2,-1:3,-1:3),old(-1:n+2,-1:3,-1:3),raw(-1:n+2,-1:3,-1:3)
++real(wp) :: nn(n,1,1,ln),j1(-1:n+2,-1:3,-1:3),tn(n,1,1)
++real(wp) :: lam(n,1,1),beta(n,1,1),a(n,1,1),b(n,1,1),c(n,1,1),d(n,1,1),e(n,1,1),inc(n,1,1,5)
++real(wp) :: density,dx,total,dt,cv
++integer :: id,window,level,method,i,it,nt,u
++character(64) :: name
++call set_total_grid_sizes(n,1,1);call set_subgrid_sizes(1,1);call set_gridflag(2)
++x%lx1=n;x%lx2=1;x%lx3=1
++allocate(x%h1(-1:n+2,-1:3,-1:3),x%h2(-1:n+2,-1:3,-1:3),x%h3(-1:n+2,-1:3,-1:3))
++allocate(x%dx1(0:n+2),x%dx1i(n))
++x%h1=1;x%h2=1;x%h3=1;dx=1e5_wp/(n-1);x%dx1=dx;x%dx1i=dx
++nn=0;j1=0;tn=600
++do id=1,2
++  density=1e5_wp
++  if(id==2)density=1e11_wp
++  ns=density;cv=density*kb/(gammas(6)-1)
++  do window=3,3
++    if(window==2.and.id==2)cycle
++    total=.0001_wp*(density/1e5_wp)
++    if(window==2)total=.8_wp
++    do method=3,3
++      do level=0,2
++        nt=8*2**level;dt=total/nt
++        write(name,'(a,i0,a,i0,a,i0,a,i0,a)') 'conduction_d',id,'_w',window,'_m',method,'_l',level,'.csv'
++        open(newunit=u,file=trim(directory)//'/'//trim(name),status='new')
++        write(u,'(a)') 'step,node,t,dt,ns,dx,Cv,Told,Traw,Tnew,lambda_applied,reaction,drift,conduction,source,reservoir'
++        temp=600
++        do i=1,n
++          temp(i,1,1)=600+900._wp*(i-1)/(n-1)
++        enddo
++        do it=1,nt
++          old=temp
++          raw=midpoint_TRBDF23D(6,x,ns,temp,nn,j1,tn,1500._wp,dt,inc,lam)
++          temp=max(raw,100._wp)
++          do i=1,n
++            write(u,'(i0,",",i0,14(",",es25.17))') it,i,it*dt,dt,density,dx,cv,old(i,1,1), &
++              raw(i,1,1),temp(i,1,1),lam(i,1,1),inc(i,1,1,:)
++          enddo
++        enddo
++        close(u)
++      enddo
++    enddo
++  enddo
++enddo
++! The manually allocated probe mesh does not claim a complete application grid.
++deallocate(x%h1,x%h2,x%h3,x%dx1,x%dx1i)
++end subroutine
++
++subroutine kirchhoff_flux()
++integer :: level,n,i,u
++real(wp),allocatable :: temp(:,:,:),ns(:,:,:),nn(:,:,:,:),j1(:,:,:),lam(:,:,:),beta(:,:,:)
++real(wp) :: dx,xx
++open(newunit=u,file=trim(directory)//'/kirchhoff_flux.csv',status='new')
++write(u,'(a)') 'level,node,n,x,dx,T,lambda'
++do level=0,2
++  n=64*2**level+1;dx=1e5_wp/(n-1)
++  allocate(temp(-1:n+2,-1:3,-1:3),ns(-1:n+2,-1:3,-1:3),j1(-1:n+2,-1:3,-1:3))
++  allocate(nn(n,1,1,ln),lam(n,1,1),beta(n,1,1))
++  temp=600;ns=1e11_wp;j1=0;nn=0
++  do i=1,n
++    xx=real(i-1,wp)/real(n-1,wp)
++    temp(i,1,1)=(600._wp**3.5_wp+(1500._wp**3.5_wp-600._wp**3.5_wp)*xx)**(1/3.5_wp)
++  enddo
++  call thermal_conduct(6,temp,ns,nn,j1,lam,beta)
++  do i=1,n
++    write(u,'(i0,",",i0,",",i0,4(",",es25.17))') level,i,n,(i-1)*dx,dx,temp(i,1,1),lam(i,1,1)
++  enddo
++  deallocate(temp,ns,j1,nn,lam,beta)
++enddo
++close(u)
++end subroutine
++subroutine wrapper_checks()
++integer,parameter :: n=49
++type(cartmesh) :: x
++real(wp) :: ns(-1:n+2,-1:3,-1:3,lsp),temp(-1:n+2,-1:3,-1:3,lsp)
++real(wp) :: old(-1:n+2,-1:3,-1:3),raw(-1:n+2,-1:3,-1:3),plain(-1:n+2,-1:3,-1:3)
++real(wp) :: nn(n,1,1,ln),j(-1:n+2,-1:3,-1:3),tn(n,1,1),inc(n,1,1,5)
++integer :: i,flag
++call set_total_grid_sizes(n,1,1);call set_subgrid_sizes(1,1)
++x%lx1=n;x%lx2=1;x%lx3=1
++allocate(x%h1(-1:n+2,-1:3,-1:3),x%h2(-1:n+2,-1:3,-1:3),x%h3(-1:n+2,-1:3,-1:3))
++allocate(x%dx1(0:n+2),x%dx1i(n))
++x%h1=1;x%h2=1;x%h3=1;x%dx1=1e5_wp/(n-1);x%dx1i=x%dx1(1)
++ns=1e5_wp;nn=0;j=0;tn=600;temp=600
++call set_gridflag(2)
++do i=1,n
++ temp(i,1,1,:)=600+900._wp*(i-1)/(n-1)
++enddo
++old=temp(:,:,:,6)
++raw=midpoint_TRBDF23D(6,x,ns(:,:,:,6),old,nn,j,tn,1500._wp,1.25e-5_wp,inc)
++plain=midpoint_TRBDF23D(6,x,ns(:,:,:,6),old,nn,j,tn,1500._wp,1.25e-5_wp)
++if(any(raw/=plain))error stop 'optional midpoint diagnostics changed the state'
++if(midpoint_conduction_enabled) then
++ call energy_diffusion(1.25e-5_wp,x,ns,temp,j,nn,tn,2,1500._wp)
++ if(any(temp(:,:,:,6)/=max(raw,100._wp)))error stop 'standard production path differs from tested midpoint operator'
++endif
++! Inverted and standard zero-flux ion boundaries on constant temperature.
++do flag=1,2
++ call set_gridflag(flag);old=600
++ raw=midpoint_TRBDF23D(6,x,ns(:,:,:,6),old,nn,j,tn,-1e-6_wp,1.25e-5_wp,inc)
++ if(maxval(abs(raw(1:n,1,1)-600._wp))>1e-11_wp)error stop 'midpoint Neumann constant state changed'
++enddo
++deallocate(x%h1,x%h2,x%h3,x%dx1,x%dx1i)
++end subroutine wrapper_checks
++end program
+diff --git a/test/qualification/pair_exchange_probe.f90 b/test/qualification/pair_exchange_probe.f90
+new file mode 100644
+index 00000000..b8af70c7
+--- /dev/null
++++ b/test/qualification/pair_exchange_probe.f90
+@@ -0,0 +1,80 @@
++program pair_exchange_probe
++use phys_consts, only: wp,lsp,kB,ms,gammas
++use collisions, only: coulomb_colln
++use pair_exchange, only: shared_pair_coefficients,pair_exchange_rates,advance_pair_exchange
++implicit none(type,external)
++real(wp) :: ns(-1:3,-1:3,-1:3,lsp),Ts(-1:3,-1:3,-1:3,lsp),v(-1:3,-1:3,-1:3,lsp)
++real(wp) :: nu(1,1,1),nurev(1,1,1),phi(1,1,1),psi(1,1,1),phirev(1,1,1),psirev(1,1,1)
++real(wp) :: rhoa,rhob,Ca,Cb,fraction,drag,K,dt,rate,Ua,Ub,va(3),vb(3),va0(3),vb0(3)
++real(wp) :: Fa(3),Fb(3),Qa,Qb,drag0,K0,energy_residual,momentum_residual,thermal_residual,fa0(3),fb0(3),q0a,q0b
++integer :: a,b,drift,level,u,it,nt
++character(4096) :: filename
++call get_command_argument(1,filename)
++if(len_trim(filename)==0) error stop 'pair probe requires CSV path'
++open(newunit=u,file=trim(filename),status='replace')
++write(u,'(a)') 'a,b,level,dt,rhoa,rhob,Ca,Cb,fraction_a,drag,K,Ta0,Tb0,'// &
++ 'va0x,va0y,va0z,vb0x,vb0y,vb0z,vax,vay,vaz,vbx,vby,vbz,Ta,Tb,'// &
++ 'instantaneous_momentum,instantaneous_energy,instantaneous_thermal'
++do a=1,lsp-1
++ do b=a+1,lsp
++  ns=0;Ts=900;v=0
++  ns(:,:,:,a)=2e11_wp;ns(:,:,:,b)=8e10_wp
++  Ts(:,:,:,a)=600;Ts(:,:,:,b)=1800
++  rhoa=2e11_wp*ms(a);rhob=8e10_wp*ms(b)
++  Ca=2e11_wp*kB/(gammas(a)-1);Cb=8e10_wp*kB/(gammas(b)-1)
++  fraction=ms(b)/(ms(a)+ms(b))
++  do drift=0,1
++   va0=real(drift,wp)*[1200._wp,300._wp,-600._wp]
++   vb0=real(drift,wp)*[-300._wp,-100._wp,200._wp]
++   v(:,:,:,a)=va0(1);v(:,:,:,b)=vb0(1)
++   call coulomb_colln(a,b,ns,Ts,v,nu,phi,psi)
++   call coulomb_colln(b,a,ns,Ts,v,nurev,phirev,psirev)
++   if(maxval(abs(phi-phirev))+maxval(abs(psi-psirev))>1e-13_wp) error stop 'pair response not symmetric'
++   call shared_pair_coefficients(ms(a),ms(b),2e11_wp,8e10_wp,nu(1,1,1),nurev(1,1,1), &
++     phi(1,1,1),psi(1,1,1),drag0,K0)
++   do level=0,8
++    drag=drag0;K=K0
++    if(level==6) K=2*drag*(1/rhoa+1/rhob)*Ca*(Cb/(Ca+Cb))
++    if(level==7) K=0
++    if(level==8) drag=0
++    rate=max(drag*(1/rhoa+1/rhob),K*(1/Ca+1/Cb))
++    select case(level)
++     case(0);dt=0
++     case(1);dt=1e-12_wp/rate
++     case(2);dt=.01_wp/rate
++     case(3);dt=.2_wp/rate
++     case(4);dt=2._wp/rate
++     case(5);dt=50._wp/rate
++     case default;dt=.3_wp/rate
++    end select
++    call pair_exchange_rates(ms(a),ms(b),drag,K,600._wp,1800._wp,va0,vb0,Fa,Fb,Qa,Qb)
++    call pair_exchange_rates(ms(a),ms(b),drag,K,600._wp,1800._wp,[0._wp,0._wp,0._wp], &
++      [0._wp,0._wp,0._wp],fa0,fb0,q0a,q0b)
++    momentum_residual=maxval(abs(Fa+Fb))/max(maxval(abs(Fa)),tiny(1._wp))
++    energy_residual=abs(Qa+Qb+sum(Fa*va0+Fb*vb0))/ &
++      max(abs(Qa)+abs(Qb)+sum(abs(Fa*va0)+abs(Fb*vb0)),tiny(1._wp))
++    thermal_residual=abs(q0a+q0b)/max(abs(q0a)+abs(q0b),tiny(1._wp))
++    va=va0;vb=vb0;Ua=Ca*600;Ub=Cb*1800
++    call advance_pair_exchange(rhoa,rhob,Ca,Cb,fraction,drag,K,dt,va,vb,Ua,Ub)
++    if(dt==0) then
++      if(any(va/=va0).or.any(vb/=vb0).or.Ua/=Ca*600.or.Ub/=Cb*1800) error stop 'zero-step pair changed state'
++    endif
++    write(u,'(3(i0,","),*(es25.17,:,","))') a,b,10*drift+level,dt,rhoa,rhob,Ca,Cb,fraction,drag,K, &
++      600._wp,1800._wp,va0,vb0,va,vb,Ua/Ca,Ub/Cb,momentum_residual,energy_residual,thermal_residual
++   enddo
++  enddo
++ enddo
++enddo
++! The original closed thermal-exchange fixture, now using one shared transfer.
++Ca=2e11_wp*kB/(5._wp/3-1);Cb=8e10_wp*kB/(5._wp/3-1);K=.2_wp*Ca
++do level=0,2
++ nt=5*2**level;dt=1._wp/nt
++ Ua=Ca*300;Ub=Cb*1800;va=0;vb=0
++ do it=1,nt
++  call advance_pair_exchange(1._wp,1._wp,Ca,Cb,.5_wp,0._wp,K,dt,va,vb,Ua,Ub)
++ enddo
++ write(u,'(3(i0,","),*(es25.17,:,","))') 0,0,level,1._wp,1._wp,1._wp,Ca,Cb,.5_wp,0._wp,K, &
++   300._wp,1800._wp,[0._wp,0._wp,0._wp],[0._wp,0._wp,0._wp],va,vb,Ua/Ca,Ub/Cb,0._wp,0._wp,0._wp
++enddo
++close(u)
++end program pair_exchange_probe
+diff --git a/test/qualification/physics_updates_protocol.json b/test/qualification/physics_updates_protocol.json
+new file mode 100644
+index 00000000..e1e506c4
+--- /dev/null
++++ b/test/qualification/physics_updates_protocol.json
+@@ -0,0 +1,25 @@
++{
++  "schema": "gemini.physics.source.updates.1",
++  "declared_before_execution": true,
++  "base_candidate": "a15a0ccd5bba2fcad9b57997cf9c1330dd211de3",
++  "native_acceptance": "All nine original native references; all existing tolerances and archives unchanged. Any failed, skipped, or unexecuted required test is not a pass.",
++  "midpoint_diffusion": {
++    "scope": "standard energy_diffusion, solver 2 only; opt-in CMake switch; virtual BE half-step conductivity predictor",
++    "fixtures": "PC03 unchanged proper transient window, both densities; PC04 independent flux convergence",
++    "space_order_min": 1.8,
++    "time_order_min": 1.8,
++    "normalized_energy_balance_max": 1e-11,
++    "unchanged_boundary_absolute_max": 1e-11
++  },
++  "pair_exchange": {
++    "scope": "callable constant-rate closed pair operator, not wired into split application sources",
++    "rate_model_proposal": "one averaged reciprocal momentum coefficient, translational thermal power, species heat capacities, mass-fraction friction partition",
++    "rates_are_not_independently_validated": true,
++    "identity_fixtures": "All 21 species pairs at zero and finite drift",
++    "normalized_momentum_max": 1e-11,
++    "normalized_total_energy_max": 1e-11,
++    "independent_oracle": "SciPy Radau integration of both momenta and both internal energies, including time-varying friction power; tighter oracle control",
++    "relative_oracle_max": 1e-10
++  },
++  "non_claims": ["No full coupled spatial qualification inferred", "No full total-energy inventory inferred", "No outside approval required for law-based closure", "No outdated optional increments finding repeated"]
++}
+diff --git a/test/qualification/temperature_floor.f90 b/test/qualification/temperature_floor.f90
+new file mode 100644
+index 00000000..fe55d300
+--- /dev/null
++++ b/test/qualification/temperature_floor.f90
+@@ -0,0 +1,39 @@
++program temperature_floor
++use phys_consts, only: wp,lsp,kB,gammas
++use meshobj_cart, only: cartmesh
++use grid, only: set_total_grid_sizes,set_subgrid_sizes
++use multifluid, only: rhoe2T,T2rhoe
++use transport_audit, only: audit_transport_init,audit_step,audit_mass_start,audit_mass_finish
++implicit none(type,external)
++type(cartmesh) :: x
++real(wp) :: ns(-1:4,-1:4,-1:4,lsp),rhoe(-1:4,-1:4,-1:4,lsp),Ts(-1:4,-1:4,-1:4,lsp)
++real(wp) :: expected
++integer :: s,unit
++character(4096) :: directory
++call get_command_argument(1,directory)
++call set_total_grid_sizes(2,2,2);call set_subgrid_sizes(2,2)
++x%lx1=2;x%lx2=2;x%lx3=2
++allocate(x%h1(-1:4,-1:4,-1:4),x%h2(-1:4,-1:4,-1:4),x%h3(-1:4,-1:4,-1:4))
++allocate(x%dx1i(2),x%dx2i(2),x%dx3i(2),x%nullpts(2,2,2),x%inull(1,3))
++x%h1=1;x%h2=1;x%h3=1;x%dx1i=[1._wp,2._wp];x%dx2i=[3._wp,4._wp];x%dx3i=[5._wp,6._wp]
++x%nullpts=.false.;x%nullpts(2,2,2)=.true.;x%lnull=1;x%inull(1,:)=[2,2,2]
++ns=1e10_wp;ns(:,:,:,lsp)=6e10_wp
++do s=1,lsp
++  rhoe(:,:,:,s)=ns(:,:,:,s)*kB*50._wp/(gammas(s)-1)
++enddo
++call audit_transport_init(trim(directory),0)
++call audit_step(0._wp,1._wp)
++call audit_mass_start(ns,x)
++call rhoe2T(ns,rhoe,Ts)
++if(any(Ts/=100._wp)) error stop 'Temperature conversion floor not applied'
++call T2rhoe(ns,Ts,rhoe)
++do s=1,lsp
++  ! Total volume is 3*7*11 minus the 2*4*6 null-cell volume: 183.
++  expected=183._wp*ns(1,1,1,s)*kB*50._wp/(gammas(s)-1)
++  print '(I0,1X,ES24.16E3)',s,expected
++enddo
++call audit_mass_finish(ns)
++open(newunit=unit,file=trim(directory)//'/temperature.bin',access='stream',form='unformatted',status='replace')
++write(unit) Ts,rhoe
++close(unit)
++end program
+diff --git a/test/qualification/test_clock_inventory.py b/test/qualification/test_clock_inventory.py
+new file mode 100644
+index 00000000..dc1809fc
+--- /dev/null
++++ b/test/qualification/test_clock_inventory.py
+@@ -0,0 +1,36 @@
++"""Joint evidence deletion must not turn unexecuted steps into passes."""
++from pathlib import Path
++import sys,tempfile,unittest
++sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts/qualification'))
++from check_sources import check_clock_inventory
++
++
++class ClockInventory(unittest.TestCase):
++    def test_complete_run_and_float64_clock_roundoff(self):
++        with tempfile.TemporaryDirectory() as d:
++            p=Path(d);(p/'inputs').mkdir()
++            (p/'inputs/config.nml').write_text('&base\n tdur = 3D0, ! fixed duration\n/\n')
++            check_clock_inventory(p,{(0.,1.),(1.,1.),(2.,1.)})
++            check_clock_inventory(p,{(0.,1.),(1.,1.),(2.+1e-15,1.)})
++
++    def test_missing_first_middle_and_final_steps(self):
++        with tempfile.TemporaryDirectory() as d:
++            p=Path(d);(p/'inputs').mkdir()
++            (p/'inputs/config.nml').write_text('tdur = 3\n')
++            for clocks,message in [({(1.,1.),(2.,1.)},'begin'),
++                                    ({(0.,1.),(2.,1.)},'Noncontiguous'),
++                                    ({(0.,1.),(1.,1.)},'duration')]:
++                with self.subTest(clocks=clocks),self.assertRaisesRegex(ValueError,message):
++                    check_clock_inventory(p,clocks)
++
++    def test_overlaps_nonadvancing_clocks_and_invalid_duration(self):
++        with tempfile.TemporaryDirectory() as d:
++            p=Path(d)
++            for clocks in [{(0.,2.),(1.,1.)},{(0.,0.)},{(-1.,1.)},{(0.,float('nan'))}]:
++                with self.subTest(clocks=clocks),self.assertRaises(ValueError):check_clock_inventory(p,clocks)
++            (p/'inputs').mkdir()
++            for value in ['nan','inf','0','-1','1,2','']:
++                (p/'inputs/config.nml').write_text('tdur = '+value+'\n')
++                with self.subTest(value=value),self.assertRaises(ValueError):check_clock_inventory(p,{(0.,1.)})
++
++if __name__=='__main__':unittest.main()
+diff --git a/test/qualification/test_midpoint_diffusion.py b/test/qualification/test_midpoint_diffusion.py
+new file mode 100644
+index 00000000..c2553d18
+--- /dev/null
++++ b/test/qualification/test_midpoint_diffusion.py
+@@ -0,0 +1,35 @@
++"""Run native operator, verify observed stages, then compare independent laws."""
++import argparse
++import json
++from pathlib import Path
++import subprocess
++import sys
++import tempfile
++
++p=argparse.ArgumentParser()
++p.add_argument('--source',type=Path,required=True)
++p.add_argument('--build',type=Path,required=True)
++p.add_argument('--work',type=Path,required=True)
++a=p.parse_args()
++# Keep each invocation isolated, including concurrent or repeated CTest calls.
++# No existing evidence or user directory is removed.
++a.work.mkdir(parents=True,exist_ok=True)
++invocation=Path(tempfile.mkdtemp(prefix='run-',dir=a.work))
++native=invocation/'native';trace=invocation/'trace'
++scripts=a.source/'scripts/qualification'
++subprocess.run([sys.executable,str(scripts/'run_physics_native.py'),'--build',str(a.build),
++    '--source',str(a.source/'test/qualification/midpoint_diffusion_probe.f90'),'--work',str(native)],check=True)
++subprocess.run([sys.executable,str(scripts/'trace_diffusion_stages.py'),
++    '--source',str(a.source/'src/numerical/diffusion/PDEparabolic.f90'),
++    '--build',str(a.build),'--probe',str(native/'physics_native.o'),'--work',str(trace)],check=True)
++try:
++    revision=subprocess.check_output(['git','-C',str(a.source),'rev-parse','HEAD'],text=True).strip()
++except subprocess.CalledProcessError:
++    revision='source-export; see PACKAGE_PROVENANCE.json'
++subprocess.run([sys.executable,str(a.source/'test/qualification/analyze_midpoint_diffusion.py'),
++    '--work',str(native),'--trace',str(trace/'tr-stages.csv'),'--candidate',revision],check=True)
++result=json.loads((native/'physics-results.json').read_text())
++a.work.joinpath('latest-result.json').write_text(json.dumps({'invocation':str(invocation),
++    'result':result},indent=2)+'\n')
++assert result['passed'] and all(r['native_stage_trace_used'] and r['fixed_boundary_max_error_K']<=1e-11
++    and r['floor_cell_events']==0 for r in result['PC03']['cases'])
+diff --git a/test/qualification/test_pair_exchange.py b/test/qualification/test_pair_exchange.py
+new file mode 100644
+index 00000000..244caf5d
+--- /dev/null
++++ b/test/qualification/test_pair_exchange.py
+@@ -0,0 +1,63 @@
++"""Independent coupled ODE oracle; acceptance does not validate rate amplitudes."""
++import argparse
++import csv
++import hashlib
++import json
++import subprocess
++from pathlib import Path
++
++import numpy as np
++from scipy.integrate import solve_ivp
++
++p = argparse.ArgumentParser()
++p.add_argument('--exe', type=Path, required=True)
++p.add_argument('--output', type=Path, required=True)
++a = p.parse_args()
++a.output.parent.mkdir(parents=True, exist_ok=True)
++csv_path = a.output.with_suffix('.csv')
++subprocess.run([str(a.exe), str(csv_path)], check=True)
++with csv_path.open() as f:
++    rows = [{k: float(v) for k, v in row.items()} for row in csv.DictReader(f)]
++assert len(rows) == 381 and all(np.isfinite(list(r.values())).all() for r in rows)
++results = []
++for r in rows:
++    ca, cb, ra, rb, drag, k, dt, fraction = (r[x] for x in
++        ('Ca', 'Cb', 'rhoa', 'rhob', 'drag', 'K', 'dt', 'fraction_a'))
++    initial = np.array([r[x] for x in ('va0x','va0y','va0z','vb0x','vb0y','vb0z','Ta0','Tb0')])
++    observed = np.array([r[x] for x in ('vax','vay','vaz','vbx','vby','vbz','Ta','Tb')])
++    def rhs(t, y):
++        force = drag*(y[3:6]-y[:3])
++        heat = drag*np.dot(y[:3]-y[3:6], y[:3]-y[3:6])
++        transfer = k*(y[7]-y[6])
++        return dt*np.r_[force/ra, -force/rb,
++            (transfer+fraction*heat)/ca, (-transfer+(1-fraction)*heat)/cb]
++    if dt:
++        oracle = solve_ivp(rhs, (0.,1.), initial, method='Radau', rtol=2e-12, atol=2e-11)
++        control = solve_ivp(rhs, (0.,1.), initial, method='Radau', rtol=2e-13, atol=2e-12)
++        assert oracle.success and control.success
++        expected = control.y[:,-1]
++        control_error = np.max(abs(oracle.y[:,-1]-expected)/np.maximum(abs(expected), 1.))
++    else:
++        expected=initial;control_error=0.
++        # The native probe checks U and v bitwise at dt=0. CSV temperatures
++        # include a rounded U/Cv conversion even when the operator is a no-op.
++    error = np.max(abs(observed-expected)/np.maximum(abs(expected),1.))
++    e0=ca*initial[6]+cb*initial[7]+ra*np.dot(initial[:3],initial[:3])/2+rb*np.dot(initial[3:6],initial[3:6])/2
++    e1=ca*observed[6]+cb*observed[7]+ra*np.dot(observed[:3],observed[:3])/2+rb*np.dot(observed[3:6],observed[3:6])/2
++    energy=abs(e1-e0)/abs(e0)
++    momentum=np.max(abs(ra*(observed[:3]-initial[:3])+rb*(observed[3:6]-initial[3:6])))/max(
++        ra*np.linalg.norm(initial[:3])+rb*np.linalg.norm(initial[3:6]),np.finfo(float).tiny)
++    identity=max(r[x] for x in ('instantaneous_momentum','instantaneous_energy','instantaneous_thermal'))
++    passed=error<=1e-10 and control_error<=1e-10 and energy<=1e-11 and momentum<=1e-11 and identity<=1e-11
++    results.append({'species':[int(r['a']),int(r['b'])], 'level':int(r['level']),
++        'oracle_relative_error':float(error), 'oracle_control_error':float(control_error),
++        'energy_relative_error':float(energy), 'momentum_relative_error':float(momentum),
++        'instantaneous_identity_error':float(identity), 'passed':bool(passed)})
++result={'schema':'gemini.pair.exchange.validation.1', 'scope':'closed constant-rate pair operator; application source coupling unexecuted',
++    'rate_magnitudes_independently_validated':False, 'case_count':len(results),
++    'passed':all(r['passed'] for r in results), 'cases':results,
++    'executable_sha256':hashlib.sha256(a.exe.read_bytes()).hexdigest(),
++    'csv_sha256':hashlib.sha256(csv_path.read_bytes()).hexdigest()}
++a.output.write_text(json.dumps(result,indent=2)+'\n')
++print(json.dumps({k:v for k,v in result.items() if k!='cases'}))
++raise SystemExit(0 if result['passed'] else 1)
+diff --git a/test/qualification/test_profile.py b/test/qualification/test_profile.py
+index 4bb64907..1e79edd2 100644
+--- a/test/qualification/test_profile.py
++++ b/test/qualification/test_profile.py
+@@ -110,6 +110,8 @@ class Profile(unittest.TestCase):
+             def write():
+                 with f.open('w') as h:
+                     w=csv.DictWriter(h,fieldnames=fields);w.writeheader();w.writerows(rows)
++                (p/'continuity-r00000000.csv').write_text('t,dt\n'+
++                    ''.join(f'{t},{dt}\n' for t,dt in sorted({(r['t'],r['dt']) for r in rows})))
+             write();self.assertTrue(check(p,layout=[1,1])['passed'])
+             # A complete first step must not hide a missing stage in a later step.
+             complete=[dict(r) for r in rows]
+diff --git a/test/qualification/test_source_ledger.py b/test/qualification/test_source_ledger.py
+index 14189c5e..9804c775 100644
+--- a/test/qualification/test_source_ledger.py
++++ b/test/qualification/test_source_ledger.py
+@@ -15,7 +15,7 @@ class Sources(unittest.TestCase):
+             w=csv.DictWriter(f,cols);w.writeheader();w.writerows(data)
+         (p/'continuity-r00000000.csv').write_text('t,dt\n0,1\n1,1\n')
+         (p/'temperature-floor-r00000000.csv').write_text('t,dt,stage,species,energy_added_J\n'+
+-            ''.join(f'{t},1,{stage},{s},0\n' for t in (0,1) for stage in (1,2) for s in range(1,8)))
++            ''.join(f'{t},1,{stage},{s},0\n' for t in (0,1) for stage in (1,2,3) for s in range(1,8)))
+         return p/'sources-r00000000.csv'
+ 
+     def test_known_balance_corruption_and_per_step_coverage(self):
+@@ -47,7 +47,7 @@ class Sources(unittest.TestCase):
+             result=check(p,4)
+             self.assertTrue(result['passed'])
+             self.assertEqual(result['rows'],2*4*len(EXPECTED))
+-            self.assertEqual(result['temperature_floor_rows'],2*4*2*7)
++            self.assertEqual(result['temperature_floor_rows'],2*4*3*7)
+             last=p/'sources-r00000003.csv';original=last.read_text()
+             last.write_text(original.replace(',105,5,10,',',105,7,10,',1))
+             self.assertFalse(check(p,4)['passed'])
+diff --git a/test/qualification/test_temperature_floor.py b/test/qualification/test_temperature_floor.py
+new file mode 100644
+index 00000000..2d5d80f2
+--- /dev/null
++++ b/test/qualification/test_temperature_floor.py
+@@ -0,0 +1,22 @@
++"""Measure the conversion floor against known physical volume and heat capacity."""
++import argparse,csv,os
++from pathlib import Path
++import subprocess,tempfile
++
++p=argparse.ArgumentParser();p.add_argument('--exe',type=Path,required=True);a=p.parse_args()
++with tempfile.TemporaryDirectory() as d:
++    p=Path(d);audited=p/'audited';plain=p/'plain';audited.mkdir();plain.mkdir()
++    outputs=[]
++    for directory,flag in [(audited,'1'),(plain,'0')]:
++        run=subprocess.run([str(a.exe),str(directory)],env=dict(os.environ,GEMINI_NUMERICAL_AUDIT=flag),capture_output=True,text=True)
++        assert run.returncode==0,run.stdout+run.stderr
++        outputs.append(run.stdout)
++    assert outputs[0]==outputs[1],'Diagnostics changed native oracle output'
++    assert (audited/'temperature.bin').read_bytes()==(plain/'temperature.bin').read_bytes(),'Diagnostics changed native state'
++    expected={int(line.split()[0]):float(line.split()[1]) for line in outputs[0].splitlines()}
++    with (audited/'temperature-floor-r00000000.csv').open() as f:rows=list(csv.DictReader(f))
++    assert len(rows)==7 and {int(r['stage']) for r in rows}=={3},rows
++    reported={int(r['species']):float(r['energy_added_J']) for r in rows}
++    assert set(reported)==set(expected)==set(range(1,8)),rows
++    assert all(abs(reported[s]-e)<=1e-11*abs(e) for s,e in expected.items()),rows
++    print('PASS: seven species; 50-to-100 K conversion floor; 183 m3 physical volume; null/ghost exclusions; identical state with diagnostics enabled and disabled.')
+diff --git a/test/qualification/test_transport_inventory.py b/test/qualification/test_transport_inventory.py
+new file mode 100644
+index 00000000..d5efd6e1
+--- /dev/null
++++ b/test/qualification/test_transport_inventory.py
+@@ -0,0 +1,45 @@
++"""A complete surviving step cannot conceal missing numerical evidence."""
++import csv
++from pathlib import Path
++import sys,tempfile,unittest
++sys.path.insert(0,str(Path(__file__).resolve().parents[2]/'scripts/qualification'))
++from check_transport import check
++
++class TransportInventory(unittest.TestCase):
++    def fixture(self,directory):
++        fields='t,dt,quantity,species,axis,before,after,delta,outward,min_face,max_face,scale,residual,normalized_residual'.split(',')
++        records=[dict(zip(fields,[t,1,q,s,a,100,99,-1,1,0,1,100,0,0]))
++                 for t in (0,1) for q in (1,2,3)
++                 for s in range(1,8 if q==3 else 7) for a in (1,2,3)]
++        path=directory/'transport-r00000000.csv'
++        def save(rows):
++            with path.open('w') as stream:
++                writer=csv.DictWriter(stream,fields);writer.writeheader();writer.writerows(rows)
++        save(records)
++        (directory/'continuity-r00000000.csv').write_text('t,dt\n0,1\n1,1\n')
++        return records,save
++
++    def test_entire_later_step_is_required(self):
++        with tempfile.TemporaryDirectory() as d:
++            directory=Path(d);records,save=self.fixture(directory)
++            self.assertTrue(check(directory,layout=[1,1])['passed'])
++            save([r for r in records if r['t']==0])
++            with self.assertRaisesRegex(ValueError,'Transport/continuity'):check(directory,layout=[1,1])
++
++    def test_recorded_state_change_must_match_increment(self):
++        with tempfile.TemporaryDirectory() as d:
++            directory=Path(d);records,save=self.fixture(directory)
++            # The declared scale remains valid, and delta + outward still closes.
++            records[0]['after']=50;save(records)
++            self.assertFalse(check(directory,layout=[1,1])['passed'])
++
++    def test_invalid_budgets_and_scales_are_rejected(self):
++        with tempfile.TemporaryDirectory() as d:
++            directory=Path(d);records,save=self.fixture(directory)
++            for budget in (0,-1,float('inf'),float('nan')):
++                with self.subTest(budget=budget),self.assertRaisesRegex(ValueError,'budget'):
++                    check(directory,budget=budget,layout=[1,1])
++            records[0]['scale']=1;save(records)
++            with self.assertRaisesRegex(ValueError,'scale'):check(directory,layout=[1,1])
++
++if __name__=='__main__':unittest.main()

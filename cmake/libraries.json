@@ -16,8 +16,8 @@
   },
   "hwm14": {
     "stem": "https://github.com/gemini3d/hwm14/archive/",
-    "archive": "1f289bfc101235cea1d8ebb58253dab736d4fd56.tar.gz",
-    "sha256": "5b6c83425acc87febf01acc3dea6c313bd5bd4c0883640fba517d3a7bda04ed8"
+    "archive": "f8f07c9becb9b2b33c13f8df8907e89981999776.tar.gz",
+    "sha256": "a62f58c04a8ed8e58279df57e0be2719122064fe65b8398a2e3beac9c4b8041a"
   },
   "msis": {
     "stem": "https://github.com/gemini3d/msis/archive/",

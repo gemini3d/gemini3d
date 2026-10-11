@@ -8,7 +8,7 @@ runs:
   steps:
   - name: Install CMake ${{ matrix.cmake_version }}
     shell: bash
-    run: cmake -Dversion=${{ matrix.cmake_version }} -P .github/workflows/composite-cmake/install_cmake.cmake
+    run: cmake -Dversion=${{ matrix.cmake_version }} -P .github/actions/composite-cmake/install_cmake.cmake
 
   - name: CMake path
     shell: bash

@@ -10,7 +10,7 @@ import argparse
 import json
 import math
 from pathlib import Path
-from check_sources import rows
+from check_sources import rows,check_clock_inventory
 
 EXPECTED={(stage,s) for stage in (1,2) for s in range(1,8)}
 
@@ -49,6 +49,7 @@ def check(directory,ranks,budget=1e-11):
         clocks=these
         continuity={(r['t'],r['dt']) for r in rows(directory/f'continuity-r{rank:08d}.csv')}
         if these!=continuity:raise ValueError('Energy/continuity step inventory differs')
+        check_clock_inventory(directory,these)
     return dict(schema='gemini.energy.operators.1',passed=max(worst,row_residual)<=budget,
         ranks=ranks,rows=count,steps=len(clocks),budget=budget,max_normalized_residual=worst,
         max_reported_residual_inconsistency=row_residual,integrated_channels_J=totals,

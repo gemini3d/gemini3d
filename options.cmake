@@ -20,6 +20,10 @@ endif()
 
 option(gemini3d_test_simulations "register required reference simulations (OFF is unit-only, not release verification)" ON)
 
+# The frozen reference profile remains the default. This switch selects the
+# proposed nonlinear time-centering update for the standard energy path.
+option(gemini3d_midpoint_conduction "use experimental midpoint conductivity in standard TRBDF2 energy diffusion" OFF)
+
 if(gemini3d_realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
   set(gemini3d_arith s)
@@ -38,6 +42,8 @@ option(gemini3d_python "Python-based self-checks")
 option(gemini3d_matlab "Matlab-based self-checks")
 
 option(gemini3d_msis2 "enable MSIS2 neutral atmosphere model (must specify in config.nml as well)" on)
+
+option(gemini3d_fail_mpif08 "Fail the build if MPI-3 Fortran module mpi_f08 is not found" ON)
 
 # append .debug to debug libraries, because the computation speed penalty is so great
 set(CMAKE_DEBUG_POSTFIX .debug)

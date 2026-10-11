@@ -1,0 +1,25 @@
+{
+  "schema": "gemini.physics.source.updates.1",
+  "declared_before_execution": true,
+  "base_candidate": "a15a0ccd5bba2fcad9b57997cf9c1330dd211de3",
+  "native_acceptance": "All nine original native references; all existing tolerances and archives unchanged. Any failed, skipped, or unexecuted required test is not a pass.",
+  "midpoint_diffusion": {
+    "scope": "standard energy_diffusion, solver 2 only; opt-in CMake switch; virtual BE half-step conductivity predictor",
+    "fixtures": "PC03 unchanged proper transient window, both densities; PC04 independent flux convergence",
+    "space_order_min": 1.8,
+    "time_order_min": 1.8,
+    "normalized_energy_balance_max": 1e-11,
+    "unchanged_boundary_absolute_max": 1e-11
+  },
+  "pair_exchange": {
+    "scope": "callable constant-rate closed pair operator, not wired into split application sources",
+    "rate_model_proposal": "one averaged reciprocal momentum coefficient, translational thermal power, species heat capacities, mass-fraction friction partition",
+    "rates_are_not_independently_validated": true,
+    "identity_fixtures": "All 21 species pairs at zero and finite drift",
+    "normalized_momentum_max": 1e-11,
+    "normalized_total_energy_max": 1e-11,
+    "independent_oracle": "SciPy Radau integration of both momenta and both internal energies, including time-varying friction power; tighter oracle control",
+    "relative_oracle_max": 1e-10
+  },
+  "non_claims": ["No full coupled spatial qualification inferred", "No full total-energy inventory inferred", "No outside approval required for law-based closure", "No outdated optional increments finding repeated"]
+}

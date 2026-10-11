@@ -24,6 +24,8 @@ use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct, thermal_conduct_new
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
+use nonlinear_diffusion, only: midpoint_TRBDF23D
+use diffusion_features, only: midpoint_conduction_enabled
 use grid, only: lx1, lx2, lx3, gridflag
 use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
@@ -274,11 +276,18 @@ end subroutine source_neut
 subroutine rhoe2T(ns,rhoes,Ts)
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,rhoes,Ts
   integer :: isp,lsp
+  integer :: n1,n2,n3
+  real(wp), allocatable :: before(:,:,:)
 
   lsp=size(rhoes,4)
+  n1=size(Ts,1)-4;n2=size(Ts,2)-4;n3=size(Ts,3)-4
+  if(audit_transport_enabled) allocate(before(n1,n2,n3))
   do isp=1,lsp
     Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+    if(audit_transport_enabled) before=Ts(1:n1,1:n2,1:n3,isp)
     Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+    if(audit_transport_enabled) call audit_temperature_floor(3,isp,before,Ts(1:n1,1:n2,1:n3,isp), &
+      ns(1:n1,1:n2,1:n3,isp)*kB/(gammas(isp)-1))
     !! convert internal specific energy density back into temperature
   end do
 end subroutine rhoe2T
@@ -455,7 +464,11 @@ subroutine energy_diffusion(dt,x,ns,Ts,J1,nn,Tn,flagdiffsolve,Teinf)
       case (1)
         param=backEuler3D(param,A,B,C,D,E,dt,x,increments)    !1st order method
       case (2)
-        param=TRBDF23D(param,A,B,C,D,E,dt,x,increments)       !2nd order method
+        if(midpoint_conduction_enabled) then
+          param=midpoint_TRBDF23D(isp,x,ns(:,:,:,isp),Ts(:,:,:,isp),nn,J1,Tn,Teinf,dt,increments)
+        else
+          param=TRBDF23D(param,A,B,C,D,E,dt,x,increments)
+        endif
       case default
         print*, 'Unsupported diffusion solver type/mode:  ',flagdiffsolve,'.  Should be either 1 or 2.'
         error stop

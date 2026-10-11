@@ -15,7 +15,7 @@ class Sources(unittest.TestCase):
             w=csv.DictWriter(f,cols);w.writeheader();w.writerows(data)
         (p/'continuity-r00000000.csv').write_text('t,dt\n0,1\n1,1\n')
         (p/'temperature-floor-r00000000.csv').write_text('t,dt,stage,species,energy_added_J\n'+
-            ''.join(f'{t},1,{stage},{s},0\n' for t in (0,1) for stage in (1,2) for s in range(1,8)))
+            ''.join(f'{t},1,{stage},{s},0\n' for t in (0,1) for stage in (1,2,3) for s in range(1,8)))
         return p/'sources-r00000000.csv'
 
     def test_known_balance_corruption_and_per_step_coverage(self):
@@ -47,7 +47,7 @@ class Sources(unittest.TestCase):
             result=check(p,4)
             self.assertTrue(result['passed'])
             self.assertEqual(result['rows'],2*4*len(EXPECTED))
-            self.assertEqual(result['temperature_floor_rows'],2*4*2*7)
+            self.assertEqual(result['temperature_floor_rows'],2*4*3*7)
             last=p/'sources-r00000003.csv';original=last.read_text()
             last.write_text(original.replace(',105,5,10,',',105,7,10,',1))
             self.assertFalse(check(p,4)['passed'])

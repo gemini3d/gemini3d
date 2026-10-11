@@ -110,6 +110,8 @@ class Profile(unittest.TestCase):
             def write():
                 with f.open('w') as h:
                     w=csv.DictWriter(h,fieldnames=fields);w.writeheader();w.writerows(rows)
+                (p/'continuity-r00000000.csv').write_text('t,dt\n'+
+                    ''.join(f'{t},{dt}\n' for t,dt in sorted({(r['t'],r['dt']) for r in rows})))
             write();self.assertTrue(check(p,layout=[1,1])['passed'])
             # A complete first step must not hide a missing stage in a later step.
             complete=[dict(r) for r in rows]

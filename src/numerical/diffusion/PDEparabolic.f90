@@ -170,6 +170,8 @@ if (present(Tsmax_mid)) TR(lx1)=Tsmax_mid
 !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
+call eliminate_dirichlet_columns(M,TR,BCtype)
+call scale_interior_rows(M,TR,dt/2)
 call gbsv(M,TR,kl=2,info=info)
 call check_solver_info(info,'TRBDF21D TR stage')
 
@@ -259,6 +261,8 @@ end if
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
+call eliminate_dirichlet_columns(M,TRBDF21D,BCtype)
+call scale_interior_rows(M,TRBDF21D,dt/3)
 call gbsv(M,TRBDF21D,kl=2,info=info)
 call check_solver_info(info,'TRBDF21D BDF2 stage')
 
@@ -392,6 +396,8 @@ end if
 
 !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
+call eliminate_dirichlet_columns(M,backEuler1D,BCtype)
+call scale_interior_rows(M,backEuler1D,dt)
 call gbsv(M,backEuler1D,kl=2,info=info)
 call check_solver_info(info,'backEuler1D')
 
@@ -434,5 +440,44 @@ pure function parabolic_terms(T,A,B,C,D,E,dx,dxi) result(terms)
     terms(i,4)=E(i)
   enddo
 end function parabolic_terms
+
+! Keep the algebraic endpoint rows at unit scale while bringing each interior
+! stage equation to dimensionless time. SI diffusion coefficients at low
+! density can otherwise dwarf the endpoint rows and lose prescribed values
+! through banded-LU pivoting. The equation and the method are unchanged.
+! Move known Dirichlet values into the interior RHS before pivoting. This
+! decouples endpoint rows from the stiff interior and preserves prescribed
+! values exactly; Neumann endpoint equations retain their coupled columns.
+pure subroutine eliminate_dirichlet_columns(matrix,rhs,bc_type)
+real(wp),intent(inout)::matrix(:,:),rhs(:)
+integer,intent(in)::bc_type(2)
+integer::i,n
+n=size(rhs)
+if(bc_type(1)==0)then
+  do i=2,min(3,n-1)
+    rhs(i)=rhs(i)-matrix(4+i,1)*rhs(1)
+    matrix(4+i,1)=0
+  enddo
+endif
+if(bc_type(2)==0)then
+  do i=max(2,n-2),n-1
+    rhs(i)=rhs(i)-matrix(5+i-n,n)*rhs(n)
+    matrix(5+i-n,n)=0
+  enddo
+endif
+end subroutine eliminate_dirichlet_columns
+
+pure subroutine scale_interior_rows(matrix,rhs,stage_dt)
+real(wp),intent(inout)::matrix(:,:),rhs(:)
+real(wp),intent(in)::stage_dt
+integer::i,j,n
+n=size(rhs)
+do i=2,n-1
+  do j=max(1,i-2),min(n,i+2)
+    matrix(5+i-j,j)=matrix(5+i-j,j)*stage_dt
+  enddo
+  rhs(i)=rhs(i)*stage_dt
+enddo
+end subroutine scale_interior_rows
 
 end module PDEparabolic

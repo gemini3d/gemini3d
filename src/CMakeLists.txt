@@ -17,6 +17,16 @@ add_subdirectory(temporal)
 add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const gemini3d_config meshobj)
 
+if(gemini3d_midpoint_conduction)
+  set(midpoint_conduction_fortran ".true.")
+else()
+  set(midpoint_conduction_fortran ".false.")
+endif()
+configure_file(numerical/diffusion/diffusion_features.in.f90 diffusion_features.f90 @ONLY)
+add_library(nonlinear_diffusion OBJECT numerical/diffusion/nonlinear_diffusion.f90
+  ${CMAKE_CURRENT_BINARY_DIR}/diffusion_features.f90)
+target_link_libraries(nonlinear_diffusion PRIVATE collision const diffusion meshobj)
+
 # --- other libs
 
 add_subdirectory(neutral)
@@ -29,7 +39,7 @@ add_library(multifluid OBJECT multifluid/multifluid.f90
 $<TARGET_OBJECTS:grid>
 )
 target_link_libraries(multifluid PRIVATE
-advec transport_audit calculus collision const diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
+advec transport_audit calculus collision const diffusion nonlinear_diffusion meshobj precipdata ionization precipBCs sources timeutils gemini3d_config neutral)
 
 add_library(gemini_work_def OBJECT intvars/gemini_work_def.f90)
 target_link_libraries(gemini_work_def PRIVATE const inputdata neutral precipdata efielddata
@@ -75,7 +85,7 @@ advec transport_audit
 calculus gemini3d_config
 const
 collision
-diffusion fang interp
+diffusion nonlinear_diffusion pair_exchange fang interp
 ionization
 inputdata precipdata efielddata solfluxdata
 gemini3d_sysinfo
@@ -103,7 +113,7 @@ advec_mpi
 calculus gemini3d_config
 const
 collision
-diffusion fang interp
+diffusion nonlinear_diffusion pair_exchange fang interp
 ionization
 ionization_mpi
 inputdata precipdata efielddata solfluxdata

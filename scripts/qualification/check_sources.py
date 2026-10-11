@@ -8,9 +8,41 @@ import argparse
 import csv
 import json
 import math
+import re
 from pathlib import Path
 
 EXPECTED={(q,s) for q in (1,2,3) for s in range(1,8 if q==3 else 7)}
+
+
+def check_clock_inventory(directory,clocks):
+    """Require contiguous whole-run evidence, with float64 clock roundoff only.
+
+    Cross-ledger agreement cannot reveal a step deleted from every file. The
+    admitted whole-run profile starts at zero. Its immutable configuration
+    supplies the final duration when present; synthetic unit fixtures may omit
+    it. This check changes no scientific or numerical residual budget.
+    """
+    ordered=sorted(clocks)
+    if not ordered:raise ValueError('No numerical ledger clocks')
+    for t,dt in ordered:
+        if not all(math.isfinite(v) for v in (t,dt)) or t<0 or dt<=0 or t+dt<=t:
+            raise ValueError('Invalid numerical ledger clock')
+    def same(a,b):
+        return abs(a-b)<=64*math.ulp(max(1.,abs(a),abs(b)))
+    if not same(ordered[0][0],0.):
+        raise ValueError('Numerical ledger does not begin at zero')
+    for (t,dt),(next_t,_) in zip(ordered,ordered[1:]):
+        if not same(t+dt,next_t):
+            raise ValueError('Noncontiguous numerical ledger clocks')
+    cfg=Path(directory)/'inputs/config.nml'
+    if cfg.is_file():
+        values=re.findall(r'(?im)^[ \t]*tdur[ \t]*=([^!\r\n]*)',cfg.read_text())
+        if len(values)!=1:raise ValueError('Exactly one declared duration required')
+        try:stop=float(values[0].strip().removesuffix(',').strip().replace('D','e').replace('d','e'))
+        except ValueError as e:raise ValueError('Invalid declared duration') from e
+        if not math.isfinite(stop) or stop<=0:raise ValueError('Invalid declared duration')
+        if not same(sum(ordered[-1]),stop):
+            raise ValueError('Numerical ledger does not reach declared duration')
 
 
 def rows(path):
@@ -51,6 +83,7 @@ def check(directory,ranks,budget=1e-11):
         common=clocks
         continuity={(r['t'],r['dt']) for r in rows(directory/f'continuity-r{rank:08d}.csv')}
         if clocks!=continuity:raise ValueError('Source/continuity steps do not match')
+        check_clock_inventory(directory,clocks)
         seen=set()
         for row in rows(directory/f'temperature-floor-r{rank:08d}.csv'):
             clock=(row['t'],row['dt']);key=(*clock,int(row['stage']),int(row['species']))
@@ -58,7 +91,7 @@ def check(directory,ranks,budget=1e-11):
             if row['energy_added_J']<0:raise ValueError('Negative energy attributed to a lower floor')
             seen.add(key);label=f"{int(row['stage'])}:{int(row['species'])}"
             floors[label]=floors.get(label,0.)+row['energy_added_J'];floor_rows+=1
-        expected={(*clock,stage,s) for clock in clocks for stage in (1,2) for s in range(1,8)}
+        expected={(*clock,stage,s) for clock in clocks for stage in (1,2,3) for s in range(1,8)}
         if seen!=expected:raise ValueError('Missing standard-energy temperature-floor stages')
     return dict(schema='gemini.native.sources.1',passed=max(worst,worst_state)<=budget,
                 ranks=ranks,rows=count,steps=len(common),budget=budget,max_normalized_residual=worst,

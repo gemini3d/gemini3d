@@ -576,7 +576,7 @@ contains
       !> get neutral background
 !      if ( get_it()/=1 .and. cfg%flagneuBG .and. t>tneuBG) then
       if ( get_it()==1 .or. (cfg%flagneuBG .and. t>tneuBG) ) then
-        print*, 'Updating neutrals...'
+        !print*, 'Updating neutrals...'
         !^we dont' throttle for tneuBG so we have to do things this way to not skip over...
         !call cpu_time(tstart)
         if (cfg%flagneuBG) then

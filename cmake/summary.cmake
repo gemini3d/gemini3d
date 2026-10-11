@@ -7,7 +7,6 @@ add_feature_info(HWM14 gemini3d_hwm14 "HWM14 neutral winds model")
 add_feature_info(MSIS2 gemini3d_msis2 "enable MSIS 2.x neutral atmosphere model")
 
 add_feature_info(PyGemini gemini3d_python "simulation generation, HPC script generator and plotting")
-add_feature_info(MatGemini gemini3d_matlab "checks not as extensive as Python, and slow")
 
 # print to screen
 feature_summary(WHAT ENABLED_FEATURES DISABLED_FEATURES)

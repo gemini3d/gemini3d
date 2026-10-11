@@ -1,4 +1,5 @@
 *.log.txt
+*.log
 *.job
 *.job.*
 .DS_Store

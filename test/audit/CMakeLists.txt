@@ -183,7 +183,7 @@ if(Python_Interpreter_FOUND)
     ${PROJECT_SOURCE_DIR}/test/qualification/test_etd.py --exe $<TARGET_FILE:qualification_etd>
     --output ${CMAKE_CURRENT_BINARY_DIR}/etd-oracle.json)
   set_tests_properties(qualification:etd_oracle PROPERTIES LABELS "unit;qualification")
-  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies)
+  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory)
     add_test(NAME qualification:${probe} COMMAND ${Python_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/test/qualification/test_${probe}.py)
     set_tests_properties(qualification:${probe} PROPERTIES LABELS "unit;qualification")
@@ -214,6 +214,15 @@ target_link_libraries(qualification_energy_operators PRIVATE diffusion PDEparabo
 intel_fortran_main_linker(qualification_energy_operators)
 add_test(NAME qualification:energy_operators COMMAND qualification_energy_operators)
 set_tests_properties(qualification:energy_operators PROPERTIES LABELS "unit;qualification")
+
+add_executable(qualification_temperature_floor ../qualification/temperature_floor.f90)
+target_link_libraries(qualification_temperature_floor PRIVATE transport_audit multifluid meshobj_cart grid const gemini3d)
+intel_fortran_main_linker(qualification_temperature_floor)
+if(Python_Interpreter_FOUND)
+  add_test(NAME qualification:temperature_floor COMMAND ${Python_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/test/qualification/test_temperature_floor.py --exe $<TARGET_FILE:qualification_temperature_floor>)
+  set_tests_properties(qualification:temperature_floor PROPERTIES LABELS "unit;qualification")
+endif()
 if(Python_Interpreter_FOUND)
   add_test(NAME qualification:energy_ledger COMMAND ${Python_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/test/qualification/test_energy_ledger.py)
@@ -223,3 +232,31 @@ endif()
 foreach(audit_extension IN ITEMS numerics lifecycle contracts restart installation)
   include("${CMAKE_CURRENT_LIST_DIR}/${audit_extension}.cmake" OPTIONAL)
 endforeach()
+
+add_executable(qualification_diffusion_scale ../qualification/diffusion_scale.f90)
+target_link_libraries(qualification_diffusion_scale PRIVATE PDEparabolic const)
+intel_fortran_main_linker(qualification_diffusion_scale)
+add_test(NAME qualification:diffusion_scale COMMAND qualification_diffusion_scale)
+set_tests_properties(qualification:diffusion_scale PROPERTIES LABELS "unit;qualification;numerics")
+
+add_executable(qualification_coulomb_curve ../qualification/coulomb_curve.f90)
+target_link_libraries(qualification_coulomb_curve PRIVATE gemini3d)
+intel_fortran_main_linker(qualification_coulomb_curve)
+add_test(NAME qualification:coulomb_curve COMMAND qualification_coulomb_curve)
+set_tests_properties(qualification:coulomb_curve PROPERTIES LABELS "unit;qualification;numerics")
+
+add_executable(qualification_pair_exchange ../qualification/pair_exchange_probe.f90)
+target_link_libraries(qualification_pair_exchange PRIVATE gemini3d)
+intel_fortran_main_linker(qualification_pair_exchange)
+if(SCIPY_FOUND AND NUMPY_FOUND)
+  add_test(NAME qualification:pair_exchange COMMAND ${Python_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/test/qualification/test_pair_exchange.py
+    --exe $<TARGET_FILE:qualification_pair_exchange> --output ${CMAKE_CURRENT_BINARY_DIR}/pair-exchange-results.json)
+  set_tests_properties(qualification:pair_exchange PROPERTIES LABELS "unit;qualification;physics" TIMEOUT 180)
+  add_test(NAME qualification:midpoint_diffusion COMMAND ${Python_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/test/qualification/test_midpoint_diffusion.py
+    --source ${PROJECT_SOURCE_DIR} --build ${PROJECT_BINARY_DIR}
+    --work ${CMAKE_CURRENT_BINARY_DIR}/midpoint-diffusion)
+  set_tests_properties(qualification:midpoint_diffusion PROPERTIES LABELS "unit;qualification;physics" TIMEOUT 180
+    ENVIRONMENT "FC=${CMAKE_Fortran_COMPILER}")
+endif()

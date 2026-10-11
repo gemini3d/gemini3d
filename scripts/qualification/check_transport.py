@@ -3,15 +3,19 @@
 Quantity: 1 species number, 2 parallel momentum (covariant weighting in curved
 perpendicular sweeps), 3 internal energy. Null cells and ghosts are excluded.
 min_face/max_face include MPI subdomain faces; they are not global boundaries.
+Requires the independently recorded continuity ledger for the step inventory.
 """
 import argparse
 import csv
 import json
 from pathlib import Path
 import math
+from check_sources import rows as ledger_rows,check_clock_inventory
 
 
 def check(directory,budget=1e-11,layout=None):
+    if not math.isfinite(budget) or budget<=0:
+        raise ValueError('Positive finite transport budget required')
     files=sorted(directory.glob('transport-r*.csv'))
     if not files:raise ValueError('No native transport evidence')
     count=0;worst=0;coverage=set();worst_row=None;by_rank={}
@@ -24,10 +28,13 @@ def check(directory,budget=1e-11,layout=None):
                 r={k:float(v) for k,v in row.items()}
                 if not all(math.isfinite(v) for v in r.values()):raise ValueError('Nonfinite budget row')
                 if r['dt']<=0 or r['scale']<=0:raise ValueError('Nonpositive time/scale')
+                if r['scale']<(1-1e-12)*max(abs(r['before']),abs(r['after'])):
+                    raise ValueError('Invalid transport scale')
                 if any(r[k]!=int(r[k]) for k in ('quantity','species','axis')):raise ValueError('Noninteger stage identifier')
                 scale=max(r['scale'],abs(r['outward']),2.2250738585072014e-308)
                 # Recompute using independently recorded state change and actual face transport.
-                residual=abs(r['delta']+r['outward'])/scale
+                residual=max(abs(r['delta']+r['outward']),
+                             abs(r['after']-r['before']-r['delta']))/scale
                 if residual>worst:worst=residual;worst_row={'file':path.name,'t':r['t'],'quantity':r['quantity'],'species':r['species'],'axis':r['axis']}
                 key=(r['t'],r['dt'],int(r['quantity']),int(r['species']),int(r['axis']))
                 if key in by_rank[rank]:raise ValueError('Duplicate native transport stage')
@@ -36,8 +43,14 @@ def check(directory,budget=1e-11,layout=None):
                 count+=1
     expected={(q,s,a) for q in (1,2,3) for s in range(1,8 if q==3 else 7) for a in (1,2,3)}
     complete=True
-    for data in by_rank.values():
+    for rank,data in by_rank.items():
         clocks={key[:2] for key in data}
+        # A whole missing clock leaves each surviving clock internally complete.
+        # Use the separately recorded whole-step ledger as the clock inventory.
+        continuity={(r['t'],r['dt']) for r in ledger_rows(directory/f'continuity-r{rank:08d}.csv')}
+        if clocks!=continuity:
+            raise ValueError('Transport/continuity step inventory differs')
+        check_clock_inventory(directory,clocks)
         complete=complete and bool(clocks) and all({key[2:] for key in data if key[:2]==clock}==expected for clock in clocks)
     paired=None;global_worst=None;interfaces=0
     if layout is not None:
@@ -90,6 +103,7 @@ def check_continuity(directory,budget=1e-11,charge_budget=1e-12):
                 coverage.add(species);cleanup[str(species)]+=r['cleanup'];rows+=1
     complete=set(by_rank)==set(range(len(files))) and all(bool(clocks) and all(s==set(range(1,7)) for s in clocks.values()) for clocks in by_rank.values())
     if complete:complete=all(set(clocks)==set(by_rank[0]) for clocks in by_rank.values())
+    for clocks in by_rank.values():check_clock_inventory(directory,set(clocks))
     return dict(schema='gemini.native.continuity.1',passed=rows>0 and complete and coverage==set(range(1,7)) and worst<=budget and charge<=charge_budget,
         rank_files=len(files),rows=rows,per_step_coverage_complete=complete,max_normalized_residual=worst,max_charge_fraction=charge,
         budget=budget,charge_budget=charge_budget,total_cleanup_number_by_species=cleanup,
