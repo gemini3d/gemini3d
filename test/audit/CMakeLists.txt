@@ -227,6 +227,9 @@ if(Python_Interpreter_FOUND)
   add_test(NAME qualification:energy_ledger COMMAND ${Python_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/test/qualification/test_energy_ledger.py)
   set_tests_properties(qualification:energy_ledger PROPERTIES LABELS "unit;qualification")
+  add_test(NAME qualification:trace_diffusion_stages COMMAND ${Python_EXECUTABLE}
+    ${PROJECT_SOURCE_DIR}/test/qualification/test_trace_diffusion_stages.py)
+  set_tests_properties(qualification:trace_diffusion_stages PROPERTIES LABELS "unit;qualification")
 endif()
 
 foreach(audit_extension IN ITEMS numerics lifecycle contracts restart installation)
