@@ -183,7 +183,7 @@ if(Python_Interpreter_FOUND)
     ${PROJECT_SOURCE_DIR}/test/qualification/test_etd.py --exe $<TARGET_FILE:qualification_etd>
     --output ${CMAKE_CURRENT_BINARY_DIR}/etd-oracle.json)
   set_tests_properties(qualification:etd_oracle PROPERTIES LABELS "unit;qualification")
-  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory)
+  foreach(probe IN ITEMS source_ledger kernel_memory host_capabilities hosted_evidence qualification_dependencies transport_inventory clock_inventory trace_diffusion_stages)
     add_test(NAME qualification:${probe} COMMAND ${Python_EXECUTABLE}
       ${PROJECT_SOURCE_DIR}/test/qualification/test_${probe}.py)
     set_tests_properties(qualification:${probe} PROPERTIES LABELS "unit;qualification")
@@ -227,9 +227,6 @@ if(Python_Interpreter_FOUND)
   add_test(NAME qualification:energy_ledger COMMAND ${Python_EXECUTABLE}
     ${PROJECT_SOURCE_DIR}/test/qualification/test_energy_ledger.py)
   set_tests_properties(qualification:energy_ledger PROPERTIES LABELS "unit;qualification")
-  add_test(NAME qualification:trace_diffusion_stages COMMAND ${Python_EXECUTABLE}
-    ${PROJECT_SOURCE_DIR}/test/qualification/test_trace_diffusion_stages.py)
-  set_tests_properties(qualification:trace_diffusion_stages PROPERTIES LABELS "unit;qualification")
 endif()
 
 foreach(audit_extension IN ITEMS numerics lifecycle contracts restart installation)

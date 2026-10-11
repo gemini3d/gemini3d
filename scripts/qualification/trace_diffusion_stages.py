@@ -40,8 +40,7 @@ commands=subprocess.check_output(['ninja','-C',str(a.build),'-t','commands','PDE
 compile_tokens=None
 for line in commands.splitlines():
     tok=shlex.split(line)
-    if '-c' in tok and Path(tok[tok.index('-c')+1]).name in (
-            a.source.name, a.source.name+'-pp.f90'):
+    if '-c' in tok and '-o' in tok and Path(tok[tok.index('-o')+1]).name=='PDEparabolic.f90.o':
         compile_tokens=tok
 assert compile_tokens is not None
 cc=compile_tokens
