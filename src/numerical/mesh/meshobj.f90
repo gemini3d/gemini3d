@@ -652,25 +652,68 @@ contains
 
   !> this isn't used by computational parts of gemini but may be need for certain types of 3D visualization
   !    as such we only allocate and calculate interface geographic locations on demand and not be default
-  subroutine calc_geographici(self)
+  subroutine calc_geographici(self,flagghost)
     class(curvmesh), intent(inout) :: self
     real(wp), dimension(:,:,:), allocatable :: ri,thetai,phispheri
+    integer, optional :: flagghost    ! whether we should include interface locations for ghost cells
+    integer :: useghost=0
+    integer :: lx1data,lx2data,lx3data
+    real(wp), dimension(:), pointer :: x1i,x2i,x3i
+    integer :: lx1,lx2,lx3   !shorthand sizes for convenience
 
+    ! mesh sizes without ghost cells
+    lx1=size(self%x1)-4
+    lx2=size(self%x2)-4
+    lx3=size(self%x3)-4
+
+    ! overwrite default (no ghost cells used) if user so desires
+    if (present(flagghost)) then
+      useghost=flagghost
+    end if
+
+    ! only compute if we have not already loaded the appropriate arrays
     if (.not. self%geogi_set_status) then
-      allocate(self%alti(1:self%lx1+1,1:self%lx2+1,1:self%lx3+1))
-      allocate(self%gloni,self%glati, mold=self%alti)
+      if (useghost==0) then
+        lx1data=self%lx1+1
+        lx2data=self%lx2+1
+        lx3data=self%lx3+1
+        allocate(x1i(1:lx1+1), x2i(1:lx2+1), x3i(1:lx3+1))  ! ith entry is *left* interface of cell i
+        x1i=self%x1i(:)
+        x2i=self%x2i(:)
+        x3i=self%x3i(:)
+      else
+        lx1data=self%lx1+5     ! include ghost cell interfaces
+        lx2data=self%lx2+5
+        lx3data=self%lx3+5
+        allocate(x1i(-1:lx1+3), x2i(-1:lx2+3), x3i(-1:lx3+3))
 
+        x1i(0:lx1+2)=0.5*( self%x1(-1:lx1+1) + self%x1(0:lx1+2) )
+        x1i(-1)=x1i(0)-self%dx1(0)/2.0          ! assume this interface is 1/2 distance from edge
+        x1i(lx1+3)=x1i(lx1+2)+self%dx1(lx1+2)/2.0
+
+        x2i(0:lx2+2)=0.5*( self%x2(-1:lx2+1) + self%x2(0:lx2+2) )
+        x2i(-1)=x2i(0)-self%dx2(0)/2.0
+        x2i(lx2+3)=x2i(lx2+2)+self%dx2(lx2+2)/2.0
+
+        x3i(0:lx3+2)=0.5*( self%x3(-1:lx3+1) + self%x3(0:lx3+2) )
+        x3i(-1)=x3i(0)-self%dx3(0)/2.0
+        x3i(lx3+3)=x3i(lx3+2)+self%dx3(lx3+2)/2.0
+      end if
+
+      allocate(self%alti(1:lx1data,1:lx2data,1:lx3data))
+      allocate(self%gloni,self%glati, mold=self%alti)
       allocate(ri,thetai,phispheri, mold=self%alti)
 
-      call self%native2ECEFspher(self%glonctr,self%glatctr,self%x1i,self%x2i,self%x3i,ri,thetai,phispheri)
+      call self%native2ECEFspher(self%glonctr,self%glatctr,x1i,x2i,x3i,ri,thetai,phispheri)
       !call geomag2geog(phispheri,thetai,self%gloni,self%glati)
       !self%alti=r2alt(ri)
 
-      self%alti(:,:,:)=ri(:,:,:)*cos(thetai(:,:,:))    ! z
+      self%alti(:,:,:)=ri(:,:,:)*cos(thetai(:,:,:))                           ! z, ECEF magnetic
       self%gloni(:,:,:)=ri(:,:,:)*sin(thetai(:,:,:))*cos(phispheri(:,:,:))    ! x
       self%glati(:,:,:)=ri(:,:,:)*sin(thetai(:,:,:))*sin(phispheri(:,:,:))    ! y
 
       deallocate(ri,thetai,phispheri)
+      deallocate(x1i,x2i,x3i)
       self%geogi_set_status=.true.
     else
       !print*, 'WARNING:  geographic locations of cell edges already calculated!'

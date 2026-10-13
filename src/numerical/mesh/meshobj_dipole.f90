@@ -32,7 +32,7 @@ type, extends(curvmesh) :: dipolemesh
   real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
   contains
     !> Specific methods
-    procedure :: calc_rtheta_2D, calc_qp_2D
+    procedure, nopass :: calc_rtheta_2D, calc_qp_2D
 
     !> Bind deferred procedures
     procedure :: init=>init_dipolemesh
@@ -206,7 +206,7 @@ end subroutine make_dipolemesh
 
 !> convert input dipole coordinates into ECEF spherical coordinates
 subroutine dipole2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,phispher)
-  class(dipolemesh), intent(in) :: self
+  class(dipolemesh), intent(in) :: self     ! needed here since methods are called
   real(wp) :: glonctr,glatctr     ! unused in this implementation
   real(wp), dimension(:), pointer, intent(in) :: coord1,coord2,coord3
   !real(wp), dimension(:,:,:), intent(inout) :: r,theta,phispher
@@ -219,9 +219,10 @@ subroutine dipole2ECEFspher(self,glonctr,glatctr,coord1,coord2,coord3,r,theta,ph
   lq=size(q); lp=size(p); lphi=size(phidip);
   iphimin=lbound(phidip,1); iphimax=ubound(phidip,1);
 
-  if (lq /= size(r,1) .or. lp /= size(r,2) .or. lphi /= size(r,3) ) then
+  if (lq /= size(r,1) .or. lp /= size(r,2) .or. lphi /= size(r,3) ) then    ! have to ensure output arrays match input, else
+                                                                            !   indexing will be wrong or offset.  
     print*, lq,lp,lphi,size(r,1),size(r,2),size(r,3)
-    error stop 'dipolemesh::dipole2ECEFspher - r and native coord. arrays not conformable...'
+    error stop 'dipolemesh::dipole2ECEFspher - target and native coord. arrays not conformable...'
   end if
 
   call self%calc_rtheta_2D(q,p,r(:,:,iphimin),theta(:,:,iphimin))
@@ -421,16 +422,11 @@ end subroutine calc_ephi_dip
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
 !   this should be agnostic to the array start index; here just remap as 1:size(array,1), etc.
 !   though the dummy argument declarations.  This is necessary due to the way that
-subroutine calc_rtheta_2D(self,q,p,r,theta)
-  class(dipolemesh), intent(in) :: self
+subroutine calc_rtheta_2D(q,p,r,theta)
   real(wp), dimension(:), intent(in) :: q
   real(wp), dimension(:), intent(in) :: p
   real(wp), dimension(:,:), intent(inout) :: r,theta
-
   integer :: iq,ip,lq,lp
-
-  lq = size(self%q)
-  !! avoid unused argument warning
 
   lq=size(q,1); lp=size(p,1);
 
@@ -443,15 +439,10 @@ end subroutine calc_rtheta_2D
 
 
 !> convert a set of r,theta points (2D arrays) to 2D arrays of q,p
-subroutine calc_qp_2D(self,r,theta,q,p)
-  class(dipolemesh), intent(in) :: self
+subroutine calc_qp_2D(r,theta,q,p)
   real(wp), dimension(:,:), intent(in) :: r,theta
   real(wp), dimension(:,:), intent(inout) :: q,p
-
   integer :: i1,i2,ldim1,ldim2
-
-  ldim1 = size(self%r)
-  !! avoid unused argument warning
 
   ldim1=size(r,1); ldim2=size(r,2);
 
