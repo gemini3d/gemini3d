@@ -18,6 +18,8 @@ integer, protected :: gridflag
 real(wp), protected :: glonctr=-720._wp,glatctr=-180._wp
 real(wp), dimension(2), protected :: x1lims,x2alllims,x3alllims
 logical, protected :: flaglims=.false.
+real(wp), dimension(:), allocatable, protected :: x1ref
+logical, protected :: flagx1ref
 !!^ These variables will be shared between all workers/patches so they can be module-scope variables.
 
 private
@@ -31,7 +33,8 @@ public :: lx1,lx2,lx3,lx2all,lx3all,gridflag, &
              meshobj_alloc, get_gridcenter, meshobj_dealloc, set_fullgrid_lims, &
              x1lims,x2alllims,x3alllims,get_fullgrid_lims, &
              read_grid, grid_check, grid_drift, calc_subgrid_size, &
-             isglobalx1min,isglobalx1max,isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max
+             isglobalx1min,isglobalx1max,isglobalx2min,isglobalx2max,isglobalx3min,isglobalx3max, &
+             get_x1ref
 
              !, generate_worker_grid
 
@@ -119,6 +122,22 @@ contains
   end subroutine get_gridcenter
 
 
+!  !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
+!  !    generation of Cartesian meshes and put in in a module-scope variable.
+!  subroutine read_size_gridcenter(indatsize,indatgrid)
+!    character(*), intent(in) :: indatsize,indatgrid
+!    real(wp), dimension(:), allocatable :: x1,x2all,x3all
+!
+!    call get_simsize3(indatsize,lx1,lx2all,lx3all)
+!    allocate(x1(-1:lx1+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+!    call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)    ! sets module-scope x1 coords.
+!    ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
+!    !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
+!    call set_fullgrid_lims(x1,x2all,x3all)
+!    deallocate(x1,x2all,x3all)
+!  end subroutine read_size_gridcenter
+
+  
   !> Query the coordinates file and pull out the center geographic location for the entire grid (used for
   !    generation of Cartesian meshes and put in in a module-scope variable.
   subroutine read_size_gridcenter(indatsize,indatgrid)
@@ -131,8 +150,27 @@ contains
     ! FIXME: should store min/max here; can be used to detect whether we are on the global boundary.  We'd also need
     !   to add this data from other grid creation interfaces in the grid_mpi.f90 module.
     call set_fullgrid_lims(x1,x2all,x3all)
+
+    !FIXME: store the input coordinates somewhere?
+    if (.not. allocated(x1ref)) then
+      allocate(x1ref, mold=x1)     ! no explicit deallocate...
+      x1ref=x1
+      flagx1ref=.true.
+    end if
+
     deallocate(x1,x2all,x3all)
   end subroutine read_size_gridcenter
+
+
+  !> Getter routine for reference data read from file
+  subroutine get_x1ref(x1refout)
+    real(wp), dimension(:), intent(inout) :: x1refout
+
+    if (size(x1refout) /= size(x1ref)) then
+      error stop "x1 size not equal to that of stored reference array!"
+    end if
+    x1refout=x1ref
+  end subroutine get_x1ref
 
 
   !> set the fullgrid limit variables in the model, e.g. for detecting if we are on a global boundary
