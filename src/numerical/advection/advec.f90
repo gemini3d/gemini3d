@@ -57,6 +57,11 @@ contains
       Tbndry=rhoes(1,:,:,isp)/ns(1,:,:,isp)    ! proportional to temperature :)
       rhoes(0,:,:,isp)=Tbndry*ns(0,:,:,isp)
       rhoes(-1,:,:,isp)=Tbndry*ns(-1,:,:,isp)
+
+      ! patch corners may need to be filled for some applications
+      call cornerfill_minx1(ns(:,:,:,isp))
+      call cornerfill_minx1(rhovs1(:,:,:,isp))
+      call cornerfill_minx1(rhoes(:,:,:,isp))
     end if
     if (isglobalx1max(x)) then
       do ix3=1,lx3
@@ -76,6 +81,10 @@ contains
       Tbndry=rhoes(lx1,:,:,isp)/ns(lx1,:,:,isp)
       rhoes(lx1+1,:,:,isp)=Tbndry*ns(lx1+1,:,:,isp)
       rhoes(lx1+2,:,:,isp)=Tbndry*ns(lx1+2,:,:,isp)
+
+      call cornerfill_maxx1(ns(:,:,:,isp))
+      call cornerfill_maxx1(rhovs1(:,:,:,isp))
+      call cornerfill_maxx1(rhoes(:,:,:,isp))
     end if
 
     !> SET THE GLOBAL X2 BOUNDARY CELLS
@@ -130,7 +139,139 @@ contains
         rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp)
       end if
     end if
+
+      !call cornerfill_minx1(ns(:,:,:,isp))
+      !call cornerfill_minx1(rhovs1(:,:,:,isp))
+      !call cornerfill_minx1(rhoes(:,:,:,isp))
+      !call cornerfill_maxx1(ns(:,:,:,isp))
+      !call cornerfill_maxx1(rhovs1(:,:,:,isp))
+      !call cornerfill_maxx1(rhoes(:,:,:,isp))
+      !!print*, 'corner fill done...'
   end subroutine set_global_boundaries
+
+
+  subroutine cornerfill_minx1(parm)
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: parm
+    integer :: lx1,lx2,lx3
+    integer :: ix2,ix3
+
+    ! convenience sizes
+    lx1=size(parm,1)-4
+    lx2=size(parm,2)-4
+    lx3=size(parm,3)-4
+
+!    parm(-1:0,0,0)=parm(-1:0,1,1)    ! set the corner based on extrap of one direction (either should be fine)
+!    parm(-1:0,0,-1)=parm(-1:0,1,1)
+!    parm(-1:0,-1,0)=parm(-1:0,1,1)
+!    parm(-1:0,-1,-1)=parm(-1:0,1,1)
+!
+!    parm(-1:0,lx2+1,0)=parm(-1:0,lx2,1)
+!    parm(-1:0,lx2+1,-1)=parm(-1:0,lx2,1)
+!    parm(-1:0,lx2+2,0)=parm(-1:0,lx2,1)
+!    parm(-1:0,lx2+2,-1)=parm(-1:0,lx2,1)
+!
+!    parm(-1:0,0,lx3+1)=parm(-1:0,1,lx3)
+!    parm(-1:0,0,lx3+2)=parm(-1:0,1,lx3)
+!    parm(-1:0,-1,lx3+1)=parm(-1:0,1,lx3)
+!    parm(-1:0,-1,lx3+2)=parm(-1:0,1,lx3)
+!    
+!    parm(-1:0,lx2+1,lx3+1)=parm(-1:0,lx2,lx3)
+!    parm(-1:0,lx2+1,lx3+2)=parm(-1:0,lx2,lx3)
+!    parm(-1:0,lx2+2,lx3+1)=parm(-1:0,lx2,lx3)
+!    parm(-1:0,lx2+2,lx3+2)=parm(-1:0,lx2,lx3)
+
+!    parm(-1:0,0,0)=parm(1,1,1)    ! set the corner based on extrap of one direction (either should be fine)
+!    parm(-1:0,0,-1)=parm(1,1,1)
+!    parm(-1:0,-1,0)=parm(1,1,1)
+!    parm(-1:0,-1,-1)=parm(1,1,1)
+!
+!    parm(-1:0,lx2+1,0)=parm(1,lx2,1)
+!    parm(-1:0,lx2+1,-1)=parm(1,lx2,1)
+!    parm(-1:0,lx2+2,0)=parm(1,lx2,1)
+!    parm(-1:0,lx2+2,-1)=parm(1,lx2,1)
+!
+!    parm(-1:0,0,lx3+1)=parm(1,1,lx3)
+!    parm(-1:0,0,lx3+2)=parm(1,1,lx3)
+!    parm(-1:0,-1,lx3+1)=parm(1,1,lx3)
+!    parm(-1:0,-1,lx3+2)=parm(1,1,lx3)
+!    
+!    parm(-1:0,lx2+1,lx3+1)=parm(1,lx2,lx3)
+!    parm(-1:0,lx2+1,lx3+2)=parm(1,lx2,lx3)
+!    parm(-1:0,lx2+2,lx3+1)=parm(1,lx2,lx3)
+!    parm(-1:0,lx2+2,lx3+2)=parm(1,lx2,lx3)
+
+    !FIXME: this also hits the corners???
+    do ix2=-1,lx2+2
+      parm(-1:0,ix2,-1:0)=parm(1,ix2,1)               ! fill the min x1 cells at the min x3 edge
+      parm(-1:0,ix2,lx3+1:lx3+2)=parm(1,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+    end do
+    do ix3=-1,lx3+3
+      parm(-1:0,-1:0,ix3)=parm(1,1,ix3)
+      parm(-1:0,lx2+1:lx2+2,ix3)=parm(1,lx2,ix3)
+    end do
+  end subroutine cornerfill_minx1
+
+
+  subroutine cornerfill_maxx1(parm)
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: parm
+    integer :: lx1,lx2,lx3
+    integer :: ix2,ix3
+
+    ! convenience sizes
+    lx1=size(parm,1)-4
+    lx2=size(parm,2)-4
+    lx3=size(parm,3)-4
+
+!    parm(lx1+1:lx1+2,0,0)=parm(lx1+1:lx1+2,1,1)    ! set the corner based on extrap of one direction (either should be fine)
+!    parm(lx1+1:lx1+2,0,-1)=parm(lx1+1:lx1+2,1,1)
+!    parm(lx1+1:lx1+2,-1,0)=parm(lx1+1:lx1+2,1,1)
+!    parm(lx1+1:lx1+2,-1,-1)=parm(lx1+1:lx1+2,1,1)
+!
+!    parm(lx1+1:lx1+2,lx2+1,0)=parm(lx1+1:lx1+2,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+1,-1)=parm(lx1+1:lx1+2,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+2,0)=parm(lx1+1:lx1+2,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+2,-1)=parm(lx1+1:lx1+2,lx2,1)
+!
+!    parm(lx1+1:lx1+2,0,lx3+1)=parm(lx1+1:lx1+2,1,lx3)
+!    parm(lx1+1:lx1+2,0,lx3+2)=parm(lx1+1:lx1+2,1,lx3)
+!    parm(lx1+1:lx1+2,-1,lx3+1)=parm(lx1+1:lx1+2,1,lx3)
+!    parm(lx1+1:lx1+2,-1,lx3+2)=parm(lx1+1:lx1+2,1,lx3)
+!    
+!    parm(lx1+1:lx1+2,lx2+1,lx3+1)=parm(lx1+1:lx1+2,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+1,lx3+2)=parm(lx1+1:lx1+2,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+2,lx3+1)=parm(lx1+1:lx1+2,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+2,lx3+2)=parm(lx1+1:lx1+2,lx2,lx3)
+
+!    parm(lx1+1:lx1+2,0,0)=parm(lx1,1,1)    ! set the corner based on extrap of one direction (either should be fine)
+!    parm(lx1+1:lx1+2,0,-1)=parm(lx1,1,1)
+!    parm(lx1+1:lx1+2,-1,0)=parm(lx1,1,1)
+!    parm(lx1+1:lx1+2,-1,-1)=parm(lx1,1,1)
+!
+!    parm(lx1+1:lx1+2,lx2+1,0)=parm(lx1,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+1,-1)=parm(lx1,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+2,0)=parm(lx1,lx2,1)
+!    parm(lx1+1:lx1+2,lx2+2,-1)=parm(lx1,lx2,1)
+!
+!    parm(lx1+1:lx1+2,0,lx3+1)=parm(lx1,1,lx3)
+!    parm(lx1+1:lx1+2,0,lx3+2)=parm(lx1,1,lx3)
+!    parm(lx1+1:lx1+2,-1,lx3+1)=parm(lx1,1,lx3)
+!    parm(lx1+1:lx1+2,-1,lx3+2)=parm(lx1,1,lx3)
+!    
+!    parm(lx1+1:lx1+2,lx2+1,lx3+1)=parm(lx1,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+1,lx3+2)=parm(lx1,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+2,lx3+1)=parm(lx1,lx2,lx3)
+!    parm(lx1+1:lx1+2,lx2+2,lx3+2)=parm(lx1,lx2,lx3)
+
+    !FIXME: this also hits the corners???
+    do ix2=-1,lx2+2
+      parm(lx1+1:lx1+2,ix2,-1:0)=parm(lx1,ix2,1)               ! fill the min x1 cells at the min x3 edge
+      parm(lx1+1:lx1+2,ix2,lx3+1:lx3+2)=parm(lx1,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+    end do
+    do ix3=-1,lx3+3
+      parm(lx1+1:lx1+2,-1:0,ix3)=parm(lx1,1,ix3)
+      parm(lx1+1:lx1+2,lx2+1:lx2+2,ix3)=parm(lx1,lx2,ix3)
+    end do
+  end subroutine cornerfill_maxx1
 
 
   !> set global boundaries for all species
