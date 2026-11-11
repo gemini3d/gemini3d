@@ -202,12 +202,18 @@ contains
 
     !FIXME: this also hits the corners???
     do ix2=-1,lx2+2
-      parm(-1:0,ix2,-1:0)=parm(1,ix2,1)               ! fill the min x1 cells at the min x3 edge
-      parm(-1:0,ix2,lx3+1:lx3+2)=parm(1,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+      parm(-1:0,ix2,0)=parm(-1:0,ix2,1)               ! fill the min x1 cells at the min x3 edge
+      parm(-1:0,ix2,-1)=parm(-1:0,ix2,1)              ! fill the min x1 cells at the min x3 edge
+
+      parm(-1:0,ix2,lx3+1)=parm(-1:0,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+      parm(-1:0,ix2,lx3+2)=parm(-1:0,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
     end do
     do ix3=-1,lx3+2
-      parm(-1:0,-1:0,ix3)=parm(1,1,ix3)
-      parm(-1:0,lx2+1:lx2+2,ix3)=parm(1,lx2,ix3)
+      parm(-1:0,0,ix3)=parm(-1:0,1,ix3)
+      parm(-1:0,-1,ix3)=parm(-1:0,1,ix3)
+
+      parm(-1:0,lx2+1,ix3)=parm(-1:0,lx2,ix3)
+      parm(-1:0,lx2+2,ix3)=parm(-1:0,lx2,ix3)
     end do
   end subroutine cornerfill_minx1
 
@@ -264,12 +270,18 @@ contains
 
     !FIXME: this also hits the corners???
     do ix2=-1,lx2+2
-      parm(lx1+1:lx1+2,ix2,-1:0)=parm(lx1,ix2,1)               ! fill the min x1 cells at the min x3 edge
-      parm(lx1+1:lx1+2,ix2,lx3+1:lx3+2)=parm(lx1,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+      parm(lx1+1:lx1+2,ix2,0)=parm(lx1+1:lx1+2,ix2,1)               ! fill the min x1 cells at the min x3 edge
+      parm(lx1+1:lx1+2,ix2,-1)=parm(lx1+1:lx1+2,ix2,1)               ! fill the min x1 cells at the min x3 edge
+
+      parm(lx1+1:lx1+2,ix2,lx3+1)=parm(lx1+1:lx1+2,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
+      parm(lx1+1:lx1+2,ix2,lx3+2)=parm(lx1+1:lx1+2,ix2,lx3)      ! fill the min x1 cells at the max x3 edge
     end do
     do ix3=-1,lx3+2
-      parm(lx1+1:lx1+2,-1:0,ix3)=parm(lx1,1,ix3)
-      parm(lx1+1:lx1+2,lx2+1:lx2+2,ix3)=parm(lx1,lx2,ix3)
+      parm(lx1+1:lx1+2,0,ix3)=parm(lx1+1:lx1+2,1,ix3)
+      parm(lx1+1:lx1+2,-1,ix3)=parm(lx1+1:lx1+2,1,ix3)
+
+      parm(lx1+1:lx1+2,lx2+1,ix3)=parm(lx1+1:lx1+2,lx2,ix3)
+      parm(lx1+1:lx1+2,lx2+2,ix3)=parm(lx1+1:lx1+2,lx2,ix3)
     end do
   end subroutine cornerfill_maxx1
 
