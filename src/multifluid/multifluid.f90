@@ -313,7 +313,8 @@ subroutine v12rhov1(ns,vs1,rhovs1,J1,flagJ1)
   if (flagJ1) then    ! properly incorporate J1 into the parallel electron drift calculation
     rhovs1(1:lx1,1:lx2,1:lx3,lsp)=ms(lsp)/qs(lsp) * (J1(1:lx1,1:lx2,1:lx3) - chrgflux(1:lx1,1:lx2,1:lx3))
   else                ! ignore J1
-    rhovs1(1:lx1,1:lx2,1:lx3,lsp)=ms(lsp)/qs(lsp) * (chrgflux(1:lx1,1:lx2,1:lx3))
+    !rhovs1(1:lx1,1:lx2,1:lx3,lsp)=ms(lsp)/qs(lsp) * (chrgflux(1:lx1,1:lx2,1:lx3))
+    rhovs1(:,:,:,lsp)=ms(lsp)/qs(lsp) * (chrgflux(:,:,:))
     !rhovs1(:,:,:,lsp)=ns(:,:,:,lsp)*ms(lsp)*vs1(:,:,:,lsp)
   end if
 end subroutine v12rhov1
